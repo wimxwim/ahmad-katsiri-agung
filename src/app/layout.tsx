@@ -4,6 +4,7 @@ import { Providers } from "@/components/providers/Providers";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWA } from "@/components/layout/FloatingWA";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const bricolageGrotesque = Bricolage_Grotesque({
@@ -59,6 +60,7 @@ export default function RootLayout({
           <Footer />
           <FloatingWA />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );

@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Download,
   CheckCircle2,
+  MessageCircle,
   Quote,
 } from "lucide-react";
 import type { BabMateri } from "@/data/materi";
@@ -241,6 +242,18 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
               Unduh Naskah Soal
             </a>
           )}
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-border-precision">
+          <a
+            href={`https://wa.me/6285158795502?text=${encodeURIComponent(`Assalamualaikum Kak Agung, saya ingin memberi saran/masukan untuk materi "${materi.title}":`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-3 w-full py-3.5 bg-[#25D366] text-white rounded-2xl font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
+          >
+            <MessageCircle className="w-4 h-4" aria-hidden="true" />
+            Kirim Saran & Masukan
+          </a>
         </div>
       </motion.div>
 
