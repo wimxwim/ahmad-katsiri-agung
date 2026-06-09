@@ -69,11 +69,14 @@ export function HeroSection() {
           <div className="relative bg-glass backdrop-blur-2xl border border-border-precision p-4 rounded-[48px] shadow-glass-lg">
             <div className="aspect-[4/3] rounded-[40px] bg-gradient-to-br from-primary/10 via-surface to-primary/5 flex items-center justify-center overflow-hidden">
               <div className="text-center p-8">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
-                  <BookOpen className="w-10 h-10 text-primary" aria-hidden="true" />
+                <div className="w-28 h-28 mx-auto mb-4 flex items-center justify-center">
+                  <img src="/logo.svg" alt="Logo PAI" className="w-full h-full object-contain" />
                 </div>
-                <p className="font-heading text-lg text-on-surface-variant">
-                  Ilustrasi Pembelajaran
+                <p className="font-heading text-lg font-bold text-primary">
+                  Aggung Learning
+                </p>
+                <p className="text-xs text-on-surface-variant mt-1">
+                  Deep Learning Akidah Akhlak
                 </p>
               </div>
             </div>

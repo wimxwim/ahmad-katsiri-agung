@@ -32,6 +32,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://ahmad-katsiri-agung.vercel.app"),
   title: {
     template: "%s | Aggung Learning",
     default: "Aggung Learning — Deep Learning Akidah Akhlak",

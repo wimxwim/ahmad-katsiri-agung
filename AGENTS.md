@@ -325,7 +325,7 @@ bg-glass = backdrop-blur-2xl + border border-border-precision + shadow-glass + r
 - **Tidak ada halaman login** — instruksi klien.
 - **Semua halaman statis** — tidak ada server component yang fetch data runtime.
 - **Mode production: static generation** — `generateStaticParams` untuk dynamic routes.
-- **Favicon:** masih default Next.js — belum diganti.
+- **Favicon:** Sudah diganti menggunakan PAI.svg (dikonversi ke .ico, .png, dan .svg di folder src/app serta public/logo.svg untuk branding visual).
 - **Font:** Bricolage Grotesque untuk heading, Inter body, Amiri Quran — sudah di next/font dengan display:swap.
 - **MotionConfig** reducedMotion:"user" — menghormati preferensi aksesibilitas.
 - **WA number:** 6285158795502 (+6285) — di FloatingWA.tsx dan Footer.

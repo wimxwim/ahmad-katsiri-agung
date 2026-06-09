@@ -22,9 +22,10 @@ export function Navbar() {
       <nav className="w-full max-w-5xl bg-glass backdrop-blur-2xl border border-border-precision rounded-full flex items-center justify-between px-6 h-14 shadow-glass">
         <Link
           href="/"
-          className="font-heading font-bold text-primary text-lg tracking-tight"
+          className="flex items-center gap-2 font-heading font-bold text-primary text-lg tracking-tight"
         >
-          Aggung Learning
+          <img src="/logo.svg" alt="Logo PAI" className="w-7 h-7 object-contain" />
+          <span>Aggung Learning</span>
         </Link>
 
         <ul className="hidden md:flex items-center gap-1">

@@ -16,9 +16,10 @@ export function Footer() {
           <div>
             <Link
               href="/"
-              className="font-heading font-bold text-primary text-xl tracking-tight"
+              className="flex items-center gap-2 font-heading font-bold text-primary text-xl tracking-tight"
             >
-              Aggung Learning
+              <img src="/logo.svg" alt="Logo PAI" className="w-8 h-8 object-contain" />
+              <span>Aggung Learning</span>
             </Link>
             <p className="mt-3 text-sm text-on-surface-variant leading-relaxed max-w-xs">
               Platform pembelajaran Pendidikan Agama Islam modern untuk SMP/MTs
