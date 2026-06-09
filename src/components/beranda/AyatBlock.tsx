@@ -21,17 +21,17 @@ export function AyatBlock() {
             <Quote className="w-7 h-7 text-tertiary-fixed-dim" aria-hidden="true" />
           </div>
 
-          <p className="font-quran text-3xl md:text-4xl lg:text-5xl leading-relaxed md:leading-[1.8] text-tertiary-fixed/90 mb-8">
+          <p className="font-quran text-3xl md:text-4xl lg:text-5xl leading-relaxed md:leading-[1.8] text-white/95 mb-8">
             &ldquo;Sesungguhnya kejujuran itu membawa kepada kebaikan dan kebaikan
             itu membawa ke Surga.&rdquo;
           </p>
 
           <div className="flex items-center justify-center gap-4">
-            <span className="h-px w-12 bg-gradient-to-r from-transparent via-tertiary-fixed-dim to-transparent" />
-            <span className="text-xs font-bold tracking-[0.2em] uppercase text-tertiary-fixed-dim">
+            <span className="h-px w-12 bg-gradient-to-r from-transparent via-[#eec055]/50 to-transparent" />
+            <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#eec055]">
               HR. Muslim
             </span>
-            <span className="h-px w-12 bg-gradient-to-r from-transparent via-tertiary-fixed-dim to-transparent" />
+            <span className="h-px w-12 bg-gradient-to-r from-transparent via-[#eec055]/50 to-transparent" />
           </div>
         </div>
 
