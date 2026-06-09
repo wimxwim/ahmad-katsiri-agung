@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Download,
   CheckCircle2,
+  Gamepad2,
   MessageCircle,
   Quote,
 } from "lucide-react";
@@ -285,6 +286,37 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
             <BookOpen className="w-16 h-16 text-primary/30" aria-hidden="true" />
           </div>
         </motion.div>
+      )}
+
+      {materi.gameUrl && (
+        <motion.a
+          href={materi.gameUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] as const }}
+          className="block bg-glass backdrop-blur-2xl border border-border-precision p-6 rounded-3xl shadow-glass group hover:bg-white hover:shadow-xl transition-all duration-500"
+        >
+          <div className="flex items-center gap-4 mb-3">
+            <span className="w-12 h-12 rounded-2xl bg-tertiary-fixed-dim/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Gamepad2 className="w-6 h-6 text-tertiary" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-tertiary">
+                GAME TERKAIT
+              </p>
+              <p className="font-heading text-lg text-on-surface">Jujur dan Amanah</p>
+            </div>
+          </div>
+          <p className="text-sm text-on-surface-variant leading-relaxed mb-4">
+            Game interaktif tentang kejujuran dan amanah — ayo mainkan!
+          </p>
+          <span className="inline-flex items-center gap-2 text-sm font-semibold text-tertiary group-hover:gap-3 transition-all">
+            Mainkan Game
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </span>
+        </motion.a>
       )}
     </aside>
   );

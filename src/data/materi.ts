@@ -10,6 +10,7 @@ export interface BabMateri {
   icon: string;
   videoUrl?: string;
   soalUrl?: string;
+  gameUrl?: string;
   dalil?: {
     surah: string;
     arab: string;
@@ -192,6 +193,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     icon: "\uD83E\uDD1D",
     videoUrl: "https://www.youtube.com/embed/QHZGZ5m7kV0",
     soalUrl: "/pdf/amanah-dan-jujur-soal.pdf",
+    gameUrl: "https://jujurdanamanah.my.canva.site/",
     pendahuluan: "Amanah dan jujur adalah dua pilar akhlak mulia yang harus dimiliki setiap muslim. Kejujuran membawa kebaikan, dan kebaikan membawa ke surga. Amanah adalah sifat yang membuat seseorang dipercaya oleh orang lain dan oleh Allah.",
     konten: [
       {

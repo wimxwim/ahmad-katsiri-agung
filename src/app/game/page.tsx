@@ -6,6 +6,12 @@ import { Gamepad2, ExternalLink, ArrowRight, Sparkles } from "lucide-react";
 
 const GAMES = [
   {
+    title: "Game Jujur dan Amanah",
+    desc: "Game interaktif tentang kejujuran dan amanah untuk siswa SMP/MTs.",
+    url: "https://jujurdanamanah.my.canva.site/",
+    badge: "EKSTERNAL",
+  },
+  {
     title: "Game PAI Interaktif",
     desc: "Game pembelajaran PAI interaktif dari berbagai sumber edukasi.",
     url: "https://jurnalramadhansdnkebonkacang05.my.canva.site/aplikasi-tanpa-judul",
