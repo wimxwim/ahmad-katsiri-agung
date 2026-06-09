@@ -345,7 +345,7 @@ function NavPills({
           href={`/materi/${prevSlug}`}
           className="group flex items-center gap-5 px-8 py-6 rounded-[40px] bg-glass backdrop-blur-2xl border border-border-precision shadow-glass hover:bg-white hover:shadow-xl transition-all duration-500"
         >
-          <span className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-500 shrink-0">
+          <span className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-500 shrink-0">
             <ChevronLeft className="w-6 h-6" aria-hidden="true" />
           </span>
           <div>

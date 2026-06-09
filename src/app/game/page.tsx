@@ -74,7 +74,7 @@ export default function GamePage() {
               delay: i * 0.1,
               ease: [0.16, 1, 0.3, 1] as const,
             }}
-            className="group block bg-glass backdrop-blur-2xl border border-border-precision rounded-[32px] p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
+            className="group block bg-glass backdrop-blur-2xl border border-border-precision rounded-[32px] p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
           >
             <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wider mb-4">
               {game.badge}

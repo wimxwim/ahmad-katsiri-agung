@@ -90,7 +90,7 @@ export function FeatureGrid() {
           <motion.div
             key={f.title}
             variants={itemVariants}
-            className={`${f.colSpan} group relative bg-glass backdrop-blur-2xl border border-border-precision p-8 md:p-10 rounded-[40px] shadow-glass hover:-translate-y-2 transition-all duration-500 ${
+            className={`${f.colSpan} group relative bg-glass backdrop-blur-2xl border border-border-precision p-8 md:p-10 rounded-[40px] shadow-glass hover:-translate-y-2 transition-transform duration-500 ${
               f.gradient ? "bg-gradient-to-b from-white/30 to-primary/5" : ""
             }`}
           >

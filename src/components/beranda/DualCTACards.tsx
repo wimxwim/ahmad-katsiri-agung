@@ -29,7 +29,7 @@ export function DualCTACards() {
       >
         <motion.div
           variants={cardVariants}
-          className="group relative bg-[#003820] rounded-[56px] p-10 md:p-14 overflow-hidden hover:scale-[1.01] transition-all duration-500"
+          className="group relative bg-[#003820] rounded-[56px] p-10 md:p-14 overflow-hidden hover:scale-[1.01] transition-transform duration-500"
         >
           <div className="absolute -right-32 -top-32 w-80 h-80 bg-primary-fixed/10 blur-[100px] rounded-full pointer-events-none" />
 
@@ -69,7 +69,7 @@ export function DualCTACards() {
 
         <motion.div
           variants={cardVariants}
-          className="group relative bg-[#001d35] rounded-[56px] p-10 md:p-14 overflow-hidden hover:scale-[1.01] transition-all duration-500"
+          className="group relative bg-[#001d35] rounded-[56px] p-10 md:p-14 overflow-hidden hover:scale-[1.01] transition-transform duration-500"
         >
           <div className="absolute -right-32 -bottom-32 w-80 h-80 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
 

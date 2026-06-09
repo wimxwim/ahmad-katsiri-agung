@@ -6,6 +6,9 @@ import { MotionConfig } from "motion/react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+    if (isTouchDevice) return;
+
     const lenis = new Lenis({ autoRaf: true, duration: 1.2 });
     return () => lenis.destroy();
   }, []);

@@ -61,6 +61,7 @@ body {
   background-color: var(--color-background);
   color: var(--color-on-background);
   font-family: var(--font-body);
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -109,5 +110,13 @@ html {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .shimmer-text {
+    animation: none;
+    -webkit-text-fill-color: #eec055;
+    color: #eec055;
   }
 }

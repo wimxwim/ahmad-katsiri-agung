@@ -68,7 +68,7 @@ export default function PendidikPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
-          className="md:col-span-8 group bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[42px_18px_42px_18px] p-10 flex flex-col md:flex-row items-center gap-8 md:gap-12 shadow-glass hover:-translate-y-2 transition-all duration-500"
+          className="md:col-span-8 group bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[42px_18px_42px_18px] p-10 flex flex-col md:flex-row items-center gap-8 md:gap-12 shadow-glass hover:-translate-y-2 transition-transform duration-500"
         >
           <div className="flex-1">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
@@ -188,7 +188,7 @@ function FeatureCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] as const }}
-      className={`${colSpan} group bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[42px_18px_42px_18px] p-10 flex flex-col justify-between shadow-glass hover:-translate-y-2 transition-all duration-500 relative overflow-hidden`}
+      className={`${colSpan} group bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[42px_18px_42px_18px] p-10 flex flex-col justify-between shadow-glass hover:-translate-y-2 transition-transform duration-500 relative overflow-hidden`}
     >
       <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-primary/5 blur-3xl rounded-full group-hover:opacity-100 opacity-50 transition-opacity pointer-events-none" />
 

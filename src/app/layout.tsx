@@ -57,7 +57,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-body">
         <Providers>
           <Navbar />
-          <main className="flex-1 pt-24">{children}</main>
+          <main className="flex-1 pt-24" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>{children}</main>
           <Footer />
           <FloatingWA />
         </Providers>
