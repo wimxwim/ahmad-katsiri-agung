@@ -95,7 +95,11 @@ src/
 │   ├── layout.tsx             → Root layout (fonts, metadata, Providers, Navbar, Footer, FloatingWA)
 │   ├── page.tsx               → Beranda (komposisi 4 section)
 │   ├── globals.css            → Tailwind v4 + @theme + custom CSS (shimmer, float, reduced motion)
-│   ├── favicon.ico
+│   ├── favicon.ico            → Favicon fallback (32x32)
+│   ├── icon.svg               → Ikon utama website vector (PAI.svg)
+│   ├── icon.png               → Ikon website PNG (512x512)
+│   ├── apple-icon.png         → Ikon Apple (180x180)
+│   ├── opengraph-image.png    → Banner share sosial media (1200x630)
 │   ├── game/page.tsx          → 3 card link game eksternal
 │   ├── materi/
 │   │   ├── page.tsx           → Listing bab, filter kelas, stagger grid cards
@@ -186,6 +190,7 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 | **3 pilar Deep Learning** | Arahan klien: Mindful → Meaningful → Joyful | Messaging di hero, metadata, feature grid, tentang diubah dari PAI ke DL Akidah Akhlak |
 | **No login page** | Instruksi klien | Semua konten publik, tidak ada autentikasi |
 | **Kurikulum Merdeka** | Koreksi klien: istilah "Kurikulum Terpadu 2026" salah | Harus konsisten di semua halaman materi |
+| **Penggantian Logo & Favicon** | Penggantian logo Vercel segitiga bawaan Next.js dengan logo PAI | Mengonversi PAI.svg ke favicon.ico, icon.png, icon.svg, apple-icon.png, dan opengraph-image.png, serta mengintegrasikan logo ke Navbar, Footer, dan kartu ilustrasi Hero. |
 
 ### ⚠️ Jebakan yang Pernah Terjadi (DOKUMENTASI PENTING)
 
@@ -242,6 +247,16 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 - `videoUrl` field ditambah ke interface + data
 - 2 video YouTube embedded: Amanah & Jujur (kelas 8), Beriman kepada Kitab Allah (kelas 8)
 - AyatBlock: bg #05111d → black (#000000)
+
+### Sesi 7 (9 Juni 2026) — Integrasi Logo PAI & Favicon
+**Effort: ~45 menit**
+- Konversi `PAI.svg` menjadi `favicon.ico` (32x32), `icon.png` (512x512), `icon.svg` (vector copy), dan `apple-icon.png` (180x180) di `src/app/`
+- Konversi `PAI.svg` menjadi `opengraph-image.png` (1200x630) dengan latar belakang `#f2fcf7` untuk preview share WhatsApp/sosmed
+- Menyalin `PAI.svg` ke `public/logo.svg`
+- Update `metadataBase` di `src/app/layout.tsx` ke URL produksi
+- Integrasi logo ke `Navbar.tsx`, `Footer.tsx`, dan `HeroSection.tsx` (kartu pratinjau utama)
+- Menambahkan panduan pengubahan logo/favicon ke `RINGKASAN_KLIEN.md`
+- Deploy ke Vercel production dan push ke GitHub
 
 ---
 
