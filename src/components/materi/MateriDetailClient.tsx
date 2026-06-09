@@ -1,0 +1,302 @@
+"use client";
+
+import { motion } from "motion/react";
+import Link from "next/link";
+import {
+  BookOpen,
+  Clock,
+  Sparkles,
+  Lightbulb,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  CheckCircle2,
+  Quote,
+} from "lucide-react";
+import type { BabMateri } from "@/data/materi";
+
+export function MateriDetailClient({ materi }: { materi: BabMateri }) {
+  return (
+    <div className="max-w-[1280px] mx-auto px-4 md:px-8 pt-28 pb-32">
+      <HeroSection materi={materi} />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+        <SidebarLeft materi={materi} />
+        <ContentArea materi={materi} />
+        <SidebarRight materi={materi} />
+      </div>
+      <NavPills
+        prevTitle={materi.prevTitle}
+        prevSlug={materi.prevSlug}
+        nextTitle={materi.nextTitle}
+        nextSlug={materi.nextSlug}
+      />
+    </div>
+  );
+}
+
+function HeroSection({ materi }: { materi: BabMateri }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+      className="max-w-4xl mx-auto mb-24 text-center"
+    >
+      <div className="flex items-center justify-center gap-4 mb-10 flex-wrap">
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider">
+          <BookOpen className="w-4 h-4" aria-hidden="true" />
+          BAB {materi.bab}: {materi.babLabel}
+        </span>
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-tertiary-fixed-dim/20 text-tertiary text-xs font-semibold">
+          <Clock className="w-4 h-4" aria-hidden="true" />
+          {materi.waktuBaca}
+        </span>
+      </div>
+
+      <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl tracking-tighter text-on-surface mb-4">
+        {materi.title}
+      </h1>
+      <p className="text-lg md:text-xl text-on-surface-variant max-w-2xl mx-auto">
+        {materi.pendahuluan}
+      </p>
+    </motion.div>
+  );
+}
+
+function SidebarLeft({ materi }: { materi: BabMateri }) {
+  return (
+    <aside className="hidden xl:block lg:col-span-2 sticky top-32 space-y-6">
+      <motion.div
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+        className="bg-glass backdrop-blur-2xl border border-border-precision p-5 rounded-2xl shadow-glass"
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
+          <span className="text-sm font-semibold text-primary">Point Utama</span>
+        </div>
+        <p className="text-sm text-on-surface-variant">{materi.poinPenting[0]}</p>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, x: -30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
+        className="bg-glass backdrop-blur-2xl border border-border-precision p-5 rounded-2xl shadow-glass opacity-70 hover:opacity-100 transition-opacity"
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <Lightbulb className="w-4 h-4 text-tertiary" aria-hidden="true" />
+          <span className="text-sm font-semibold text-tertiary">Refleksi</span>
+        </div>
+        <p className="text-sm text-on-surface-variant">
+          Sudahkah kita mengamalkan nilai-nilai ini hari ini?
+        </p>
+      </motion.div>
+    </aside>
+  );
+}
+
+function ContentArea({ materi }: { materi: BabMateri }) {
+  return (
+    <div className="lg:col-span-8 xl:col-span-7">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] as const }}
+        className="bg-glass backdrop-blur-2xl border border-border-precision rounded-3xl p-8 md:p-12 lg:p-16 shadow-glass"
+      >
+        <article className="space-y-12">
+          {materi.konten.map((section, i) => (
+            <section key={i}>
+              <h2 className="font-heading text-2xl md:text-3xl text-on-surface mb-4">
+                {section.judul}
+              </h2>
+              <p className="text-base md:text-lg text-on-surface-variant leading-relaxed">
+                {section.isi}
+              </p>
+            </section>
+          ))}
+
+          {materi.dalil && (
+            <div className="relative bg-gradient-to-b from-white to-primary/5 rounded-3xl p-8 md:p-12 lg:p-16 overflow-hidden border-l-8 border-l-tertiary-fixed-dim shadow-inner">
+              <div className="absolute top-0 right-0 w-32 h-32 opacity-5 pointer-events-none">
+                <Quote className="w-full h-full text-tertiary-fixed-dim" aria-hidden="true" />
+              </div>
+
+              <div className="flex items-center justify-between border-b border-border-precision pb-6 mb-8">
+                <div className="flex items-center gap-3">
+                  <span className="w-1.5 h-6 bg-tertiary-fixed-dim rounded-full" />
+                  <span className="text-xs font-bold tracking-[0.2em] uppercase text-on-surface-variant">
+                    Dalil Naqli
+                  </span>
+                </div>
+                <span className="px-4 py-1.5 rounded-full bg-primary/5 text-primary text-xs font-semibold">
+                  {materi.dalil.surah}
+                </span>
+              </div>
+
+              <div className="space-y-8 text-center">
+                <p
+                  className="font-quran text-3xl md:text-4xl lg:text-5xl leading-[2.2] text-on-surface"
+                  dir="rtl"
+                >
+                  {materi.dalil.arab}
+                </p>
+
+                <Quote className="w-6 h-6 mx-auto text-tertiary-fixed-dim" aria-hidden="true" />
+
+                <p className="italic text-on-surface-variant max-w-xl mx-auto">
+                  &ldquo;{materi.dalil.arti}&rdquo;
+                </p>
+              </div>
+            </div>
+          )}
+
+          {materi.dimensi && materi.dimensi.length > 0 && (
+            <section>
+              <h3 className="flex items-center gap-3 font-heading text-2xl md:text-3xl text-primary mb-6">
+                <span className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-primary" aria-hidden="true" />
+                </span>
+                Poin Pembelajaran
+              </h3>
+
+              <div className="grid gap-5">
+                {materi.dimensi.map((d) => (
+                  <div
+                    key={d.nomor}
+                    className="group p-6 md:p-8 rounded-2xl border border-border-precision hover:bg-white hover:shadow-xl hover:shadow-primary/5 transition-all duration-500"
+                  >
+                    <div className="flex items-start gap-5">
+                      <span className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-lg group-hover:rotate-12 transition-transform shadow-lg shadow-primary/20 shrink-0">
+                        {d.nomor}
+                      </span>
+                      <div>
+                        <h4 className="font-heading text-xl text-primary mb-1">{d.judul}</h4>
+                        <p className="text-on-surface-variant leading-relaxed">{d.deskripsi}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </article>
+      </motion.div>
+    </div>
+  );
+}
+
+function SidebarRight({ materi }: { materi: BabMateri }) {
+  return (
+    <aside className="lg:col-span-4 xl:col-span-3 space-y-6 sticky top-32">
+      <motion.div
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] as const }}
+        className="bg-glass backdrop-blur-2xl border border-border-precision p-6 md:p-8 rounded-3xl shadow-glass-lg relative overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-24 h-24 opacity-10 pointer-events-none">
+          <Sparkles className="w-full h-full text-primary" aria-hidden="true" />
+        </div>
+
+        <h4 className="flex items-center gap-2 font-heading text-xl text-on-surface mb-6">
+          <Sparkles className="w-5 h-5 text-primary" aria-hidden="true" />
+          Key Takeaways
+        </h4>
+
+        <ul className="space-y-5">
+          {materi.poinPenting.map((poin, i) => (
+            <li key={i} className="flex gap-3">
+              <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+              </span>
+              <span className="text-sm text-on-surface leading-relaxed">{poin}</span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-8 pt-6 border-t border-border-precision">
+          <a
+            href={`/pdf/${materi.slug}.pdf`}
+            className="flex items-center justify-center gap-3 w-full py-3.5 bg-primary text-on-primary rounded-2xl font-semibold hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] transition-all duration-300"
+          >
+            <Download className="w-4 h-4" aria-hidden="true" />
+            Unduh PDF Ringkasan
+          </a>
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, x: 30 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+        className="bg-glass backdrop-blur-2xl border border-border-precision p-4 rounded-3xl shadow-glass"
+      >
+        <div className="rounded-2xl overflow-hidden aspect-[4/3] bg-gradient-to-br from-primary/10 via-surface to-primary/5 flex items-center justify-center">
+          <BookOpen className="w-16 h-16 text-primary/30" aria-hidden="true" />
+        </div>
+      </motion.div>
+    </aside>
+  );
+}
+
+function NavPills({
+  prevTitle,
+  prevSlug,
+  nextTitle,
+  nextSlug,
+}: {
+  prevTitle?: string;
+  prevSlug?: string;
+  nextTitle?: string;
+  nextSlug?: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
+      className="max-w-4xl mx-auto mt-32 flex flex-col md:flex-row justify-between gap-6"
+    >
+      {prevSlug ? (
+        <Link
+          href={`/materi/${prevSlug}`}
+          className="group flex items-center gap-5 px-8 py-6 rounded-[40px] bg-glass backdrop-blur-2xl border border-border-precision shadow-glass hover:bg-white hover:shadow-xl transition-all duration-500"
+        >
+          <span className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-500 shrink-0">
+            <ChevronLeft className="w-6 h-6" aria-hidden="true" />
+          </span>
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-on-surface-variant mb-1">
+              Sebelumnya
+            </p>
+            <p className="font-heading text-xl text-on-surface">{prevTitle}</p>
+          </div>
+        </Link>
+      ) : (
+        <div />
+      )}
+
+      {nextSlug ? (
+        <Link
+          href={`/materi/${nextSlug}`}
+          className="group flex items-center gap-5 px-8 py-6 rounded-[40px] bg-glass backdrop-blur-2xl border border-border-precision shadow-glass hover:bg-white hover:shadow-xl transition-all duration-500"
+        >
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-on-surface-variant mb-1">
+              Selanjutnya
+            </p>
+            <p className="font-heading text-xl text-on-surface">{nextTitle}</p>
+          </div>
+          <span className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white group-hover:scale-110 transition-transform shrink-0">
+            <ChevronRight className="w-6 h-6" aria-hidden="true" />
+          </span>
+        </Link>
+      ) : (
+        <div />
+      )}
+    </motion.div>
+  );
+}
