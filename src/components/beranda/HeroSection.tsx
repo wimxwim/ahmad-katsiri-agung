@@ -82,7 +82,10 @@ export function HeroSection() {
             </div>
           </div>
 
-          <div className="absolute -bottom-6 left-6 right-6 bg-glass backdrop-blur-2xl border border-border-precision px-6 py-5 rounded-2xl shadow-glass">
+          <Link
+            href="/materi/amanah-dan-jujur"
+            className="absolute -bottom-6 left-6 right-6 bg-glass backdrop-blur-2xl border border-border-precision px-6 py-5 rounded-2xl shadow-glass hover:shadow-lg transition-all duration-300 group/card"
+          >
             <p className="text-xs text-primary/60 font-bold uppercase tracking-widest mb-1">
               Materi Terpopuler
             </p>
@@ -90,11 +93,11 @@ export function HeroSection() {
               <p className="font-heading font-semibold text-base text-on-surface">
                 Kejujuran dalam Digital
               </p>
-              <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover/card:bg-primary/20 transition-colors">
                 <ArrowRight className="w-4 h-4 text-primary" aria-hidden="true" />
               </span>
             </div>
-          </div>
+          </Link>
         </motion.div>
       </div>
     </section>

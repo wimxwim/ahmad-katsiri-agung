@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Inter, Amiri, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers/Providers";
 import { Navbar } from "@/components/layout/Navbar";
+import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWA } from "@/components/layout/FloatingWA";
 import { Analytics } from "@vercel/analytics/next";
@@ -43,6 +44,20 @@ export const metadata: Metadata = {
   description:
     "Platform Deep Learning untuk materi Akidah Akhlak tingkat SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berbasis Kurikulum Merdeka.",
   keywords: ["Akidah Akhlak", "Deep Learning", "PAI", "SMP", "MTs", "Kurikulum Merdeka", "aggung learning"],
+  manifest: "/manifest.json",
+  other: {
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    "apple-mobile-web-app-title": "Aggung Learning",
+    "mobile-web-app-capable": "yes",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#005231",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 3,
 };
 
 export default function RootLayout({
@@ -58,7 +73,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-body">
         <Providers>
           <Navbar />
-          <main className="flex-1 pt-24" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>{children}</main>
+          <BottomTabBar />
+          <main className="flex-1 pt-24 pb-20 md:pb-0">{children}</main>
           <Footer />
           <FloatingWA />
         </Providers>

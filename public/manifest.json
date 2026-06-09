@@ -1,0 +1,24 @@
+{
+  "name": "Aggung Learning",
+  "short_name": "Aggung",
+  "description": "Platform Deep Learning untuk materi Akidah Akhlak tingkat SMP/MTs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f2fcf7",
+  "theme_color": "#005231",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
