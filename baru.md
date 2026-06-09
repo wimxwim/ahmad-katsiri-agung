@@ -27583,6 +27583,9 @@
 ├── src
 │   ├── app
 │   │   ├── apple-icon.png
+│   │   ├── dalil
+│   │   │   └── al-isra-34
+│   │   │       └── page.tsx
 │   │   ├── evaluasi
 │   │   │   └── page.tsx
 │   │   ├── favicon.ico
@@ -27635,4 +27638,4 @@
 ├── tsconfig.tsbuildinfo
 └── vercel.json
 
-2161 directories, 25475 files
+2163 directories, 25476 files

@@ -105,6 +105,56 @@ html {
   100% { transform: scale(1); opacity: 0; }
 }
 
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-left {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fade-right {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-up {
+  animation: fade-up var(--anim-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--anim-delay, 0s);
+}
+
+.animate-fade-left {
+  animation: fade-left var(--anim-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--anim-delay, 0s);
+}
+
+.animate-fade-right {
+  animation: fade-right var(--anim-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--anim-delay, 0s);
+}
+
+.animate-fade-in {
+  animation: fade-in var(--anim-duration, 0.6s) ease both;
+  animation-delay: var(--anim-delay, 0s);
+}
+
+.animate-scale-in {
+  animation: scale-in var(--anim-duration, 0.6s) cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--anim-delay, 0s);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

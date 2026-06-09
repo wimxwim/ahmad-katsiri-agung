@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "motion/react";
 import Link from "next/link";
 import { BookOpen, Sparkles, CheckCircle2 } from "lucide-react";
 
@@ -18,19 +17,6 @@ const ALL_MATERI = [
 ];
 
 const KELAS = [7, 8, 9] as const;
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08 },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const } },
-};
 
 export default function MateriPage() {
   const [filterKelas, setFilterKelas] = useState<number | null>(null);
@@ -58,11 +44,8 @@ export default function MateriPage() {
 
   return (
     <div className="max-w-[1280px] mx-auto px-4 md:px-8 pt-16 pb-32">
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
-        className="text-center mb-16"
+      <div
+        className="text-center mb-16 animate-fade-up"
       >
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 text-sm text-primary font-medium mb-6">
           <span className="relative flex h-2 w-2">
@@ -80,7 +63,7 @@ export default function MateriPage() {
           Pelajari Akidah Akhlak dengan pendekatan Deep Learning untuk SMP/MTs
           Kelas 7, 8, dan 9.
         </p>
-      </motion.div>
+      </div>
 
       <div className="flex justify-center mb-16 overflow-x-auto px-4 -mx-4 scrollbar-none">
         <div className="inline-flex items-center p-1 md:p-1.5 rounded-full bg-glass backdrop-blur-md border border-border-precision shadow-glass shrink-0">
@@ -113,12 +96,7 @@ export default function MateriPage() {
       </div>
 
       {totalRead > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
-          className="mb-10"
-        >
+        <div className="mb-10 animate-fade-up">
           <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-3xl p-6 max-w-md mx-auto text-center">
             <div className="flex items-center justify-center gap-2 mb-3">
               <CheckCircle2 className="w-5 h-5 text-primary" aria-hidden="true" />
@@ -136,20 +114,18 @@ export default function MateriPage() {
               {totalRead} dari {ALL_MATERI.length} bab telah dibaca
             </p>
           </div>
-        </motion.div>
+        </div>
       )}
 
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
+      <div
         key={filterKelas}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
       >
-        {filtered.map((materi) => (
-          <motion.div
+        {filtered.map((materi, i) => (
+          <div
             key={materi.slug}
-            variants={cardVariants}
+            className="animate-fade-up"
+            style={{ animationDelay: `${i * 0.06}s` }}
           >
             <Link
               href={`/materi/${materi.slug}`}
@@ -194,9 +170,9 @@ export default function MateriPage() {
                 </div>
               </div>
             </Link>
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
+      </div>
 
       {filtered.length === 0 && (
         <div className="text-center py-20">

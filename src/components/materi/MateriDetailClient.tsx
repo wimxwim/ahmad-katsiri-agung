@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { motion } from "motion/react";
 import Link from "next/link";
 import {
   BookOpen,
@@ -48,11 +47,8 @@ export function MateriDetailClient({ materi }: { materi: BabMateri }) {
 
 function HeroSection({ materi }: { materi: BabMateri }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
-      className="max-w-4xl mx-auto mb-24 text-center"
+    <div
+      className="max-w-4xl mx-auto mb-24 text-center animate-fade-up"
     >
       <div className="flex items-center justify-center gap-4 mb-10 flex-wrap">
         <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider">
@@ -71,31 +67,27 @@ function HeroSection({ materi }: { materi: BabMateri }) {
       <p className="text-lg md:text-xl text-on-surface-variant max-w-2xl mx-auto">
         {materi.pendahuluan}
       </p>
-    </motion.div>
+    </div>
   );
 }
 
 function SidebarLeft({ materi }: { materi: BabMateri }) {
   return (
     <aside className="hidden xl:block lg:col-span-2 sticky top-32 space-y-6">
-      <motion.div
-        initial={{ opacity: 0, x: -30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
-        className="bg-glass backdrop-blur-2xl border border-border-precision p-5 rounded-2xl shadow-glass"
+      <div
+        className="bg-glass backdrop-blur-2xl border border-border-precision p-5 rounded-2xl shadow-glass animate-fade-left"
+        style={{ animationDelay: '0.3s' }}
       >
         <div className="flex items-center gap-2 mb-2">
           <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
           <span className="text-sm font-semibold text-primary">Point Utama</span>
         </div>
         <p className="text-sm text-on-surface-variant">{materi.poinPenting[0]}</p>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, x: -30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
-        className="bg-glass backdrop-blur-2xl border border-border-precision p-5 rounded-2xl shadow-glass opacity-70 hover:opacity-100 transition-opacity"
+      <div
+        className="bg-glass backdrop-blur-2xl border border-border-precision p-5 rounded-2xl shadow-glass opacity-70 hover:opacity-100 transition-opacity animate-fade-left"
+        style={{ animationDelay: '0.4s' }}
       >
         <div className="flex items-center gap-2 mb-2">
           <Lightbulb className="w-4 h-4 text-tertiary" aria-hidden="true" />
@@ -104,7 +96,7 @@ function SidebarLeft({ materi }: { materi: BabMateri }) {
         <p className="text-sm text-on-surface-variant">
           Sudahkah kita mengamalkan nilai-nilai ini hari ini?
         </p>
-      </motion.div>
+      </div>
     </aside>
   );
 }
@@ -112,11 +104,9 @@ function SidebarLeft({ materi }: { materi: BabMateri }) {
 function ContentArea({ materi }: { materi: BabMateri }) {
   return (
     <div className="lg:col-span-8 xl:col-span-7">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] as const }}
-        className="bg-glass backdrop-blur-2xl border border-border-precision rounded-3xl p-8 md:p-12 lg:p-16 shadow-glass"
+      <div
+        className="bg-glass backdrop-blur-2xl border border-border-precision rounded-3xl p-8 md:p-12 lg:p-16 shadow-glass animate-fade-up"
+        style={{ animationDelay: '0.1s' }}
       >
         <article className="space-y-12">
           {materi.konten.map((section, i) => (
@@ -207,7 +197,7 @@ function ContentArea({ materi }: { materi: BabMateri }) {
             </section>
           )}
         </article>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -215,11 +205,9 @@ function ContentArea({ materi }: { materi: BabMateri }) {
 function SidebarRight({ materi }: { materi: BabMateri }) {
   return (
     <aside className="lg:col-span-4 xl:col-span-3 space-y-6 sticky top-32">
-      <motion.div
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] as const }}
-        className="bg-glass backdrop-blur-2xl border border-border-precision p-6 md:p-8 rounded-3xl shadow-glass-lg relative overflow-hidden"
+      <div
+        className="bg-glass backdrop-blur-2xl border border-border-precision p-6 md:p-8 rounded-3xl shadow-glass-lg relative overflow-hidden animate-fade-right"
+        style={{ animationDelay: '0.2s' }}
       >
         <div className="absolute top-0 right-0 w-24 h-24 opacity-10 pointer-events-none">
           <Sparkles className="w-full h-full text-primary" aria-hidden="true" />
@@ -288,14 +276,12 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
             Kirim Saran & Masukan
           </a>
         </div>
-      </motion.div>
+      </div>
 
       {materi.videoUrl ? (
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
-          className="bg-glass backdrop-blur-2xl border border-border-precision p-2 rounded-3xl shadow-glass overflow-hidden"
+        <div
+          className="bg-glass backdrop-blur-2xl border border-border-precision p-2 rounded-3xl shadow-glass overflow-hidden animate-fade-right"
+          style={{ animationDelay: '0.3s' }}
         >
           <div className="rounded-2xl overflow-hidden aspect-video">
             <iframe
@@ -306,29 +292,25 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
               allowFullScreen
             />
           </div>
-        </motion.div>
+        </div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
-          className="bg-glass backdrop-blur-2xl border border-border-precision p-4 rounded-3xl shadow-glass"
+        <div
+          className="bg-glass backdrop-blur-2xl border border-border-precision p-4 rounded-3xl shadow-glass animate-fade-right"
+          style={{ animationDelay: '0.3s' }}
         >
           <div className="rounded-2xl overflow-hidden aspect-[4/3] bg-gradient-to-br from-primary/10 via-surface to-primary/5 flex items-center justify-center">
             <BookOpen className="w-16 h-16 text-primary/30" aria-hidden="true" />
           </div>
-        </motion.div>
+        </div>
       )}
 
       {materi.gameUrl && (
-        <motion.a
+        <a
           href={materi.gameUrl}
           target="_blank"
           rel="noopener noreferrer"
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] as const }}
-          className="block bg-glass backdrop-blur-2xl border border-border-precision p-6 rounded-3xl shadow-glass group hover:bg-white hover:shadow-xl transition-all duration-500"
+          className="block bg-glass backdrop-blur-2xl border border-border-precision p-6 rounded-3xl shadow-glass group hover:bg-white hover:shadow-xl transition-all duration-500 animate-fade-right"
+          style={{ animationDelay: '0.35s' }}
         >
           <div className="flex items-center gap-4 mb-3">
             <span className="w-12 h-12 rounded-2xl bg-tertiary-fixed-dim/20 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -348,7 +330,7 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
             Mainkan Game
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </span>
-        </motion.a>
+        </a>
       )}
     </aside>
   );
@@ -366,11 +348,9 @@ function NavPills({
   nextSlug?: string;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
-      className="max-w-4xl mx-auto mt-32 flex flex-col md:flex-row justify-between gap-6"
+    <div
+      className="max-w-4xl mx-auto mt-32 flex flex-col md:flex-row justify-between gap-6 animate-fade-up"
+      style={{ animationDelay: '0.4s' }}
     >
       {prevSlug ? (
         <Link
@@ -409,6 +389,6 @@ function NavPills({
       ) : (
         <div />
       )}
-    </motion.div>
+    </div>
   );
 }
