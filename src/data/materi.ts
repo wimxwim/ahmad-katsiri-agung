@@ -9,6 +9,7 @@ export interface BabMateri {
   waktuBaca: string;
   icon: string;
   videoUrl?: string;
+  soalUrl?: string;
   dalil?: {
     surah: string;
     arab: string;
@@ -42,6 +43,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 6,
     waktuBaca: "5 MIN BACA",
     icon: "\u{1FABD}",
+    soalUrl: "/pdf/beriman-kepada-malaikat-soal.pdf",
     pendahuluan: "Iman kepada malaikat adalah rukun iman kedua yang wajib diyakini setiap muslim. Malaikat adalah makhluk Allah yang diciptakan dari cahaya, selalu taat, dan memiliki tugas masing-masing.",
     konten: [
       {
@@ -135,6 +137,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 7,
     waktuBaca: "6 MIN BACA",
     icon: "\uD83D\uDD4C",
+    soalUrl: "/pdf/salat-mencegah-perbuatan-keji-dan-mungkar-soal.pdf",
     pendahuluan: "Salat bukan sekadar ritual, tetapi benteng moral yang mencegah pelakunya dari perbuatan keji dan mungkar. Bab ini mengupas makna salat, ketentuannya, dan hikmah di balik perintah salat.",
     konten: [
       {
@@ -188,6 +191,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     waktuBaca: "5 MIN BACA",
     icon: "\uD83E\uDD1D",
     videoUrl: "https://www.youtube.com/embed/QHZGZ5m7kV0",
+    soalUrl: "/pdf/amanah-dan-jujur-soal.pdf",
     pendahuluan: "Amanah dan jujur adalah dua pilar akhlak mulia yang harus dimiliki setiap muslim. Kejujuran membawa kebaikan, dan kebaikan membawa ke surga. Amanah adalah sifat yang membuat seseorang dipercaya oleh orang lain dan oleh Allah.",
     konten: [
       {
@@ -241,6 +245,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     waktuBaca: "5 MIN BACA",
     icon: "\uD83D\uDCD6",
     videoUrl: "https://www.youtube.com/embed/DqBB96Ic6XU",
+    soalUrl: "/pdf/beriman-kepada-kitab-allah-soal.pdf",
     pendahuluan: "Iman kepada kitab-kitab Allah adalah rukun iman ketiga. Allah menurunkan kitab-kitab kepada para nabi sebagai petunjuk bagi umat manusia. Empat kitab utama yang wajib diimani: Taurat, Zabur, Injil, dan Al-Qur'an.",
     konten: [
       {
@@ -295,6 +300,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 12,
     waktuBaca: "7 MIN BACA",
     icon: "\uD83C\uDF1F",
+    soalUrl: "/pdf/beriman-kepada-nabi-dan-rasul-soal.pdf",
     pendahuluan: "Iman kepada nabi dan rasul adalah rukun iman keempat. Allah mengutus para nabi dan rasul untuk menyampaikan petunjuk-Nya kepada umat manusia. Wajib beriman kepada 25 nabi yang disebut dalam Al-Qur'an, dan meneladani sifat-sifat mulia mereka.",
     konten: [
       {
@@ -343,6 +349,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 10,
     waktuBaca: "6 MIN BACA",
     icon: "\uD83C\uDF3F",
+    soalUrl: "/pdf/adab-dalam-islam-soal.pdf",
     pendahuluan: "Adab adalah inti dari akhlak Islam. Rasulullah SAW diutus untuk menyempurnakan akhlak mulia. Adab bukan sekadar sopan santun, tetapi cerminan keimanan seorang muslim dalam berinteraksi dengan Allah, sesama manusia, dan lingkungan.",
     konten: [
       {
@@ -395,6 +402,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 7,
     waktuBaca: "6 MIN BACA",
     icon: "\u2600\uFE0F",
+    soalUrl: "/pdf/beriman-kepada-hari-akhir-soal.pdf",
     pendahuluan: "Iman kepada hari akhir adalah rukun iman kelima. Percaya dengan sepenuh hati bahwa alam semesta dan seisinya akan hancur dan berakhir. Kehidupan dunia hanya sementara, sedangkan kehidupan di akhirat adalah yang kekal. Keimanan ini mendorong seseorang untuk rajin beribadah dan selalu berbuat kebaikan.",
     konten: [
       {
@@ -445,6 +453,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 5,
     waktuBaca: "5 MIN BACA",
     icon: "\u2728",
+    soalUrl: "/pdf/beriman-kepada-qada-dan-qadar-soal.pdf",
     pendahuluan: "Iman kepada qada dan qadar adalah rukun iman keenam. Qada adalah ketetapan Allah di Lauhulmahfuz sejak zaman azali, sedangkan qadar adalah perwujudan ketetapan tersebut. Beriman kepada takdir tidak boleh menjadikan seseorang pasif, justru harus semakin giat berusaha, berdoa, dan bertawakal.",
     konten: [
       {

@@ -232,6 +232,15 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
             <Download className="w-4 h-4" aria-hidden="true" />
             Unduh Slide PPT
           </a>
+          {materi.soalUrl && (
+            <a
+              href={materi.soalUrl}
+              className="flex items-center justify-center gap-3 w-full py-3.5 border-2 border-primary/20 text-primary rounded-2xl font-semibold hover:bg-primary hover:text-on-primary hover:border-primary active:scale-[0.98] transition-all duration-300"
+            >
+              <Download className="w-4 h-4" aria-hidden="true" />
+              Unduh Naskah Soal
+            </a>
+          )}
         </div>
       </motion.div>
 
