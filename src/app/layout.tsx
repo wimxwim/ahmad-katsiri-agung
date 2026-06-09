@@ -57,7 +57,6 @@ export const viewport: Viewport = {
   themeColor: "#005231",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 3,
 };
 
 export default function RootLayout({
@@ -74,7 +73,7 @@ export default function RootLayout({
         <Providers>
           <Navbar />
           <BottomTabBar />
-          <main className="flex-1 pt-24 pb-20 md:pb-0">{children}</main>
+          <main className="flex-1 pt-24 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-x-hidden">{children}</main>
           <Footer />
           <FloatingWA />
         </Providers>

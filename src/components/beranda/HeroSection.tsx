@@ -67,9 +67,9 @@ export function HeroSection() {
           <div className="absolute -inset-10 bg-primary/5 blur-[120px] rounded-full" />
 
           <div className="relative bg-glass backdrop-blur-2xl border border-border-precision p-4 rounded-[48px] shadow-glass-lg">
-            <div className="aspect-[4/3] rounded-[40px] bg-gradient-to-br from-primary/10 via-surface to-primary/5 flex items-center justify-center overflow-hidden">
+            <div className="min-h-[280px] rounded-[40px] bg-gradient-to-br from-primary/10 via-surface to-primary/5 flex items-center justify-center overflow-hidden">
               <div className="text-center p-8">
-                <div className="w-28 h-28 mx-auto mb-4 flex items-center justify-center">
+                <div className="w-20 md:w-28 h-20 md:h-28 mx-auto mb-4 flex items-center justify-center">
                   <img src="/logo.svg" alt="Logo PAI" className="w-full h-full object-contain" />
                 </div>
                 <p className="font-heading text-lg font-bold text-primary">
@@ -84,7 +84,7 @@ export function HeroSection() {
 
           <Link
             href="/materi/amanah-dan-jujur"
-            className="absolute -bottom-6 left-6 right-6 bg-glass backdrop-blur-2xl border border-border-precision px-6 py-5 rounded-2xl shadow-glass hover:shadow-lg transition-all duration-300 group/card"
+            className="mt-4 bg-glass backdrop-blur-2xl border border-border-precision px-6 py-5 rounded-2xl shadow-glass hover:shadow-lg transition-all duration-300 group/card block"
           >
             <p className="text-xs text-primary/60 font-bold uppercase tracking-widest mb-1">
               Materi Terpopuler

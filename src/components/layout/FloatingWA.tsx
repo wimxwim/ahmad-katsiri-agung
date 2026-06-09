@@ -6,7 +6,7 @@ export function FloatingWA() {
       href="https://wa.me/6285158795502"
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed right-4 md:right-6 bottom-24 md:bottom-6 z-[60] w-12 h-12 md:w-14 md:h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200"
+      className="fixed right-4 md:right-6 bottom-20 md:bottom-6 z-[60] w-12 h-12 md:w-14 md:h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200"
       style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
       aria-label="Hubungi via WhatsApp"
     >
