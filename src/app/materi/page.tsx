@@ -65,29 +65,31 @@ export default function MateriPage() {
         </p>
       </motion.div>
 
-      <div className="flex justify-center mb-16 overflow-x-auto px-4 -mx-4">
-        <div className="inline-flex items-center p-1.5 rounded-full bg-glass backdrop-blur-md border border-border-precision shadow-glass shrink-0">
+      <div className="flex justify-center mb-16 overflow-x-auto px-4 -mx-4 scrollbar-none">
+        <div className="inline-flex items-center p-1 md:p-1.5 rounded-full bg-glass backdrop-blur-md border border-border-precision shadow-glass shrink-0">
           <button
             onClick={() => setFilterKelas(null)}
-            className={`px-6 md:px-8 py-3.5 rounded-full text-sm font-semibold transition-all duration-300 ${
+            className={`px-4 md:px-8 py-2.5 md:py-3.5 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
               filterKelas === null
                 ? "bg-primary text-on-primary shadow-xl shadow-primary/20"
                 : "text-on-surface-variant hover:bg-primary/5"
             }`}
           >
-            Semua Kelas
+            <span className="hidden sm:inline">Semua Kelas</span>
+            <span className="sm:hidden">Semua</span>
           </button>
           {KELAS.map((k) => (
             <button
               key={k}
               onClick={() => setFilterKelas(k)}
-              className={`px-6 md:px-8 py-3.5 rounded-full text-sm font-semibold transition-all duration-300 ${
+              className={`px-4 md:px-8 py-2.5 md:py-3.5 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
                 filterKelas === k
                   ? "bg-primary text-on-primary shadow-xl shadow-primary/20"
                   : "text-on-surface-variant hover:bg-primary/5"
               }`}
             >
-              Kelas {k}
+              <span className="hidden sm:inline">Kelas {k}</span>
+              <span className="sm:hidden">{k}</span>
             </button>
           ))}
         </div>

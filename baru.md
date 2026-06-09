@@ -1,8 +1,8 @@
 .
 ├── AGENTS.md
+├── baru.md
 ├── CLAUDE.md
 ├── eslint.config.mjs
-├── indah.md
 ├── next.config.ts
 ├── next-env.d.ts
 ├── node_modules
@@ -27576,6 +27576,7 @@
 │   │   ├── salat-mencegah-perbuatan-keji-dan-mungkar.pdf
 │   │   ├── salat-mencegah-perbuatan-keji-dan-mungkar-ppt.pdf
 │   │   └── salat-mencegah-perbuatan-keji-dan-mungkar-soal.pdf
+│   ├── robots.txt
 │   ├── varcel.svg
 │   └── window.svg
 ├── RINGKASAN_KLIEN.md
@@ -27628,6 +27629,7 @@
 │   └── lib
 │       └── utils.ts
 ├── tsconfig.json
+├── tsconfig.tsbuildinfo
 └── vercel.json
 
-2160 directories, 25471 files
+2160 directories, 25473 files

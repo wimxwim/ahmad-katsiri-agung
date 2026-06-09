@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWA } from "@/components/layout/FloatingWA";
+import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from "@next/third-parties/google";
@@ -43,8 +44,46 @@ export const metadata: Metadata = {
   },
   description:
     "Platform Deep Learning untuk materi Akidah Akhlak tingkat SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berbasis Kurikulum Merdeka.",
-  keywords: ["Akidah Akhlak", "Deep Learning", "PAI", "SMP", "MTs", "Kurikulum Merdeka", "aggung learning"],
+  keywords: ["Akidah Akhlak", "Deep Learning", "PAI", "SMP", "MTs", "Kurikulum Merdeka", "aggung learning", "agung", "katsiri"],
   manifest: "/manifest.json",
+  authors: [{ name: "Ahmad Katsiri Aggung, S.Pd." }],
+  creator: "Ahmad Katsiri Aggung, S.Pd.",
+  publisher: "Ahmad Katsiri Aggung",
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    siteName: "Aggung Learning",
+    title: "Aggung Learning — Deep Learning Akidah Akhlak",
+    description:
+      "Platform Deep Learning untuk materi Akidah Akhlak tingkat SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berbasis Kurikulum Merdeka.",
+    url: "https://ahmad-katsiri-agung.vercel.app",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Aggung Learning — Deep Learning Akidah Akhlak",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Aggung Learning — Deep Learning Akidah Akhlak",
+    description:
+      "Platform Deep Learning untuk materi Akidah Akhlak tingkat SMP/MTs Kelas 7-9.",
+    images: ["/opengraph-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   other: {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
@@ -70,6 +109,55 @@ export default function RootLayout({
       className={`${bricolageGrotesque.variable} ${inter.variable} ${amiri.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-body">
+        <Script
+          id="schema-web"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Aggung Learning",
+              url: "https://ahmad-katsiri-agung.vercel.app",
+              description:
+                "Platform Deep Learning untuk materi Akidah Akhlak tingkat SMP/MTs Kelas 7-9.",
+              inLanguage: "id-ID",
+              educationalLevel: "SMP/MTs",
+              author: {
+                "@type": "Person",
+                name: "Ahmad Katsiri Aggung, S.Pd.",
+              },
+            }),
+          }}
+        />
+        <Script
+          id="schema-learning-resource"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "LearningResource",
+              name: "Deep Learning Akidah Akhlak",
+              description:
+                "Model Pembelajaran Berbasis Deep Learning pada Materi Akidah Akhlak tingkat SMP/MTs — Mindful, Meaningful, Joyful.",
+              educationalLevel: ["Grade 7", "Grade 8", "Grade 9"],
+              educationalAlignment: {
+                "@type": "AlignmentObject",
+                alignmentType: "educationalSubject",
+                targetName: "Kurikulum Merdeka",
+              },
+              provider: {
+                "@type": "Person",
+                name: "Ahmad Katsiri Aggung, S.Pd.",
+              },
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "IDR",
+                availability: "https://schema.org/InStock",
+              },
+            }),
+          }}
+        />
         <Providers>
           <Navbar />
           <BottomTabBar />
