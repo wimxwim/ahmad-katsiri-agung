@@ -11,13 +11,7 @@ export function AyatBlock() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] as const }}
-        className="relative bg-[#05111d] rounded-[80px] py-24 md:py-32 px-8 text-center border border-tertiary-fixed-dim/30 overflow-hidden"
-        style={{
-          backgroundImage:
-            "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')",
-          backgroundBlendMode: "overlay",
-          backgroundSize: "auto",
-        }}
+        className="relative bg-black rounded-[80px] py-24 md:py-32 px-8 text-center border border-tertiary-fixed-dim/20 overflow-hidden"
       >
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-tertiary-fixed-dim to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-tertiary-fixed-dim to-transparent" />
