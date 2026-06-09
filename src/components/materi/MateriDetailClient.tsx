@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import {
@@ -18,6 +19,15 @@ import {
 import type { BabMateri } from "@/data/materi";
 
 export function MateriDetailClient({ materi }: { materi: BabMateri }) {
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("aggung_progress");
+      const progress = raw ? JSON.parse(raw) : {};
+      progress[materi.slug] = { title: materi.title, kelas: materi.kelas, readAt: Date.now() };
+      localStorage.setItem("aggung_progress", JSON.stringify(progress));
+    } catch {}
+  }, [materi.slug, materi.title, materi.kelas]);
+
   return (
     <div className="max-w-[1280px] mx-auto px-4 md:px-8 pt-28 pb-32">
       <HeroSection materi={materi} />

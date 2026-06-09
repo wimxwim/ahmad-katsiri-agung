@@ -1,9 +1,48 @@
 "use client";
 
-import { motion } from "motion/react";
-import { Quote } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Quote, Sparkles } from "lucide-react";
+
+const HADITS_LIST = [
+  {
+    teks: "Sesungguhnya kejujuran itu membawa kepada kebaikan dan kebaikan itu membawa ke Surga.",
+    sumber: "HR. Muslim",
+  },
+  {
+    teks: "Barang siapa yang beriman kepada Allah dan hari akhir, hendaklah ia berkata baik atau diam.",
+    sumber: "HR. Bukhari & Muslim",
+  },
+  {
+    teks: "Sebaik-baik manusia adalah yang paling bermanfaat bagi manusia lainnya.",
+    sumber: "HR. Ahmad",
+  },
+  {
+    teks: "Tidak sempurna iman seseorang di antara kalian sampai ia mencintai saudaranya seperti ia mencintai dirinya sendiri.",
+    sumber: "HR. Bukhari & Muslim",
+  },
+  {
+    teks: "Sesungguhnya Allah tidak melihat kepada rupa dan harta kalian, tetapi Dia melihat kepada hati dan amal kalian.",
+    sumber: "HR. Muslim",
+  },
+  {
+    teks: "Mukmin yang kuat lebih baik dan lebih dicintai Allah daripada mukmin yang lemah.",
+    sumber: "HR. Muslim",
+  },
+];
 
 export function AyatBlock() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % HADITS_LIST.length);
+    }, 8000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const hadits = HADITS_LIST[index];
+
   return (
     <section className="max-w-[1280px] mx-auto px-4 md:px-8 py-16">
       <motion.div
@@ -21,17 +60,39 @@ export function AyatBlock() {
             <Quote className="w-7 h-7 text-tertiary-fixed-dim" aria-hidden="true" />
           </div>
 
-          <p className="font-quran text-3xl md:text-4xl lg:text-5xl leading-relaxed md:leading-[1.8] text-white/95 mb-8">
-            &ldquo;Sesungguhnya kejujuran itu membawa kepada kebaikan dan kebaikan
-            itu membawa ke Surga.&rdquo;
-          </p>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
+              className="font-heading text-2xl md:text-4xl lg:text-5xl leading-relaxed md:leading-[1.8] text-white/95 mb-8"
+            >
+              &ldquo;{hadits.teks}&rdquo;
+            </motion.p>
+          </AnimatePresence>
 
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-4 mb-8">
             <span className="h-px w-12 bg-gradient-to-r from-transparent via-[#eec055]/50 to-transparent" />
             <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#eec055]">
-              HR. Muslim
+              {hadits.sumber}
             </span>
             <span className="h-px w-12 bg-gradient-to-r from-transparent via-[#eec055]/50 to-transparent" />
+          </div>
+
+          <div className="flex items-center justify-center gap-2">
+            {HADITS_LIST.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setIndex(i)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  i === index
+                    ? "bg-[#eec055] w-6"
+                    : "bg-white/20 hover:bg-white/40"
+                }`}
+              />
+            ))}
           </div>
         </div>
 

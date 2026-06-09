@@ -9,6 +9,7 @@ import {
   ClipboardList,
   ArrowRight,
   Users,
+  BookMarked,
 } from "lucide-react";
 
 const features = [
@@ -48,6 +49,15 @@ const features = [
       { value: "98%", label: "Kepuasan" },
       { value: "12K+", label: "Siswa Aktif" },
     ],
+  },
+  {
+    icon: BookMarked,
+    title: "Hafalan Dalil",
+    desc: "Flashcard interaktif untuk menghafal dalil dari setiap bab. Tap kartu untuk lihat arti, tandai yang sudah hafal.",
+    link: "/hafalan",
+    colSpan: "md:col-span-4",
+    gradient: false,
+    badge: "9 Dalil dari 9 Bab",
   },
 ];
 

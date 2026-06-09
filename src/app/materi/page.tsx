@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { BookOpen, Sparkles } from "lucide-react";
+import { BookOpen, Sparkles, CheckCircle2 } from "lucide-react";
 
 const ALL_MATERI = [
   { slug: "beriman-kepada-malaikat", title: "Beriman kepada Malaikat", kelas: 7, bab: 1, ringkasan: "Mengenal malaikat Allah dan tugas-tugasnya sebagai rukun iman.", subTopik: 6, icon: "🪽" },
@@ -34,6 +34,23 @@ const cardVariants = {
 
 export default function MateriPage() {
   const [filterKelas, setFilterKelas] = useState<number | null>(null);
+  const [progress, setProgress] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("aggung_progress");
+      if (raw) {
+        const data = JSON.parse(raw);
+        const map: Record<string, boolean> = {};
+        for (const key of Object.keys(data)) {
+          map[key] = true;
+        }
+        setProgress(map);
+      }
+    } catch {}
+  }, []);
+
+  const totalRead = Object.keys(progress).length;
 
   const filtered = filterKelas
     ? ALL_MATERI.filter((m) => m.kelas === filterKelas)
@@ -95,6 +112,33 @@ export default function MateriPage() {
         </div>
       </div>
 
+      {totalRead > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
+          className="mb-10"
+        >
+          <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-3xl p-6 max-w-md mx-auto text-center">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <CheckCircle2 className="w-5 h-5 text-primary" aria-hidden="true" />
+              <span className="font-heading font-semibold text-on-surface">
+                Progres Belajar
+              </span>
+            </div>
+            <div className="w-full bg-primary/10 rounded-full h-2.5 mb-2">
+              <div
+                className="bg-primary rounded-full h-2.5 transition-all duration-500"
+                style={{ width: `${(totalRead / ALL_MATERI.length) * 100}%` }}
+              />
+            </div>
+            <p className="text-xs text-on-surface-variant">
+              {totalRead} dari {ALL_MATERI.length} bab telah dibaca
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -117,8 +161,16 @@ export default function MateriPage() {
                 </span>
               </div>
 
-              <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider mb-4">
-                KELAS {materi.kelas} — BAB {materi.bab}
+              <div className="flex items-center gap-2 mb-4">
+                <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider">
+                  KELAS {materi.kelas} — BAB {materi.bab}
+                </span>
+                {progress[materi.slug] && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/15 text-primary text-[10px] font-bold tracking-wider">
+                    <CheckCircle2 className="w-3 h-3" aria-hidden="true" />
+                    SELESAI
+                  </span>
+                )}
               </div>
 
               <h3 className="font-heading text-xl md:text-2xl text-text-primary mb-3 leading-tight">
