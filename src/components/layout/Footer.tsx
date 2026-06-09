@@ -4,6 +4,7 @@ const FOOTER_LINKS = [
   { href: "/", label: "Beranda" },
   { href: "/materi", label: "Materi" },
   { href: "/hafalan", label: "Hafalan Dalil" },
+  { href: "/dalil/al-isra-34", label: "Analisis Dalil" },
   { href: "/video", label: "Video" },
   { href: "/evaluasi", label: "Kuis" },
   { href: "/game", label: "Game Edukasi" },

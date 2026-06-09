@@ -267,6 +267,16 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
           )}
         </div>
 
+        <div className="mt-6 pt-6 border-t border-border-precision space-y-3">
+          <Link
+            href="/dalil/al-isra-34"
+            className="flex items-center justify-center gap-3 w-full py-3.5 bg-tertiary-container text-on-tertiary rounded-2xl font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
+          >
+            <BookOpen className="w-4 h-4" aria-hidden="true" />
+            Analisis Dalil QS. Al-Isra&apos;: 34
+          </Link>
+        </div>
+
         <div className="mt-6 pt-6 border-t border-border-precision">
           <a
             href={`https://wa.me/6285158795502?text=${encodeURIComponent(`Assalamualaikum Kak Agung, saya ingin memberi saran/masukan untuk materi "${materi.title}":`)}`}
