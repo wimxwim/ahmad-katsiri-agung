@@ -6,7 +6,7 @@ import { BookHeart, ArrowRight } from "lucide-react";
 
 export default function TentangPage() {
   return (
-    <div className="max-w-[1280px] mx-auto px-4 md:px-8 pt-40 pb-32">
+    <div className="max-w-[1280px] mx-auto px-4 md:px-8 pt-24 md:pt-40 pb-16 md:pb-32">
       <motion.section
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}

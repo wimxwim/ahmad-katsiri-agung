@@ -83,11 +83,11 @@ export function HeroSection() {
           </div>
 
           <div className="absolute -bottom-6 left-6 right-6 bg-glass backdrop-blur-2xl border border-border-precision px-6 py-5 rounded-2xl shadow-glass">
-            <p className="text-[10px] text-primary/60 font-bold uppercase tracking-widest mb-1">
+            <p className="text-xs text-primary/60 font-bold uppercase tracking-widest mb-1">
               Materi Terpopuler
             </p>
             <div className="flex items-center justify-between">
-              <p className="font-heading font-semibold text-sm text-on-surface">
+              <p className="font-heading font-semibold text-base text-on-surface">
                 Kejujuran dalam Digital
               </p>
               <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">

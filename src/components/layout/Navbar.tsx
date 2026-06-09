@@ -72,7 +72,7 @@ export function Navbar() {
           className="flex items-center gap-2 font-heading font-bold text-primary text-lg tracking-tight"
         >
           <img src="/logo.svg" alt="Logo PAI" className="w-7 h-7 object-contain" />
-          <span>Aggung Learning</span>
+          <span className="truncate max-w-[100px] md:max-w-none">Aggung Learning</span>
         </Link>
 
         <ul className="hidden md:flex items-center gap-1">
@@ -131,6 +131,16 @@ export function Navbar() {
             aria-modal="true"
             aria-label="Navigasi utama"
           >
+            <button
+              onClick={() => setIsOpen(false)}
+              className="absolute top-6 right-6 w-11 h-11 flex items-center justify-center rounded-full bg-primary/10 text-primary"
+              aria-label="Tutup menu"
+            >
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
             <ul className="flex flex-col items-center gap-8">
               {NAV_ITEMS.map((item, i) => (
                 <motion.li

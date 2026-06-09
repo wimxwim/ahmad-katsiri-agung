@@ -66,7 +66,7 @@ const itemVariants = {
 
 export function FeatureGrid() {
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-8 py-32">
+    <section className="max-w-[1280px] mx-auto px-4 md:px-8 py-16 md:py-32">
       <div className="flex items-end justify-between mb-16">
         <div>
           <h2 className="font-heading text-4xl md:text-5xl tracking-tighter text-on-surface">
@@ -144,7 +144,7 @@ export function FeatureGrid() {
 
               <Link
                 href={f.link}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:gap-3 transition-all"
+                className="inline-flex items-center gap-2 text-base font-semibold text-primary hover:gap-3 transition-all py-3.5 -my-3.5"
               >
                 Pelajari Selengkapnya
                 <ArrowRight className="w-4 h-4" aria-hidden="true" />

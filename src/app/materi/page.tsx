@@ -65,11 +65,11 @@ export default function MateriPage() {
         </p>
       </motion.div>
 
-      <div className="flex justify-center mb-16">
-        <div className="inline-flex items-center p-1.5 rounded-full bg-glass backdrop-blur-md border border-border-precision shadow-glass">
+      <div className="flex justify-center mb-16 overflow-x-auto px-4 -mx-4">
+        <div className="inline-flex items-center p-1.5 rounded-full bg-glass backdrop-blur-md border border-border-precision shadow-glass shrink-0">
           <button
             onClick={() => setFilterKelas(null)}
-            className={`px-6 md:px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
+            className={`px-6 md:px-8 py-3.5 rounded-full text-sm font-semibold transition-all duration-300 ${
               filterKelas === null
                 ? "bg-primary text-on-primary shadow-xl shadow-primary/20"
                 : "text-on-surface-variant hover:bg-primary/5"
@@ -81,7 +81,7 @@ export default function MateriPage() {
             <button
               key={k}
               onClick={() => setFilterKelas(k)}
-              className={`px-6 md:px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
+              className={`px-6 md:px-8 py-3.5 rounded-full text-sm font-semibold transition-all duration-300 ${
                 filterKelas === k
                   ? "bg-primary text-on-primary shadow-xl shadow-primary/20"
                   : "text-on-surface-variant hover:bg-primary/5"

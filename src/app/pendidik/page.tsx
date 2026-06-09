@@ -13,7 +13,7 @@ import {
 
 export default function PendidikPage() {
   return (
-    <div className="max-w-[1280px] mx-auto px-4 md:px-8 pt-32 pb-32">
+    <div className="max-w-[1280px] mx-auto px-4 md:px-8 pt-20 md:pt-32 pb-16 md:pb-32">
       <motion.header
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -34,7 +34,7 @@ export default function PendidikPage() {
         </p>
       </motion.header>
 
-      <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 auto-rows-[280px] mb-32">
+      <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 md:auto-rows-[280px] mb-32">
         <FeatureCard
           colSpan="md:col-span-8"
           icon={BookOpen}
@@ -198,7 +198,7 @@ function FeatureCard({
             <Icon className="w-6 h-6 text-primary" aria-hidden="true" />
           </div>
           {typeof cta === "string" && (
-            <div className="flex items-center gap-2 text-sm font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-2 text-sm font-semibold text-primary md:opacity-0 md:group-hover:opacity-100 transition-opacity">
               {cta}
               <ArrowRight className="w-4 h-4" aria-hidden="true" />
             </div>
@@ -206,7 +206,7 @@ function FeatureCard({
         </div>
 
         {badge && (
-          <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wider mb-3">
+          <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider mb-3">
             {badge}
           </span>
         )}
@@ -214,7 +214,7 @@ function FeatureCard({
         <h3 className="font-heading text-2xl md:text-3xl text-on-surface mb-2">
           {title}
         </h3>
-        <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+        <p className="text-base md:text-base text-on-surface-variant leading-relaxed">
           {desc}
         </p>
       </div>

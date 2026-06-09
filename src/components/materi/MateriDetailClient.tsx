@@ -55,7 +55,7 @@ function HeroSection({ materi }: { materi: BabMateri }) {
         </span>
       </div>
 
-      <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl tracking-tighter text-on-surface mb-4">
+      <h1 className="font-heading text-4xl md:text-6xl lg:text-7xl tracking-tighter text-on-surface mb-4">
         {materi.title}
       </h1>
       <p className="text-lg md:text-xl text-on-surface-variant max-w-2xl mx-auto">
@@ -139,12 +139,14 @@ function ContentArea({ materi }: { materi: BabMateri }) {
               </div>
 
               <div className="space-y-8 text-center">
+              <div className="overflow-x-auto">
                 <p
-                  className="font-quran text-3xl md:text-4xl lg:text-5xl leading-[2.2] text-on-surface"
+                  className="font-quran text-2xl md:text-4xl lg:text-5xl leading-[2.2] text-on-surface"
                   dir="rtl"
                 >
                   {materi.dalil.arab}
                 </p>
+              </div>
 
                 <Quote className="w-6 h-6 mx-auto text-tertiary-fixed-dim" aria-hidden="true" />
 
@@ -214,7 +216,7 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
               <span className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
               </span>
-              <span className="text-sm text-on-surface leading-relaxed">{poin}</span>
+              <span className="text-base text-on-surface leading-relaxed">{poin}</span>
             </li>
           ))}
         </ul>
@@ -303,13 +305,13 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
               <Gamepad2 className="w-6 h-6 text-tertiary" aria-hidden="true" />
             </span>
             <div>
-              <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-tertiary">
+              <p className="text-xs font-bold tracking-[0.15em] uppercase text-tertiary">
                 GAME TERKAIT
               </p>
-              <p className="font-heading text-lg text-on-surface">Jujur dan Amanah</p>
+              <p className="font-heading text-base text-on-surface">Jujur dan Amanah</p>
             </div>
           </div>
-          <p className="text-sm text-on-surface-variant leading-relaxed mb-4">
+          <p className="text-base text-on-surface-variant leading-relaxed mb-4">
             Game interaktif tentang kejujuran dan amanah — ayo mainkan!
           </p>
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-tertiary group-hover:gap-3 transition-all">
@@ -349,7 +351,7 @@ function NavPills({
             <ChevronLeft className="w-6 h-6" aria-hidden="true" />
           </span>
           <div>
-            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-on-surface-variant mb-1">
+            <p className="text-xs font-bold tracking-[0.15em] uppercase text-on-surface-variant mb-1">
               Sebelumnya
             </p>
             <p className="font-heading text-xl text-on-surface">{prevTitle}</p>
@@ -365,7 +367,7 @@ function NavPills({
           className="group flex items-center gap-5 px-8 py-6 rounded-[40px] bg-glass backdrop-blur-2xl border border-border-precision shadow-glass hover:bg-white hover:shadow-xl transition-all duration-500"
         >
           <div>
-            <p className="text-[10px] font-bold tracking-[0.15em] uppercase text-on-surface-variant mb-1">
+            <p className="text-xs font-bold tracking-[0.15em] uppercase text-on-surface-variant mb-1">
               Selanjutnya
             </p>
             <p className="font-heading text-xl text-on-surface">{nextTitle}</p>

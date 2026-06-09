@@ -19,7 +19,7 @@ const cardVariants = {
 
 export function DualCTACards() {
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-8 py-32">
+    <section className="max-w-[1280px] mx-auto px-4 md:px-8 py-16 md:py-32">
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -51,7 +51,7 @@ export function DualCTACards() {
                   <CheckCircle className="w-6 h-6 text-primary-fixed shrink-0 mt-0.5" aria-hidden="true" />
                   <div>
                     <p className="font-semibold text-white">{item.title}</p>
-                    <p className="text-sm text-white/70">{item.desc}</p>
+                    <p className="text-base text-white/70">{item.desc}</p>
                   </div>
                 </li>
               ))}
@@ -91,7 +91,7 @@ export function DualCTACards() {
                   <Sparkles className="w-6 h-6 text-secondary-fixed shrink-0 mt-0.5" aria-hidden="true" />
                   <div>
                     <p className="font-semibold text-white">{item.title}</p>
-                    <p className="text-sm text-white/70">{item.desc}</p>
+                    <p className="text-base text-white/70">{item.desc}</p>
                   </div>
                 </li>
               ))}

@@ -76,7 +76,7 @@ export default function GamePage() {
             }}
             className="group block bg-glass backdrop-blur-2xl border border-border-precision rounded-[32px] p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
           >
-            <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wider mb-4">
+            <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider mb-4">
               {game.badge}
             </span>
 
@@ -88,11 +88,10 @@ export default function GamePage() {
               {game.title}
             </h3>
 
-            <p className="text-sm text-on-surface-variant leading-relaxed mb-6">
+            <p className="text-base text-on-surface-variant leading-relaxed mb-6">
               {game.desc}
             </p>
-
-            <div className="flex items-center gap-2 text-sm font-semibold text-primary group-hover:gap-3 transition-all">
+            <div className="flex items-center gap-2 text-base font-semibold text-primary group-hover:gap-3 transition-all">
               Buka Game
               <ExternalLink className="w-4 h-4" aria-hidden="true" />
             </div>
