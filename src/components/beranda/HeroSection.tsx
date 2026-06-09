@@ -36,7 +36,7 @@ export function HeroSection() {
           <div className="flex flex-wrap items-center gap-4">
             <Link
               href="/materi"
-              className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-2xl font-semibold shadow-2xl shadow-primary/20 hover:-translate-y-1 active:scale-[0.98] transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-2xl font-semibold shadow-2xl shadow-primary/20 hover:-translate-y-1 active:scale-[0.98] transition-transform duration-300"
             >
               <BookOpen className="w-5 h-5" aria-hidden="true" />
               Mulai Belajar

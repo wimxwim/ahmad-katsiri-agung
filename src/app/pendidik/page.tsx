@@ -147,7 +147,7 @@ export default function PendidikPage() {
           <div className="flex flex-col md:flex-row gap-5 justify-center">
             <Link
               href="/materi"
-              className="inline-flex items-center gap-2 bg-primary-fixed-dim text-on-primary-fixed px-8 py-4 rounded-full font-semibold hover:scale-105 active:scale-[0.98] shadow-xl transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-primary-fixed-dim text-on-primary-fixed px-8 py-4 rounded-full font-semibold hover:scale-105 active:scale-[0.98] shadow-xl transition-transform duration-300"
             >
               Daftar Sekarang
               <ArrowRight className="w-5 h-5" aria-hidden="true" />
