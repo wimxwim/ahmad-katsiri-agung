@@ -23,8 +23,8 @@ export default function TentangPage() {
           </h1>
 
           <p className="text-lg text-on-surface-variant leading-relaxed max-w-xl mx-auto">
-            Platform pembelajaran PAI modern yang lahir dari keprihatinan terhadap
-            metode pengajaran agama yang monoton.
+            Platform Deep Learning untuk Akidah Akhlak yang lahir dari keprihatinan
+            terhadap metode pengajaran agama yang monoton.
           </p>
         </div>
 
@@ -40,10 +40,10 @@ export default function TentangPage() {
               Filosofi Kami
             </h2>
             <p className="text-on-surface-variant leading-relaxed">
-              Aggung Learning percaya bahwa pendidikan agama Islam harus relevan
-              dengan kehidupan digital siswa. Kami menggabungkan konten kurikulum
-              yang autentik dengan pengalaman belajar modern — visual yang
-              sinematik, navigasi yang intuitif, dan pendekatan yang hangat.
+              Aggung Learning percaya bahwa pembelajaran Akidah Akhlak harus
+              relevan dengan kehidupan digital siswa. Kami menerapkan model Deep
+              Learning — sadar, bermakna, dan menyenangkan — untuk membentuk
+              karakter Islami generasi muda.
             </p>
           </motion.div>
 

@@ -73,8 +73,8 @@ export function FeatureGrid() {
             Ekosistem Belajar Digital
           </h2>
           <p className="mt-3 text-lg text-on-surface-variant max-w-lg">
-            Platform yang dirancang khusus untuk kebutuhan pembelajaran PAI tingkat
-            SMP/MTs.
+            Platform Deep Learning yang dirancang khusus untuk pembelajaran
+            Akidah Akhlak tingkat SMP/MTs.
           </p>
         </div>
       </div>

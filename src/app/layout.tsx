@@ -34,11 +34,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: {
     template: "%s | Aggung Learning",
-    default: "Aggung Learning — Platform Pembelajaran PAI",
+    default: "Aggung Learning — Deep Learning Akidah Akhlak",
   },
   description:
-    "Platform pembelajaran Pendidikan Agama Islam untuk SMP/MTs Kelas 7-9. Materi interaktif, game edukasi, dan portal pendidik.",
-  keywords: ["PAI", "Pendidikan Agama Islam", "SMP", "MTs", "belajar islam", "aggung learning"],
+    "Platform Deep Learning untuk materi Akidah Akhlak tingkat SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berbasis Kurikulum Merdeka.",
+  keywords: ["Akidah Akhlak", "Deep Learning", "PAI", "SMP", "MTs", "Kurikulum Merdeka", "aggung learning"],
 };
 
 export default function RootLayout({

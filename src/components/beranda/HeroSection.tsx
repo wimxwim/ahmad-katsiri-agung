@@ -18,18 +18,19 @@ export function HeroSection() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
             </span>
-            Deep Learning PAI Platform
+            Deep Learning Akidah Akhlak
           </div>
 
           <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-tighter leading-none text-on-surface mb-6">
-            Menjadi Pribadi Berintegritas dengan Sifat{" "}
-            <span className="shimmer-text">Amanah</span> dan{" "}
-            <span className="shimmer-text">Jujur</span>
+            Model Pembelajaran Berbasis{" "}
+            <span className="shimmer-text">Deep Learning</span> pada Materi{" "}
+            <span className="shimmer-text">Akidah Akhlak</span>
           </h1>
 
           <p className="text-lg md:text-xl text-on-surface-variant leading-relaxed max-w-xl mb-10">
-            Menanamkan nilai-nilai luhur Islam melalui pengalaman belajar digital
-            yang interaktif, menyenangkan, dan bermakna untuk generasi masa depan.
+            Pembelajaran yang sadar (mindful), bermakna (meaningful), dan
+            menyenangkan (joyful) untuk mendalami nilai-nilai Akidah Akhlak
+            tingkat SMP/MTs.
           </p>
 
           <div className="flex flex-wrap items-center gap-4">

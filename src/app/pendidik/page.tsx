@@ -49,7 +49,7 @@ export default function PendidikPage() {
           colSpan="md:col-span-4"
           icon={Play}
           title="Video"
-          desc="Koleksi video pembelajaran PAI yang sinematik dan mudah dipahami."
+          desc="Koleksi video pembelajaran Akidah Akhlak yang sinematik dan mudah dipahami."
           badge="120+ Materi Visual"
           delay={0.15}
         />

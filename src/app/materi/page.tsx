@@ -52,15 +52,15 @@ export default function MateriPage() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
           </span>
-          Kurikulum Terpadu 2026
+          Kurikulum Merdeka
         </div>
 
         <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl tracking-tighter text-on-surface mb-4">
           Eksplorasi{" "}
-          <span className="text-primary italic font-semibold">Materi Islami</span>
+          <span className="text-primary italic font-semibold">Materi Akidah Akhlak</span>
         </h1>
         <p className="text-lg text-on-surface-variant max-w-2xl mx-auto">
-          Pelajari Pendidikan Agama Islam dengan materi mendalam untuk SMP/MTs
+          Pelajari Akidah Akhlak dengan pendekatan Deep Learning untuk SMP/MTs
           Kelas 7, 8, dan 9.
         </p>
       </motion.div>
