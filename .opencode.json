@@ -1,0 +1,11 @@
+{
+  "agent": {
+    "contextPaths": [
+      "~/agensi/playbook/docs/PROFIL_AGENSI.md",
+      "~/agensi/playbook/docs/00_SOP_EKSEKUSI_AI.md",
+      "~/agensi/playbook/docs/13_sop_desain_dan_approval.md",
+      "~/agensi/playbook/docs/16_design_md.md",
+      "~/agensi/proyek/ahmad-katsiri-agung/RINGKASAN_KLIEN.md"
+    ]
+  }
+}
