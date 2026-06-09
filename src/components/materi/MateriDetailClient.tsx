@@ -228,16 +228,35 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
         </div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
-        className="bg-glass backdrop-blur-2xl border border-border-precision p-4 rounded-3xl shadow-glass"
-      >
-        <div className="rounded-2xl overflow-hidden aspect-[4/3] bg-gradient-to-br from-primary/10 via-surface to-primary/5 flex items-center justify-center">
-          <BookOpen className="w-16 h-16 text-primary/30" aria-hidden="true" />
-        </div>
-      </motion.div>
+      {materi.videoUrl ? (
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+          className="bg-glass backdrop-blur-2xl border border-border-precision p-2 rounded-3xl shadow-glass overflow-hidden"
+        >
+          <div className="rounded-2xl overflow-hidden aspect-video">
+            <iframe
+              src={materi.videoUrl}
+              title={`Video: ${materi.title}`}
+              className="w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+          className="bg-glass backdrop-blur-2xl border border-border-precision p-4 rounded-3xl shadow-glass"
+        >
+          <div className="rounded-2xl overflow-hidden aspect-[4/3] bg-gradient-to-br from-primary/10 via-surface to-primary/5 flex items-center justify-center">
+            <BookOpen className="w-16 h-16 text-primary/30" aria-hidden="true" />
+          </div>
+        </motion.div>
+      )}
     </aside>
   );
 }
