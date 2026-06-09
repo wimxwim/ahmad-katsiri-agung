@@ -1,8 +1,342 @@
-# Context untuk Hermes Agent / Antigravity CLI — Project: Ahmad Katsiri Aggung
+# AGENTS.md — Project: Ahmad Katsiri Aggung (Aggung Learning)
 
-Sebelum melakukan apapun, baca dan patuhi seluruh instruksi di:
-- ~/agensi/playbook/docs/PROFIL_AGENSI.md
-- ~/agensi/playbook/docs/00_SOP_EKSEKUSI_AI.md
+> **BACA FILE INI DULU** sebelum mengerjakan apapun di project ini.
+> File ini adalah single-source-of-truth untuk AI yang bekerja di sesi ini.
 
-Setelah itu, baca file RINGKASAN_KLIEN.md di folder ini untuk
-detail lengkap klien yang sedang dikerjakan.
+---
+
+## KEJELASAN — Identitas Project
+
+| Aspek | Detail |
+|-------|--------|
+| **Nama Project** | Aggung Learning — Platform Pembelajaran PAI |
+| **Klien** | Ahmad Katsiri Aggung, S.Pd. — Pendidik PAI |
+| **Tema** | Model Pembelajaran Berbasis **Deep Learning** pada Materi **Akidah Akhlak** tingkat SMP/MTs |
+| **Kurikulum** | **Kurikulum Merdeka** (BUKAN "Kurikulum Terpadu 2026") |
+| **Model DL** | 3 Pilar: Mindful Learning → Meaningful Learning → Joyful Learning |
+| **Level** | SMP/MTs Kelas 7, 8, 9 |
+| **Target** | Siswa + Guru PAI |
+| **Domain** | Belum (masih pakai domain Vercel: `https://ahmad-katsiri-agung.vercel.app`) |
+| **Repo** | `https://github.com/wimxwim/ahmad-katsiri-agung` |
+| **Kontak klien** | WA 0851-5879-5502, IG @ahmadkatsiria, TikTok @sir.ahmd, YouTube: Ahmad Katsiri Agung |
+
+---
+
+## PENJELASAN — Arsitektur & Struktur
+
+### Stack Teknis
+
+| Layer | Pilihan | Versi |
+|-------|---------|-------|
+| Framework | Next.js (App Router) | 16.2.7 |
+| Bahasa | TypeScript | ^5 |
+| CSS | Tailwind CSS v4 | ^4 |
+| Animasi | motion (motion/react) | ^12.40.0 |
+| Smooth Scroll | lenis | ^1.3.23 |
+| Ikon | lucide-react | ^1.17.0 |
+| Font | Bricolage Grotesque (heading), Inter (body), Amiri (Quran) | Google Fonts via next/font |
+| Hosting | Vercel Hobby (gratis) | — |
+| Package Manager | npm | — |
+| Lainnya | clsx, tailwind-merge (via shadcn pattern) | — |
+
+### Design System
+
+**Warna (oklch equivalen di globals.css via @theme):**
+- Primary: `#005231` (hijau gelap premium)
+- On Primary: `#ffffff`
+- Primary Container: `#1b6b45`
+- Tertiary: `#5a4200` / `#775900` / gold accent (`#eec055` di shimmer)
+- Surface: `#f2fcf7` (putih kehijauan)
+- On Surface: `#141d1b`
+- Glass: `rgba(255,255,255,0.6)` dengan `backdrop-blur-2xl`
+- Border Precision: `rgba(27,107,69,0.15)`
+
+**Font:**
+- Heading: `--font-bricolage-grotesque` (semua h1-h4)
+- Body: `--font-inter` (paragraf, nav, tombol)
+- Quran: `--font-amiri` (teks arab, dalil)
+- Mono: `--font-jetbrains-mono`
+
+**Radius:**
+- sm: 0.25rem, md: 0.75rem, lg: 1rem, xl: 1.5rem
+- Tapi komponen sering pakai custom: rounded-[32px], rounded-[40px], rounded-[48px], rounded-[56px], rounded-[80px]
+
+**Key CSS Classes:**
+- `.shimmer-text` — efek gradien emas berkilau untuk teks utama
+- `.bg-glass` — glassmorphism dengan backdrop-blur-2xl
+- Shadow glass: `shadow-glass`, `shadow-glass-lg`, `shadow-glass-xl`
+
+**Animasi Pattern (WAJIB diikuti):**
+- Hero/heading: fade-up `initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }}`
+- Stagger grid: `variants` + `staggerChildren: 0.08` per item
+- Sidebar kiri: `x: -30`, sidebar kanan: `x: 30`
+- Ease curve universal: `[0.16, 1, 0.3, 1]` — **WAJIB `as const`** untuk TypeScript strict
+- Duration: 0.5–0.7 detik
+- delay: stagger 0.08–0.15
+- Semua scroll reveal pakai `whileInView` + `viewport={{ once: true }}` + `initial`/`animate`
+
+### Struktur Halaman
+
+```
+/                              → Beranda (HeroSection + FeatureGrid + DualCTACards + AyatBlock)
+/materi                        → Daftar semua bab, filter by kelas
+/materi/[slug]                 → Detail bab (konten, dalil, dimensi, poin penting, video, nav prev/next)
+/pendidik                      → Portal Pendidik (bento grid 4 fitur + statistik + CTA)
+/game                          → Game portal (3 card link game Canva eksternal)
+/tentang                       → Filosofi, pendiri, visi misi
+/peserta-didik                 → Placeholder "Segera Hadir"
+```
+
+### Struktur Komponen
+
+```
+src/
+├── app/
+│   ├── layout.tsx             → Root layout (fonts, metadata, Providers, Navbar, Footer, FloatingWA)
+│   ├── page.tsx               → Beranda (komposisi 4 section)
+│   ├── globals.css            → Tailwind v4 + @theme + custom CSS (shimmer, float, reduced motion)
+│   ├── favicon.ico
+│   ├── game/page.tsx          → 3 card link game eksternal
+│   ├── materi/
+│   │   ├── page.tsx           → Listing bab, filter kelas, stagger grid cards
+│   │   └── [slug]/page.tsx    → Server component, generateStaticParams, render MateriDetailClient
+│   ├── pendidik/page.tsx      → Portal Pendidik (4 feature cards + counter + CTA)
+│   ├── peserta-didik/page.tsx → Placeholder
+│   └── tentang/page.tsx       → Filosofi, pendiri, visi misi
+├── components/
+│   ├── beranda/
+│   │   ├── HeroSection.tsx    → Hero (badge DL, headline, deskripsi, 3 CTA buttons, card preview)
+│   │   ├── FeatureGrid.tsx    → 4 feature cards (Materi, Video, Game, Kuis) stagger grid
+│   │   ├── DualCTACards.tsx   → 2 cards (Dashboard Pengajar + Hub Siswa)
+│   │   └── AyatBlock.tsx      → Hadits HR. Muslim (bg hitam + gold) — baru diubah
+│   ├── layout/
+│   │   ├── Navbar.tsx         → Fixed top, hamburger mobile, 5 nav items
+│   │   ├── Footer.tsx         → 3 kolom (brand, navigasi, kontak sosial media)
+│   │   └── FloatingWA.tsx     → WA button fixed bottom-right
+│   ├── materi/
+│   │   └── MateriDetailClient.tsx → Full detail page (hero, sidebar, content, dalil, dimensi, video, nav pills)
+│   └── providers/
+│       └── Providers.tsx      → Lenis + MotionConfig
+├── data/
+│   └── materi.ts              → SEMUA data 9 bab (484 baris) — interface + content
+└── lib/
+    └── utils.ts               → cn() utility
+```
+
+### Data Materi (9 Bab)
+
+File `src/data/materi.ts` — interface + semua konten inline (bukan dari API/DB).
+
+| Slug | Kelas | Bab | Label | Video |
+|------|-------|-----|-------|-------|
+| `beriman-kepada-malaikat` | 7 | 1 | AKIDAH | ❌ |
+| `membiasakan-tabayyun-menjauhi-ghibah` | 7 | 2 | AKHLAK | ❌ |
+| `salat-mencegah-perbuatan-keji-dan-mungkar` | 7 | 3 | AKHLAK | ❌ |
+| `amanah-dan-jujur` | 8 | 1 | AKHLAK | ✅ YouTube |
+| `beriman-kepada-kitab-allah` | 8 | 2 | AKIDAH | ✅ YouTube |
+| `beriman-kepada-nabi-dan-rasul` | 8 | 3 | AKIDAH | ❌ |
+| `adab-dalam-islam` | 9 | 1 | AKHLAK | ❌ |
+| `beriman-kepada-hari-akhir` | 9 | 2 | AKIDAH | ❌ |
+| `beriman-kepada-qada-dan-qadar` | 9 | 3 | AKIDAH | ❌ |
+
+**Interface `BabMateri` — Field lengkap:**
+```typescript
+export interface BabMateri {
+  slug: string           // unique, jadi key di Record
+  title: string          // judul bab
+  kelas: 7 | 8 | 9       // untuk filter
+  bab: number            // urutan dalam kelas
+  babLabel: string       // "AKIDAH" | "AKHLAK"
+  ringkasan: string      // 1 kalimat
+  subTopik: number       // hitung manual
+  waktuBaca: string      // "5 MIN BACA"
+  icon: string           // emoji unicode
+  videoUrl?: string      // YouTube embed URL (https://www.youtube.com/embed/VIDEO_ID)
+  dalil?: { surah, arab, arti }
+  dimensi?: [{ nomor, judul, deskripsi }]  // 4 dimensi (Olah Hati/Rasa/Pikir/Raga)
+  poinPenting: string[]  // 4-6 poin
+  pendahuluan: string    // 1-2 kalimat
+  konten: [{ judul, isi }]  // array section
+  prevSlug?, prevTitle?, nextSlug?, nextTitle?  // navigasi berurutan
+}
+```
+
+**Data disimpan langsung di file** sebagai `Record<string, BabMateri>` — bukan dari API. Ini static site, Vercel Hobby gratis, tidak pakai database.
+
+### PDF Modul Ajar
+
+9 file PDF di `public/pdf/` — total 4.3 MB. Di-link dari halaman detail materi via tombol "Unduh PDF Ringkasan" di sidebar kanan.
+
+Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
+
+---
+
+## DAMPAK — Keputusan & Konsekuensi
+
+### ✅ Keputusan yang Sudah Diambil
+
+| Keputusan | Alasan | Dampak |
+|-----------|--------|--------|
+| **Repo Public** | Vercel Hobby gagal build dari repo private (beda commit author) | Semua file bisa dilihat publik. Tidak ada secret/API key di repo. |
+| **vercel.json** framework: nextjs | Vercel project dibuat sebelum push, framework terdeteksi null | Tanpa ini, deploy sukses tapi 404 semua halaman. |
+| **Static Site (no DB)** | Data di inline TS file, bukan API/DB | Build lebih cepat, deploy gratis, konten update harus edit file |
+| **videoUrl field** | Client punya channel YouTube, video embed langsung | Harus tambah field di interface + data + komponen. Template future-proof. |
+| **Game external links** | Canva tidak bisa di-iframe (X-Frame-Options: SAMEORIGIN) | Game buka tab baru, bukan embed. |
+| **AyatBlock bg hitam** | Nuansa hadits HR. Muslim lebih khidmat dengan black + gold | Perubahan CSS minor, efek visual signifikan. |
+| **3 pilar Deep Learning** | Arahan klien: Mindful → Meaningful → Joyful | Messaging di hero, metadata, feature grid, tentang diubah dari PAI ke DL Akidah Akhlak |
+| **No login page** | Instruksi klien | Semua konten publik, tidak ada autentikasi |
+| **Kurikulum Merdeka** | Koreksi klien: istilah "Kurikulum Terpadu 2026" salah | Harus konsisten di semua halaman materi |
+
+### ⚠️ Jebakan yang Pernah Terjadi (DOKUMENTASI PENTING)
+
+1. **Vercel + Private Repo:** Hobby plan tidak support private repo jika commit author berbeda dari Vercel owner. Fix: `gh repo edit wimxwim/ahmad-katsiri-agung --visibility public`
+2. **Vercel Framework Null:** Project dibuat sebelum push → framework auto-detection gagal. Fix: `vercel.json` dengan `{"framework": "nextjs"}`
+3. **motion `as const`:** TypeScript strict mode, array ease `[0.16, 1, 0.3, 1]` harus dikasih `as const`. Lupa → TS error.
+4. **Git config:** Git global user harus `wimxwim` — kalau beda, commit author mismatch dengan Vercel account.
+5. **Canva iframe:** Canva site set `X-Frame-Options: SAMEORIGIN` — tidak bisa diembed. Harus link external.
+
+---
+
+## EFFORT — Riwayat Pekerjaan
+
+### Sesi 1 (9 Juni 2026) — Inisialisasi & Build Awal
+**Effort: ~4-5 jam**
+- Setup Next.js 16.2.7 + Tailwind v4 + TypeScript
+- Design system: 28 warna, 4 font, 4 shadow, custom radius
+- Layout: Navbar (fixed, hamburger mobile), Footer, FloatingWA
+- Beranda: HeroSection, FeatureGrid (4 cards), DualCTACards, AyatBlock (bg hitam)
+- 3 placeholder pages: /game, /peserta-didik, /tentang
+- Portal Pendidik: bento grid (4 feature cards), counter, CTA
+
+### Sesi 2 (9 Juni 2026) — Data Materi & Konten
+**Effort: ~5-6 jam**
+- Interface `BabMateri` dirancang (16 field, nested objects)
+- 9 bab di-populate dari 9 PDF modul ajar
+- Total: 484 baris data, 9217 baris di commit pertama (`git diff --stat`)
+- Setiap bab: 5-8 sub-topik konten, dalil Quran (arab + arti), 4 dimensi, 4-6 poin penting
+- Navigasi prev/next antar bab berurutan per kelas
+
+### Sesi 3 (9 Juni 2026) — Detail Materi & PDF
+**Effort: ~2-3 jam**
+- Halaman `/materi/[slug]` — detail bab lengkap dengan hero, sidebar, konten, dalil, dimensi, poin penting, navigasi
+- 9 PDF modul ajar dicopy ke `public/pdf/` (total 4.3 MB)
+- Stitch HTML dari Downloads (untuk referensi, belum diintegrasi penuh)
+
+### Sesi 4 (9 Juni 2026) — Deploy & Jebakan
+**Effort: ~1 jam**
+- Git push + Vercel deploy pertama → 404
+- Debug: vercel.json → framework: nextjs → deploy sukses
+- Repo private → publik (karena Vercel Hobby limitation)
+- 18 halaman statis build sukses, semua 200 OK
+
+### Sesi 5 (9 Juni 2026) — Reframe & Kontak
+**Effort: ~1 jam**
+- Theme reframe: "PAI" → "Deep Learning Akidah Akhlak" (6 file berubah)
+- "Kurikulum Terpadu 2026" → "Kurikulum Merdeka"
+- Footer + FloatingWA: kontak real (WA, IG, TikTok, YouTube)
+- Playbook update: Vercel deploy pitfalls, Template 5, checklist deploy
+
+### Sesi 6 (9 Juni 2026) — Game & Video
+**Effort: ~1 jam**
+- Game page: dari "Segera Hadir" → 3 card link Canva eksternal
+- `videoUrl` field ditambah ke interface + data
+- 2 video YouTube embedded: Amanah & Jujur (kelas 8), Beriman kepada Kitab Allah (kelas 8)
+- AyatBlock: bg #05111d → black (#000000)
+
+---
+
+## Belum Selesai / Bisa Dilanjutkan
+
+| Item | Status | Effort Estimasi | Keterangan |
+|------|--------|-----------------|------------|
+| `untuk-pendidik/` — Pusat Komando | 🔲 Belum | 1-2 jam | Stitch HTML sudah ada di Downloads. Halaman resource grid untuk guru. |
+| `analisis-dalil/` — QS Al-Isra:34 | 🔲 Belum | 1 jam | 3 varian mobile sudah ada di stitch Downloads. |
+| `/peserta-didik` | 🔲 Placeholder | 30-60 menit | Ganti "Segera Hadir" — tanya klien mau isi apa |
+| PPT slide decks (9 file) | 🔲 Belum | 1 jam | Link di halaman materi masing-masing atau halaman terpisah |
+| Custom domain | 🔲 Belum | 30 menit | Klien beli domain → setup DNS Vercel |
+| Video bab lain (7 bab belum) | ⏳ Seadanya | 10 menit/video | Tunggu kiriman link YouTube dari klien |
+| Placeholder images | 🔲 Belum | 1-2 jam | Ganti gradient boxes dengan gambar/ilustrasi real |
+
+### Stitch Materials (Referensi untuk Halaman Baru)
+
+Lokasi: `/home/ngome/Downloads/stitch_aggung_learning_platform/`
+
+| Folder | Isi | Untuk Halaman |
+|--------|-----|--------------|
+| `modul-ajar/` | 9 PDF (sudah diproses ke materi.ts) | ✅ Selesai |
+| `ppt/` | 9 slide deck PDF | Belum diintegrasi |
+| `untuk_pendidik_.../` | HTML resource grid "Pusat Komando" | `untuk-pendidik/` |
+| `analisis_dalil_.../` | 3 varian mobile QS Al-Isra:34 | `analisis-dalil/` |
+
+---
+
+## Cara Menambahkan Video Baru
+
+1. Buka `src/data/materi.ts`
+2. Cari entry bab (misal `"adab-dalam-islam"`)
+3. Tambah baris: `videoUrl: "https://www.youtube.com/embed/VIDEO_ID",` (setelah `icon`)
+4. Format embed URL: `https://www.youtube.com/embed/` + VIDEO_ID (dari link youtube `watch?v=` atau `youtu.be/`)
+5. Build: `npx next build` → commit + push → `npx vercel --prod --yes`
+
+## Cara Deploy
+
+```bash
+git add -A
+git commit -m "deskripsi perubahan"
+git push origin main
+npx vercel --prod --yes
+```
+
+**PENTING:** Cek git config dulu: `git config --global user.name` harus `wimxwim`.
+**PENTING:** Jangan lupa `vercel.json` — file ini critical untuk framework detection.
+**PENTING:** Build dulu di lokal (`npx next build`) sebelum push — cek zero errors.
+
+## Environment & Config Files
+
+- `vercel.json` — `{"framework": "nextjs"}` (WAJIB, jangan hapus)
+- `package.json` — Next.js 16.2.7 pinned
+- `next.config.ts` — (tidak ada file terpisah? Cek di root)
+- `.gitignore` — standar Next.js
+- `tsconfig.json` — strict mode
+
+---
+
+## Warna & Font Reference Cepat
+
+```css
+/* Primary brand */
+--color-primary: #005231;        /* Hijau gelap */
+--color-tertiary: #5a4200;       /* Gold/coklat */
+--color-tertiary-container: #775900;
+
+/* Shimmer gold gradient */
+.shimmer-text {
+  background: linear-gradient(90deg, #eec055, #ffdf9b, #eec055, #ffdf9b);
+}
+
+/* Glass card formula */
+bg-glass = backdrop-blur-2xl + border border-border-precision + shadow-glass + rounded-[32px]
+```
+
+---
+
+## Catatan Khusus
+
+- **Tidak ada halaman login** — instruksi klien.
+- **Semua halaman statis** — tidak ada server component yang fetch data runtime.
+- **Mode production: static generation** — `generateStaticParams` untuk dynamic routes.
+- **Favicon:** masih default Next.js — belum diganti.
+- **Font:** Bricolage Grotesque untuk heading, Inter body, Amiri Quran — sudah di next/font dengan display:swap.
+- **MotionConfig** reducedMotion:"user" — menghormati preferensi aksesibilitas.
+- **WA number:** 6285158795502 (+6285) — di FloatingWA.tsx dan Footer.
+- **Sosial media:** IG @ahmadkatsiria, TikTok @sir.ahmd, YouTube "Ahmad Katsiri Agung".
+
+---
+
+## Trigger Prompt untuk AI Berikutnya
+
+```
+Lanjutkan project Aggung Learning. Baca file AGENTS.md di root folder
+project ini untuk detail lengkap. Cek STATUS dan apa yang perlu dikerjakan
+selanjutnya. Update file ini jika ada perubahan.
+```
