@@ -240,6 +240,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 6,
     waktuBaca: "5 MIN BACA",
     icon: "\uD83D\uDCD6",
+    videoUrl: "https://www.youtube.com/embed/DqBB96Ic6XU",
     pendahuluan: "Iman kepada kitab-kitab Allah adalah rukun iman ketiga. Allah menurunkan kitab-kitab kepada para nabi sebagai petunjuk bagi umat manusia. Empat kitab utama yang wajib diimani: Taurat, Zabur, Injil, dan Al-Qur'an.",
     konten: [
       {
