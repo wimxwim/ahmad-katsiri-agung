@@ -248,6 +248,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     icon: "\uD83D\uDCD6",
     videoUrl: "https://www.youtube.com/embed/DqBB96Ic6XU",
     soalUrl: "/pdf/beriman-kepada-kitab-allah-soal.pdf",
+    gameUrl: "https://jujurdanamanah.my.canva.site/beriman-kepada-kitab-kitab-allah-swt",
     pendahuluan: "Iman kepada kitab-kitab Allah adalah rukun iman ketiga. Allah menurunkan kitab-kitab kepada para nabi sebagai petunjuk bagi umat manusia. Empat kitab utama yang wajib diimani: Taurat, Zabur, Injil, dan Al-Qur'an.",
     konten: [
       {

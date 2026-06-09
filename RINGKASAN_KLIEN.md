@@ -47,6 +47,7 @@
 |---------|--------|
 | 2026-06-09 | Sesi 1-6: Full build platform. Lihat AGENTS.md untuk kronologi detail. |
 | 2026-06-09 | Sesi 7: Mengganti logo Vercel (segitiga putih) dengan logo PAI (SVG, PNG, ICO, Open Graph preview) serta mengintegrasikan logo ke Navbar, Footer, dan Hero. |
+| 2026-06-09 | Sesi 8: Tambah tombol & file PPT slide deck (9 file), Naskah Soal (8 file), Vercel Analytics, tombol Kirim Saran via WA di detail materi, dan game Jujur dan Amanah. Update RINGKASAN_KLIEN.md dengan panduan penambahan game, materi, dan video. |
 
 ---
 
@@ -93,7 +94,144 @@ npx vercel --prod --yes
 
 ---
 
-## Trigger Prompt — Tempel Ini ke AI
+## Panduan Menambahkan Game Baru
+
+> Klien (Ahmad Katsiri Agung, S.Pd.) dapat mengirimkan link game Canva kapan saja.
+> Ikuti langkah ini untuk menambahkannya ke website.
+
+### 1. Tambah ke Halaman Game
+Buka file `src/app/game/page.tsx`, cari array `GAMES`, lalu tambah objek baru:
+```typescript
+{
+  title: "Nama Game",
+  desc: "Deskripsi singkat game.",
+  url: "https://namagame.my.canva.site/",
+  badge: "EKSTERNAL",
+},
+```
+- Simpan di urutan yang diinginkan (paling baru biasanya ditaruh paling atas)
+- URL adalah link Canva yang dikirim klien
+
+### 2. (Opsional) Tautkan ke Materi Terkait
+Kalau game berhubungan dengan salah satu dari 9 bab materi:
+1. Buka `src/data/materi.ts`
+2. Cari entry bab yang sesuai (misal `"amanah-dan-jujur"`)
+3. Tambah field `gameUrl: "https://namagame.my.canva.site/",`
+   (letakkan setelah `soalUrl` atau `videoUrl`)
+4. Otomatis card "Game Terkait" akan muncul di sidebar halaman detail materi
+
+### 3. Deploy
+```bash
+npm run build
+git add -A
+git commit -m "feat: tambah game [nama game]"
+git push origin main
+npx vercel --prod --yes
+```
+
+---
+
+## Panduan Menambahkan Materi / Bab Baru
+
+> Saat ini ada 9 bab (Kelas 7: 3 bab, Kelas 8: 3 bab, Kelas 9: 3 bab).
+> Jika klien ingin menambah bab baru, ikuti langkah ini.
+
+### 1. Siapkan File PDF
+Letakkan di `public/pdf/` dengan format nama:
+- `public/pdf/{slug-bab}.pdf` — Modul Ajar
+- `public/pdf/{slug-bab}-ppt.pdf` — Slide PPT (opsional)
+- `public/pdf/{slug-bab}-soal.pdf` — Naskah Soal (opsional)
+
+Contoh: `public/pdf/adab-dalam-islam.pdf`, `adab-dalam-islam-ppt.pdf`, dll.
+
+### 2. Buka `src/data/materi.ts`
+a. Tidak perlu ubah interface (sudah siap)
+b. Tambah entry baru di `ALL_MATERI`. Format:
+```typescript
+"slug-bab": {
+  slug: "slug-bab",
+  title: "Judul Bab",
+  kelas: 7, // atau 8, 9
+  bab: 4,   // urutan dalam kelas
+  babLabel: "AKIDAH", // atau "AKHLAK"
+  ringkasan: "Satu kalimat ringkasan.",
+  subTopik: 5,  // jumlah sub-topik
+  waktuBaca: "5 MIN BACA",
+  icon: "\uD83D\uDCD6", // emoji unicode
+  videoUrl: "https://www.youtube.com/embed/VIDEO_ID", // opsional
+  soalUrl: "/pdf/slug-bab-soal.pdf", // opsional
+  gameUrl: "https://...", // opsional
+  pendahuluan: "Kalimat pembuka bab.",
+  konten: [
+    { judul: "Sub Topik 1", isi: "Isi paragraf..." },
+    { judul: "Sub Topik 2", isi: "Isi paragraf..." },
+  ],
+  dalil: { // opsional
+    surah: "QS. Nama [ayat]: nomor",
+    arab: "teks arab...",
+    arti: "Terjemahan...",
+  },
+  dimensi: [ // opsional — 3-4 dimensi
+    { nomor: 1, judul: "Judul Dimensi", deskripsi: "Deskripsi..." },
+  ],
+  poinPenting: [
+    "Poin penting 1",
+    "Poin penting 2",
+  ],
+  // navigasi berurutan dalam satu kelas
+  prevSlug: "slug-bab-sebelumnya",
+  prevTitle: "Judul Bab Sebelumnya",
+  nextSlug: "slug-bab-setelahnya",
+  nextTitle: "Judul Bab Setelahnya",
+}
+```
+
+### 3. Halaman Baru Otomatis Tergenerate
+- Next.js akan membuat halaman `/materi/{slug-bab}` secara otomatis saat build
+- Tidak perlu buat file halaman baru
+
+### 4. (Opsional) Update Navbar Jika Perlu
+Jika ada kelas baru (misal Kelas 10), buka `src/components/layout/Navbar.tsx` dan tambah filter kelas baru.
+
+### 5. Deploy
+```bash
+npm run build
+git add -A
+git commit -m "feat: tambah bab [judul bab]"
+git push origin main
+npx vercel --prod --yes
+```
+
+---
+
+## Panduan Menambahkan Video YouTube
+
+1. Buka `src/data/materi.ts`
+2. Cari entry bab (misal `"adab-dalam-islam"`)
+3. Tambah/sunting field: `videoUrl: "https://www.youtube.com/embed/VIDEO_ID"`
+   - VIDEO_ID: dari link YouTube (`watch?v=` atau `youtu.be/`)
+   - Contoh: `https://www.youtube.com/embed/QHZGZ5m7kV0`
+4. Letakkan setelah field `icon`
+5. Deploy seperti biasa
+
+---
+
+## Perintah Deploy Cepat
+
+```bash
+npm run build                    # 1. Tes build
+git add -A                       # 2. Stage semua perubahan
+git commit -m "pesan perubahan"  # 3. Commit
+git push origin main             # 4. Push ke GitHub
+npx vercel --prod --yes          # 5. Deploy ke Vercel
+```
+
+> ⚠️ Pastikan `git config --global user.name` adalah `wimxwim`
+> ⚠️ Jangan hapus file `vercel.json`
+
+---
+
+## Catatan & Log Update (Riwayat Pengerjaan)
 
 ```
 Lanjutkan project Aggung Learning. Baca file AGENTS.md dan RINGKASAN_KLIEN.md

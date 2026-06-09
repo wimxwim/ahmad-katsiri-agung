@@ -12,6 +12,12 @@ const GAMES = [
     badge: "EKSTERNAL",
   },
   {
+    title: "Game Kitab Allah SWT",
+    desc: "Game interaktif mengenal kitab-kitab Allah SWT untuk siswa SMP/MTs.",
+    url: "https://jujurdanamanah.my.canva.site/beriman-kepada-kitab-kitab-allah-swt",
+    badge: "EKSTERNAL",
+  },
+  {
     title: "Game PAI Interaktif",
     desc: "Game pembelajaran PAI interaktif dari berbagai sumber edukasi.",
     url: "https://jurnalramadhansdnkebonkacang05.my.canva.site/aplikasi-tanpa-judul",
