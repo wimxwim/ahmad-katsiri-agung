@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWA } from "@/components/layout/FloatingWA";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const bricolageGrotesque = Bricolage_Grotesque({
@@ -61,6 +62,7 @@ export default function RootLayout({
           <FloatingWA />
         </Providers>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
