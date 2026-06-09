@@ -50,7 +50,46 @@ export function Footer() {
             </h4>
             <ul className="space-y-3 text-sm text-on-surface-variant">
               <li>Ahmad Katsiri Aggung, S.Pd.</li>
-              <li>Jl. Pendidikan No. 123, Indonesia</li>
+              <li>
+                <a
+                  href="https://wa.me/6285158795502"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary transition-colors"
+                >
+                  WA: 0851-5879-5502
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://instagram.com/ahmadkatsiria"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary transition-colors"
+                >
+                  IG: @ahmadkatsiria
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://tiktok.com/@sir.ahmd"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary transition-colors"
+                >
+                  TikTok: @sir.ahmd
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://youtube.com/@ahmadkatsiriagung"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary transition-colors"
+                >
+                  YouTube: Ahmad Katsiri Agung
+                </a>
+              </li>
             </ul>
           </div>
         </div>
