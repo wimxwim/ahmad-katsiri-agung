@@ -2,9 +2,12 @@ import Link from "next/link";
 
 const FOOTER_LINKS = [
   { href: "/", label: "Beranda" },
-  { href: "/pendidik", label: "Pendidik" },
   { href: "/materi", label: "Materi" },
+  { href: "/hafalan", label: "Hafalan Dalil" },
+  { href: "/video", label: "Video" },
+  { href: "/evaluasi", label: "Kuis" },
   { href: "/game", label: "Game Edukasi" },
+  { href: "/pendidik", label: "Pendidik" },
   { href: "/tentang", label: "Tentang Kami" },
 ];
 

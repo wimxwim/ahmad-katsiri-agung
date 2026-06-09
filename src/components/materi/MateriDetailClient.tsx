@@ -164,6 +164,16 @@ function ContentArea({ materi }: { materi: BabMateri }) {
                   &ldquo;{materi.dalil.arti}&rdquo;
                 </p>
               </div>
+
+              <div className="mt-8 text-center">
+                <Link
+                  href="/hafalan"
+                  className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
+                >
+                  <BookOpen className="w-4 h-4" aria-hidden="true" />
+                  Hafalkan Dalil Ini
+                </Link>
+              </div>
             </div>
           )}
 
