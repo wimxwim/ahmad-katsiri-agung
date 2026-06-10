@@ -16,13 +16,13 @@ export default function AnalisisDalilPage() {
   const [refleksi, setRefleksi] = useState("");
 
   return (
-    <div className="max-w-[480px] mx-auto px-4 md:px-6 pt-20 pb-32">
+    <div className="max-w-[480px] mx-auto px-3 sm:px-4 md:px-6 pt-20 pb-24 sm:pb-32">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
-        className="sticky top-0 z-40 -mx-4 md:-mx-6 px-4 md:px-6 py-4 backdrop-blur-md bg-surface/60 flex items-center justify-between mb-6"
+        className="sticky top-0 z-40 -mx-3 sm:-mx-4 md:-mx-6 px-3 sm:px-4 md:px-6 py-4 backdrop-blur-md bg-surface/60 flex items-center justify-between mb-6"
       >
         <Link
           href="/materi/amanah-dan-jujur"
@@ -43,10 +43,10 @@ export default function AnalisisDalilPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] as const }}
         >
-          <div className="bg-glass backdrop-blur-2xl border border-border-precision p-8 rounded-[32px] shadow-glass relative overflow-hidden">
+          <div className="bg-glass backdrop-blur-2xl border border-border-precision p-5 sm:p-8 rounded-2xl sm:rounded-[32px] shadow-glass relative overflow-hidden">
             <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl" />
-            <div className="space-y-8">
-              <p className="font-quran text-3xl md:text-4xl leading-[2.2] text-primary-container text-right" dir="rtl">
+      <div className="space-y-6 sm:space-y-8">
+              <p className="font-quran text-2xl sm:text-3xl md:text-4xl leading-[2.2] text-primary-container text-right" dir="rtl">
                 ...وَأَوْفُوا۟ بِٱلْعَهْدِ ۖ إِنَّ ٱلْعَهْدَ كَانَ مَسْـُٔولًا
               </p>
               <div className="space-y-3">
@@ -67,7 +67,7 @@ export default function AnalisisDalilPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] as const }}
         >
-          <div className="bg-glass backdrop-blur-2xl border border-border-precision p-6 rounded-[24px] shadow-glass flex items-center gap-6">
+          <div className="bg-glass backdrop-blur-2xl border border-border-precision p-5 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-glass flex items-center gap-4 sm:gap-6">
             <button
               onClick={() => setPlaying(!playing)}
               className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white shadow-lg active:scale-95 transition-transform"
@@ -129,7 +129,7 @@ export default function AnalisisDalilPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
         >
-          <div className="bg-glass backdrop-blur-2xl border border-border-precision p-6 rounded-[24px] shadow-glass space-y-4">
+          <div className="bg-glass backdrop-blur-2xl border border-border-precision p-5 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-glass space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                 <BookOpen className="w-5 h-5" aria-hidden="true" />
@@ -151,8 +151,8 @@ export default function AnalisisDalilPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
         >
-          <div className="bg-gradient-to-br from-primary to-primary-container p-[1px] rounded-[24px]">
-            <div className="bg-white/90 backdrop-blur-xl p-6 rounded-[23px] space-y-6">
+          <div className="bg-gradient-to-br from-primary to-primary-container p-[1px] rounded-2xl sm:rounded-[24px]">
+            <div className="bg-white/90 backdrop-blur-xl p-5 sm:p-6 rounded-2xl sm:rounded-[23px] space-y-5 sm:space-y-6">
               <div className="space-y-2">
                 <span className="px-3 py-1 rounded-full bg-tertiary-fixed-dim/20 text-tertiary text-[10px] font-bold tracking-[0.2em] uppercase">
                   Refleksi Diri

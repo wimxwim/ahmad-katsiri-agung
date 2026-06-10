@@ -76,13 +76,13 @@ const itemVariants = {
 
 export function FeatureGrid() {
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-8 py-16 md:py-32">
-      <div className="flex items-end justify-between mb-16">
+    <section className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 py-12 sm:py-16 md:py-32">
+      <div className="flex items-end justify-between mb-10 sm:mb-16">
         <div>
-          <h2 className="font-heading text-4xl md:text-5xl tracking-tighter text-on-surface">
+          <h2 className="font-heading text-2xl sm:text-4xl lg:text-5xl tracking-tighter text-on-surface">
             Ekosistem Belajar Digital
           </h2>
-          <p className="mt-3 text-lg text-on-surface-variant max-w-lg">
+          <p className="mt-3 text-sm sm:text-base text-on-surface-variant max-w-lg">
             Platform Deep Learning yang dirancang khusus untuk pembelajaran
             Akidah Akhlak tingkat SMP/MTs.
           </p>
@@ -94,13 +94,13 @@ export function FeatureGrid() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="grid grid-cols-1 md:grid-cols-12 gap-6"
+        className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6"
       >
         {features.map((f) => (
           <motion.div
             key={f.title}
             variants={itemVariants}
-            className={`${f.colSpan} group relative bg-glass backdrop-blur-2xl border border-border-precision p-8 md:p-10 rounded-[40px] shadow-glass hover:-translate-y-2 transition-transform duration-500 ${
+            className={`${f.colSpan} group relative bg-glass backdrop-blur-2xl border border-border-precision p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[40px] shadow-glass hover:-translate-y-2 transition-transform duration-500 ${
               f.gradient ? "bg-gradient-to-b from-white/30 to-primary/5" : ""
             }`}
           >
@@ -111,7 +111,7 @@ export function FeatureGrid() {
                 <f.icon className="w-7 h-7 text-primary" aria-hidden="true" />
               </div>
 
-              <h3 className="font-heading text-2xl md:text-3xl font-semibold text-on-surface mb-3">
+              <h3 className="font-heading text-xl sm:text-2xl md:text-3xl font-semibold text-on-surface mb-3">
                 {f.title}
               </h3>
               <p className="text-on-surface-variant leading-relaxed mb-6">

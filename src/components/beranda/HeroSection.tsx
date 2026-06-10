@@ -6,7 +6,7 @@ import { BookOpen, Gamepad2, ArrowRight } from "lucide-react";
 
 export function HeroSection() {
   return (
-    <section className="relative max-w-[1280px] mx-auto px-4 md:px-8 mt-24 md:mt-40">
+    <section className="relative max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 mt-20 sm:mt-24 md:mt-40">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -21,13 +21,13 @@ export function HeroSection() {
             Deep Learning Akidah Akhlak
           </div>
 
-          <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl xl:text-7xl tracking-tighter leading-none text-on-surface mb-6">
+          <h1 className="font-heading text-3xl sm:text-4xl lg:text-6xl xl:text-7xl tracking-tighter leading-none text-on-surface mb-6">
             Model Pembelajaran Berbasis{" "}
             <span className="shimmer-text">Deep Learning</span> pada Materi{" "}
             <span className="shimmer-text">Akidah Akhlak</span>
           </h1>
 
-          <p className="text-lg md:text-xl text-on-surface-variant leading-relaxed max-w-xl mb-10">
+          <p className="text-sm sm:text-base md:text-xl text-on-surface-variant leading-relaxed max-w-xl mb-8 sm:mb-10">
             Pembelajaran yang sadar (mindful), bermakna (meaningful), dan
             menyenangkan (joyful) untuk mendalami nilai-nilai Akidah Akhlak
             tingkat SMP/MTs.
@@ -36,21 +36,21 @@ export function HeroSection() {
           <div className="flex flex-wrap items-center gap-4">
             <Link
               href="/materi"
-              className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-2xl font-semibold shadow-2xl shadow-primary/20 hover:-translate-y-1 active:scale-[0.98] transition-transform duration-300"
+              className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold shadow-2xl shadow-primary/20 hover:-translate-y-1 active:scale-[0.98] transition-transform duration-300"
             >
               <BookOpen className="w-5 h-5" aria-hidden="true" />
               Mulai Belajar
             </Link>
             <Link
               href="/materi"
-              className="inline-flex items-center gap-2 bg-glass backdrop-blur-md border border-glass-stroke text-primary px-8 py-4 rounded-2xl font-semibold hover:bg-white/60 active:scale-[0.98] transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-glass backdrop-blur-md border border-glass-stroke text-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:bg-white/60 active:scale-[0.98] transition-all duration-300"
             >
               Jelajahi Materi
               <ArrowRight className="w-5 h-5" aria-hidden="true" />
             </Link>
             <Link
               href="/game"
-              className="inline-flex items-center gap-2 bg-tertiary-container text-on-tertiary px-8 py-4 rounded-2xl font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-tertiary-container text-on-tertiary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
             >
               <Gamepad2 className="w-5 h-5" aria-hidden="true" />
               Mainkan Game
@@ -66,7 +66,7 @@ export function HeroSection() {
         >
           <div className="absolute -inset-10 bg-primary/5 blur-[120px] rounded-full" />
 
-          <div className="relative bg-glass backdrop-blur-2xl border border-border-precision p-4 rounded-[48px] shadow-glass-lg">
+          <div className="relative bg-glass backdrop-blur-2xl border border-border-precision p-3 sm:p-4 rounded-[32px] sm:rounded-[48px] shadow-glass-lg">
             <div className="min-h-[280px] rounded-[40px] bg-gradient-to-br from-primary/10 via-surface to-primary/5 flex items-center justify-center overflow-hidden">
               <div className="text-center p-8">
                 <div className="w-20 md:w-28 h-20 md:h-28 mx-auto mb-4 flex items-center justify-center">

@@ -1,5 +1,8 @@
 "use client";
 
+"use client";
+
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import {
@@ -9,11 +12,13 @@ import {
   Terminal,
   ArrowRight,
   Plus,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
 
 export default function PendidikPage() {
   return (
-    <div className="max-w-[1280px] mx-auto px-4 md:px-8 pt-20 md:pt-32 pb-16 md:pb-32">
+    <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 md:pt-32 pb-16 md:pb-32">
       <motion.header
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -24,17 +29,17 @@ export default function PendidikPage() {
           PORTAL PENDIDIK V.2.6
         </div>
 
-        <h1 className="font-heading text-5xl md:text-7xl lg:text-8xl tracking-tighter text-on-surface leading-none mb-8">
+        <h1 className="font-heading text-3xl sm:text-5xl lg:text-8xl tracking-tighter text-on-surface leading-none mb-8">
           Pusat Instrumen Akademik.
         </h1>
 
-        <p className="text-lg md:text-xl text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
+        <p className="text-sm sm:text-base md:text-xl text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
           Platform futuristik yang dirancang untuk mempermudah manajemen
           pembelajaran. Minimalis, efisien, dan tanpa hambatan visual.
         </p>
       </motion.header>
 
-      <section className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8 md:auto-rows-[280px] mb-32">
+      <section className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6 md:gap-8 md:auto-rows-[280px] mb-24 sm:mb-32">
         <FeatureCard
           colSpan="md:col-span-8"
           icon={BookOpen}
@@ -68,13 +73,13 @@ export default function PendidikPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
-          className="md:col-span-8 group bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[42px_18px_42px_18px] p-10 flex flex-col md:flex-row items-center gap-8 md:gap-12 shadow-glass hover:-translate-y-2 transition-transform duration-500"
+          className="md:col-span-8 group bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[42px_18px_42px_18px] p-6 sm:p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 md:gap-12 shadow-glass hover:-translate-y-2 transition-transform duration-500"
         >
           <div className="flex-1">
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
               <Terminal className="w-7 h-7 text-primary" aria-hidden="true" />
             </div>
-            <h3 className="font-heading text-3xl md:text-4xl text-on-surface mb-4">
+            <h3 className="font-heading text-xl sm:text-3xl md:text-4xl text-on-surface mb-4">
               Perangkat
             </h3>
             <p className="text-on-surface-variant leading-relaxed mb-6">
@@ -102,7 +107,7 @@ export default function PendidikPage() {
         </motion.div>
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 border-t border-primary/10 pt-16 md:pt-24 mb-32">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8 md:gap-12 border-t border-primary/10 pt-12 sm:pt-16 md:pt-24 mb-24 sm:mb-32">
         {[
           { value: "98%", label: "EFISIENSI WAKTU" },
           { value: "12K+", label: "GURU AKTIF" },
@@ -116,7 +121,7 @@ export default function PendidikPage() {
             transition={{ duration: 0.5, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] as const }}
             className="text-center"
           >
-            <p className="font-heading text-5xl md:text-7xl text-primary mb-2">
+            <p className="font-heading text-3xl sm:text-5xl md:text-7xl text-primary mb-2">
               {stat.value}
             </p>
             <p className="text-xs font-bold tracking-[0.1em] text-on-surface-variant">
@@ -126,18 +131,22 @@ export default function PendidikPage() {
         ))}
       </section>
 
+      <section className="mb-24 sm:mb-32">
+        <RekapSection />
+      </section>
+
       <motion.section
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
-        className="relative bg-primary-container rounded-[42px_18px_42px_18px] p-12 md:p-20 overflow-hidden text-center"
+        className="relative bg-primary-container rounded-[42px_18px_42px_18px] p-8 sm:p-12 md:p-20 overflow-hidden text-center"
       >
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/10 blur-[120px] rounded-full -mr-32 -mt-32 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[250px] h-[250px] bg-primary-fixed-dim/20 blur-[100px] rounded-full -ml-16 -mb-16 pointer-events-none" />
 
         <div className="relative">
-          <h2 className="font-heading text-4xl md:text-5xl text-white mb-6">
+          <h2 className="font-heading text-2xl sm:text-4xl md:text-5xl text-white mb-6">
             Siap Memulai Transformasi?
           </h2>
           <p className="text-white/70 text-lg max-w-xl mx-auto mb-10">
@@ -188,7 +197,7 @@ function FeatureCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] as const }}
-      className={`${colSpan} group bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[42px_18px_42px_18px] p-10 flex flex-col justify-between shadow-glass hover:-translate-y-2 transition-transform duration-500 relative overflow-hidden`}
+      className={`${colSpan} group bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[42px_18px_42px_18px] p-6 sm:p-8 md:p-10 flex flex-col justify-between shadow-glass hover:-translate-y-2 transition-transform duration-500 relative overflow-hidden`}
     >
       <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-primary/5 blur-3xl rounded-full group-hover:opacity-100 opacity-50 transition-opacity pointer-events-none" />
 
@@ -211,10 +220,10 @@ function FeatureCard({
           </span>
         )}
 
-        <h3 className="font-heading text-2xl md:text-3xl text-on-surface mb-2">
+        <h3 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-2">
           {title}
         </h3>
-        <p className="text-base md:text-base text-on-surface-variant leading-relaxed">
+        <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
           {desc}
         </p>
       </div>
@@ -225,5 +234,106 @@ function FeatureCard({
         </span>
       )}
     </motion.div>
+  );
+}
+
+function RekapSection() {
+  const [rekap, setRekap] = useState<
+    { nama: string; kelas: string; status: string; skor: string; tanggal: string }[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/kuis/rekap")
+      .then((r) => r.json())
+      .then((data) => {
+        setRekap(data.rekap || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const belum = rekap.filter((r) => r.status === "belum");
+  const sudah = rekap.filter((r) => r.status === "sudah");
+
+  return (
+    <div>
+      <div className="text-center mb-10">
+        <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl text-on-surface mb-2">
+          Rekap Nilai Siswa
+        </h2>
+        <p className="text-sm text-on-surface-variant">
+          {loading
+            ? "Memuat data..."
+            : `${sudah.length} dari ${rekap.length} siswa telah mengerjakan kuis`}
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-sm text-on-surface-variant">Memuat data...</p>
+        </div>
+      ) : rekap.length === 0 ? (
+        <div className="text-center py-12 bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl p-10">
+          <p className="text-sm text-on-surface-variant">
+            Belum ada data. Pastikan Google Sheets sudah terhubung dan siswa sudah login.
+          </p>
+        </div>
+      ) : (
+        <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] overflow-hidden shadow-glass">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border-precision bg-primary/5">
+                  <th className="text-left px-4 sm:px-6 py-4 font-semibold text-on-surface">Nama</th>
+                  <th className="text-left px-4 sm:px-6 py-4 font-semibold text-on-surface">Kelas</th>
+                  <th className="text-center px-4 sm:px-6 py-4 font-semibold text-on-surface">Status</th>
+                  <th className="text-center px-4 sm:px-6 py-4 font-semibold text-on-surface">Skor</th>
+                  <th className="text-right px-4 sm:px-6 py-4 font-semibold text-on-surface">Tanggal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rekap.map((row, i) => (
+                  <tr
+                    key={row.nama + i}
+                    className="border-b border-border-precision/50 hover:bg-white/40 transition-colors"
+                  >
+                    <td className="px-4 sm:px-6 py-4 text-on-surface font-medium">{row.nama}</td>
+                    <td className="px-4 sm:px-6 py-4 text-on-surface-variant">{row.kelas}</td>
+                    <td className="px-4 sm:px-6 py-4 text-center">
+                      {row.status === "sudah" ? (
+                        <span className="inline-flex items-center gap-1 text-green-600 text-xs font-semibold">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Sudah
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-red-400 text-xs font-semibold">
+                          <XCircle className="w-4 h-4" />
+                          Belum
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 sm:px-6 py-4 text-center font-semibold text-on-surface">
+                      {row.skor}
+                    </td>
+                    <td className="px-4 sm:px-6 py-4 text-right text-on-surface-variant text-xs">
+                      {row.tanggal}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {!loading && belum.length > 0 && (
+        <div className="mt-6 text-center">
+          <p className="text-xs text-on-surface-variant">
+            {belum.length} siswa belum mengerjakan. Ingatkan via grup WhatsApp atau tatap muka.
+          </p>
+        </div>
+      )}
+    </div>
   );
 }

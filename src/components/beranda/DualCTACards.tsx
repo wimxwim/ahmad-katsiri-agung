@@ -19,17 +19,17 @@ const cardVariants = {
 
 export function DualCTACards() {
   return (
-    <section className="max-w-[1280px] mx-auto px-4 md:px-8 py-16 md:py-32">
+    <section className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 py-12 sm:py-16 md:py-32">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8"
       >
         <motion.div
           variants={cardVariants}
-          className="group relative bg-[#003820] rounded-[56px] p-10 md:p-14 overflow-hidden hover:scale-[1.01] transition-transform duration-500"
+          className="group relative bg-[#003820] rounded-[32px] sm:rounded-[56px] p-6 sm:p-10 md:p-14 overflow-hidden hover:scale-[1.01] transition-transform duration-500"
         >
           <div className="absolute -right-32 -top-32 w-80 h-80 bg-primary-fixed/10 blur-[100px] rounded-full pointer-events-none" />
 
@@ -38,7 +38,7 @@ export function DualCTACards() {
               DASHBOARD PENGAJAR
             </span>
 
-            <h2 className="font-heading text-4xl md:text-5xl tracking-tighter text-white leading-none mb-8">
+            <h2 className="font-heading text-2xl sm:text-4xl md:text-5xl tracking-tighter text-white leading-none mb-8">
               Berdayakan Pengajaran Anda
             </h2>
 
@@ -59,7 +59,7 @@ export function DualCTACards() {
 
             <Link
               href="/pendidik"
-              className="inline-flex items-center gap-2 bg-white text-primary px-8 py-4 rounded-2xl font-semibold hover:brightness-95 active:scale-[0.98] transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-white text-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:brightness-95 active:scale-[0.98] transition-all duration-300"
             >
               MASUK DASHBOARD
               <ArrowRight className="w-5 h-5" aria-hidden="true" />
@@ -69,7 +69,7 @@ export function DualCTACards() {
 
         <motion.div
           variants={cardVariants}
-          className="group relative bg-[#001d35] rounded-[56px] p-10 md:p-14 overflow-hidden hover:scale-[1.01] transition-transform duration-500"
+          className="group relative bg-[#001d35] rounded-[32px] sm:rounded-[56px] p-6 sm:p-10 md:p-14 overflow-hidden hover:scale-[1.01] transition-transform duration-500"
         >
           <div className="absolute -right-32 -bottom-32 w-80 h-80 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
 
@@ -78,7 +78,7 @@ export function DualCTACards() {
               HUB SISWA
             </span>
 
-            <h2 className="font-heading text-4xl md:text-5xl tracking-tighter text-white leading-none mb-8">
+            <h2 className="font-heading text-2xl sm:text-4xl md:text-5xl tracking-tighter text-white leading-none mb-8">
               Petualangan Belajar Menanti
             </h2>
 
@@ -99,7 +99,7 @@ export function DualCTACards() {
 
             <Link
               href="/peserta-didik"
-              className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-2xl font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
             >
               GABUNG SEKARANG
               <ArrowRight className="w-5 h-5" aria-hidden="true" />

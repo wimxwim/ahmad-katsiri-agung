@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   CheckCircle2,
@@ -12,9 +12,10 @@ import {
   BookOpen,
 } from "lucide-react";
 import Link from "next/link";
+import { QuizLogin } from "@/components/evaluasi/QuizLogin";
 import type { SoalItem, BabSoal } from "@/data/soal";
 
-type QuizState = "intro" | "playing" | "result";
+type QuizState = "login" | "intro" | "playing" | "result";
 
 const letterMap = ["A", "B", "C", "D", "E"];
 
@@ -28,16 +29,64 @@ function shuffleArray<T>(arr: T[]): T[] {
 }
 
 export function QuizEngine({ bab }: { bab: BabSoal }) {
-  const [quizState, setQuizState] = useState<QuizState>("intro");
+  const [quizState, setQuizState] = useState<QuizState>("login");
+  const [loginData, setLoginData] = useState<{
+    namaSiswa: string;
+    kelas: string;
+    status: "resmi" | "latihan";
+  } | null>(null);
   const [shuffledSoal, setShuffledSoal] = useState<SoalItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [jawaban, setJawaban] = useState<Record<number, string>>({});
   const [selected, setSelected] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showReview, setShowReview] = useState(false);
+  const submittedRef = useRef(false);
 
   const soal = shuffledSoal[currentIndex];
   const totalSoal = shuffledSoal.length;
+
+  const handleLogin = useCallback(
+    (data: { namaSiswa: string; kelas: string; status: "resmi" | "latihan" }) => {
+      setLoginData(data);
+      setQuizState("intro");
+    },
+    []
+  );
+
+  const submitHasil = useCallback(async () => {
+    if (submittedRef.current || !loginData) return;
+    submittedRef.current = true;
+
+    const jawabanSalah = shuffledSoal
+      .filter((s) => jawaban[s.nomor] !== s.jawaban)
+      .map((s) => ({
+        nomor: s.nomor,
+        pertanyaan: s.pertanyaan,
+        jawabanSiswa: `${jawaban[s.nomor]} (${s.opsi[jawaban[s.nomor]] || ""})`,
+        kunciJawaban: `${s.jawaban} (${s.opsi[s.jawaban]})`,
+      }));
+
+    try {
+      await fetch("/api/kuis/selesai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          namaSiswa: loginData.namaSiswa,
+          kelas: loginData.kelas,
+          status: loginData.status,
+          judulBab: bab.title,
+          slugBab: bab.slug,
+          skor: hitungSkor(),
+          totalSoal: shuffledSoal.length,
+          jawabanSalah,
+        }),
+      });
+    } catch {
+      /* silently fail */
+    }
+  }, [loginData, shuffledSoal, jawaban, bab]);
+
   const isCorrect = selected === soal?.jawaban;
 
   const startQuiz = useCallback(() => {
@@ -70,17 +119,23 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
     }
   };
 
-  const hitungSkor = () => {
+  const hitungSkor = useCallback(() => {
     let benar = 0;
     for (const s of shuffledSoal) {
       if (jawaban[s.nomor] === s.jawaban) benar++;
     }
     return benar;
-  };
+  }, [shuffledSoal, jawaban]);
 
   const skor = hitungSkor();
   const salah = totalSoal - skor;
-  const persentase = Math.round((skor / totalSoal) * 100);
+  const persentase = totalSoal > 0 ? Math.round((skor / totalSoal) * 100) : 0;
+
+  useEffect(() => {
+    if (quizState === "result") {
+      submitHasil();
+    }
+  }, [quizState, submitHasil]);
 
   const resultEmoji = (score: number) => {
     const pct = Math.round((score / totalSoal) * 100);
@@ -89,6 +144,10 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
     if (pct >= 50) return { emoji: "💪", label: "Cukup, Semangat!" };
     return { emoji: "📚", label: "Ayo Belajar Lagi!" };
   };
+
+  if (quizState === "login") {
+    return <QuizLogin onLogin={handleLogin} />;
+  }
 
   if (quizState === "intro") {
     return (
@@ -105,11 +164,17 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
         <h2 className="font-heading text-3xl md:text-4xl text-on-surface mb-3">
           {bab.title}
         </h2>
+        {loginData && (
+          <p className="text-xs text-on-surface-variant mb-2">
+            👤 {loginData.namaSiswa}
+            {loginData.status === "resmi" ? " · 🟢 Siswa Resmi" : " · ⚪ Latihan"}
+          </p>
+        )}
         <p className="text-on-surface-variant mb-6">
           Uji pemahamanmu dengan {totalSoal} soal pilihan ganda.
         </p>
 
-        <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-[32px] p-6 shadow-glass mb-8">
+          <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-6 shadow-glass mb-8">
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-primary/5 rounded-2xl p-4 text-center">
               <p className="font-heading text-2xl font-bold text-primary">
@@ -268,7 +333,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
         </h2>
         <p className="text-on-surface-variant mb-8">{bab.title}</p>
 
-        <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-[32px] p-8 shadow-glass mb-8">
+        <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass mb-8">
           <div className="text-6xl font-heading font-bold text-primary mb-2">
             {skor}
             <span className="text-2xl text-on-surface-variant">/{totalSoal}</span>
@@ -369,7 +434,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
           exit={{ opacity: 0, x: -30 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
         >
-          <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-[32px] p-8 shadow-glass mb-6">
+          <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass mb-6">
             <p className="text-on-surface font-heading text-xl leading-relaxed mb-8">
               {soal.pertanyaan}
             </p>

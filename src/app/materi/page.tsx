@@ -43,7 +43,7 @@ export default function MateriPage() {
     : ALL_MATERI;
 
   return (
-    <div className="max-w-[1280px] mx-auto px-4 md:px-8 pt-16 pb-32">
+    <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-16 pb-24 sm:pb-32">
       <div
         className="text-center mb-16 animate-fade-up"
       >
@@ -55,11 +55,11 @@ export default function MateriPage() {
           Kurikulum Merdeka
         </div>
 
-        <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl tracking-tighter text-on-surface mb-4">
+        <h1 className="font-heading text-3xl sm:text-4xl lg:text-6xl tracking-tighter text-on-surface mb-4">
           Eksplorasi{" "}
           <span className="text-primary italic font-semibold">Materi Akidah Akhlak</span>
         </h1>
-        <p className="text-lg text-on-surface-variant max-w-2xl mx-auto">
+        <p className="text-sm sm:text-base lg:text-lg text-on-surface-variant max-w-2xl mx-auto">
           Pelajari Akidah Akhlak dengan pendekatan Deep Learning untuk SMP/MTs
           Kelas 7, 8, dan 9.
         </p>
@@ -97,7 +97,7 @@ export default function MateriPage() {
 
       {totalRead > 0 && (
         <div className="mb-10 animate-fade-up">
-          <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-3xl p-6 max-w-md mx-auto text-center">
+          <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-3xl p-5 sm:p-6 max-w-md mx-auto text-center">
             <div className="flex items-center justify-center gap-2 mb-3">
               <CheckCircle2 className="w-5 h-5 text-primary" aria-hidden="true" />
               <span className="font-heading font-semibold text-on-surface">
@@ -119,7 +119,7 @@ export default function MateriPage() {
 
       <div
         key={filterKelas}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 lg:gap-8"
       >
         {filtered.map((materi, i) => (
           <div
@@ -129,7 +129,7 @@ export default function MateriPage() {
           >
             <Link
               href={`/materi/${materi.slug}`}
-              className="group block h-full bg-glass backdrop-blur-2xl border border-border-precision rounded-[32px] p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
+              className="group block h-full bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-6 lg:p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
             >
               <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-primary/10 via-surface to-primary/5 border border-white/40 mb-6 flex items-center justify-center overflow-hidden">
                 <span className="text-5xl group-hover:scale-110 transition-transform duration-700">
@@ -149,7 +149,7 @@ export default function MateriPage() {
                 )}
               </div>
 
-              <h3 className="font-heading text-xl md:text-2xl text-text-primary mb-3 leading-tight">
+              <h3 className="font-heading text-lg sm:text-xl lg:text-2xl text-text-primary mb-3 leading-tight">
                 {materi.title}
               </h3>
 

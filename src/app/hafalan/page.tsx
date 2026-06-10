@@ -48,7 +48,7 @@ export default function HafalanPage() {
   };
 
   return (
-    <div className="max-w-[640px] mx-auto px-4 md:px-8 pt-24 pb-32">
+    <div className="max-w-[640px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 pb-24 sm:pb-32">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -58,10 +58,10 @@ export default function HafalanPage() {
         <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
           <BookOpen className="w-8 h-8 text-primary" aria-hidden="true" />
         </div>
-        <h1 className="font-heading text-3xl md:text-5xl tracking-tighter text-on-surface leading-none mb-4">
+        <h1 className="font-heading text-3xl sm:text-5xl tracking-tighter text-on-surface leading-none mb-4">
           Hafalan Dalil
         </h1>
-        <p className="text-base text-on-surface-variant max-w-md mx-auto">
+        <p className="text-sm sm:text-base text-on-surface-variant max-w-md mx-auto">
           Geser atau tap kartu untuk membalik. Hafalkan dalil dari setiap bab
           pelajaran.
         </p>
@@ -91,7 +91,7 @@ export default function HafalanPage() {
             }}
           >
             <div
-              className="bg-glass backdrop-blur-2xl border border-border-precision rounded-[40px] p-8 md:p-12 shadow-glass-lg"
+              className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[40px] p-5 sm:p-8 md:p-12 shadow-glass-lg"
               style={{ backfaceVisibility: "hidden" }}
             >
               <div className="text-center">
@@ -117,7 +117,7 @@ export default function HafalanPage() {
             </div>
 
             <div
-              className="absolute inset-0 bg-glass backdrop-blur-2xl border border-border-precision rounded-[40px] p-8 md:p-12 shadow-glass-lg flex items-center"
+              className="absolute inset-0 bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[40px] p-5 sm:p-8 md:p-12 shadow-glass-lg flex items-center"
               style={{
                 backfaceVisibility: "hidden",
                 transform: "rotateY(180deg)",

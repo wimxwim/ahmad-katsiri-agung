@@ -171,3 +171,14 @@ html {
     color: #eec055;
   }
 }
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (max-width: 640px) {
+  .backdrop-blur-2xl { backdrop-filter: blur(8px); }
+  .backdrop-blur-xl  { backdrop-filter: blur(6px); }
+  .backdrop-blur-md  { backdrop-filter: blur(4px); }
+  .backdrop-blur-sm  { backdrop-filter: blur(2px); }
+}
