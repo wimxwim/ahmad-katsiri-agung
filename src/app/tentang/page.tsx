@@ -19,12 +19,12 @@ export default function TentangPage() {
           </div>
 
           <h1 className="font-heading text-3xl sm:text-5xl lg:text-7xl tracking-tighter text-on-surface leading-none mb-6">
-            Tentang Aggung Learning
+            Tentang AKAL Centre
           </h1>
 
           <p className="text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed max-w-xl mx-auto">
-            Platform Deep Learning untuk Akidah Akhlak yang lahir dari keprihatinan
-            terhadap metode pengajaran agama yang monoton.
+            Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning yang lahir
+            dari keprihatinan terhadap metode pengajaran agama yang monoton.
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export default function TentangPage() {
               Filosofi Kami
             </h2>
             <p className="text-on-surface-variant leading-relaxed">
-              Aggung Learning percaya bahwa pembelajaran Akidah Akhlak harus
+              AKAL Centre percaya bahwa pembelajaran Aqidah Akhlaq harus
               relevan dengan kehidupan digital siswa. Kami menerapkan model Deep
               Learning — sadar, bermakna, dan menyenangkan — untuk membentuk
               karakter Islami generasi muda.

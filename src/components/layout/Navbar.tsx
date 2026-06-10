@@ -28,7 +28,7 @@ export function Navbar() {
           className="flex items-center gap-2 font-heading font-bold text-primary text-lg tracking-tight"
         >
           <img src="/logo.svg" alt="Logo PAI" className="w-7 h-7 object-contain" />
-          <span className="truncate md:max-w-none">Aggung Learning</span>
+          <span className="truncate md:max-w-none">AKAL Centre</span>
         </Link>
 
         <ul className="hidden md:flex items-center gap-1">

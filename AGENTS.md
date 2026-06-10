@@ -9,7 +9,7 @@
 
 | Aspek | Detail |
 |-------|--------|
-| **Nama Project** | Aggung Learning — Platform Pembelajaran PAI |
+| **Nama Project** | AKAL Centre — Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning |
 | **Klien** | Ahmad Katsiri Aggung, S.Pd. — Pendidik PAI |
 | **Tema** | Model Pembelajaran Berbasis **Deep Learning** pada Materi **Akidah Akhlak** tingkat SMP/MTs |
 | **Kurikulum** | **Kurikulum Merdeka** (BUKAN "Kurikulum Terpadu 2026") |

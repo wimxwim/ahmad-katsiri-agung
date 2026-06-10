@@ -39,12 +39,12 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://ahmad-katsiri-agung.vercel.app"),
   title: {
-    template: "%s | Aggung Learning",
-    default: "Aggung Learning — Deep Learning Akidah Akhlak",
+    template: "%s | AKAL Centre",
+    default: "AKAL Centre — Deep Learning Akidah Akhlak",
   },
   description:
-    "Platform Deep Learning untuk materi Akidah Akhlak tingkat SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berbasis Kurikulum Merdeka.",
-  keywords: ["Akidah Akhlak", "Deep Learning", "PAI", "SMP", "MTs", "Kurikulum Merdeka", "aggung learning", "agung", "katsiri"],
+    "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berdasarkan Kurikulum Merdeka.",
+  keywords: ["Akidah Akhlak", "Aqidah Akhlaq", "Deep Learning", "PAI", "SMP", "MTs", "Kurikulum Merdeka", "AKAL Centre", "agung", "katsiri"],
   manifest: "/manifest.json",
   authors: [{ name: "Ahmad Katsiri Aggung, S.Pd." }],
   creator: "Ahmad Katsiri Aggung, S.Pd.",
@@ -52,25 +52,25 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "id_ID",
-    siteName: "Aggung Learning",
-    title: "Aggung Learning — Deep Learning Akidah Akhlak",
+    siteName: "AKAL Centre",
+    title: "AKAL Centre — Deep Learning Akidah Akhlak",
     description:
-      "Platform Deep Learning untuk materi Akidah Akhlak tingkat SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berbasis Kurikulum Merdeka.",
+      "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berdasarkan Kurikulum Merdeka.",
     url: "https://ahmad-katsiri-agung.vercel.app",
     images: [
       {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "Aggung Learning — Deep Learning Akidah Akhlak",
+        alt: "AKAL Centre — Deep Learning Akidah Akhlak",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aggung Learning — Deep Learning Akidah Akhlak",
+    title: "AKAL Centre — Deep Learning Akidah Akhlak",
     description:
-      "Platform Deep Learning untuk materi Akidah Akhlak tingkat SMP/MTs Kelas 7-9.",
+      "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9.",
     images: ["/opengraph-image.png"],
   },
   robots: {
@@ -87,7 +87,7 @@ export const metadata: Metadata = {
   other: {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "Aggung Learning",
+    "apple-mobile-web-app-title": "AKAL Centre",
     "mobile-web-app-capable": "yes",
   },
 };
@@ -119,10 +119,10 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              name: "Aggung Learning",
+              name: "AKAL Centre",
               url: "https://ahmad-katsiri-agung.vercel.app",
               description:
-                "Platform Deep Learning untuk materi Akidah Akhlak tingkat SMP/MTs Kelas 7-9.",
+                "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9.",
               inLanguage: "id-ID",
               educationalLevel: "SMP/MTs",
               author: {

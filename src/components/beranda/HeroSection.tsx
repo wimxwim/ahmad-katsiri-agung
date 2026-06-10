@@ -18,18 +18,18 @@ export function HeroSection() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
             </span>
-            Deep Learning Akidah Akhlak
+            AKAL Centre — Deep Learning Akidah Akhlak
           </div>
 
           <h1 className="font-heading text-3xl sm:text-4xl lg:text-6xl xl:text-7xl tracking-tighter leading-none text-on-surface mb-6">
-            Model Pembelajaran Berbasis{" "}
-            <span className="shimmer-text">Deep Learning</span> pada Materi{" "}
-            <span className="shimmer-text">Akidah Akhlak</span>
+            <span className="shimmer-text">Model Pembelajaran</span>{" "}
+            Aqidah Akhlaq berbasis{" "}
+            <span className="shimmer-text">Deep Learning</span>
           </h1>
 
           <p className="text-sm sm:text-base md:text-xl text-on-surface-variant leading-relaxed max-w-xl mb-8 sm:mb-10">
             Pembelajaran yang sadar (mindful), bermakna (meaningful), dan
-            menyenangkan (joyful) untuk mendalami nilai-nilai Akidah Akhlak
+            menyenangkan (joyful) untuk mendalami nilai-nilai Aqidah Akhlaq
             tingkat SMP/MTs.
           </p>
 
@@ -80,12 +80,12 @@ export function HeroSection() {
                 <div className="w-20 md:w-28 h-20 md:h-28 mx-auto mb-4 flex items-center justify-center">
                   <img src="/logo.svg" alt="Logo PAI" className="w-full h-full object-contain" />
                 </div>
-                <p className="font-heading text-lg font-bold text-primary">
-                  Aggung Learning
-                </p>
-                <p className="text-xs text-on-surface-variant mt-1">
-                  Deep Learning Akidah Akhlak
-                </p>
+                  <p className="font-heading text-lg font-bold text-primary">
+                    AKAL Centre
+                  </p>
+                  <p className="text-xs text-on-surface-variant mt-1">
+                    Deep Learning Akidah Akhlak
+                  </p>
               </div>
             </div>
           </div>
