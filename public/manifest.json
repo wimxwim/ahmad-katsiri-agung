@@ -1,7 +1,7 @@
 {
-  "name": "Aggung Learning",
-  "short_name": "Aggung",
-  "description": "Platform Deep Learning untuk materi Akidah Akhlak tingkat SMP/MTs",
+  "name": "AKAL Centre",
+  "short_name": "AKAL",
+  "description": "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f2fcf7",
