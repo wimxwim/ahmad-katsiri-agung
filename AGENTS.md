@@ -39,6 +39,8 @@
 | Font | Bricolage Grotesque (heading), Inter (body), Amiri (Quran) | Google Fonts via next/font |
 | Hosting | Vercel Hobby (gratis) | — |
 | Package Manager | npm | — |
+| Google Sheets API | googleapis | ^173.0.0 |
+| Analitik | @vercel/analytics, @vercel/speed-insights, @next/third-parties/google | — |
 | Lainnya | clsx, tailwind-merge (via shadcn pattern) | — |
 
 ### Design System
@@ -66,7 +68,9 @@
 **Key CSS Classes:**
 - `.shimmer-text` — efek gradien emas berkilau untuk teks utama
 - `.bg-glass` — glassmorphism dengan backdrop-blur-2xl
+- `.pb-safe` — padding-bottom dengan `env(safe-area-inset-bottom)` untuk mobile notch
 - Shadow glass: `shadow-glass`, `shadow-glass-lg`, `shadow-glass-xl`
+- **Mobile perf:** `@media (max-width: 640px)` — backdrop-blur dikurangi (8px → 2px) untuk performa
 
 **Animasi Pattern (WAJIB diikuti):**
 - Hero/heading: fade-up `initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }}`
@@ -80,13 +84,21 @@
 ### Struktur Halaman
 
 ```
-/                              → Beranda (HeroSection + FeatureGrid + DualCTACards + AyatBlock)
+/                              → Beranda (HeroSection + FeatureGrid + DualCTACards + RuangDoa + AyatBlock)
 /materi                        → Daftar semua bab, filter by kelas
 /materi/[slug]                 → Detail bab (konten, dalil, dimensi, poin penting, video, nav prev/next)
-/pendidik                      → Portal Pendidik (bento grid 4 fitur + statistik + CTA)
+/pendidik                      → Portal Pendidik (bento grid 4 fitur + PerangkatSection + statistik + RekapSection + CTA)
 /game                          → Game portal (3 card link game Canva eksternal)
+/evaluasi                      → Portal kuis (filter by kelas + welcome guide + QuizEngine login/siswa/latihan)
+/video                         → Video gallery filter by kelas + tag
+/hafalan                       → Flashcard hafalan dalil + Daily Hadits
+/dalil/al-isra-34              → Analisis dalil QS Al-Isra:34 (3 varian mobile)
 /tentang                       → Filosofi, pendiri, visi misi
 /peserta-didik                 → Placeholder "Segera Hadir"
+/api/doa                       → REST API: POST submit doa + GET fetch list
+/api/siswa/cek                 → REST API: POST verifikasi siswa (Nama + TTL)
+/api/kuis/selesai              → REST API: POST simpan hasil kuis + notif Telegram
+/api/kuis/rekap                → REST API: GET merge DaftarSiswa + RekapNilai
 ```
 
 ### Struktur Komponen
@@ -106,27 +118,43 @@ src/
 │   ├── materi/
 │   │   ├── page.tsx           → Listing bab, filter kelas, stagger grid cards
 │   │   └── [slug]/page.tsx    → Server component, generateStaticParams, render MateriDetailClient
-│   ├── pendidik/page.tsx      → Portal Pendidik (4 feature cards + counter + CTA)
+│   ├── pendidik/page.tsx      → Portal Pendidik (4 feature cards + PerangkatSection + statistik + RekapSection + CTA)
 │   ├── peserta-didik/page.tsx → Placeholder
 │   └── tentang/page.tsx       → Filosofi, pendiri, visi misi
 ├── components/
 │   ├── beranda/
-│   │   ├── HeroSection.tsx    → Hero (badge DL, headline, deskripsi, 3 CTA buttons, card preview)
+│   │   ├── HeroSection.tsx    → Hero (badge DL, headline, deskripsi, 4 CTA buttons, card preview)
 │   │   ├── FeatureGrid.tsx    → 4 feature cards (Materi, Video, Game, Kuis) stagger grid
 │   │   ├── DualCTACards.tsx   → 2 cards (Dashboard Pengajar + Hub Siswa)
-│   │   └── AyatBlock.tsx      → Hadits HR. Muslim (bg hitam + gold) — baru diubah
+│   │   ├── AyatBlock.tsx      → Hadits HR. Muslim (bg hitam + gold)
+│   │   └── RuangDoa.tsx       → Prayer wall form + live feed (Google Sheets)
 │   ├── layout/
-│   │   ├── Navbar.tsx         → Fixed top, hamburger mobile, 5 nav items
+│   │   ├── Navbar.tsx         → Fixed top, 6 nav items, active dot indicator
+│   │   ├── BottomTabBar.tsx   → Mobile bottom nav (5 tabs, active line indicator, min touch 44px)
 │   │   ├── Footer.tsx         → 3 kolom (brand, navigasi, kontak sosial media)
 │   │   └── FloatingWA.tsx     → WA button fixed bottom-right
 │   ├── materi/
 │   │   └── MateriDetailClient.tsx → Full detail page (hero, sidebar, content, dalil, dimensi, video, nav pills)
+│   ├── evaluasi/
+│   │   ├── QuizEngine.tsx     → Quiz state machine (login→intro→playing→result) + auto-submit API
+│   │   └── QuizLogin.tsx      → Mode selection (Siswa Resmi vs Latihan) + form verifikasi
 │   └── providers/
 │       └── Providers.tsx      → Lenis + MotionConfig
 ├── data/
-│   └── materi.ts              → SEMUA data 9 bab (484 baris) — interface + content
-└── lib/
-    └── utils.ts               → cn() utility
+│   ├── materi.ts              → 9 bab (484 baris) — interface + content
+│   ├── soal.ts                → 8 bab × 25 soal PG — bank soal kuis
+│   ├── hafalan.ts             → 9 dalil hafalan — flashcard content
+│   └── dalil.ts               → Data analisis dalil QS Al-Isra:34
+├── lib/
+│   ├── utils.ts               → cn() utility
+│   ├── google-sheets.ts       → JWT client (appendRow, readRows, findRow)
+│   └── telegram.ts            → sendTelegram helper (Promise.all both chat ID)
+└── app/api/
+    ├── doa/route.ts           → POST submit doa + GET fetch list
+    ├── siswa/cek/route.ts     → POST verifikasi nama + TTL
+    └── kuis/
+        ├── selesai/route.ts   → POST simpan hasil + notif Telegram
+        └── rekap/route.ts     → GET merge DaftarSiswa + RekapNilai
 ```
 
 ### Data Materi (9 Bab)
@@ -201,6 +229,9 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 3. **motion `as const`:** TypeScript strict mode, array ease `[0.16, 1, 0.3, 1]` harus dikasih `as const`. Lupa → TS error.
 4. **Git config:** Git global user harus `wimxwim` — kalau beda, commit author mismatch dengan Vercel account.
 5. **Canva iframe:** Canva site set `X-Frame-Options: SAMEORIGIN` — tidak bisa diembed. Harus link external.
+6. **googleapis private_key `\n`:** JSON service account punya `\n` literal di private_key. Pas di `vercel env add`, harus di-pipe dari `node -e "..."` biar \n jadi actual newline. Copy manual dari JSON → Vercel UI gagal.
+7. **CSS mobile perf backdrop-blur:** `backdrop-blur-2xl` di mobile low-end HP lemot. Fix: `@media (max-width: 640px)` override jadi `backdrop-blur-[2px]`.
+8. **vercel env add duplicate:** Kalau env var sudah ada, `--force` flag harus dipakai untuk overwrite.
 
 ---
 
@@ -261,6 +292,16 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 - Deploy ke Vercel production dan push ke GitHub
 
 ---
+
+### Sesi 7 (9 Juni 2026) — Integrasi Logo PAI & Favicon
+**Effort: ~45 menit**
+- Konversi `PAI.svg` menjadi `favicon.ico` (32x32), `icon.png` (512x512), `icon.svg` (vector copy), dan `apple-icon.png` (180x180) di `src/app/`
+- Konversi `PAI.svg` menjadi `opengraph-image.png` (1200x630) dengan latar belakang `#f2fcf7` untuk preview share WhatsApp/sosmed
+- Menyalin `PAI.svg` ke `public/logo.svg`
+- Update `metadataBase` di `src/app/layout.tsx` ke URL produksi
+- Integrasi logo ke `Navbar.tsx`, `Footer.tsx`, dan `HeroSection.tsx` (kartu pratinjau utama)
+- Menambahkan panduan pengubahan logo/favicon ke `RINGKASAN_KLIEN.md`
+- Deploy ke Vercel production dan push ke GitHub
 
 ### Sesi 8 (10 Juni 2026) — Fitur Interaktif: Doa, Kuis, Sheets, Telegram
 **Effort: ~3-4 jam**
@@ -418,6 +459,7 @@ bg-glass = backdrop-blur-2xl + border border-border-precision + shadow-glass + r
 - **MotionConfig** reducedMotion:"user" — menghormati preferensi aksesibilitas.
 - **WA number:** 6285158795502 (+6285) — di FloatingWA.tsx dan Footer.
 - **Sosial media:** IG @ahmadkatsiria, TikTok @sir.ahmd, YouTube "Ahmad Katsiri Agung".
+- **All layouts:** Mobile-first responsive responsive (`px-3 sm:px-5 lg:px-8`, `text-xs md:text-sm` pattern di SEMUA halaman — 15+ file).
 
 ---
 
