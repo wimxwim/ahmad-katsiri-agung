@@ -9,7 +9,6 @@ import {
   BookOpen,
   Play,
   ClipboardList,
-  Terminal,
   ArrowRight,
   Plus,
   CheckCircle2,
@@ -228,15 +227,23 @@ function PerangkatSection() {
       transition={{ duration: 0.5, delay: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
       className="md:col-span-8 bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[32px_16px_32px_16px] p-6 sm:p-8 md:p-10 shadow-glass"
     >
-      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-        <Terminal className="w-7 h-7 text-primary" />
+      <div className="flex flex-col sm:flex-row items-start gap-6 mb-6">
+        <div className="w-full sm:w-48 h-32 rounded-2xl overflow-hidden shrink-0 bg-primary/5">
+          <img
+            src="/images/pendidik/mockup-perangkat.png"
+            alt="Perangkat Ajar"
+            className="w-full h-full object-cover"
+          />
+        </div>
+        <div>
+          <h3 className="font-heading text-xl sm:text-3xl md:text-4xl text-on-surface mb-3">
+            Perangkat Ajar
+          </h3>
+          <p className="text-sm text-on-surface-variant leading-relaxed max-w-lg">
+            Program Tahunan, Program Semester, dan ATP — Kurikulum Merdeka.
+          </p>
+        </div>
       </div>
-      <h3 className="font-heading text-xl sm:text-3xl md:text-4xl text-on-surface mb-3">
-        Perangkat Ajar
-      </h3>
-      <p className="text-sm text-on-surface-variant leading-relaxed mb-6 max-w-lg">
-        Program Tahunan, Program Semester, dan ATP — Kurikulum Merdeka.
-      </p>
 
       <div className="flex gap-2 mb-8 overflow-x-auto -mx-2 px-2">
         {KELAS_LIST.map((k) => (

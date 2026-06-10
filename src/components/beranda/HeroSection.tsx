@@ -75,18 +75,12 @@ export function HeroSection() {
           <div className="absolute -inset-10 bg-primary/5 blur-[120px] rounded-full" />
 
           <div className="relative bg-glass backdrop-blur-2xl border border-border-precision p-3 sm:p-4 rounded-[32px] sm:rounded-[48px] shadow-glass-lg">
-            <div className="min-h-[280px] rounded-[40px] bg-gradient-to-br from-primary/10 via-surface to-primary/5 flex items-center justify-center overflow-hidden">
-              <div className="text-center p-8">
-                <div className="w-20 md:w-28 h-20 md:h-28 mx-auto mb-4 flex items-center justify-center">
-                  <img src="/logo.svg" alt="Logo PAI" className="w-full h-full object-contain" />
-                </div>
-                  <p className="font-heading text-lg font-bold text-primary">
-                    AKAL Centre
-                  </p>
-                  <p className="text-xs text-on-surface-variant mt-1">
-                    Deep Learning Akidah Akhlak
-                  </p>
-              </div>
+            <div className="min-h-[280px] sm:min-h-[340px] rounded-[40px] overflow-hidden">
+              <img
+                src="/images/beranda/hero-illustration.png"
+                alt="AKAL Centre — Deep Learning Akidah Akhlak"
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
 
