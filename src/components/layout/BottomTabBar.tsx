@@ -30,12 +30,15 @@ export function BottomTabBar() {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 min-h-[44px] h-full transition-colors duration-200 ${
+              className={`relative flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 min-h-[44px] h-full transition-colors duration-200 ${
                 active
                   ? "text-primary"
                   : "text-on-surface-variant/60 hover:text-on-surface-variant"
               }`}
             >
+              {active && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary" />
+              )}
               <Icon
                 className={`w-5 h-5 ${active ? "" : ""}`}
                 aria-hidden="true"

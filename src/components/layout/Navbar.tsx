@@ -37,13 +37,16 @@ export function Navbar() {
               <Link
                 href={item.href}
                 aria-current={isActive(item.href) ? "page" : undefined}
-                className={`px-4 py-2 text-sm rounded-full transition-colors duration-200 ${
+                className={`relative px-4 py-2 text-sm rounded-full transition-colors duration-200 ${
                   isActive(item.href)
                     ? "bg-primary/10 text-primary font-semibold"
                     : "text-on-surface-variant hover:text-primary hover:bg-primary/5"
                 }`}
               >
                 {item.label}
+                {isActive(item.href) && (
+                  <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                )}
               </Link>
             </li>
           ))}
