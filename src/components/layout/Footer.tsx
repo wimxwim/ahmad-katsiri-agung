@@ -15,8 +15,8 @@ const FOOTER_LINKS = [
 export function Footer() {
   return (
     <footer className="w-full border-t border-border-precision bg-surface mt-auto">
-      <div className="max-w-[1280px] mx-auto px-4 md:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+      <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 py-12 sm:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
           <div>
             <Link
               href="/"

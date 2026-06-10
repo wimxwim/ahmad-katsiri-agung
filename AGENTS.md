@@ -335,6 +335,48 @@ bg-glass = backdrop-blur-2xl + border border-border-precision + shadow-glass + r
 
 ---
 
+## Fitur Tambahan (Sesi 8 — 10 Juni 2026)
+
+### Ruang Doa & Ucapan
+- **Komponen:** `src/components/beranda/RuangDoa.tsx`
+- **Lokasi:** Landing page (`/`) antara DualCTACards dan AyatBlock
+- **API:** `POST /api/doa` (kirim) + `GET /api/doa` (ambil daftar)
+- **Storage:** Google Sheets — tab `DoaUcapan` (kolom: ID, Nama, Isi, Waktu)
+- **Notifikasi:** Setiap doa baru → notif Telegram ke Pak Aggung
+
+### Kuis — Mode Siswa Resmi + Latihan Umum
+- **Komponen Login:** `src/components/evaluasi/QuizLogin.tsx`
+- **Alur:** Login → Intro → Soal → Hasil → Notif Telegram
+- **Mode Siswa Resmi:** Verifikasi Nama + Tanggal Lahir ke Sheet `DaftarSiswa`
+- **Mode Umum/Latihan:** Nama panggilan opsional, tanpa verifikasi
+- **API:**
+  - `POST /api/siswa/cek` — verifikasi siswa
+  - `POST /api/kuis/selesai` — simpan hasil + notif Telegram
+- **Storage:** Google Sheets — tab `RekapNilai` (kolom: ID, Nama, Kelas, Status, Bab, Skor, Total, Tanggal)
+- **Notifikasi:** Format pesan panjang detail jawaban salah
+
+### Rekap Nilai di Portal Pendidik
+- **Lokasi:** `/pendidik` — section "Rekap Nilai Siswa"
+- **API:** `GET /api/kuis/rekap`
+- **Fitur:** Tabel siswa (sudah/belum), skor, filter per kelas
+
+### Library & Infra
+- **`src/lib/google-sheets.ts`** — Shared client untuk baca/tulis Google Sheets via Service Account
+- **`src/lib/telegram.ts`** — Shared helper kirim notifikasi ke Telegram Bot
+- **Env vars:** `GOOGLE_SHEETS_CLIENT_EMAIL`, `GOOGLE_SHEETS_PRIVATE_KEY`, `GOOGLE_SHEET_ID`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`
+
+### Setup Google Sheets
+1. Buat project di `console.cloud.google.com` → Enable Google Sheets API
+2. Buat Service Account → download JSON → simpan `client_email` + `private_key` di Vercel Env
+3. Share spreadsheet dengan email Service Account
+4. Buat 3 sheet tabs: `DaftarSiswa` | `DoaUcapan` | `RekapNilai`
+5. `DaftarSiswa` kolom: No, NamaLengkap, Kelas, TanggalLahir
+
+### Setup Telegram Bot
+1. `@BotFather` → `/newbot` → dapatkan token → simpan di Vercel Env
+2. `@userinfobot` → dapatkan chat_id
+3. Notif dikirim: saat doa baru + saat kuis selesai
+
 ## Catatan Khusus
 
 - **Tidak ada halaman login** — instruksi klien.

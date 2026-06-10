@@ -6,7 +6,7 @@ import { GraduationCap, ArrowRight } from "lucide-react";
 
 export default function PesertaDidikPage() {
   return (
-    <div className="max-w-[1280px] mx-auto px-4 md:px-8 pt-24 md:pt-40 pb-16 md:pb-32">
+    <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 md:pt-40 pb-16 md:pb-32">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -21,11 +21,11 @@ export default function PesertaDidikPage() {
           SEGERA HADIR
         </span>
 
-        <h1 className="font-heading text-5xl md:text-7xl tracking-tighter text-on-surface leading-none mb-6">
+        <h1 className="font-heading text-3xl sm:text-5xl lg:text-7xl tracking-tighter text-on-surface leading-none mb-6">
           Portal Peserta Didik
         </h1>
 
-        <p className="text-lg text-on-surface-variant leading-relaxed mb-10">
+        <p className="text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed mb-10">
           Fitur personal untuk siswa sedang dalam pengembangan. Nantikan dashboard
           belajar pribadi, pelacakan progress, badge pencapaian, dan forum diskusi
           yang seru!

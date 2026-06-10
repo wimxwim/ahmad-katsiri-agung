@@ -30,7 +30,7 @@ export function BottomTabBar() {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 h-full transition-colors duration-200 ${
+              className={`flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 min-h-[44px] h-full transition-colors duration-200 ${
                 active
                   ? "text-primary"
                   : "text-on-surface-variant/60 hover:text-on-surface-variant"

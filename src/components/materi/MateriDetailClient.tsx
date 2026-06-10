@@ -28,7 +28,7 @@ export function MateriDetailClient({ materi }: { materi: BabMateri }) {
   }, [materi.slug, materi.title, materi.kelas]);
 
   return (
-    <div className="max-w-[1280px] mx-auto px-4 md:px-8 pt-28 pb-32">
+    <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-28 pb-24 sm:pb-32">
       <HeroSection materi={materi} />
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
         <SidebarLeft materi={materi} />
@@ -48,7 +48,7 @@ export function MateriDetailClient({ materi }: { materi: BabMateri }) {
 function HeroSection({ materi }: { materi: BabMateri }) {
   return (
     <div
-      className="max-w-4xl mx-auto mb-24 text-center animate-fade-up"
+      className="max-w-4xl mx-auto mb-16 sm:mb-24 text-center animate-fade-up"
     >
       <div className="flex items-center justify-center gap-4 mb-10 flex-wrap">
         <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider">
@@ -61,10 +61,10 @@ function HeroSection({ materi }: { materi: BabMateri }) {
         </span>
       </div>
 
-      <h1 className="font-heading text-4xl md:text-6xl lg:text-7xl tracking-tighter text-on-surface mb-4">
+      <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl lg:text-7xl tracking-tighter text-on-surface mb-4">
         {materi.title}
       </h1>
-      <p className="text-lg md:text-xl text-on-surface-variant max-w-2xl mx-auto">
+      <p className="text-sm sm:text-base md:text-xl text-on-surface-variant max-w-2xl mx-auto">
         {materi.pendahuluan}
       </p>
     </div>
@@ -105,23 +105,23 @@ function ContentArea({ materi }: { materi: BabMateri }) {
   return (
     <div className="lg:col-span-8 xl:col-span-7">
       <div
-        className="bg-glass backdrop-blur-2xl border border-border-precision rounded-3xl p-8 md:p-12 lg:p-16 shadow-glass animate-fade-up"
+        className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-12 lg:p-16 shadow-glass animate-fade-up"
         style={{ animationDelay: '0.1s' }}
       >
-        <article className="space-y-12">
+        <article className="space-y-8 sm:space-y-12">
           {materi.konten.map((section, i) => (
             <section key={i}>
-              <h2 className="font-heading text-2xl md:text-3xl text-on-surface mb-4">
+              <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-4">
                 {section.judul}
               </h2>
-              <p className="text-base md:text-lg text-on-surface-variant leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed">
                 {section.isi}
               </p>
             </section>
           ))}
 
           {materi.dalil && (
-            <div className="relative bg-gradient-to-b from-white to-primary/5 rounded-3xl p-8 md:p-12 lg:p-16 overflow-hidden border-l-8 border-l-tertiary-fixed-dim shadow-inner">
+            <div className="relative bg-gradient-to-b from-white to-primary/5 rounded-2xl sm:rounded-3xl p-5 sm:p-8 md:p-12 lg:p-16 overflow-hidden border-l-8 border-l-tertiary-fixed-dim shadow-inner">
               <div className="absolute top-0 right-0 w-32 h-32 opacity-5 pointer-events-none">
                 <Quote className="w-full h-full text-tertiary-fixed-dim" aria-hidden="true" />
               </div>
@@ -141,7 +141,7 @@ function ContentArea({ materi }: { materi: BabMateri }) {
               <div className="space-y-8 text-center">
               <div className="overflow-x-auto">
                 <p
-                  className="font-quran text-2xl md:text-4xl lg:text-5xl leading-[2.2] text-on-surface"
+                  className="font-quran text-xl sm:text-2xl md:text-4xl lg:text-5xl leading-[2.2] text-on-surface"
                   dir="rtl"
                 >
                   {materi.dalil.arab}
@@ -169,18 +169,18 @@ function ContentArea({ materi }: { materi: BabMateri }) {
 
           {materi.dimensi && materi.dimensi.length > 0 && (
             <section>
-              <h3 className="flex items-center gap-3 font-heading text-2xl md:text-3xl text-primary mb-6">
+              <h3 className="flex items-center gap-3 font-heading text-xl sm:text-2xl md:text-3xl text-primary mb-6">
                 <span className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                   <Sparkles className="w-5 h-5 text-primary" aria-hidden="true" />
                 </span>
                 Poin Pembelajaran
               </h3>
 
-              <div className="grid gap-5">
+              <div className="grid gap-3 sm:gap-5">
                 {materi.dimensi.map((d) => (
                   <div
                     key={d.nomor}
-                    className="group p-6 md:p-8 rounded-2xl border border-border-precision hover:bg-white hover:shadow-xl hover:shadow-primary/5 transition-all duration-500"
+                    className="group p-5 sm:p-6 md:p-8 rounded-2xl border border-border-precision hover:bg-white hover:shadow-xl hover:shadow-primary/5 transition-all duration-500"
                   >
                     <div className="flex items-start gap-5">
                       <span className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-lg group-hover:rotate-12 transition-transform shadow-lg shadow-primary/20 shrink-0">
@@ -206,7 +206,7 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
   return (
     <aside className="lg:col-span-4 xl:col-span-3 space-y-6 sticky top-32">
       <div
-        className="bg-glass backdrop-blur-2xl border border-border-precision p-6 md:p-8 rounded-3xl shadow-glass-lg relative overflow-hidden animate-fade-right"
+        className="bg-glass backdrop-blur-2xl border border-border-precision p-5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-glass-lg relative overflow-hidden animate-fade-right"
         style={{ animationDelay: '0.2s' }}
       >
         <div className="absolute top-0 right-0 w-24 h-24 opacity-10 pointer-events-none">
@@ -280,7 +280,7 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
 
       {materi.videoUrl ? (
         <div
-          className="bg-glass backdrop-blur-2xl border border-border-precision p-2 rounded-3xl shadow-glass overflow-hidden animate-fade-right"
+          className="bg-glass backdrop-blur-2xl border border-border-precision p-2 rounded-2xl sm:rounded-3xl shadow-glass overflow-hidden animate-fade-right"
           style={{ animationDelay: '0.3s' }}
         >
           <div className="rounded-2xl overflow-hidden aspect-video">
@@ -295,7 +295,7 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
         </div>
       ) : (
         <div
-          className="bg-glass backdrop-blur-2xl border border-border-precision p-4 rounded-3xl shadow-glass animate-fade-right"
+          className="bg-glass backdrop-blur-2xl border border-border-precision p-4 rounded-2xl sm:rounded-3xl shadow-glass animate-fade-right"
           style={{ animationDelay: '0.3s' }}
         >
           <div className="rounded-2xl overflow-hidden aspect-[4/3] bg-gradient-to-br from-primary/10 via-surface to-primary/5 flex items-center justify-center">
@@ -309,7 +309,7 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
           href={materi.gameUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="block bg-glass backdrop-blur-2xl border border-border-precision p-6 rounded-3xl shadow-glass group hover:bg-white hover:shadow-xl transition-all duration-500 animate-fade-right"
+          className="block bg-glass backdrop-blur-2xl border border-border-precision p-5 sm:p-6 rounded-2xl sm:rounded-3xl shadow-glass group hover:bg-white hover:shadow-xl transition-all duration-500 animate-fade-right"
           style={{ animationDelay: '0.35s' }}
         >
           <div className="flex items-center gap-4 mb-3">
@@ -349,13 +349,13 @@ function NavPills({
 }) {
   return (
     <div
-      className="max-w-4xl mx-auto mt-32 flex flex-col md:flex-row justify-between gap-6 animate-fade-up"
+      className="max-w-4xl mx-auto mt-20 sm:mt-32 flex flex-col md:flex-row justify-between gap-4 sm:gap-6 animate-fade-up"
       style={{ animationDelay: '0.4s' }}
     >
       {prevSlug ? (
         <Link
           href={`/materi/${prevSlug}`}
-          className="group flex items-center gap-5 px-8 py-6 rounded-[40px] bg-glass backdrop-blur-2xl border border-border-precision shadow-glass hover:bg-white hover:shadow-xl transition-all duration-500"
+          className="group flex items-center gap-5 px-5 sm:px-8 py-5 sm:py-6 rounded-[24px] sm:rounded-[40px] bg-glass backdrop-blur-2xl border border-border-precision shadow-glass hover:bg-white hover:shadow-xl transition-all duration-500"
         >
           <span className="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-500 shrink-0">
             <ChevronLeft className="w-6 h-6" aria-hidden="true" />
@@ -364,7 +364,7 @@ function NavPills({
             <p className="text-xs font-bold tracking-[0.15em] uppercase text-on-surface-variant mb-1">
               Sebelumnya
             </p>
-            <p className="font-heading text-xl text-on-surface">{prevTitle}</p>
+            <p className="font-heading text-base sm:text-xl text-on-surface">{prevTitle}</p>
           </div>
         </Link>
       ) : (
@@ -374,13 +374,13 @@ function NavPills({
       {nextSlug ? (
         <Link
           href={`/materi/${nextSlug}`}
-          className="group flex items-center gap-5 px-8 py-6 rounded-[40px] bg-glass backdrop-blur-2xl border border-border-precision shadow-glass hover:bg-white hover:shadow-xl transition-all duration-500"
+          className="group flex items-center gap-5 px-5 sm:px-8 py-5 sm:py-6 rounded-[24px] sm:rounded-[40px] bg-glass backdrop-blur-2xl border border-border-precision shadow-glass hover:bg-white hover:shadow-xl transition-all duration-500"
         >
           <div>
             <p className="text-xs font-bold tracking-[0.15em] uppercase text-on-surface-variant mb-1">
               Selanjutnya
             </p>
-            <p className="font-heading text-xl text-on-surface">{nextTitle}</p>
+            <p className="font-heading text-base sm:text-xl text-on-surface">{nextTitle}</p>
           </div>
           <span className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white group-hover:scale-110 transition-transform shrink-0">
             <ChevronRight className="w-6 h-6" aria-hidden="true" />
