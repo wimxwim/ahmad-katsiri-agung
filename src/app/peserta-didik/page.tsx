@@ -13,8 +13,12 @@ export default function PesertaDidikPage() {
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
         className="max-w-2xl mx-auto text-center"
       >
-        <div className="w-20 h-20 rounded-3xl bg-secondary/10 flex items-center justify-center mx-auto mb-8">
-          <GraduationCap className="w-10 h-10 text-secondary" aria-hidden="true" />
+        <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-3xl overflow-hidden mx-auto mb-8 bg-primary/5">
+          <img
+            src="/images/peserta-didik/portal-coming-soon.png"
+            alt="Portal Peserta Didik"
+            className="w-full h-full object-cover"
+          />
         </div>
 
         <span className="inline-block px-4 py-1.5 rounded-full bg-secondary/10 text-secondary text-xs font-bold tracking-wider mb-6">

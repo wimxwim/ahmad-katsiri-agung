@@ -140,9 +140,11 @@ export function FeatureGrid() {
                 <div className="flex items-center gap-3 mb-6">
                   <div className="flex -space-x-2">
                     {[1, 2, 3].map((i) => (
-                      <div
+                      <img
                         key={i}
-                        className="w-8 h-8 rounded-full bg-primary/20 border-2 border-white"
+                        src={`/images/avatars/avatar-${i}.png`}
+                        alt={`Avatar ${i}`}
+                        className="w-8 h-8 rounded-full border-2 border-white object-cover"
                       />
                     ))}
                   </div>

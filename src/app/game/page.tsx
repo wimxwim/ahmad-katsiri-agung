@@ -80,8 +80,12 @@ export default function GamePage() {
               {game.badge}
             </span>
 
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-              <Sparkles className="w-7 h-7 text-primary" aria-hidden="true" />
+            <div className="aspect-[16/9] rounded-2xl bg-primary/5 border border-white/40 mb-6 overflow-hidden relative">
+              <img
+                src={`/images/games/${game.title.toLowerCase().replace(/\s+/g, '-')}.png`}
+                alt={game.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
             </div>
 
             <h3 className="font-heading text-xl sm:text-2xl text-on-surface mb-3">
