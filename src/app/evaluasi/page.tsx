@@ -172,8 +172,12 @@ export default function EvaluasiPage() {
               onClick={() => setSelectedSlug(meta.slug)}
               className="group block w-full text-left bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-6 lg:p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
             >
-              <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-primary/10 via-surface to-primary/5 border border-white/40 mb-6 flex items-center justify-center overflow-hidden">
-                <GraduationCap className="w-14 h-14 text-primary/60 group-hover:scale-110 transition-transform duration-700" aria-hidden="true" />
+              <div className="aspect-[4/3] rounded-2xl bg-primary/5 border border-white/40 mb-6 overflow-hidden relative">
+                <img
+                  src={`/images/evaluasi/${meta.slug}.png`}
+                  alt={meta.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
               </div>
 
               <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider mb-4">

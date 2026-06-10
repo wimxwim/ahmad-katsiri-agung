@@ -131,10 +131,12 @@ export default function MateriPage() {
               href={`/materi/${materi.slug}`}
               className="group block h-full bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-6 lg:p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
             >
-              <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-primary/10 via-surface to-primary/5 border border-white/40 mb-6 flex items-center justify-center overflow-hidden">
-                <span className="text-5xl group-hover:scale-110 transition-transform duration-700">
-                  {materi.icon}
-                </span>
+              <div className="aspect-[4/3] rounded-2xl bg-primary/5 border border-white/40 mb-6 overflow-hidden relative">
+                <img
+                  src={`/images/materi/${materi.slug}.png`}
+                  alt={materi.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
               </div>
 
               <div className="flex items-center gap-2 mb-4">

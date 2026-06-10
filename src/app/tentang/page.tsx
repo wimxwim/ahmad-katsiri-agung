@@ -54,14 +54,25 @@ export default function TentangPage() {
             transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] as const }}
             className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
-            <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-4">
-              Tentang Pendiri
-            </h2>
-            <p className="text-on-surface-variant leading-relaxed">
-              <strong>Ahmad Katsiri Aggung, S.Pd.</strong> adalah pendidik PAI
-              yang berdedikasi untuk menghadirkan pengalaman belajar agama yang
-              bermakna bagi generasi muda Indonesia.
-            </p>
+            <div className="flex flex-col sm:flex-row gap-6 items-start">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 bg-primary/10">
+                <img
+                  src="/images/tentang/ahmad-katsiri.jpg"
+                  alt="Ahmad Katsiri Aggung, S.Pd."
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-4">
+                  Tentang Pendiri
+                </h2>
+                <p className="text-on-surface-variant leading-relaxed">
+                  <strong>Ahmad Katsiri Aggung, S.Pd.</strong> adalah pendidik PAI
+                  yang berdedikasi untuk menghadirkan pengalaman belajar agama yang
+                  bermakna bagi generasi muda Indonesia.
+                </p>
+              </div>
+            </div>
           </motion.div>
 
           <motion.div
