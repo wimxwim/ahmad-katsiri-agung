@@ -291,17 +291,7 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 - Menambahkan panduan pengubahan logo/favicon ke `RINGKASAN_KLIEN.md`
 - Deploy ke Vercel production dan push ke GitHub
 
----
 
-### Sesi 7 (9 Juni 2026) — Integrasi Logo PAI & Favicon
-**Effort: ~45 menit**
-- Konversi `PAI.svg` menjadi `favicon.ico` (32x32), `icon.png` (512x512), `icon.svg` (vector copy), dan `apple-icon.png` (180x180) di `src/app/`
-- Konversi `PAI.svg` menjadi `opengraph-image.png` (1200x630) dengan latar belakang `#f2fcf7` untuk preview share WhatsApp/sosmed
-- Menyalin `PAI.svg` ke `public/logo.svg`
-- Update `metadataBase` di `src/app/layout.tsx` ke URL produksi
-- Integrasi logo ke `Navbar.tsx`, `Footer.tsx`, dan `HeroSection.tsx` (kartu pratinjau utama)
-- Menambahkan panduan pengubahan logo/favicon ke `RINGKASAN_KLIEN.md`
-- Deploy ke Vercel production dan push ke GitHub
 
 ### Sesi 8 (10 Juni 2026) — Fitur Interaktif: Doa, Kuis, Sheets, Telegram
 **Effort: ~3-4 jam**
