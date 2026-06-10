@@ -89,9 +89,44 @@ export default function EvaluasiPage() {
         </h1>
 
         <p className="text-sm sm:text-base lg:text-lg text-on-surface-variant max-w-xl mx-auto">
-          Uji pemahaman materi Akidah Akhlak dengan soal pilihan ganda
-          interaktif. Pilih bab, jawab soal, dan lihat skormu!
+          Portal kuis untuk siswa Pak Aggung dan umum. Kerjakan soal pilihan
+          ganda, catat nilai, dan pantau progres belajar.
         </p>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const, delay: 0.1 }}
+        className="mb-12 sm:mb-16 max-w-2xl mx-auto bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-6 sm:p-8 shadow-glass"
+      >
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <GraduationCap className="w-6 h-6 text-primary" aria-hidden="true" />
+          </div>
+          <div>
+            <h2 className="font-heading text-lg sm:text-xl text-on-surface font-semibold mb-2">
+              Halo! Kerjakan kuis sesuai materimu
+            </h2>
+            <ul className="space-y-2 text-sm text-on-surface-variant">
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-0.5 shrink-0">1.</span>
+                <span><strong className="text-on-surface">Pilih bab</strong> yang sudah dipelajari di kelas</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-0.5 shrink-0">2.</span>
+                <span>
+                  <strong className="text-on-surface">Masuk sebagai siswa Pak Aggung</strong> pakai Nama + Tanggal Lahir
+                  (nilai otomatis tercatat) atau <strong className="text-on-surface">Coba Latihan</strong> tanpa data diri
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary mt-0.5 shrink-0">3.</span>
+                <span><strong className="text-on-surface">Jawab 10 soal</strong> dan lihat skor + pembahasan</span>
+              </li>
+            </ul>
+          </div>
+        </div>
       </motion.div>
 
       <div className="flex justify-center mb-16 overflow-x-auto px-4 -mx-4">
