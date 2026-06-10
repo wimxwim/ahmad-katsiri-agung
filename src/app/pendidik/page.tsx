@@ -68,43 +68,7 @@ export default function PendidikPage() {
           delay={0.2}
         />
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
-          className="md:col-span-8 group bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[42px_18px_42px_18px] p-6 sm:p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 md:gap-12 shadow-glass hover:-translate-y-2 transition-transform duration-500"
-        >
-          <div className="flex-1">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-              <Terminal className="w-7 h-7 text-primary" aria-hidden="true" />
-            </div>
-            <h3 className="font-heading text-xl sm:text-3xl md:text-4xl text-on-surface mb-4">
-              Perangkat
-            </h3>
-            <p className="text-on-surface-variant leading-relaxed mb-6">
-              Kelola administrasi pembelajaran dengan perangkat ajar terintegrasi:
-              Program Tahunan, Program Semester, dan RPP+.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {["PROTA", "PROMES", "RPP+"].map((chip) => (
-                <span
-                  key={chip}
-                  className="px-4 py-2 rounded-full bg-surface-container-high text-primary text-xs font-semibold"
-                >
-                  {chip}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="relative w-full md:w-1/2 aspect-square md:aspect-auto md:h-48">
-            <div className="absolute inset-0 bg-primary/10 blur-[80px] rounded-full" />
-            <div className="relative w-full h-full bg-white/20 backdrop-blur-md rounded-2xl border border-white/40 flex items-center justify-center">
-              <Terminal className="w-12 h-12 text-primary/60" aria-hidden="true" />
-            </div>
-          </div>
-        </motion.div>
+        <PerangkatSection />
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8 md:gap-12 border-t border-primary/10 pt-12 sm:pt-16 md:pt-24 mb-24 sm:mb-32">
@@ -233,6 +197,107 @@ function FeatureCard({
           <Plus className="w-5 h-5" aria-hidden="true" />
         </span>
       )}
+    </motion.div>
+  );
+}
+
+const PERANGKAT = [
+  { kelas: 7, label: "PROTA", file: "/pdf/perangkat/prota-7.pdf" },
+  { kelas: 9, label: "PROTA", file: "/pdf/perangkat/prota-9.pdf" },
+  { kelas: 7, label: "PROSEM", file: "/pdf/perangkat/prosem-7.pdf" },
+  { kelas: 8, label: "PROSEM", file: "/pdf/perangkat/prosem-8.pdf" },
+  { kelas: 9, label: "PROSEM", file: "/pdf/perangkat/prosem-9.pdf" },
+  { kelas: 7, label: "ATP", file: "/pdf/perangkat/atp-7.pdf" },
+  { kelas: 8, label: "ATP", file: "/pdf/perangkat/atp-8.pdf" },
+  { kelas: 9, label: "ATP", file: "/pdf/perangkat/atp-9.pdf" },
+];
+
+const KELAS_LIST = [7, 8, 9] as const;
+
+function PerangkatSection() {
+  const [kelas, setKelas] = useState<number>(7);
+
+  const items = PERANGKAT.filter((p) => p.kelas === kelas);
+  const adaProta8 = PERANGKAT.some((p) => p.kelas === 8 && p.label === "PROTA");
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
+      className="md:col-span-8 bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[32px_16px_32px_16px] p-6 sm:p-8 md:p-10 shadow-glass"
+    >
+      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+        <Terminal className="w-7 h-7 text-primary" />
+      </div>
+      <h3 className="font-heading text-xl sm:text-3xl md:text-4xl text-on-surface mb-3">
+        Perangkat Ajar
+      </h3>
+      <p className="text-sm text-on-surface-variant leading-relaxed mb-6 max-w-lg">
+        Program Tahunan, Program Semester, dan ATP — Kurikulum Merdeka.
+      </p>
+
+      <div className="flex gap-2 mb-8 overflow-x-auto -mx-2 px-2">
+        {KELAS_LIST.map((k) => (
+          <button
+            key={k}
+            onClick={() => setKelas(k)}
+            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
+              kelas === k
+                ? "bg-primary text-on-primary shadow-lg shadow-primary/20"
+                : "bg-primary/5 text-on-surface-variant hover:bg-primary/10"
+            }`}
+          >
+            Kelas {k}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        {["PROTA", "PROSEM", "ATP"].map((label) => {
+          const item = items.find((p) => p.label === label);
+          const tersedia = !!item;
+          const kosongK8 = label === "PROTA" && kelas === 8;
+          return (
+            <div
+              key={label}
+              className={`border rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center transition-all duration-300 ${
+                tersedia
+                  ? "border-border-precision bg-white/40 hover:shadow-md hover:-translate-y-1"
+                  : "border-dashed border-on-surface-variant/20 bg-transparent"
+              }`}
+            >
+              <span
+                className={`text-xs font-bold tracking-wider mb-3 ${
+                  tersedia ? "text-primary" : "text-on-surface-variant/40"
+                }`}
+              >
+                {label}
+              </span>
+              <span className={`text-[10px] uppercase tracking-wider mb-4 ${
+                tersedia ? "text-on-surface-variant/60" : "text-on-surface-variant/30"
+              }`}>
+                {kelas === 7 ? "Kelas 7" : kelas === 8 ? "Kelas 8" : "Kelas 9"}
+              </span>
+              {tersedia ? (
+                <a
+                  href={item.file}
+                  download
+                  className="inline-flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-xl text-xs font-semibold hover:bg-primary/90 active:scale-[0.97] transition-all"
+                >
+                  <ArrowRight className="w-3.5 h-3.5 rotate-90" />
+                  Unduh
+                </a>
+              ) : (
+                <span className="text-[10px] text-on-surface-variant/30 italic">
+                  {kosongK8 ? "Belum tersedia" : "—"}
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </motion.div>
   );
 }
