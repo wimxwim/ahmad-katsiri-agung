@@ -139,9 +139,9 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "LearningResource",
-              name: "Deep Learning Akidah Akhlak",
+              name: "AKAL Centre",
               description:
-                "Model Pembelajaran Berbasis Deep Learning pada Materi Akidah Akhlak tingkat SMP/MTs — Mindful, Meaningful, Joyful.",
+                "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9 — Mindful, Meaningful, Joyful.",
               educationalLevel: ["Grade 7", "Grade 8", "Grade 9"],
               educationalAlignment: {
                 "@type": "AlignmentObject",

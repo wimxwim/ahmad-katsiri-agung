@@ -10,6 +10,8 @@
 | Aspek | Detail |
 |-------|--------|
 | **Nama Project** | AKAL Centre — Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning |
+| **Branding Web** | AKAL Centre — Deep Learning Akidah Akhlak |
+| **Tagline Web** | Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning |
 | **Klien** | Ahmad Katsiri Aggung, S.Pd. — Pendidik PAI |
 | **Tema** | Model Pembelajaran Berbasis **Deep Learning** pada Materi **Akidah Akhlak** tingkat SMP/MTs |
 | **Kurikulum** | **Kurikulum Merdeka** (BUKAN "Kurikulum Terpadu 2026") |
@@ -260,17 +262,43 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 
 ---
 
+### Sesi 8 (10 Juni 2026) — Fitur Interaktif: Doa, Kuis, Sheets, Telegram
+**Effort: ~3-4 jam**
+- Ruang Doa & Ucapan di landing page + API `POST/GET /api/doa`
+- Sistem login kuis (Siswa Resmi verifikasi Nama+TTL vs Latihan Umum)
+- 3 API routes: `/api/siswa/cek`, `/api/kuis/selesai`, `/api/kuis/rekap`
+- Google Sheets integration via Service Account (DaftarSiswa, DoaUcapan, RekapNilai)
+- Telegram dual-chat notification (doa baru + hasil kuis)
+- Rekap nilai table di `/pendidik`
+- Navbar + BottomTab active indicator (dot/line)
+- Welcome guide di `/evaluasi` (step 1-2-3)
+- CTA "Masuk Kuis Siswa" di Hero landing page
+- Filter button mobile: disamain dengan `/materi` (ukuran kecil, label ringkas)
+- Telegram bot @AKAL_Centre_bot aktif
+
+### Sesi 9 (10 Juni 2026) — Perangkat Ajar + Rebrand
+**Effort: ~2 jam**
+- Copy 8 PDF (PROTA, PROSEM, ATP kelas 7/8/9) ke `public/pdf/perangkat/`
+- Ganti card "Perangkat" di `/pendidik` jadi download section per kelas (tab 7/8/9)
+- PROTA Kelas 8 belum ada filenya — ditampilkan "Belum tersedia"
+- Rebrand: "Aggung Learning" → "AKAL Centre" di seluruh halaman (Navbar, Footer, Hero, Tentang, metadata, PWA manifest)
+- Tagline baru: "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning"
+- Perbaiki schema JSON-LD description
+- Tambah env `TELEGRAM_CHAT_ID_2` untuk notif dual chat
+
 ## Belum Selesai / Bisa Dilanjutkan
 
 | Item | Status | Effort Estimasi | Keterangan |
 |------|--------|-----------------|------------|
-| `untuk-pendidik/` — Pusat Komando | 🔲 Belum | 1-2 jam | Stitch HTML sudah ada di Downloads. Halaman resource grid untuk guru. |
-| `analisis-dalil/` — QS Al-Isra:34 | 🔲 Belum | 1 jam | 3 varian mobile sudah ada di stitch Downloads. |
-| `/peserta-didik` | 🔲 Placeholder | 30-60 menit | Ganti "Segera Hadir" — tanya klien mau isi apa |
-| PPT slide decks (9 file) | 🔲 Belum | 1 jam | Link di halaman materi masing-masing atau halaman terpisah |
-| Custom domain | 🔲 Belum | 30 menit | Klien beli domain → setup DNS Vercel |
-| Video bab lain (7 bab belum) | ⏳ Seadanya | 10 menit/video | Tunggu kiriman link YouTube dari klien |
-| Placeholder images | 🔲 Belum | 1-2 jam | Ganti gradient boxes dengan gambar/ilustrasi real |
+| PROTA Kelas 8 | 🔲 Belum | — | Minta file PDF ke Bang Agung |
+| `untuk-pendidik/` — Pusat Komando | 🔲 Belum | 1-2 jam | Stitch HTML sudah ada di Downloads |
+| `analisis-dalil/` — QS Al-Isra:34 | 🔲 Belum | 1 jam | 3 varian mobile di stitch Downloads |
+| `/peserta-didik` | 🔲 Placeholder | 30-60 menit | Tanya klien mau isi apa |
+| PPT slide decks (9 file) | 🔲 Belum | 1 jam | Link di halaman materi |
+| Custom domain | 🔲 Belum | 30 menit | Klien beli domain → DNS Vercel |
+| Video bab lain (7 bab belum) | ⏳ Seadanya | 10 menit/video | Tunggu link YouTube |
+| Telegram ID Bang Agung | 🔲 Belum | 5 menit | Nunggu hasil @userinfobot |
+| Buku PAI PDF Kls 7/8/9 | 🔲 Belum | 15 menit | Link di materi ajar |
 
 ### Stitch Materials (Referensi untuk Halaman Baru)
 
@@ -379,6 +407,9 @@ bg-glass = backdrop-blur-2xl + border border-border-precision + shadow-glass + r
 
 ## Catatan Khusus
 
+- **Rebrand:** "Aggung Learning" sudah diganti → "AKAL Centre" di semua halaman publik.
+- **Tagline:** "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning" — dipakai di Hero, Footer, metadata, dan schema.
+- **Dual Telegram:** Notif dikirim ke `TELEGRAM_CHAT_ID` (primary) + `TELEGRAM_CHAT_ID_2` (secondary) secara paralel.
 - **Tidak ada halaman login** — instruksi klien.
 - **Semua halaman statis** — tidak ada server component yang fetch data runtime.
 - **Mode production: static generation** — `generateStaticParams` untuk dynamic routes.
@@ -393,7 +424,7 @@ bg-glass = backdrop-blur-2xl + border border-border-precision + shadow-glass + r
 ## Trigger Prompt untuk AI Berikutnya
 
 ```
-Lanjutkan project Aggung Learning. Baca file AGENTS.md di root folder
+Lanjutkan project AKAL Centre. Baca file AGENTS.md di root folder
 project ini untuk detail lengkap. Cek STATUS dan apa yang perlu dikerjakan
 selanjutnya. Update file ini jika ada perubahan.
 ```
