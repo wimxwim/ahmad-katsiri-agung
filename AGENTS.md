@@ -18,7 +18,7 @@
 | **Model DL** | 3 Pilar: Mindful Learning → Meaningful Learning → Joyful Learning |
 | **Level** | SMP/MTs Kelas 7, 8, 9 |
 | **Target** | Siswa + Guru PAI |
-| **Domain** | Utama: `https://akalcenter.my.id` (Cloudflare) <br> Vercel: `https://ahmad-katsiri-agung.vercel.app` <br> CDN Worker: `https://akal-center.wimxgooo.workers.dev` |
+| **Domain** | Utama: `https://akalcenter.my.id` (Cloudflare, proxied) <br> Vercel: `https://ahmad-katsiri-agung.vercel.app` (DI-BLOCK, 403 Forbidden) <br> CDN Worker: `https://akal-center.wimxgooo.workers.dev` |
 | **Repo** | `https://github.com/wimxwim/ahmad-katsiri-agung` |
 | **Kontak klien** | WA 0851-5879-5502, IG @ahmadkatsiria, TikTok @sir.ahmd, YouTube: Ahmad Katsiri Agung |
 
@@ -34,7 +34,7 @@
 | Bahasa | TypeScript | ^5 |
 | CSS | Tailwind CSS v4 | ^4 |
 | Animasi | motion (motion/react) | ^12.40.0 |
-| Smooth Scroll | lenis | ^1.3.23 |
+| Smooth Scroll | ~~lenis~~ (REMOVED — native scroll instead) | — |
 | Ikon | lucide-react | ^1.17.0 |
 | Font | Bricolage Grotesque (heading), Inter (body), Amiri (Quran) | Google Fonts via next/font |
 | Hosting | Vercel Hobby (gratis) | — |
@@ -139,7 +139,7 @@ src/
 │   │   ├── QuizEngine.tsx     → Quiz state machine (login→intro→playing→result) + auto-submit API
 │   │   └── QuizLogin.tsx      → Mode selection (Siswa Resmi vs Latihan) + form verifikasi
 │   └── providers/
-│       └── Providers.tsx      → Lenis + MotionConfig
+│       └── Providers.tsx      → MotionConfig (Lenis REMOVED — native scroll)
 ├── data/
 │   ├── materi.ts              → 9 bab (484 baris) — interface + content
 │   ├── soal.ts                → 8 bab × 25 soal PG — bank soal kuis
@@ -170,10 +170,20 @@ workers/
 
 **Arsitektur:**
 ```
-User → https://akal-center.wimxgooo.workers.dev (Cloudflare Edge)
-              ↓ proxy
+User → https://akalcenter.my.id (Cloudflare Edge)
+              ↓ proxy (Worker route: akalcenter.my.id/*)
+       akal-center.wimxgooo.workers.dev (Worker)
+              ↓ fetch + X-From-Worker header
        https://ahmad-katsiri-agung.vercel.app (Vercel origin)
+              ↓ vercel.json bypass rule
+       200 OK (karena ada X-From-Worker header)
 ```
+
+**Vercel URL Block:**
+- Browser langsung akses `ahmad-katsiri-agung.vercel.app` → tidak punya header → rule deny → **403 Forbidden**
+- Worker proxy Vercel → kirim `X-From-Worker: akal-center` → rule continue → 200 OK
+- Rule di `vercel.json` (bukan Vercel Firewall WAF — Hobby plan tidak support)
+- Worker route di Cloudflare: zone route (bukan custom_domain — custom_domain butuh Pro plan)
 
 **Caching strategy di Worker:**
 | Tipe Path | Cache-Control | Alasan |
@@ -184,10 +194,11 @@ User → https://akal-center.wimxgooo.workers.dev (Cloudflare Edge)
 | `/api/*` | No cache (passthrough) | Data real-time dari Sheets |
 
 **Keuntungan:**
-- URL branded: `akal-center.wimxgooo.workers.dev` (bukan Vercel default)
-- CDN global Cloudflare edge
+- URL branded: `akalcenter.my.id` (bukan Vercel default)
+- CDN global Cloudflare edge + caching + security headers
 - Bisa tambah custom logic (redirect, rewrite, header mod)
 - Worker free plan: 100k req/hari — cukup untuk project skala sekolah
+- Vercel URL ter-block (403), user hanya bisa akses via domain utama
 
 ### Data Materi (9 Bab)
 
@@ -253,6 +264,15 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 | **No login page** | Instruksi klien | Semua konten publik, tidak ada autentikasi |
 | **Kurikulum Merdeka** | Koreksi klien: istilah "Kurikulum Terpadu 2026" salah | Harus konsisten di semua halaman materi |
 | **Penggantian Logo & Favicon** | Penggantian logo Vercel segitiga bawaan Next.js dengan logo PAI | Mengonversi PAI.svg ke favicon.ico, icon.png, icon.svg, apple-icon.png, dan opengraph-image.png, serta mengintegrasikan logo ke Navbar, Footer, dan kartu ilustrasi Hero. |
+| **Cloudflare Worker CDN** | Reverse proxy di depan Vercel untuk branded domain + cache + security headers | Perlu update header X-From-Worker biar Vercel bisa bedain mana request dari Worker vs langsung |
+| **Domain akalcenter.my.id via Rumahweb** | Klien minta domain branded, bukan Workers.dev subdomain | Rp35.000, NS arah ke Cloudflare, biaya tahunan |
+| **vercel.json deny .vercel.app** | Block akses langsung ke Vercel URL | Worker pakai header bypass supaya tidak ikut ke-block |
+| **Vercel Hobby tidak bisa firewall rule** | Hobby plan tidak support Vercel Firewall WAF custom rules | Solusi: pakai `vercel.json` route with `mitigate: { action: "deny" }` |
+| **Cloudflare zone route vs custom_domain** | custom_domain butuh Pro plan ($20/bulan) | Pakai zone route (gratis) — `akalcenter.my.id/*` |
+| **Lenis dihapus** | Dual RAF loop (Lenis + motion) bikin jank di desktop | Native scroll aja, lebih smooth tanpa dual scheduler conflict |
+| **Optimistic append di RuangDoa** | Pengguna baru submit → langsung muncul tanpa nunggu GET ulang | UX lebih responsif, network request minimal |
+| **content-visibility: auto** | Optimasi render di section bawah fold | Chrome skip layout section yang belum di-scroll |
+| **Avatars WebP 48px** | Avatar PNG 500KB+ diperkecil ke WebP 48px ~600B | 3 avatar total <2KB (dari ~1.5MB) — signifikan buat mobile |
 
 ### ⚠️ Jebakan yang Pernah Terjadi (DOKUMENTASI PENTING)
 
@@ -264,6 +284,17 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 6. **googleapis private_key `\n`:** JSON service account punya `\n` literal di private_key. Pas di `vercel env add`, harus di-pipe dari `node -e "..."` biar \n jadi actual newline. Copy manual dari JSON → Vercel UI gagal.
 7. **CSS mobile perf backdrop-blur:** `backdrop-blur-2xl` di mobile low-end HP lemot. Fix: `@media (max-width: 640px)` override jadi `backdrop-blur-[2px]`.
 8. **vercel env add duplicate:** Kalau env var sudah ada, `--force` flag harus dipakai untuk overwrite.
+9. **Lenis + motion conflict:** Dual RAF loop bikin jank. Fix: hapus Lenis, pake native scroll.
+10. **Avatar PNG 500KB:** Tiga avatar >1.5MB total. Fix: convert ke WebP 48px → total <2KB.
+11. **hover:gap-3 reflow:** Gap change trigger layout recalc. Fix: ganti jadi translate-x animasi.
+12. **transition-all performance:** Setiap hover trigger ulang 7+ properti (layout, paint, composite). Fix: ganti transition jadi properti spesifik (transform, opacity, shadow).
+13. **animate-ping jank:** Ping infinite animation pake CPU. Fix: dihapus total.
+14. **reduced motion not respected:** Shimmer animasi tetep jalan walau user set prefers-reduced-motion. Fix: tambah `@media (prefers-reduced-motion: reduce)`.
+15. **blur radius besar:** `blur-[120px]` bikin paint cost tinggi. Fix: turunin ke 60px.
+16. **vercel.json continue bypass:** Rule pertama `continue: true` itu WAJIB — kalau tanpa continue, Vercel stop processing setelah rule pertama match, dan rule deny tidak pernah ke-eksekusi.
+17. **Domain akalcenter.my.id dari Rumahweb:** NS harus manual diganti di panel Rumahweb. Butuh ~5 menit propagasi. Jangan lupa ganti nameserver default ke Cloudflare.
+18. **Cloudflare API Token SSL:** Token harus punya permission `SSL and Certificates:Edit`. Token tanpa SSL edit permission tidak bisa enable HSTS/Always Use HTTPS via API.
+19. **Wrangler route vs custom_domain:** Worker route di Cloudflare (akalcenter.my.id/*) butuh zone-based routing, bukan custom_domain. custom_domain butuh Workers Paid plan. Jebakan: route baru muncul kalau zone udah aktif.
 
 ---
 
@@ -357,6 +388,37 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 - Update AGENTS.md dengan section CDN arsitektur
 - Tambah script `deploy:cdn` dan `deploy:all` di package.json
 
+### Sesi 11 (11 Juni 2026) — Performa, Domain, Keamanan & Block
+**Effort: ~4 jam**
+- **Perf fix:** Lenis dihapus (dual RAF loop dengan motion bikin jank) → native scroll
+- **Perf fix:** 3 avatar PNG 500KB+ → WebP 48px ~600B each (total <2KB dari ~1.5MB)
+- **Perf fix:** hover:gap-3 (layout recalc) → translate-x (composite only) di FeatureGrid.tsx
+- **Perf fix:** animate-ping dihapus dari HeroSection.tsx (CPU heavy)
+- **Perf fix:** prefers-reduced-motion: reduce — shimmer dan infinite animasi di-respect
+- **Perf fix:** blur-[120px] → blur-[60px] (paint cost turun drastis)
+- **Perf fix:** transition-all → transition-transform + opacity + shadow di 7 komponen (Hero, DualCTA, RuangDoa)
+- **Perf fix:** content-visibility: auto di section bawah fold (Chrome skip layout)
+- **Perf fix:** RuangDoa optimistic append — submit langsung muncul tanpa nunggu GET ulang
+- **Rebrand:** "AKAL Centre" → "AKAL Center" (ejaan American English) — konfirmasi via WA klien
+- **Domain:** akalcenter.my.id dibeli via Rumahweb (Rp35.000), NS diarahkan ke Cloudflare
+- **DNS:** CNAME @ → vercel.app (proxied), CNAME www → @ (proxied), redirect www→apex
+- **SSL:** Cloudflare Full (Strict) + Always Use HTTPS + HSTS (1yr + preload) + Min TLS 1.2/1.3 + Auth Origin Pulls — semuanya via API token
+- **Security:** Security Level: High, Browser Integrity Check: ON, IP Geolocation: ON
+- **WAF:** Geo block (CN, RU, KP, IR → Managed Challenge) + Rate Limiting `/api/` (5 req/10s → Block 10s)
+- **Bot Fight Mode:** ON (via dashboard)
+- **Performance CF:** Auto Minify (HTML/CSS/JS) + Brotli + 0-RTT — enabled
+- **Worker route:** akalcenter.my.id/* + www.akalcenter.my.id/* → Worker proxy ke Vercel
+- **Worker caching:** 1yr _next/static, 1wk PDF/assets, 5min HTML, no-cache API
+- **Worker security headers:** CSP + X-Frame-Options + X-Content-Type-Options + Referrer-Policy + Permissions-Policy
+- **Vercel URL block:** vercel.json route `mitigate: { action: "deny" }` untuk `ahmad-katsiri-agung.vercel.app`
+- **Worker bypass:** Header `X-From-Worker: akal-center` dikirim dari Worker → Vercel — rule continue: true
+- **metadataBase & OG URLs:** diarahkan ke `https://akalcenter.my.id`
+- **JSON-LD schema:** diperbarui dengan domain baru
+- **Build:** Next.js 16.2.7 Turbopack sukses (zero errors)
+- **Vercel production:** dialiaskan ke `akalcenter.my.id`
+- **package.json:** script `deploy:cdn` (wrangler deploy) + `deploy:all` (build + cdn + git + vercel)
+- **tsconfig.json:** exclude workers/ dari type-check
+
 ## Belum Selesai / Bisa Dilanjutkan
 
 | Item | Status | Effort Estimasi | Keterangan |
@@ -366,7 +428,6 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 | `analisis-dalil/` — QS Al-Isra:34 | 🔲 Belum | 1 jam | 3 varian mobile di stitch Downloads |
 | `/peserta-didik` | 🔲 Placeholder | 30-60 menit | Tanya klien mau isi apa |
 | PPT slide decks (9 file) | 🔲 Belum | 1 jam | Link di halaman materi |
-| Custom domain (berbayar) | 🔲 Belum | 30 menit | Beli domain → arahkan ke Cloudflare |
 | Video bab lain (7 bab belum) | ⏳ Seadanya | 10 menit/video | Tunggu link YouTube |
 | Telegram ID Bang Agung | 🔲 Belum | 5 menit | Nunggu hasil @userinfobot |
 | Buku PAI PDF Kls 7/8/9 | 🔲 Belum | 15 menit | Link di materi ajar |
@@ -420,7 +481,7 @@ npx vercel --prod --yes
 
 ## Environment & Config Files
 
-- `vercel.json` — `{"framework": "nextjs"}` (WAJIB, jangan hapus)
+- `vercel.json` — `{"framework": "nextjs"}` + routes block .vercel.app (WAJIB, jangan hapus)
 - `package.json` — Next.js 16.2.7 pinned
 - `next.config.ts` — (tidak ada file terpisah? Cek di root)
 - `.gitignore` — standar Next.js
@@ -503,6 +564,10 @@ bg-glass = backdrop-blur-2xl + border border-border-precision + shadow-glass + r
 - **WA number:** 6285158795502 (+6285) — di FloatingWA.tsx dan Footer.
 - **Sosial media:** IG @ahmadkatsiria, TikTok @sir.ahmd, YouTube "Ahmad Katsiri Agung".
 - **All layouts:** Mobile-first responsive responsive (`px-3 sm:px-5 lg:px-8`, `text-xs md:text-sm` pattern di SEMUA halaman — 15+ file).
+- **Vercel URL block:** Worker bypass via `X-From-Worker: akal-center` header. Rule pertama di `vercel.json` `continue: true` — WAJIB biar processing lanjut ke rule deny.
+- **Akun Cloudflare:** Wimxgooo@gmail.com, Zone ID: bc8a1f05acc22a9bd2b95ef2edfb9b0f, Token: (lihat dashboard Cloudflare → My Profile → API Tokens)
+- **Vercel project:** wimxgooo-3751s-projects / ahmad-katsiri-agung (Hobby)
+- **Google Sheets:** Service Account di Vercel Env — `npx vercel env add ... --force` untuk overwrite
 
 ---
 

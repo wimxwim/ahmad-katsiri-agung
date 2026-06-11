@@ -30,6 +30,7 @@ export default {
 
     const headers = new Headers(request.headers);
     headers.set('Host', new URL(ORIGIN).hostname);
+    headers.set('X-From-Worker', 'akal-center');
 
     const isApi = url.pathname.startsWith('/api/');
     const isStatic = url.pathname.startsWith('/_next/static/');
