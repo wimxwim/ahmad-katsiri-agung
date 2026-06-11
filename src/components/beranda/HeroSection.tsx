@@ -8,11 +8,7 @@ export function HeroSection() {
   return (
     <section className="relative max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 mt-20 sm:mt-24 md:mt-40">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] as const }}
-    >
+        <div className="[animation:fade-up_0.7s_ease-out_forwards]">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 border border-primary/10 text-sm text-primary font-medium mb-8">
             <span className="flex h-2 w-2 rounded-full bg-primary" />
             AKAL Center — Deep Learning Akidah Akhlak
@@ -61,7 +57,7 @@ export function HeroSection() {
               <ArrowRight className="w-5 h-5" aria-hidden="true" />
             </Link>
           </div>
-        </motion.div>
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 40 }}
