@@ -57,7 +57,7 @@ export default function TentangPage() {
             <div className="flex flex-col sm:flex-row gap-6 items-start">
               <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 bg-primary/10">
                 <img
-                  src="/images/tentang/ahmad-katsiri.jpg"
+                  src="/images/tentang/ahmad-katsiri.jpg?v=2"
                   alt="Ahmad Katsiri Aggung, S.Pd."
                   className="w-full h-full object-cover"
                 />
