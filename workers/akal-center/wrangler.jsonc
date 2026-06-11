@@ -4,6 +4,10 @@
   "main": "index.ts",
   "compatibility_date": "2026-06-10",
   "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    { "pattern": "akalcenter.my.id/*", "zone_id": "bc8a1f05acc22a9bd2b95ef2edfb9b0f" },
+    { "pattern": "www.akalcenter.my.id/*", "zone_id": "bc8a1f05acc22a9bd2b95ef2edfb9b0f" }
+  ],
   "observability": {
     "enabled": false
   }

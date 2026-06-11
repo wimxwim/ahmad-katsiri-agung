@@ -18,7 +18,7 @@
 | **Model DL** | 3 Pilar: Mindful Learning → Meaningful Learning → Joyful Learning |
 | **Level** | SMP/MTs Kelas 7, 8, 9 |
 | **Target** | Siswa + Guru PAI |
-| **Domain** | Vercel: `https://ahmad-katsiri-agung.vercel.app` <br> CDN: `https://akal-center.wimxgooo.workers.dev` (Cloudflare Workers) |
+| **Domain** | Utama: `https://akalcenter.my.id` (Cloudflare) <br> Vercel: `https://ahmad-katsiri-agung.vercel.app` <br> CDN Worker: `https://akal-center.wimxgooo.workers.dev` |
 | **Repo** | `https://github.com/wimxwim/ahmad-katsiri-agung` |
 | **Kontak klien** | WA 0851-5879-5502, IG @ahmadkatsiria, TikTok @sir.ahmd, YouTube: Ahmad Katsiri Agung |
 

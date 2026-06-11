@@ -37,7 +37,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://ahmad-katsiri-agung.vercel.app"),
+  metadataBase: new URL("https://akalcenter.my.id"),
   title: {
     template: "%s | AKAL Center",
     default: "AKAL Center — Deep Learning Akidah Akhlak",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     title: "AKAL Center — Deep Learning Akidah Akhlak",
     description:
       "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berdasarkan Kurikulum Merdeka.",
-    url: "https://ahmad-katsiri-agung.vercel.app",
+    url: "https://akalcenter.my.id",
     images: [
       {
         url: "/opengraph-image.png",
@@ -120,7 +120,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebSite",
               name: "AKAL Center",
-              url: "https://ahmad-katsiri-agung.vercel.app",
+    url: "https://akalcenter.my.id",
               description:
                 "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9.",
               inLanguage: "id-ID",
