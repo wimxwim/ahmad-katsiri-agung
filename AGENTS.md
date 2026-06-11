@@ -200,7 +200,7 @@ User → https://akalcenter.my.id (Cloudflare Edge)
 - Worker free plan: 100k req/hari — cukup untuk project skala sekolah
 - Vercel URL ter-block (403), user hanya bisa akses via domain utama
 
-### Data Materi (9 Bab)
+### Data Materi (14 Bab)
 
 File `src/data/materi.ts` — interface + semua konten inline (bukan dari API/DB).
 
@@ -209,12 +209,17 @@ File `src/data/materi.ts` — interface + semua konten inline (bukan dari API/DB
 | `beriman-kepada-malaikat` | 7 | 1 | AKIDAH | ❌ |
 | `membiasakan-tabayyun-menjauhi-ghibah` | 7 | 2 | AKHLAK | ❌ |
 | `salat-mencegah-perbuatan-keji-dan-mungkar` | 7 | 3 | AKHLAK | ❌ |
+| `melestarikan-alam-cerminan-orang-beriman` | 7 | 4 | AKHLAK | ❌ |
 | `amanah-dan-jujur` | 8 | 1 | AKHLAK | ✅ YouTube |
 | `beriman-kepada-kitab-allah` | 8 | 2 | AKIDAH | ✅ YouTube |
 | `beriman-kepada-nabi-dan-rasul` | 8 | 3 | AKIDAH | ❌ |
+| `membangun-toleransi` | 8 | 4 | AKHLAK | ❌ |
+| `moderasi-beragama` | 8 | 5 | AKHLAK | ❌ |
 | `adab-dalam-islam` | 9 | 1 | AKHLAK | ❌ |
 | `beriman-kepada-hari-akhir` | 9 | 2 | AKIDAH | ❌ |
 | `beriman-kepada-qada-dan-qadar` | 9 | 3 | AKIDAH | ❌ |
+| `semangat-mencari-ilmu` | 9 | 4 | AKHLAK | ❌ |
+| `manusia-khalifah-di-muka-bumi` | 9 | 5 | AKIDAH | ❌ |
 
 **Interface `BabMateri` — Field lengkap:**
 ```typescript
@@ -240,11 +245,13 @@ export interface BabMateri {
 
 **Data disimpan langsung di file** sebagai `Record<string, BabMateri>` — bukan dari API. Ini static site, Vercel Hobby gratis, tidak pakai database.
 
-### PDF Modul Ajar
+### PDF Modul Ajar & Perangkat
 
-9 file PDF di `public/pdf/` — total 4.3 MB. Di-link dari halaman detail materi via tombol "Unduh PDF Ringkasan" di sidebar kanan.
+**Modul Ajar:** 9 file PDF di `public/pdf/` (4.3 MB). Di-link dari halaman detail materi via tombol "Unduh PDF Ringkasan" di sidebar kanan. Path: `/pdf/{slug}.pdf`
 
-Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
+**Perangkat Ajar:** PROTA, PROSEM, ATP di `public/pdf/perangkat/` — link download di `/pendidik` per kelas (tab 7/8/9).
+
+**PPT Slide Deck:** 5 file PPT di `public/ppt/` — link di halaman `/materi` via tombol "Unduh PPT".
 
 ---
 
@@ -436,6 +443,41 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 - **Deploy (2):** Worker + Vercel production
 - **Alat (2):** package.json deploy scripts, tsconfig exclude workers
 
+### Sesi 12 (11 Juni 2026) — 5 Bab Baru, Game, Verifikator, Foto, LCP
+**Effort: ~2 jam**
+
+| # | Perubahan | Detail |
+|---|-----------|--------|
+| 1 | **5 bab baru** | `melestarikan-alam` (7/4), `membangun-toleransi` (8/4), `moderasi-beragama` (8/5), `semangat-mencari-ilmu` (9/4), `manusia-khalifah-di-muka-bumi` (9/5) — total 14 bab |
+| 2 | **Navigasi prev/next** | Semua bab baru punya prevSlug/nextSlug berurutan per kelas |
+| 3 | **Game page update** | Tambah 3 game baru (Adab Islam, Melestarikan Alam, Toleransi), hapus 2 game lama (Ramadhan, Halal Haram) |
+| 4 | **Tim Verifikator** | Tambah section 3 verifikator di `/tentang` (Sabilil, Ekawati, Hamam) |
+| 5 | **Perbaiki nama verifikator** | Nama + gelar disesuaikan: Sabilil → M.Ed., Ph.D; Ekawati → Dr., M.A.; Hamam → Dr., M.A.; peran → Verifikator Ahli 1/2/3 |
+| 6 | **Ganti foto Bang Agung** | Resize 400×400, 39KB (dari 87KB) — foto personal di halaman `/tentang` |
+| 7 | **LCP optimasi** | Hero image konversi PNG→WebP (19KB), preload font heading, fetchPriority high, CSS fade-up tanpa nunggu JS |
+| 8 | **PDF/PPT baru** | 5 modul ajar PDF + 5 PPT slide deck + PROTA Kelas 9, link download di `/materi` |
+
+**Dampak:**
+- Total bab: 9 → **14** (Kelas 7: 4, Kelas 8: 5, Kelas 9: 5)
+- Halaman `/materi` otomatis nampilin semua bab baru
+- Filter kelas di `/materi` dan `/evaluasi` sudah mencakup kelas 7/8/9
+- LCP hero image turun drastis (PNG 58KB → WebP 19KB)
+- Foto Bang Agung tampil di halaman tentang (resize, optimal buat mobile)
+
+### Sesi 13 (11 Juni 2026) — Cache-Busting Foto & Dokumentasi
+**Effort: ~15 menit**
+
+**Masalah:** Foto Bang Agung di halaman `/tentang` tampil benar di desktop tapi masih foto lama di HP karena cache Cloudflare (max-age 1 minggu).
+
+**Solusi:**
+1. Cache-busting: tambah `?v=2` ke URL gambar di `tentang/page.tsx:60`
+2. Deploy Vercel + push GitHub
+3. Verifikasi: `cf-cache-status: MISS` untuk URL `?v=2`, content-length 39237 (foto baru)
+
+**Dampak:**
+- Browser HP akan minta URL baru (`?v=2`) → Cloudflare cache miss → fetch fresh dari origin
+- Cache lama (tanpa `?v=2`) akan expire dalam 1 minggu max-age
+
 ## Belum Selesai / Bisa Dilanjutkan
 
 | Item | Status | Effort Estimasi | Keterangan |
@@ -444,7 +486,7 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 | `untuk-pendidik/` — Pusat Komando | 🔲 Belum | 1-2 jam | Stitch HTML sudah ada di Downloads |
 | `analisis-dalil/` — QS Al-Isra:34 | 🔲 Belum | 1 jam | 3 varian mobile di stitch Downloads |
 | `/peserta-didik` | 🔲 Placeholder | 30-60 menit | Tanya klien mau isi apa |
-| PPT slide decks (9 file) | 🔲 Belum | 1 jam | Link di halaman materi |
+| PPT slide decks (9 file) | ✅ Sebagian | 1 jam | 5 PPT sudah di `public/ppt/` & link di `/materi`, 4 sisanya belum |
 | Video bab lain (7 bab belum) | ⏳ Seadanya | 10 menit/video | Tunggu link YouTube |
 | Telegram ID Bang Agung | 🔲 Belum | 5 menit | Nunggu hasil @userinfobot |
 | Buku PAI PDF Kls 7/8/9 | 🔲 Belum | 15 menit | Link di materi ajar |
@@ -455,8 +497,8 @@ Lokasi: `/home/ngome/Downloads/stitch_aggung_learning_platform/`
 
 | Folder | Isi | Untuk Halaman |
 |--------|-----|--------------|
-| `modul-ajar/` | 9 PDF (sudah diproses ke materi.ts) | ✅ Selesai |
-| `ppt/` | 9 slide deck PDF | Belum diintegrasi |
+| `modul-ajar/` | 14 PDF (sudah diproses ke materi.ts) | ✅ Selesai |
+| `ppt/` | 9 slide deck PDF | ⏳ Sebagian (5/9 diintegrasi) |
 | `untuk_pendidik_.../` | HTML resource grid "Pusat Komando" | `untuk-pendidik/` |
 | `analisis_dalil_.../` | 3 varian mobile QS Al-Isra:34 | `analisis-dalil/` |
 

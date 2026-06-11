@@ -18,7 +18,7 @@
 | **TikTok** | @sir.ahmd |
 | **YouTube** | Ahmad Katsiri Agung |
 | **Warna / tema** | Hijau premium (#005231) + Gold/Emas — Aero-Emerald Future |
-| **Halaman** | Beranda, Materi (9 bab), Detail Materi, Portal Pendidik, Game, Tentang, Peserta Didik |
+| **Halaman** | Beranda, Materi (14 bab), Detail Materi, Portal Pendidik, Game, Tentang, Peserta Didik |
 | **Tanggal mulai** | 9 Juni 2026 |
 
 > ⚠️ **Catatan khusus dari klien:**
@@ -35,9 +35,9 @@
 - [ ] Harga deal & kontrak ditandatangani
 - [ ] Mockup desain dibuat
 - [ ] Mockup disetujui klien
-- [x] Coding selesai (v1 — 18 halaman statis)
+- [x] Coding selesai (v2 — 24 halaman statis, 14 bab materi)
 - [ ] Review bersama klien
-- [ ] Deploy ke domain production → ✅ Live di Vercel (.vercel.app)
+- [x] Deploy ke domain production → ✅ Live di akalcenter.my.id
 
 ---
 
@@ -48,6 +48,11 @@
 | 2026-06-09 | Sesi 1-6: Full build platform. Lihat AGENTS.md untuk kronologi detail. |
 | 2026-06-09 | Sesi 7: Mengganti logo Vercel (segitiga putih) dengan logo PAI (SVG, PNG, ICO, Open Graph preview) serta mengintegrasikan logo ke Navbar, Footer, dan Hero. |
 | 2026-06-09 | Sesi 8: Tambah tombol & file PPT slide deck (9 file), Naskah Soal (8 file), Vercel Analytics, tombol Kirim Saran via WA di detail materi, dan game Jujur dan Amanah. Update RINGKASAN_KLIEN.md dengan panduan penambahan game, materi, dan video. |
+| 2026-06-11 | Sesi 9: Rebrand "Aggung Learning" → "AKAL Center", perangkat ajar PROTA/PROSEM/ATP download + tab kelas 7/8/9, dual Telegram notif |
+| 2026-06-11 | Sesi 10: Cloudflare Workers CDN reverse proxy + cache static assets |
+| 2026-06-11 | Sesi 11: Performa (9 fix), domain akalcenter.my.id, Cloudflare security (6), Vercel 403 block, metadata fix |
+| 2026-06-11 | Sesi 12: 5 bab baru (total 14 bab), game link update, tim verifikator, foto Bang Agung (resize 400×400), LCP optimasi WebP |
+| 2026-06-11 | Sesi 13: Cache-busting foto Bang Agung (?v=2) — fix foto lama muncul di HP |
 
 ---
 
@@ -133,7 +138,7 @@ npx vercel --prod --yes
 
 ## Panduan Menambahkan Materi / Bab Baru
 
-> Saat ini ada 9 bab (Kelas 7: 3 bab, Kelas 8: 3 bab, Kelas 9: 3 bab).
+> Saat ini ada 14 bab (Kelas 7: 4 bab, Kelas 8: 5 bab, Kelas 9: 5 bab).
 > Jika klien ingin menambah bab baru, ikuti langkah ini.
 
 ### 1. Siapkan File PDF
