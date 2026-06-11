@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { BookHeart, ArrowRight } from "lucide-react";
+import { BookHeart, ArrowRight, UserCircle } from "lucide-react";
 
 export default function TentangPage() {
   return (
@@ -88,6 +88,49 @@ export default function TentangPage() {
             <p className="text-on-surface-variant leading-relaxed">
               Menjadi platform pembelajaran PAI nomor satu di Indonesia yang
               membuat setiap siswa jatuh cinta pada pelajaran agama Islam.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+          >
+            <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-6 text-center">
+              Tim Verifikator
+            </h2>
+            <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
+              {[
+                {
+                  nama: "Sabilil Muttaqin, S.Pd., M.Pd.",
+                  peran: "Validator",
+                },
+                {
+                  nama: "Dr. Ekawati Rahayu Ningsih, S.H., M.Hum.",
+                  peran: "Validator",
+                },
+                {
+                  nama: "Dr. Hamam Faizin, M.Pd.",
+                  peran: "Validator",
+                },
+              ].map((v, i) => (
+                <div
+                  key={v.nama}
+                  className="p-5 sm:p-6 rounded-2xl bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass text-center"
+                >
+                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <UserCircle className="w-10 h-10 text-primary/40" />
+                  </div>
+                  <h3 className="font-heading text-sm sm:text-base text-on-surface mb-1">
+                    {v.nama}
+                  </h3>
+                  <p className="text-xs text-on-surface-variant">{v.peran}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-on-surface-variant/60 text-center mt-4">
+              * Foto verifikator akan segera diperbarui
             </p>
           </motion.div>
         </div>

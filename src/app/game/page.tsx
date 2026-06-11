@@ -6,6 +6,24 @@ import { Gamepad2, ExternalLink, ArrowRight, Sparkles } from "lucide-react";
 
 const GAMES = [
   {
+    title: "Game Adab dalam Islam",
+    desc: "Game interaktif tentang adab-adab dalam Islam untuk siswa SMP/MTs.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islam",
+    badge: "EKSTERNAL",
+  },
+  {
+    title: "Game Melestarikan Alam",
+    desc: "Game interaktif tentang melestarikan alam sebagai cerminan orang beriman.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islam",
+    badge: "EKSTERNAL",
+  },
+  {
+    title: "Game Membangun Toleransi",
+    desc: "Game interaktif tentang membangun toleransi dalam kehidupan beragama.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islam",
+    badge: "EKSTERNAL",
+  },
+  {
     title: "Game Jujur dan Amanah",
     desc: "Game interaktif tentang kejujuran dan amanah untuk siswa SMP/MTs.",
     url: "https://jujurdanamanah.my.canva.site/",
@@ -21,18 +39,6 @@ const GAMES = [
     title: "Game PAI Interaktif",
     desc: "Game pembelajaran PAI interaktif dari berbagai sumber edukasi.",
     url: "https://jurnalramadhansdnkebonkacang05.my.canva.site/aplikasi-tanpa-judul",
-    badge: "EKSTERNAL",
-  },
-  {
-    title: "Game Kegiatan Ramadhan",
-    desc: "Game edukasi bertema kegiatan Ramadhan untuk siswa.",
-    url: "https://kegiatanramadhansdnkarettengsin21pagi.my.canva.site/c31n9qdnttgjbeh9",
-    badge: "EKSTERNAL",
-  },
-  {
-    title: "Game Halal dan Haram",
-    desc: "Game interaktif mengenal makanan dan minuman halal dan haram.",
-    url: "https://perpustakaanbenhil12.my.canva.site/gamehalaldanharam",
     badge: "EKSTERNAL",
   },
 ];
