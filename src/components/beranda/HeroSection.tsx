@@ -74,11 +74,12 @@ export function HeroSection() {
           <div className="relative bg-glass backdrop-blur-2xl border border-border-precision p-3 sm:p-4 rounded-[32px] sm:rounded-[48px] shadow-glass-lg">
             <div className="min-h-[280px] sm:min-h-[340px] rounded-[40px] overflow-hidden">
               <img
-                src="/images/beranda/hero-illustration.png"
+                src="/images/beranda/hero-illustration.webp"
                 alt="AKAL Center — Deep Learning Akidah Akhlak"
                 width={800}
                 height={533}
                 className="w-full h-full object-cover"
+                fetchPriority="high"
               />
             </div>
           </div>
