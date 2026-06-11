@@ -1,3 +1,15 @@
 {
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "has": [{ "type": "header", "key": "x-from-worker", "value": "akal-center" }],
+      "continue": true
+    },
+    {
+      "src": "/(.*)",
+      "has": [{ "type": "host", "value": "ahmad-katsiri-agung.vercel.app" }],
+      "mitigate": { "action": "deny" }
+    }
+  ]
 }
