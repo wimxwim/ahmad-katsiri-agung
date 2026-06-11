@@ -3,12 +3,12 @@
   "routes": [
     {
       "src": "/(.*)",
-      "has": [{ "type": "header", "key": "x-from-worker", "value": "akal-center" }],
-      "continue": true
-    },
-    {
-      "src": "/(.*)",
-      "has": [{ "type": "host", "value": "ahmad-katsiri-agung.vercel.app" }],
+      "has": [
+        { "type": "host", "value": "ahmad-katsiri-agung.vercel.app" }
+      ],
+      "missing": [
+        { "type": "header", "key": "x-from-worker", "value": "akal-center" }
+      ],
       "mitigate": { "action": "deny" }
     }
   ]
