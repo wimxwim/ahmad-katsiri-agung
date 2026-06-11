@@ -53,6 +53,7 @@
 | 2026-06-11 | Sesi 11: Performa (9 fix), domain akalcenter.my.id, Cloudflare security (6), Vercel 403 block, metadata fix |
 | 2026-06-11 | Sesi 12: 5 bab baru (total 14 bab), game link update, tim verifikator, foto Bang Agung (resize 400×400), LCP optimasi WebP |
 | 2026-06-11 | Sesi 13: Cache-busting foto Bang Agung (?v=2) — fix foto lama muncul di HP |
+| 2026-06-11 | Sesi 14: Update playbook agensi — 39 error terklasifikasi + arsitektur Vercel/Cloudflare/Domain |
 
 ---
 
