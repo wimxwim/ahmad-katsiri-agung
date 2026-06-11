@@ -9,8 +9,8 @@
 
 | Aspek | Detail |
 |-------|--------|
-| **Nama Project** | AKAL Centre — Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning |
-| **Branding Web** | AKAL Centre — Deep Learning Akidah Akhlak |
+| **Nama Project** | AKAL Center — Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning |
+| **Branding Web** | AKAL Center — Deep Learning Akidah Akhlak |
 | **Tagline Web** | Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning |
 | **Klien** | Ahmad Katsiri Aggung, S.Pd. — Pendidik PAI |
 | **Tema** | Model Pembelajaran Berbasis **Deep Learning** pada Materi **Akidah Akhlak** tingkat SMP/MTs |
@@ -18,7 +18,7 @@
 | **Model DL** | 3 Pilar: Mindful Learning → Meaningful Learning → Joyful Learning |
 | **Level** | SMP/MTs Kelas 7, 8, 9 |
 | **Target** | Siswa + Guru PAI |
-| **Domain** | Belum (masih pakai domain Vercel: `https://ahmad-katsiri-agung.vercel.app`) |
+| **Domain** | Vercel: `https://ahmad-katsiri-agung.vercel.app` <br> CDN: `https://akal-center.wimxgooo.workers.dev` (Cloudflare Workers) |
 | **Repo** | `https://github.com/wimxwim/ahmad-katsiri-agung` |
 | **Kontak klien** | WA 0851-5879-5502, IG @ahmadkatsiria, TikTok @sir.ahmd, YouTube: Ahmad Katsiri Agung |
 
@@ -156,6 +156,38 @@ src/
         ├── selesai/route.ts   → POST simpan hasil + notif Telegram
         └── rekap/route.ts     → GET merge DaftarSiswa + RekapNilai
 ```
+ 
+### CDN — Cloudflare Workers Proxy
+
+**Lokasi:** `workers/akal-centre/`
+
+```
+workers/
+└── akal-centre/
+    ├── index.ts        → Worker script (reverse proxy ke Vercel)
+    └── wrangler.jsonc  → Config Worker (name: akal-centre)
+```
+
+**Arsitektur:**
+```
+User → https://akal-center.wimxgooo.workers.dev (Cloudflare Edge)
+              ↓ proxy
+       https://ahmad-katsiri-agung.vercel.app (Vercel origin)
+```
+
+**Caching strategy di Worker:**
+| Tipe Path | Cache-Control | Alasan |
+|-----------|--------------|--------|
+| `/_next/static/*` | `max-age=31536000, immutable` | File hash, never change |
+| `/pdf/*`, gambar, font | `max-age=604800` (1 minggu) | Static assets jarang berubah |
+| Halaman HTML | `max-age=300` (5 menit) | Static page, cepat update |
+| `/api/*` | No cache (passthrough) | Data real-time dari Sheets |
+
+**Keuntungan:**
+- URL branded: `akal-center.wimxgooo.workers.dev` (bukan Vercel default)
+- CDN global Cloudflare edge
+- Bisa tambah custom logic (redirect, rewrite, header mod)
+- Worker free plan: 100k req/hari — cukup untuk project skala sekolah
 
 ### Data Materi (9 Bab)
 
@@ -312,10 +344,18 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 - Copy 8 PDF (PROTA, PROSEM, ATP kelas 7/8/9) ke `public/pdf/perangkat/`
 - Ganti card "Perangkat" di `/pendidik` jadi download section per kelas (tab 7/8/9)
 - PROTA Kelas 8 belum ada filenya — ditampilkan "Belum tersedia"
-- Rebrand: "Aggung Learning" → "AKAL Centre" di seluruh halaman (Navbar, Footer, Hero, Tentang, metadata, PWA manifest)
+- Rebrand: "Aggung Learning" → "AKAL Center" di seluruh halaman (Navbar, Footer, Hero, Tentang, metadata, PWA manifest)
 - Tagline baru: "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning"
 - Perbaiki schema JSON-LD description
 - Tambah env `TELEGRAM_CHAT_ID_2` untuk notif dual chat
+
+### Sesi 10 (10 Juni 2026) — Cloudflare Workers CDN
+**Effort: ~30 menit**
+- Buat Worker `akal-centre` di Cloudflare sebagai reverse proxy CDN untuk Vercel
+- Worker script: proxy + cache static assets di edge (Next.js static, PDF, gambar)
+- URL CDN gratis: `https://akal-center.wimxgooo.workers.dev`
+- Update AGENTS.md dengan section CDN arsitektur
+- Tambah script `deploy:cdn` dan `deploy:all` di package.json
 
 ## Belum Selesai / Bisa Dilanjutkan
 
@@ -326,7 +366,7 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 | `analisis-dalil/` — QS Al-Isra:34 | 🔲 Belum | 1 jam | 3 varian mobile di stitch Downloads |
 | `/peserta-didik` | 🔲 Placeholder | 30-60 menit | Tanya klien mau isi apa |
 | PPT slide decks (9 file) | 🔲 Belum | 1 jam | Link di halaman materi |
-| Custom domain | 🔲 Belum | 30 menit | Klien beli domain → DNS Vercel |
+| Custom domain (berbayar) | 🔲 Belum | 30 menit | Beli domain → arahkan ke Cloudflare |
 | Video bab lain (7 bab belum) | ⏳ Seadanya | 10 menit/video | Tunggu link YouTube |
 | Telegram ID Bang Agung | 🔲 Belum | 5 menit | Nunggu hasil @userinfobot |
 | Buku PAI PDF Kls 7/8/9 | 🔲 Belum | 15 menit | Link di materi ajar |
@@ -354,7 +394,20 @@ Lokasi: `/home/ngome/Downloads/stitch_aggung_learning_platform/`
 
 ## Cara Deploy
 
+### Deploy Full (Build + CDN + Vercel)
 ```bash
+npm run deploy:all
+```
+
+### Deploy Terpisah
+```bash
+# Build dulu
+npx next build
+
+# Deploy CDN Worker ke Cloudflare
+npm run deploy:cdn
+
+# Deploy ke Vercel
 git add -A
 git commit -m "deskripsi perubahan"
 git push origin main
@@ -438,7 +491,7 @@ bg-glass = backdrop-blur-2xl + border border-border-precision + shadow-glass + r
 
 ## Catatan Khusus
 
-- **Rebrand:** "Aggung Learning" sudah diganti → "AKAL Centre" di semua halaman publik.
+- **Rebrand:** "Aggung Learning" sudah diganti → "AKAL Center" di semua halaman publik.
 - **Tagline:** "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning" — dipakai di Hero, Footer, metadata, dan schema.
 - **Dual Telegram:** Notif dikirim ke `TELEGRAM_CHAT_ID` (primary) + `TELEGRAM_CHAT_ID_2` (secondary) secara paralel.
 - **Tidak ada halaman login** — instruksi klien.
@@ -456,7 +509,7 @@ bg-glass = backdrop-blur-2xl + border border-border-precision + shadow-glass + r
 ## Trigger Prompt untuk AI Berikutnya
 
 ```
-Lanjutkan project AKAL Centre. Baca file AGENTS.md di root folder
+Lanjutkan project AKAL Center. Baca file AGENTS.md di root folder
 project ini untuk detail lengkap. Cek STATUS dan apa yang perlu dikerjakan
 selanjutnya. Update file ini jika ada perubahan.
 ```

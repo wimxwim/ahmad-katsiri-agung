@@ -86,10 +86,10 @@ export function AyatBlock() {
               <button
                 key={i}
                 onClick={() => setIndex(i)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                className={`rounded-full transition-transform duration-300 ${
                   i === index
-                    ? "bg-[#eec055] w-6"
-                    : "bg-white/20 hover:bg-white/40"
+                    ? "bg-[#eec055] w-6 h-2"
+                    : "bg-white/20 hover:bg-white/40 w-2 h-2"
                 }`}
               />
             ))}
@@ -99,7 +99,7 @@ export function AyatBlock() {
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            boxShadow: "inset 0 0 100px rgba(238, 192, 85, 0.05)",
+            background: "radial-gradient(ellipse at center, rgba(238,192,85,0.06) 0%, transparent 70%)",
           }}
         />
       </motion.div>

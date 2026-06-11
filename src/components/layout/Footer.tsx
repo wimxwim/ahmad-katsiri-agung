@@ -23,7 +23,7 @@ export function Footer() {
               className="flex items-center gap-2 font-heading font-bold text-primary text-xl tracking-tight"
             >
               <img src="/logo.svg" alt="Logo PAI" className="w-8 h-8 object-contain" />
-              <span>AKAL Centre</span>
+              <span>AKAL Center</span>
             </Link>
             <p className="mt-3 text-sm text-on-surface-variant leading-relaxed max-w-xs">
               Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk
@@ -100,7 +100,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-border-precision text-center text-xs text-on-surface-variant">
-          &copy; {new Date().getFullYear()} AKAL Centre. Hak Cipta Dilindungi.
+          &copy; {new Date().getFullYear()} AKAL Center. Hak Cipta Dilindungi.
         </div>
       </div>
     </footer>

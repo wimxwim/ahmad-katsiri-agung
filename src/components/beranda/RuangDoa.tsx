@@ -44,9 +44,21 @@ export function RuangDoa() {
       setSent(true);
       setIsi("");
       setNama("");
-      const refresh = await fetch("/api/doa");
-      const data = await refresh.json();
-      setDoaList(data.doa || []);
+      setDoaList((prev) => [
+        {
+          id: Date.now().toString(),
+          nama: nama.trim() || "Anonim",
+          isi: isi.trim(),
+          waktu: new Date().toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        },
+        ...prev,
+      ]);
       setTimeout(() => setSent(false), 3000);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Gagal mengirim");
@@ -86,7 +98,7 @@ export function RuangDoa() {
             onChange={(e) => setNama(e.target.value)}
             placeholder="Nama kamu (boleh dikosongkan)"
             maxLength={60}
-            className="w-full bg-white/50 border border-primary/10 rounded-2xl px-5 py-4 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 mb-4 transition-all"
+            className="w-full bg-white/50 border border-primary/10 rounded-2xl px-5 py-4 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 mb-4 transition-shadow"
           />
           <textarea
             value={isi}
@@ -94,14 +106,14 @@ export function RuangDoa() {
             placeholder="Tulis doa atau ucapanmu... 🤲"
             maxLength={400}
             rows={4}
-            className="w-full bg-white/50 border border-primary/10 rounded-2xl px-5 py-4 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none mb-3 transition-all"
+            className="w-full bg-white/50 border border-primary/10 rounded-2xl px-5 py-4 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none mb-3 transition-shadow"
           />
           <div className="flex items-center justify-between">
             <span className="text-xs text-on-surface-variant">{isi.length}/400</span>
             <button
               type="submit"
               disabled={loading || !isi.trim()}
-              className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 disabled:opacity-40"
+              className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-transform duration-300 disabled:opacity-40"
             >
               {loading ? "Mengirim..." : sent ? "Terkirim! 🤲" : "Kirim Doa"}
               {!sent && <Send className="w-4 h-4" />}

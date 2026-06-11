@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "deploy:cdn": "cd workers/akal-center && npx wrangler deploy",
+    "deploy:all": "npm run build && npm run deploy:cdn && npx vercel --prod --yes"
   },
   "dependencies": {
     "@next/third-parties": "^16.2.7",
