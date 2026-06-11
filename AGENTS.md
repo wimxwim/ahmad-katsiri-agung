@@ -302,6 +302,7 @@ export interface BabMateri {
 17. **Domain akalcenter.my.id dari Rumahweb:** NS harus manual diganti di panel Rumahweb. Butuh ~5 menit propagasi. Jangan lupa ganti nameserver default ke Cloudflare.
 18. **Cloudflare API Token SSL:** Token harus punya permission `SSL and Certificates:Edit`. Token tanpa SSL edit permission tidak bisa enable HSTS/Always Use HTTPS via API.
 19. **Wrangler route vs custom_domain:** Worker route di Cloudflare (akalcenter.my.id/*) butuh zone-based routing, bukan custom_domain. custom_domain butuh Workers Paid plan. Jebakan: route baru muncul kalau zone udah aktif.
+20. **Foto lama muncul di HP setelah diganti:** Foto di halaman `/tentang` tampil baru di desktop tapi lama di HP. Penyebab: Cloudflare Worker cache max-age 1 minggu untuk gambar. Fix: tambah `?v=2` di URL gambar (cache-busting query param). Atau purge Cloudflare cache via dashboard.
 
 ---
 
@@ -488,7 +489,7 @@ export interface BabMateri {
 | `/peserta-didik` | 🔲 Placeholder | 30-60 menit | Tanya klien mau isi apa |
 | PPT slide decks (9 file) | ✅ Sebagian | 1 jam | 5 PPT sudah di `public/ppt/` & link di `/materi`, 4 sisanya belum |
 | Video bab lain (7 bab belum) | ⏳ Seadanya | 10 menit/video | Tunggu link YouTube |
-| Telegram ID Bang Agung | 🔲 Belum | 5 menit | Nunggu hasil @userinfobot |
+| Telegram ID Bang Agung | ✅ Tersimpan | — | `TELEGRAM_CHAT_ID_2` di Vercel env — notif dual chat |
 | Buku PAI PDF Kls 7/8/9 | 🔲 Belum | 15 menit | Link di materi ajar |
 
 ### Stitch Materials (Referensi untuk Halaman Baru)
