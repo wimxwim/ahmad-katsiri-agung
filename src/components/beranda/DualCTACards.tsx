@@ -31,7 +31,7 @@ export function DualCTACards() {
           variants={cardVariants}
           className="group relative bg-[#003820] rounded-[32px] sm:rounded-[56px] p-6 sm:p-10 md:p-14 overflow-hidden hover:scale-[1.01] transition-transform duration-500"
         >
-          <div className="absolute -right-32 -top-32 w-80 h-80 bg-primary-fixed/10 blur-[100px] rounded-full pointer-events-none" />
+          <div className="absolute -right-32 -top-32 w-80 h-80 bg-primary-fixed/10 blur-[60px] rounded-full pointer-events-none" />
 
           <div className="relative">
             <span className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-white/80 text-xs font-semibold tracking-wide mb-8">
@@ -59,7 +59,7 @@ export function DualCTACards() {
 
             <Link
               href="/pendidik"
-              className="inline-flex items-center gap-2 bg-white text-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:brightness-95 active:scale-[0.98] transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-white text-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:brightness-95 active:scale-[0.98] transition-transform duration-300"
             >
               MASUK DASHBOARD
               <ArrowRight className="w-5 h-5" aria-hidden="true" />
@@ -71,7 +71,7 @@ export function DualCTACards() {
           variants={cardVariants}
           className="group relative bg-[#001d35] rounded-[32px] sm:rounded-[56px] p-6 sm:p-10 md:p-14 overflow-hidden hover:scale-[1.01] transition-transform duration-500"
         >
-          <div className="absolute -right-32 -bottom-32 w-80 h-80 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
+          <div className="absolute -right-32 -bottom-32 w-80 h-80 bg-blue-500/10 blur-[60px] rounded-full pointer-events-none" />
 
           <div className="relative">
             <span className="inline-block px-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-white/80 text-xs font-semibold tracking-wide mb-8">
@@ -99,7 +99,7 @@ export function DualCTACards() {
 
             <Link
               href="/peserta-didik"
-              className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:brightness-110 active:scale-[0.98] transition-transform duration-300"
             >
               GABUNG SEKARANG
               <ArrowRight className="w-5 h-5" aria-hidden="true" />

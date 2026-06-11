@@ -39,12 +39,12 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://ahmad-katsiri-agung.vercel.app"),
   title: {
-    template: "%s | AKAL Centre",
-    default: "AKAL Centre — Deep Learning Akidah Akhlak",
+    template: "%s | AKAL Center",
+    default: "AKAL Center — Deep Learning Akidah Akhlak",
   },
   description:
     "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berdasarkan Kurikulum Merdeka.",
-  keywords: ["Akidah Akhlak", "Aqidah Akhlaq", "Deep Learning", "PAI", "SMP", "MTs", "Kurikulum Merdeka", "AKAL Centre", "agung", "katsiri"],
+  keywords: ["Akidah Akhlak", "Aqidah Akhlaq", "Deep Learning", "PAI", "SMP", "MTs", "Kurikulum Merdeka", "AKAL Center", "agung", "katsiri"],
   manifest: "/manifest.json",
   authors: [{ name: "Ahmad Katsiri Aggung, S.Pd." }],
   creator: "Ahmad Katsiri Aggung, S.Pd.",
@@ -52,8 +52,8 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "id_ID",
-    siteName: "AKAL Centre",
-    title: "AKAL Centre — Deep Learning Akidah Akhlak",
+    siteName: "AKAL Center",
+    title: "AKAL Center — Deep Learning Akidah Akhlak",
     description:
       "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berdasarkan Kurikulum Merdeka.",
     url: "https://ahmad-katsiri-agung.vercel.app",
@@ -62,13 +62,13 @@ export const metadata: Metadata = {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "AKAL Centre — Deep Learning Akidah Akhlak",
+        alt: "AKAL Center — Deep Learning Akidah Akhlak",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AKAL Centre — Deep Learning Akidah Akhlak",
+    title: "AKAL Center — Deep Learning Akidah Akhlak",
     description:
       "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9.",
     images: ["/opengraph-image.png"],
@@ -87,7 +87,7 @@ export const metadata: Metadata = {
   other: {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
-    "apple-mobile-web-app-title": "AKAL Centre",
+    "apple-mobile-web-app-title": "AKAL Center",
     "mobile-web-app-capable": "yes",
   },
 };
@@ -119,7 +119,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "WebSite",
-              name: "AKAL Centre",
+              name: "AKAL Center",
               url: "https://ahmad-katsiri-agung.vercel.app",
               description:
                 "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9.",
@@ -139,7 +139,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "LearningResource",
-              name: "AKAL Centre",
+              name: "AKAL Center",
               description:
                 "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9 — Mindful, Meaningful, Joyful.",
               educationalLevel: ["Grade 7", "Grade 8", "Grade 9"],

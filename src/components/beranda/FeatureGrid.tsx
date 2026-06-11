@@ -142,8 +142,11 @@ export function FeatureGrid() {
                     {[1, 2, 3].map((i) => (
                       <img
                         key={i}
-                        src={`/images/avatars/avatar-${i}.png`}
-                        alt={`Avatar ${i}`}
+                        src={`/images/avatars/avatar-${i}.webp`}
+                        alt=""
+                        width={32}
+                        height={32}
+                        loading="lazy"
                         className="w-8 h-8 rounded-full border-2 border-white object-cover"
                       />
                     ))}
@@ -156,10 +159,10 @@ export function FeatureGrid() {
 
               <Link
                 href={f.link}
-                className="inline-flex items-center gap-2 text-base font-semibold text-primary hover:gap-3 transition-all py-3.5 -my-3.5"
+                className="inline-flex items-center gap-2 text-base font-semibold text-primary py-3.5 -my-3.5 group/link"
               >
                 Pelajari Selengkapnya
-                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover/link:translate-x-1" aria-hidden="true" />
               </Link>
             </div>
           </motion.div>
