@@ -291,7 +291,7 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 13. **animate-ping jank:** Ping infinite animation pake CPU. Fix: dihapus total.
 14. **reduced motion not respected:** Shimmer animasi tetep jalan walau user set prefers-reduced-motion. Fix: tambah `@media (prefers-reduced-motion: reduce)`.
 15. **blur radius besar:** `blur-[120px]` bikin paint cost tinggi. Fix: turunin ke 60px.
-16. **vercel.json continue bypass:** Rule pertama `continue: true` itu WAJIB — kalau tanpa continue, Vercel stop processing setelah rule pertama match, dan rule deny tidak pernah ke-eksekusi.
+16. **vercel.json continue bypass:** Rule pertama `continue: true` tidak skip route selanjutnya — deny tetap ke-eksekusi karena Host masih match. Fix: jangan pakai `continue`, langsung pakai `missing` array dalam satu route rule.
 17. **Domain akalcenter.my.id dari Rumahweb:** NS harus manual diganti di panel Rumahweb. Butuh ~5 menit propagasi. Jangan lupa ganti nameserver default ke Cloudflare.
 18. **Cloudflare API Token SSL:** Token harus punya permission `SSL and Certificates:Edit`. Token tanpa SSL edit permission tidak bisa enable HSTS/Always Use HTTPS via API.
 19. **Wrangler route vs custom_domain:** Worker route di Cloudflare (akalcenter.my.id/*) butuh zone-based routing, bukan custom_domain. custom_domain butuh Workers Paid plan. Jebakan: route baru muncul kalau zone udah aktif.
@@ -390,34 +390,51 @@ Path: `/pdf/{slug}.pdf` — diakses langsung dari browser.
 
 ### Sesi 11 (11 Juni 2026) — Performa, Domain, Keamanan & Block
 **Effort: ~4 jam**
-- **Perf fix:** Lenis dihapus (dual RAF loop dengan motion bikin jank) → native scroll
-- **Perf fix:** 3 avatar PNG 500KB+ → WebP 48px ~600B each (total <2KB dari ~1.5MB)
-- **Perf fix:** hover:gap-3 (layout recalc) → translate-x (composite only) di FeatureGrid.tsx
-- **Perf fix:** animate-ping dihapus dari HeroSection.tsx (CPU heavy)
-- **Perf fix:** prefers-reduced-motion: reduce — shimmer dan infinite animasi di-respect
-- **Perf fix:** blur-[120px] → blur-[60px] (paint cost turun drastis)
-- **Perf fix:** transition-all → transition-transform + opacity + shadow di 7 komponen (Hero, DualCTA, RuangDoa)
-- **Perf fix:** content-visibility: auto di section bawah fold (Chrome skip layout)
-- **Perf fix:** RuangDoa optimistic append — submit langsung muncul tanpa nunggu GET ulang
-- **Rebrand:** "AKAL Centre" → "AKAL Center" (ejaan American English) — konfirmasi via WA klien
-- **Domain:** akalcenter.my.id dibeli via Rumahweb (Rp35.000), NS diarahkan ke Cloudflare
-- **DNS:** CNAME @ → vercel.app (proxied), CNAME www → @ (proxied), redirect www→apex
-- **SSL:** Cloudflare Full (Strict) + Always Use HTTPS + HSTS (1yr + preload) + Min TLS 1.2/1.3 + Auth Origin Pulls — semuanya via API token
-- **Security:** Security Level: High, Browser Integrity Check: ON, IP Geolocation: ON
-- **WAF:** Geo block (CN, RU, KP, IR → Managed Challenge) + Rate Limiting `/api/` (5 req/10s → Block 10s)
-- **Bot Fight Mode:** ON (via dashboard)
-- **Performance CF:** Auto Minify (HTML/CSS/JS) + Brotli + 0-RTT — enabled
-- **Worker route:** akalcenter.my.id/* + www.akalcenter.my.id/* → Worker proxy ke Vercel
-- **Worker caching:** 1yr _next/static, 1wk PDF/assets, 5min HTML, no-cache API
-- **Worker security headers:** CSP + X-Frame-Options + X-Content-Type-Options + Referrer-Policy + Permissions-Policy
-- **Vercel URL block:** vercel.json route `mitigate: { action: "deny" }` untuk `ahmad-katsiri-agung.vercel.app`
-- **Worker bypass:** Header `X-From-Worker: akal-center` dikirim dari Worker → Vercel — rule continue: true
-- **metadataBase & OG URLs:** diarahkan ke `https://akalcenter.my.id`
-- **JSON-LD schema:** diperbarui dengan domain baru
-- **Build:** Next.js 16.2.7 Turbopack sukses (zero errors)
-- **Vercel production:** dialiaskan ke `akalcenter.my.id`
-- **package.json:** script `deploy:cdn` (wrangler deploy) + `deploy:all` (build + cdn + git + vercel)
-- **tsconfig.json:** exclude workers/ dari type-check
+
+**Detail tanya-jawab, masalah & penyelesaian (28 issue):**
+
+| # | Masalah | Penyebab | Solusi | Tanya-Jawab |
+|---|---------|----------|--------|------------|
+| 1 | Scroll jank di desktop | Dual RAF loop: Lenis + motion berebut scheduler | Hapus Lenis dari Providers.tsx, pake native scroll | User nanya "kok scrollnya berat?" → Cek, ternyata Lenis & motion jalan berdua |
+| 2 | 3 avatar loading lambat | File PNG 500KB+ masing-masing (total ~1.5MB) | Convert ke WebP 48px ~600B (total <2KB) | User: "gambar lambat" → Hitung size, ganti format, turun drastis |
+| 3 | Hover card di FeatureGrid reflow | `hover:gap-3` trigger layout recalc (ubah gap = recalc semua) | Ganti `gap-3` jadi `translate-x` (composite only) | Debug: lihat di DevTools Performance → layout shift detected |
+| 4 | CPU tinggi dari HeroSection | `animate-ping` infinite animation | Hapus `animate-ping`, ganti static glow | User: "HP jadi panas" → Cari animasi looping, hapus |
+| 5 | Shimmer gold teks tetap jalan di reduced motion | Tidak ada `prefers-reduced-motion` query | Tambah `@media (prefers-reduced-motion: reduce)` di globals.css | User: "aksesibilitas" → Cek, tambah media query |
+| 6 | Blur gradient background lemot | `blur-[120px]` — paint cost sangat tinggi | Turunkan jadi `blur-[60px]` | Profiling: blur >60px diminishing returns |
+| 7 | Hover 7+ properti trigger ulang | `transition-all` — setiap hover recalc layout+paint+composite | Ganti `transition-transform`, `transition-opacity`, `transition-shadow` | Best practice: spesifik > all |
+| 8 | Section bawah fold ikut render padahal belum dilihat | Chrome render semua section sekali | Tambah `content-visibility: auto` di wrapper section | User: "loading lambat" → Cek, skip render section bawah |
+| 9 | Doa baru submit lambat muncul | Setiap submit → POST → GET ulang → render | Optimistic append: langsung push ke array lokal, nunggu confirm dari API | User: "doa kenapa delay?" → tambah logic optimistic |
+| 10 | "AKAL Centre" vs "AKAL Center" | Ejaan British vs American English | Rebrand semua halaman: Navbar, Footer, Hero, metadata, schema, PWA → "Center" | User WA klien → jawab "AKAL Center" (English US) |
+| 11 | Belum punya domain branded | Cuma pake Vercel + Workers.dev subdomain | Beli `akalcenter.my.id` via Rumahweb Rp35.000 | User: "minta domain .my.id" → cek ketersediaan → beli |
+| 12 | Nameserver masih default Rumahweb | Setelah beli domain, NS指向 ke ns1.rumahweb.com | Ganti manual di panel Rumahweb → amalia.ns.cloudflare.com / norm.ns.cloudflare.com | User: "domain kok belum aktif?" → Butuh 5 menit propagasi |
+| 13 | DNS CNAME pilih proxied atau DNS only | Proxy (orange cloud) = Cloudflare edge aktif, DNS only = bypass | ✅ CNAME @ dan www pakai proxied (orange cloud) | User: "mau pake Cloudflare" → orange cloud = kena WAF |
+| 14 | www redirect loop | CNAME www → @ dengan proxied → infinite loop | Cloudflare Page Rule: forward www.akalcenter.my.id → https://akalcenter.my.id (301) | Tes: curl www → loop → bikin page rule fix |
+| 15 | SSL masih Flexible (tidak aman) | Cloudflare default SSL/TLS = Flexible | Ganti ke Full (Strict) — Vercel punya sertifikat valid | User: "SSL harus kuat" → Strict = end-to-end encrypted |
+| 16 | HSTS enable gagal via API Token | Token Cloudflare tidak punya permission SSL:Edit | Generate token baru dengan scope SSL and Certificates:Edit | Error 403 dari API → cek permission token |
+| 17 | WAF Geo rule bentrok dengan rule lain | WAF rules evaluasi berurutan, bisa saling override | Hapus semua rules, bikin ulang: CN/RU/KP/IR → Managed Challenge | Rule pertama match → stop, sisanya gak ke-eksekusi |
+| 18 | Rate Limiting /api/ susah di-set | Format path /api/ tidak cocok dengan regex worker | Path: `/api/*` → 5 requests per 10 detik → Block 10 detik | User: "api di-brute force" → rate limit prevent |
+| 19 | Bot Fight Mode ON — cuma via dashboard | Cloudflare API token gak bisa set Bot Fight Mode | Manual enable di dashboard Cloudflare → Security → Bots | User: "anti hacker" → Bot Fight = detectable bot block |
+| 20 | Auto Minify + Brotli — enable manual | Juga cuma via dashboard | Enable Speed → Optimization → Auto Minify (HTML/CSS/JS) + Brotli + 0-RTT | Optimasi loading tanpa kode |
+| 21 | Worker route pake zone route, bukan custom_domain | custom_domain butuh Workers Paid ($20/bln), Hobby gak bisa | Pakai zone route di wrangler.jsonc: `akalcenter.my.id/*` dan `www.akalcenter.my.id/*` | Wrangler deploy sukses tapi route kosong → zone belum aktif |
+| 22 | Vercel URL (.vercel.app) bisa diakses publik | Pengguna bisa langsung buka vercel.app | vercel.json: route deny dengan `missing` header check | User: "block vercel.app kayak gotongroyong" |
+| 23 | Rule `continue: true` tetap kena deny | Vercel proses route berurutan; rule deny tetap match meskipun rule sebelumnya continue | Ganti: satu rule dengan `has: host .vercel.app` + `missing: x-from-worker` → deny | Tes: Worker dapet 403 → debugging → `continue` gak skip deny |
+| 24 | Worker belum kirim header bypass ke Vercel | Worker proxy perlu identitas biar gak ke-block | Tambah `headers.set('X-From-Worker', 'akal-center')` di index.ts Worker | Sesuai arsitektur gotongroyong |
+| 25 | metadataBase masih指向 .vercel.app | OG image, canonical URL, JSON-LD pake domain lama | Update metadataBase di layout.tsx → `https://akalcenter.my.id` | User: "share WhatsApp gambarnya broken" → fix |
+| 26 | JSON-LD schema domain masih lama | Schema markup untuk SEO pake .vercel.app | Update `url` di JSON-LD ke domain baru | Google index pake domain salah |
+| 27 | GitHub push ditolak — secret detected | Cloudflare API Token kebaca di AGENTS.md | Hapus token value dari file, ganti "lihat dashboard" | Push error: "Push cannot contain secrets" |
+| 28 | Banyak Vercel deployment bertumpuk | Setiap `git push` + `vercel --prod` = 1 deployment baru | Normal behavior — hanya deployment terakhir yang aktif di production domain | User: "kok nambah vercel?" → Penjelasan |
+
+**Ringkasan capaian:**
+- **Perf fix (9):** Lenis→hapus, avatar→WebP, hover gap→translateX, ping→hapus, shimmer media query, blur 120→60, transition-all, content-visibility, optimistic append
+- **Rebrand (1):** "AKAL Centre" → "AKAL Center"
+- **Domain & DNS (3):** Beli, NS Cloudflare, CNAME proxied + www redirect
+- **Cloudflare Security (6):** SSL Full Strict, HSTS, WAF Geo, Rate Limiting, Bot Fight, Minify/Brotli
+- **Worker (3):** Zone route, caching, security headers
+- **Vercel Block (2):** vercel.json `missing` deny + Worker header bypass
+- **Metadata (2):** metadataBase + JSON-LD → akalcenter.my.id
+- **Git (1):** Secret dihapus dari AGENTS.md
+- **Deploy (2):** Worker + Vercel production
+- **Alat (2):** package.json deploy scripts, tsconfig exclude workers
 
 ## Belum Selesai / Bisa Dilanjutkan
 
@@ -564,7 +581,7 @@ bg-glass = backdrop-blur-2xl + border border-border-precision + shadow-glass + r
 - **WA number:** 6285158795502 (+6285) — di FloatingWA.tsx dan Footer.
 - **Sosial media:** IG @ahmadkatsiria, TikTok @sir.ahmd, YouTube "Ahmad Katsiri Agung".
 - **All layouts:** Mobile-first responsive responsive (`px-3 sm:px-5 lg:px-8`, `text-xs md:text-sm` pattern di SEMUA halaman — 15+ file).
-- **Vercel URL block:** Worker bypass via `X-From-Worker: akal-center` header. Rule pertama di `vercel.json` `continue: true` — WAJIB biar processing lanjut ke rule deny.
+- **Vercel URL block:** Worker bypass via `X-From-Worker: akal-center` header. Rule `missing` — deny hanya kalau header tidak ada. Jangan pakai `continue: true` (masih kena rule deny).
 - **Akun Cloudflare:** Wimxgooo@gmail.com, Zone ID: bc8a1f05acc22a9bd2b95ef2edfb9b0f, Token: (lihat dashboard Cloudflare → My Profile → API Tokens)
 - **Vercel project:** wimxgooo-3751s-projects / ahmad-katsiri-agung (Hobby)
 - **Google Sheets:** Service Account di Vercel Env — `npx vercel env add ... --force` untuk overwrite
