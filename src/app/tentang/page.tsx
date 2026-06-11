@@ -103,16 +103,16 @@ export default function TentangPage() {
             <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
               {[
                 {
-                  nama: "Sabilil Muttaqin, S.Pd., M.Pd.",
-                  peran: "Validator",
+                  nama: "Sabilil Muttaqin, M.Ed., Ph.D",
+                  peran: "Verifikator Ahli 1 Materi",
                 },
                 {
-                  nama: "Dr. Ekawati Rahayu Ningsih, S.H., M.Hum.",
-                  peran: "Validator",
+                  nama: "Dr. Ekawati, M.A.",
+                  peran: "Verifikator Ahli 2 Materi",
                 },
                 {
-                  nama: "Dr. Hamam Faizin, M.Pd.",
-                  peran: "Validator",
+                  nama: "Dr. Hamam Faizin, M.A.",
+                  peran: "Verifikator Ahli 3 Media",
                 },
               ].map((v, i) => (
                 <div
