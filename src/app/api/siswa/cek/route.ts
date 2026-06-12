@@ -20,8 +20,7 @@ export async function POST(req: NextRequest) {
     const raw = await req.json();
     const parsed = SiswaCekSchema.safeParse(raw);
     if (!parsed.success) {
-      const msg = parsed.error.issues[0]?.message || "Data tidak valid";
-      return NextResponse.json({ error: msg }, { status: 400 });
+      return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
     }
 
     const { nama, tanggalLahir } = parsed.data;

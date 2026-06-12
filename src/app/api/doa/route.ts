@@ -7,8 +7,17 @@ import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 const SHEET_RANGE = "DoaUcapan!A:D";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const ip = ipFromRequest(req);
+    const limit = checkRateLimit(`doa-get:${ip}`, 30, 60_000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: `Terlalu banyak permintaan.` },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+      );
+    }
+
     const rows = await readRows(SHEET_RANGE);
     const doaList = rows
       .slice(1)
@@ -39,8 +48,7 @@ export async function POST(req: NextRequest) {
     const raw = await req.json();
     const parsed = DoaSchema.safeParse(raw);
     if (!parsed.success) {
-      const msg = parsed.error.issues[0]?.message || "Data tidak valid";
-      return NextResponse.json({ error: msg }, { status: 400 });
+      return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
     }
 
     const { nama, isi } = parsed.data;

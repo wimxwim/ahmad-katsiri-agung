@@ -319,13 +319,7 @@ function RekapSection() {
   const [keyError, setKeyError] = useState("");
 
   useEffect(() => {
-    const saved = sessionStorage.getItem("rekap_api_key");
-    if (saved) {
-      setApiKey(saved);
-      fetchRekap(saved);
-    } else {
-      setLoading(false);
-    }
+    setLoading(false);
   }, []);
 
   async function fetchRekap(key: string) {
@@ -343,7 +337,6 @@ function RekapSection() {
       const data = await r.json();
       setRekap(data.rekap || []);
       setLocked(false);
-      sessionStorage.setItem("rekap_api_key", key);
     } catch {
       setKeyError("Gagal terhubung ke server");
     }

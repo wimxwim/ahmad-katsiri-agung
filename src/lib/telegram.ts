@@ -18,7 +18,7 @@ export async function sendTelegram(message: string) {
           parse_mode: "Markdown",
           disable_web_page_preview: true,
         }),
-      }).catch(() => {})
+      }).catch((err) => console.error("Telegram send failed:", err))
     )
   );
 }

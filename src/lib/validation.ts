@@ -15,9 +15,9 @@ export const SiswaCekSchema = z.object({
 
 const JawabanSalahSchema = z.object({
   nomor: z.number().int().positive(),
-  pertanyaan: z.string(),
-  jawabanSiswa: z.string(),
-  kunciJawaban: z.string(),
+  pertanyaan: z.string().max(500),
+  jawabanSiswa: z.string().max(500),
+  kunciJawaban: z.string().max(500),
 });
 
 export const KuisSelesaiSchema = z.object({

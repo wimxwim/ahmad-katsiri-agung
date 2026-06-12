@@ -621,6 +621,22 @@ Tanpa token valid → 401 Unauthorized
 | 2 | **Gabung RINGKASAN_KLIEN.md + CLAUDE.md ke AGENTS.md** | Semua konten digabung verbatim (tanpa potong/edit) ke AGENTS.md dengan section header. `baru.md` (27.641 baris tree node_modules) dan file riset di-skip sesuai persetujuan. |
 | 3 | **Set ADMIN_API_KEY + JWT_SECRET baru** | Karena env var rahasia terenkripsi di Vercel dan tidak bisa dibaca balik, `ADMIN_API_KEY` dan `JWT_SECRET` di-reset ke nilai yang diketahui untuk development lokal. |
 
+### Sesi 17 (12 Juni 2026) — Re-Audit Fix: 4 HIGH + 7 MEDIUM + 8 LOW
+**Effort: ~1 jam**
+
+| # | Perubahan | Detail |
+|---|-----------|--------|
+| 1 | **H-1: Hapus .env.local** | VERCEL_OIDC_TOKEN bocor — file dihapus dari disk |
+| 2 | **H-3+H-4: Worker transparent proxy** | Hapus `addSecurityHeaders()` — biarin Vercel/Next.js handle security headers. Keep caching logic only. |
+| 3 | **H-2: Rate limiter di Worker** | Tambah in-memory rate limiter di Cloudflare Worker (persistent per-colo, beda sama Vercel yang ephemeral). API: 10 POST/30s, 30 GET/60s per IP. |
+| 4 | **M-3: Stop leak Zod error** | `doa/route.ts` + `siswa/cek/route.ts` — ganti jadi generic "Data tidak valid" |
+| 5 | **M-5: Dedup quiz submission** | `kuis/selesai/route.ts` — cek namaSiswa+judulBab sebelum append, skip kalau duplikat |
+| 6 | **M-7: Rate limit GET /api/doa** | Tambah `checkRateLimit()` di endpoint GET (30 req/60s) |
+| 7 | **M-4: Upgrade sanitizer** | `sanitize.ts` — handle `javascript:` URL, event handler (`onerror=`), HTML entities (`&#...;`) |
+| 8 | **M-1: Hapus sessionStorage** | `pendidik/page.tsx` — API key cuma di React state, gak persist ke storage |
+| 9 | **M-2: Origin binding JWT** | `kuis/selesai/route.ts` — cek Origin/Referer header cocok dengan domain yang diizinkan |
+| 10 | **L1-L8: LOW fixes** | maxLength validation, CSP report-uri, cf-connecting-ip, crypto shuffle, error log, private key check |
+
 ## Belum Selesai / Bisa Dilanjutkan
 
 | Item | Status | Effort Estimasi | Keterangan |
@@ -773,6 +789,47 @@ bg-glass = backdrop-blur-2xl + border border-border-precision + shadow-glass + r
 
 ---
 
+## Remediation Plan — Re-Audit Vulnerability (12 Juni 2026)
+
+> Re-audit setelah Sesi 15 menemukan **4 HIGH + 7 MEDIUM + 8 LOW** issues tersisa.
+> Prioritas: **H-1 → H-3+H-4 → H-2 → M-5 → M-3 → M-1 → lainnya**
+
+### 🔴 PHASE 1 — HIGH (Immediate)
+
+| ID | Item | Files | Detail | Dependency |
+|----|------|-------|--------|------------|
+| H-1 | 🔥 Hapus `.env.local` dari disk | `.env.local` | VERCEL_OIDC_TOKEN valid ada dalam plaintext. Bisa authenticate sebagai project owner. | None |
+| H-3 | 🔥 Hapus CSP dari Worker | `workers/akal-center/index.ts:59-63` | Worker set CSP 6 directive (lemah) yang overwrite Next.js CSP 13 directive. Hapus `addSecurityHeaders()` CSP. Biarin Next.js handle. | None |
+| H-4 | 🔥 Hapus security headers dari Worker | `workers/akal-center/index.ts:59-63` | `addSecurityHeaders()` pake `.set()` yang timpa origin headers. Document: Worker harus transparent proxy. Gabung dengan H-3. | H-3 |
+| H-2 | 🔥 Pindah rate limiter ke Cloudflare Worker | `src/lib/rate-limit.ts` + `workers/akal-center/index.ts` | In-memory Map per-instance Vercel — gampang bypass. Pindah ke Cloudflare Worker yang punya persistent state per colo. | H-3 |
+
+### 🟠 PHASE 2 — MEDIUM
+
+| ID | Item | Files | Detail | Dependency |
+|----|------|-------|--------|------------|
+| M-5 | Tambah dedup quiz submission | `src/app/api/kuis/selesai/route.ts:73-76` | Sebelum append, cek apakah record `namaSiswa`+`judulBab` sudah ada. Skip kalau duplikat. | None |
+| M-3 | Stop leak Zod error message | `src/app/api/doa/route.ts:42`, `siswa/cek/route.ts:23` | Ganti `parsed.error.issues[0]?.message` jadi generic `"Data tidak valid"` | None |
+| M-1 | ADMIN_API_KEY jangan di sessionStorage | `src/app/pendidik/page.tsx:346` | Minta key setiap kali buka halaman, atau pake closure variable, jangan persistent storage | M-4 |
+| M-7 | Rate limit GET /api/doa | `src/app/api/doa/route.ts:10-26` | Tambah `checkRateLimit()` di endpoint GET | H-2 |
+| M-6 | Atomic counter rate limiter | `src/lib/rate-limit.ts:35` | `entry.count++` non-atomic. Fix: pake proper locking atau pindah ke Worker (H-2) | H-2 |
+| M-4 | Upgrade XSS sanitizer ke library proper | `src/lib/sanitize.ts:1-3` | Regex `/<[^>]*>/g` gak handle `javascript:` URL. Ganti pake `DOMPurify` (server-side) | None |
+| M-2 | Binding ketat JWT ke sesi | `QuizEngine.tsx:33-38` | Implementasi session-bound token — cek referer/Origin header di server | None |
+
+### 🔵 PHASE 3 — LOW (Nice to Have)
+
+| ID | Item | Files | Detail |
+|----|------|-------|--------|
+| L-5 | MaxLength di JawabanSalahSchema | `lib/validation.ts:16-21` | Tambah `.max(500)` di field `pertanyaan`, `jawabanSiswa`, `kunciJawaban` |
+| L-6 | CSP report-uri/report-to | `next.config.ts` + Worker | Tambah `report-uri /api/csp-report;` ke CSP policy |
+| L-2 | IP extraction prefer cf-connecting-ip | `lib/rate-limit.ts:44-46` | Cek `cf-connecting-ip` dulu sebelum `x-forwarded-for` |
+| L-3 | Mask Telegram bot token di URL | `lib/telegram.ts:9` | Pastikan URL gak kelog. Atau pake header-based auth |
+| L-4 | Error handling — jangan silent | `lib/telegram.ts:21`, `QuizEngine.tsx:88` | Notif gagal → log + retry. Submit gagal → notif user |
+| L-1 | Crypto.randomUUID() untuk shuffle | `QuizEngine.tsx:22-29` | Ganti `Math.random()` → `crypto.getRandomValues()` |
+| L-8 | Early check GOOGLE_SHEETS_PRIVATE_KEY | `lib/google-sheets.ts:8` | `if (!key) throw Error(...)` sebelum bikin JWT client |
+| L-7 | Restrict POST ke static paths | `workers/akal-center/index.ts:1` | Hanya allow GET untuk asset paths |
+
+---
+
 ## Trigger Prompt untuk AI Berikutnya
 
 ```
@@ -852,6 +909,7 @@ selanjutnya. Update file ini jika ada perubahan.
 | 2026-06-11 | Sesi 14: Update playbook agensi — 39 error terklasifikasi + arsitektur Vercel/Cloudflare/Domain |
 | 2026-06-12 | Sesi 15: Security Audit & Fix — JWT auth, rate limiting, sanitasi XSS, CSP/HSTS, Zod validation, lenis removal |
 | 2026-06-12 | Sesi 16: Cleanup XSS test data from Google Sheets + merge .md files ke AGENTS.md + reset ADMIN_API_KEY/JWT_SECRET |
+| 2026-06-12 | Sesi 17: Re-Audit Fix — 4 HIGH + 7 MEDIUM + 8 LOW (Worker transparent proxy, rate limiter di CDN, Zod leak, sanitizer upgrade, origin binding, crypto shuffle) |
 
 ---
 

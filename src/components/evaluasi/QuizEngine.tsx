@@ -21,8 +21,10 @@ const letterMap = ["A", "B", "C", "D", "E"];
 
 function shuffleArray<T>(arr: T[]): T[] {
   const shuffled = [...arr];
+  const buf = new Uint32Array(shuffled.length);
+  crypto.getRandomValues(buf);
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = buf[i] % (i + 1);
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
@@ -84,8 +86,8 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
           token: loginData.token,
         }),
       });
-    } catch {
-      /* silently fail */
+    } catch (err) {
+      console.error("Submit hasil kuis gagal:", err);
     }
   }, [loginData, shuffledSoal, jawaban, bab]);
 
