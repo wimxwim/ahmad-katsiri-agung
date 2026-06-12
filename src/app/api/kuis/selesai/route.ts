@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { appendRow } from "@/lib/google-sheets";
+import { appendRow, readRows } from "@/lib/google-sheets";
 import { sendTelegram } from "@/lib/telegram";
 import { KuisSelesaiSchema } from "@/lib/validation";
 import { verifyQuizToken } from "@/lib/auth";
@@ -7,6 +7,14 @@ import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    // Session binding: verify Origin matches our domain
+    const origin = req.headers.get("origin") || req.headers.get("referer") || "";
+    const allowedOrigins = ["https://akalcenter.my.id", "https://ahmad-katsiri-agung.vercel.app", "http://localhost:3000"];
+    const originOk = allowedOrigins.some((o) => origin.startsWith(o));
+    if (!originOk) {
+      return NextResponse.json({ error: "Akses ditolak" }, { status: 403 });
+    }
+
     const ip = ipFromRequest(req);
     const limit = checkRateLimit(`kuis-selesai:${ip}`, 10, 30_000);
     if (!limit.allowed) {
@@ -70,10 +78,17 @@ export async function POST(req: NextRequest) {
     ].join("\n");
 
     if (status === "resmi") {
-      const id = `nilai_${Date.now()}`;
-      await appendRow("RekapNilai!A:H", [
-        [id, namaSiswa, kelas, "✅ Selesai", judulBab, String(skor), String(totalSoal), now],
-      ]);
+      // Dedup: skip if record already exists for this student + bab
+      const existing = await readRows("RekapNilai!A:H");
+      const sudahAda = existing.slice(1).some(
+        (r) => r[1]?.toLowerCase() === namaSiswa.toLowerCase() && r[4]?.toLowerCase() === judulBab.toLowerCase()
+      );
+      if (!sudahAda) {
+        const id = `nilai_${Date.now()}`;
+        await appendRow("RekapNilai!A:H", [
+          [id, namaSiswa, kelas, "✅ Selesai", judulBab, String(skor), String(totalSoal), now],
+        ]);
+      }
     }
 
     await sendTelegram(message);
