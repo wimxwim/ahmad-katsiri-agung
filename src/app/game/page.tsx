@@ -88,7 +88,7 @@ export default function GamePage() {
 
             <div className="aspect-[16/9] rounded-2xl bg-primary/5 border border-white/40 mb-6 overflow-hidden relative">
               <img
-                src={`/images/games/${game.title.toLowerCase().replace(/\s+/g, '-')}.png`}
+                src={`/images/games/${game.title.toLowerCase().replace(/\s+/g, '-')}.webp`}
                 alt={game.title}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
