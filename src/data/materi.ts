@@ -44,7 +44,9 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 6,
     waktuBaca: "5 MIN BACA",
     icon: "\u{1FABD}",
+    videoUrl: "https://www.youtube.com/embed/044uWVfxaKo",
     soalUrl: "/pdf/beriman-kepada-malaikat-soal.pdf",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-malaikat",
     pendahuluan: "Iman kepada malaikat adalah rukun iman kedua yang wajib diyakini setiap muslim. Malaikat adalah makhluk Allah yang diciptakan dari cahaya, selalu taat, dan memiliki tugas masing-masing.",
     konten: [
       {
@@ -89,6 +91,8 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 5,
     waktuBaca: "4 MIN BACA",
     icon: "\uD83D\uDD0D",
+    videoUrl: "https://www.youtube.com/embed/G_rCQPIR1Uk",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/membiasakan-tabayyun-dan-menjauhi-ghibah",
     pendahuluan: "Di era digital, kemampuan memverifikasi informasi menjadi sangat penting. Islam mengajarkan tabayun sebagai sikap tidak tergesa-gesa dalam menilai sesuatu dan selalu mencari kebenaran informasi sebelum menyebarkannya.",
     konten: [
       {
@@ -138,7 +142,9 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 7,
     waktuBaca: "6 MIN BACA",
     icon: "\uD83D\uDD4C",
+    videoUrl: "https://www.youtube.com/embed/47RUiGZ5804",
     soalUrl: "/pdf/salat-mencegah-perbuatan-keji-dan-mungkar-soal.pdf",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/salat-mencegah-perbuatan-keji-dan-mungkar",
     pendahuluan: "Salat bukan sekadar ritual, tetapi benteng moral yang mencegah pelakunya dari perbuatan keji dan mungkar. Bab ini mengupas makna salat, ketentuannya, dan hikmah di balik perintah salat.",
     konten: [
       {
@@ -265,7 +271,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 6,
     waktuBaca: "5 MIN BACA",
     icon: "\uD83D\uDCD6",
-    videoUrl: "https://www.youtube.com/embed/DqBB96Ic6XU",
+    videoUrl: "https://www.youtube.com/embed/bC-i_9hisSw",
     soalUrl: "/pdf/beriman-kepada-kitab-allah-soal.pdf",
     gameUrl: "https://jujurdanamanah.my.canva.site/beriman-kepada-kitab-kitab-allah-swt",
     pendahuluan: "Iman kepada kitab-kitab Allah adalah rukun iman ketiga. Allah menurunkan kitab-kitab kepada para nabi sebagai petunjuk bagi umat manusia. Empat kitab utama yang wajib diimani: Taurat, Zabur, Injil, dan Al-Qur'an.",
@@ -323,6 +329,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     waktuBaca: "7 MIN BACA",
     icon: "\uD83C\uDF1F",
     soalUrl: "/pdf/beriman-kepada-nabi-dan-rasul-soal.pdf",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-nabi-dan-rasul",
     pendahuluan: "Iman kepada nabi dan rasul adalah rukun iman keempat. Allah mengutus para nabi dan rasul untuk menyampaikan petunjuk-Nya kepada umat manusia. Wajib beriman kepada 25 nabi yang disebut dalam Al-Qur'an, dan meneladani sifat-sifat mulia mereka.",
     konten: [
       {
@@ -373,6 +380,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 5,
     waktuBaca: "5 MIN BACA",
     icon: "\uD83E\uDD1D",
+    videoUrl: "https://www.youtube.com/embed/GZHC7bqDHZg",
     nextSlug: "moderasi-beragama",
     nextTitle: "Moderasi Beragama",
     prevSlug: "beriman-kepada-nabi-dan-rasul",
@@ -392,6 +400,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 5,
     waktuBaca: "5 MIN BACA",
     icon: "\u2696\uFE0F",
+    videoUrl: "https://www.youtube.com/embed/gI5cfO3yVOw",
     prevSlug: "membangun-toleransi",
     prevTitle: "Membangun Toleransi",
     pendahuluan: "",
@@ -410,6 +419,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     waktuBaca: "6 MIN BACA",
     icon: "\uD83C\uDF3F",
     soalUrl: "/pdf/adab-dalam-islam-soal.pdf",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islamm",
     pendahuluan: "Adab adalah inti dari akhlak Islam. Rasulullah SAW diutus untuk menyempurnakan akhlak mulia. Adab bukan sekadar sopan santun, tetapi cerminan keimanan seorang muslim dalam berinteraksi dengan Allah, sesama manusia, dan lingkungan.",
     konten: [
       {
@@ -462,7 +472,9 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 7,
     waktuBaca: "6 MIN BACA",
     icon: "\u2600\uFE0F",
+    videoUrl: "https://www.youtube.com/embed/S4UDs5v8uzI",
     soalUrl: "/pdf/beriman-kepada-hari-akhir-soal.pdf",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-hari-akhir",
     pendahuluan: "Iman kepada hari akhir adalah rukun iman kelima. Percaya dengan sepenuh hati bahwa alam semesta dan seisinya akan hancur dan berakhir. Kehidupan dunia hanya sementara, sedangkan kehidupan di akhirat adalah yang kekal. Keimanan ini mendorong seseorang untuk rajin beribadah dan selalu berbuat kebaikan.",
     konten: [
       {
@@ -513,7 +525,9 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 5,
     waktuBaca: "5 MIN BACA",
     icon: "\u2728",
+    videoUrl: "https://www.youtube.com/embed/j-M4Q08tFtw",
     soalUrl: "/pdf/beriman-kepada-qada-dan-qadar-soal.pdf",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-qada-dan-qadar",
     pendahuluan: "Iman kepada qada dan qadar adalah rukun iman keenam. Qada adalah ketetapan Allah di Lauhulmahfuz sejak zaman azali, sedangkan qadar adalah perwujudan ketetapan tersebut. Beriman kepada takdir tidak boleh menjadikan seseorang pasif, justru harus semakin giat berusaha, berdoa, dan bertawakal.",
     konten: [
       {
@@ -564,6 +578,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 5,
     waktuBaca: "5 MIN BACA",
     icon: "\uD83D\uDCDA",
+    videoUrl: "https://www.youtube.com/embed/MmRnGxByoUQ",
     nextSlug: "manusia-khalifah-di-muka-bumi",
     nextTitle: "Manusia sebagai Khalifah",
     prevSlug: "beriman-kepada-qada-dan-qadar",
