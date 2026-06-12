@@ -4,8 +4,15 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { Users, Globe, ArrowRight, Loader2 } from "lucide-react";
 
+interface LoginData {
+  namaSiswa: string;
+  kelas: string;
+  status: "resmi" | "latihan";
+  token?: string;
+}
+
 interface QuizLoginProps {
-  onLogin: (data: { namaSiswa: string; kelas: string; status: "resmi" | "latihan" }) => void;
+  onLogin: (data: LoginData) => void;
 }
 
 export function QuizLogin({ onLogin }: QuizLoginProps) {
@@ -31,7 +38,7 @@ export function QuizLogin({ onLogin }: QuizLoginProps) {
       });
       const data = await res.json();
       if (data.found) {
-        onLogin({ namaSiswa: data.nama, kelas: data.kelas, status: "resmi" });
+        onLogin({ namaSiswa: data.nama, kelas: data.kelas, status: "resmi", token: data.token });
       } else {
         setError(data.error || "Data tidak ditemukan");
       }

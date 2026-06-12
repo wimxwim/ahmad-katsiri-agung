@@ -314,16 +314,81 @@ function RekapSection() {
     { nama: string; kelas: string; status: string; skor: string; tanggal: string }[]
   >([]);
   const [loading, setLoading] = useState(true);
+  const [locked, setLocked] = useState(true);
+  const [apiKey, setApiKey] = useState("");
+  const [keyError, setKeyError] = useState("");
 
   useEffect(() => {
-    fetch("/api/kuis/rekap")
-      .then((r) => r.json())
-      .then((data) => {
-        setRekap(data.rekap || []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    const saved = sessionStorage.getItem("rekap_api_key");
+    if (saved) {
+      setApiKey(saved);
+      fetchRekap(saved);
+    } else {
+      setLoading(false);
+    }
   }, []);
+
+  async function fetchRekap(key: string) {
+    setLoading(true);
+    try {
+      const r = await fetch("/api/kuis/rekap", {
+        headers: { "x-api-key": key },
+      });
+      if (r.status === 401) {
+        setLocked(true);
+        setKeyError("Kunci akses salah");
+        setLoading(false);
+        return;
+      }
+      const data = await r.json();
+      setRekap(data.rekap || []);
+      setLocked(false);
+      sessionStorage.setItem("rekap_api_key", key);
+    } catch {
+      setKeyError("Gagal terhubung ke server");
+    }
+    setLoading(false);
+  }
+
+  function handleSubmitKey(e: React.FormEvent) {
+    e.preventDefault();
+    fetchRekap(apiKey.trim());
+  }
+
+  if (locked) {
+    return (
+      <div>
+        <div className="text-center mb-10">
+          <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl text-on-surface mb-2">
+            Rekap Nilai Siswa
+          </h2>
+          <p className="text-sm text-on-surface-variant">Masukkan kunci akses untuk melihat data</p>
+        </div>
+        <form
+          onSubmit={handleSubmitKey}
+          className="max-w-sm mx-auto bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl p-6 shadow-glass"
+        >
+          <input
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="Kunci akses rekap nilai"
+            className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 mb-4 transition-all"
+          />
+          {keyError && (
+            <p className="text-xs text-red-500 mb-4 text-center">{keyError}</p>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full inline-flex items-center justify-center gap-2 bg-primary text-on-primary px-6 py-3.5 rounded-xl font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 disabled:opacity-40"
+          >
+            {loading ? "Memeriksa..." : "Lihat Rekap Nilai"}
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   const belum = rekap.filter((r) => r.status === "belum");
   const sudah = rekap.filter((r) => r.status === "sudah");

@@ -34,6 +34,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
     namaSiswa: string;
     kelas: string;
     status: "resmi" | "latihan";
+    token?: string;
   } | null>(null);
   const [shuffledSoal, setShuffledSoal] = useState<SoalItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -47,7 +48,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
   const totalSoal = shuffledSoal.length;
 
   const handleLogin = useCallback(
-    (data: { namaSiswa: string; kelas: string; status: "resmi" | "latihan" }) => {
+    (data: { namaSiswa: string; kelas: string; status: "resmi" | "latihan"; token?: string }) => {
       setLoginData(data);
       setQuizState("intro");
     },
@@ -80,6 +81,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
           skor: hitungSkor(),
           totalSoal: shuffledSoal.length,
           jawabanSalah,
+          token: loginData.token,
         }),
       });
     } catch {
