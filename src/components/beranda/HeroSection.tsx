@@ -23,7 +23,7 @@ export function HeroSection() {
           <p className="text-sm sm:text-base md:text-xl text-on-surface-variant leading-relaxed max-w-xl mb-8 sm:mb-10">
             Pembelajaran yang sadar (mindful), bermakna (meaningful), dan
             menyenangkan (joyful) untuk mendalami nilai-nilai Aqidah Akhlaq
-            tingkat SMP/MTs.
+            tingkat SMP.
           </p>
 
           <div className="flex flex-wrap items-center gap-4">

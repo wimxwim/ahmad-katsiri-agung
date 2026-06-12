@@ -7,8 +7,32 @@ import { Gamepad2, ExternalLink, ArrowRight, Sparkles } from "lucide-react";
 const GAMES = [
   {
     title: "Game Adab dalam Islam",
-    desc: "Game interaktif tentang adab-adab dalam Islam untuk siswa SMP/MTs.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islam",
+    desc: "Game interaktif tentang adab-adab dalam Islam untuk siswa SMP.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islamm",
+    badge: "EKSTERNAL",
+  },
+  {
+    title: "Game Beriman kepada Hari Akhir",
+    desc: "Game interaktif tentang iman kepada hari akhir untuk siswa SMP.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-hari-akhir",
+    badge: "EKSTERNAL",
+  },
+  {
+    title: "Game Beriman kepada Qada & Qadar",
+    desc: "Game interaktif tentang qada dan qadar untuk siswa SMP.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-qada-qadar",
+    badge: "EKSTERNAL",
+  },
+  {
+    title: "Game Beriman kepada Nabi dan Rasul",
+    desc: "Game interaktif tentang nabi dan rasul untuk siswa SMP.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-nabi-dan-rasul",
+    badge: "EKSTERNAL",
+  },
+  {
+    title: "Game Beriman kepada Malaikat",
+    desc: "Game interaktif tentang malaikat Allah untuk siswa SMP.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-malaikat",
     badge: "EKSTERNAL",
   },
   {
@@ -24,21 +48,9 @@ const GAMES = [
     badge: "EKSTERNAL",
   },
   {
-    title: "Game Jujur dan Amanah",
-    desc: "Game interaktif tentang kejujuran dan amanah untuk siswa SMP/MTs.",
-    url: "https://jujurdanamanah.my.canva.site/",
-    badge: "EKSTERNAL",
-  },
-  {
     title: "Game Kitab Allah SWT",
-    desc: "Game interaktif mengenal kitab-kitab Allah SWT untuk siswa SMP/MTs.",
+    desc: "Game interaktif mengenal kitab-kitab Allah SWT untuk siswa SMP.",
     url: "https://jujurdanamanah.my.canva.site/beriman-kepada-kitab-kitab-allah-swt",
-    badge: "EKSTERNAL",
-  },
-  {
-    title: "Game PAI Interaktif",
-    desc: "Game pembelajaran PAI interaktif dari berbagai sumber edukasi.",
-    url: "https://jurnalramadhansdnkebonkacang05.my.canva.site/aplikasi-tanpa-judul",
     badge: "EKSTERNAL",
   },
 ];
@@ -57,12 +69,12 @@ export default function GamePage() {
         </div>
 
         <h1 className="font-heading text-3xl sm:text-5xl lg:text-7xl tracking-tighter text-on-surface leading-none mb-6">
-          Game PAI Interaktif
+          Game Edukasi
         </h1>
 
         <p className="text-sm sm:text-base lg:text-lg text-on-surface-variant max-w-xl mx-auto">
-          Koleksi game edukasi PAI dari berbagai sumber. Klik game untuk
-          memulai petualangan belajar.
+          Koleksi game edukasi interaktif. Klik game untuk memulai
+          petualangan belajar.
         </p>
       </motion.div>
 

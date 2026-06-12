@@ -43,8 +43,8 @@ export const metadata: Metadata = {
     default: "AKAL Center — Deep Learning Akidah Akhlak",
   },
   description:
-    "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berdasarkan Kurikulum Merdeka.",
-  keywords: ["Akidah Akhlak", "Aqidah Akhlaq", "Deep Learning", "PAI", "SMP", "MTs", "Kurikulum Merdeka", "AKAL Center", "agung", "katsiri"],
+    "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berdasarkan Kurikulum Merdeka.",
+  keywords: ["Akidah Akhlak", "Aqidah Akhlaq", "Deep Learning", "PAI", "SMP", "Kurikulum Merdeka", "AKAL Center", "agung", "katsiri"],
   manifest: "/manifest.json",
   authors: [{ name: "Ahmad Katsiri Aggung, S.Pd." }],
   creator: "Ahmad Katsiri Aggung, S.Pd.",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     siteName: "AKAL Center",
     title: "AKAL Center — Deep Learning Akidah Akhlak",
     description:
-      "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berdasarkan Kurikulum Merdeka.",
+      "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berdasarkan Kurikulum Merdeka.",
     url: "https://akalcenter.my.id",
     images: [
       {
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "AKAL Center — Deep Learning Akidah Akhlak",
     description:
-      "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9.",
+      "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP Kelas 7-9.",
     images: ["/opengraph-image.png"],
   },
   robots: {
@@ -127,9 +127,9 @@ export default function RootLayout({
               name: "AKAL Center",
     url: "https://akalcenter.my.id",
               description:
-                "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9.",
+                "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP Kelas 7-9.",
               inLanguage: "id-ID",
-              educationalLevel: "SMP/MTs",
+              educationalLevel: "SMP",
               author: {
                 "@type": "Person",
                 name: "Ahmad Katsiri Aggung, S.Pd.",
@@ -146,7 +146,7 @@ export default function RootLayout({
               "@type": "LearningResource",
               name: "AKAL Center",
               description:
-                "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP/MTs Kelas 7-9 — Mindful, Meaningful, Joyful.",
+                "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP Kelas 7-9 — Mindful, Meaningful, Joyful.",
               educationalLevel: ["Grade 7", "Grade 8", "Grade 9"],
               educationalAlignment: {
                 "@type": "AlignmentObject",

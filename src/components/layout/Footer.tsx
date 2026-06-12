@@ -27,7 +27,7 @@ export function Footer() {
             </Link>
             <p className="mt-3 text-sm text-on-surface-variant leading-relaxed max-w-xs">
               Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk
-              SMP/MTs Kelas 7–9.
+              SMP Kelas 7–9.
             </p>
           </div>
 
