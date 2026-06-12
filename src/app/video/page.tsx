@@ -39,7 +39,7 @@ export default function VideoPage() {
 
         <p className="text-sm sm:text-base lg:text-lg text-on-surface-variant max-w-xl mx-auto">
           Tonton video pembelajaran Akidah Akhlak yang dikurasi khusus untuk
-          siswa SMP/MTs.
+          siswa SMP.
         </p>
       </motion.div>
 

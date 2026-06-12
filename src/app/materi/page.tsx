@@ -60,7 +60,7 @@ export default function MateriPage() {
           <span className="text-primary italic font-semibold">Materi Akidah Akhlak</span>
         </h1>
         <p className="text-sm sm:text-base lg:text-lg text-on-surface-variant max-w-2xl mx-auto">
-          Pelajari Akidah Akhlak dengan pendekatan Deep Learning untuk SMP/MTs
+          Pelajari Akidah Akhlak dengan pendekatan Deep Learning untuk SMP
           Kelas 7, 8, dan 9.
         </p>
       </div>

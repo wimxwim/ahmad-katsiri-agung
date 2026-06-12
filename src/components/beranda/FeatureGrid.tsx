@@ -16,7 +16,7 @@ const features = [
   {
     icon: BookOpen,
     title: "Materi Interaktif",
-    desc: "Jelajahi modul pembelajaran mendalam yang dirancang khusus untuk siswa SMP/MTs Kelas 7-9.",
+    desc: "Jelajahi modul pembelajaran mendalam yang dirancang khusus untuk siswa SMP Kelas 7-9.",
     link: "/materi",
     colSpan: "md:col-span-7",
     gradient: false,
@@ -84,7 +84,7 @@ export function FeatureGrid() {
           </h2>
           <p className="mt-3 text-sm sm:text-base text-on-surface-variant max-w-lg">
             Platform Deep Learning yang dirancang khusus untuk pembelajaran
-            Akidah Akhlak tingkat SMP/MTs.
+            Akidah Akhlak tingkat SMP.
           </p>
         </div>
       </div>
