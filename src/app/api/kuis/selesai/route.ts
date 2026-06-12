@@ -1,29 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { appendRow } from "@/lib/google-sheets";
 import { sendTelegram } from "@/lib/telegram";
-
-interface JawabanSalah {
-  nomor: number;
-  pertanyaan: string;
-  jawabanSiswa: string;
-  kunciJawaban: string;
-}
-
-interface Body {
-  namaSiswa: string;
-  kelas: string;
-  status: "resmi" | "latihan";
-  judulBab: string;
-  slugBab: string;
-  skor: number;
-  totalSoal: number;
-  jawabanSalah: JawabanSalah[];
-}
+import { KuisSelesaiSchema } from "@/lib/validation";
+import { verifyQuizToken } from "@/lib/auth";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
-    const body: Body = await req.json();
-    const { namaSiswa, kelas, status, judulBab, skor, totalSoal, jawabanSalah } = body;
+    const ip = ipFromRequest(req);
+    const limit = checkRateLimit(`kuis-selesai:${ip}`, 10, 30_000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: `Terlalu banyak permintaan. Coba lagi ${limit.retryAfter} detik.` },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+      );
+    }
+
+    const raw = await req.json();
+    const parsed = KuisSelesaiSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
+    }
+
+    const { namaSiswa, kelas, status, judulBab, skor, totalSoal, jawabanSalah, token } = parsed.data;
+
+    if (status === "resmi") {
+      if (!token) {
+        return NextResponse.json({ error: "Token verifikasi diperlukan" }, { status: 401 });
+      }
+      const payload = await verifyQuizToken(token);
+      if (!payload) {
+        return NextResponse.json({ error: "Token tidak valid atau kedaluwarsa" }, { status: 401 });
+      }
+      if (payload.nama !== namaSiswa || payload.kelas !== kelas) {
+        return NextResponse.json({ error: "Data tidak cocok dengan token" }, { status: 403 });
+      }
+    }
 
     const persentase = Math.round((skor / totalSoal) * 100);
     const now = new Date().toLocaleString("id-ID", {
@@ -38,7 +50,6 @@ export async function POST(req: NextRequest) {
 
     const labelStatus = status === "resmi" ? "SISWA RESMI" : "LATIHAN UMUM";
     const icon = status === "resmi" ? "🟢" : "⚪";
-
     const lulus = persentase >= 70 ? "🌟" : "📚";
 
     const message = [
@@ -66,7 +77,6 @@ export async function POST(req: NextRequest) {
     }
 
     await sendTelegram(message);
-
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Gagal menyimpan hasil kuis" }, { status: 500 });

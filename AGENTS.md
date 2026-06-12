@@ -479,6 +479,139 @@ export interface BabMateri {
 - Browser HP akan minta URL baru (`?v=2`) → Cloudflare cache miss → fetch fresh dari origin
 - Cache lama (tanpa `?v=2`) akan expire dalam 1 minggu max-age
 
+### Sesi 14 (12 Juni 2026) — Fix Gambar Game (WebP + 3 Cover Baru)
+**Effort: ~30 menit**
+
+**Masalah:** 3 game baru (Adab, Alam, Toleransi) tidak punya gambar, 3 game lama (Jujur, Kitab Allah, PAI) broken setelah migrasi `.png`→`.webp`.
+
+**Akar masalah:**
+- Commit `b9143a4` menambah 3 game baru di `page.tsx` tapi **tanpa file gambar** — Vercel nge-render broken image
+- Commit `738f94d` ganti semua referensi gambar dari `.png` ke `.webp` — 3 game lama cuma punya `.png`, jadinya ikut broken
+
+**Solusi langkah demi langkah:**
+
+**Langkah 1 — Siapkan 3 gambar cover baru dari Agy (PNG):**
+- Agy (desainer) buat 3 file PNG: `game-adab-dalam-islam.png`, `game-melestarikan-alam.png`, `game-membangun-toleransi.png`
+- Taruh di `public/images/games/`
+
+**Langkah 2 — Kompres PNG ke WebP (ImageMagick `convert`):**
+```bash
+# Untuk 3 game baru
+for f in game-adab-dalam-islam game-melestarikan-alam game-membangun-toleransi; do
+  convert "public/images/games/$f.png" -quality 80 "public/images/games/$f.webp"
+done
+
+# Untuk 3 game lama yang cuma punya .png
+for f in game-jujur-dan-amanah game-kitab-allah-swt game-pai-interaktif; do
+  convert "public/images/games/$f.png" -quality 80 "public/images/games/$f.webp"
+done
+```
+Hasil kompresi: ~3.4MB → ~140KB (**96% lebih ringan**).
+
+**Langkah 3 — Update kode (`.png` → `.webp`):**
+- File: `src/app/game/page.tsx:91`
+- Ubah: `` src={`/images/games/${game.title.toLowerCase().replace(/\s+/g, '-')}.png`} ``
+- Jadi: `` src={`/images/games/${game.title.toLowerCase().replace(/\s+/g, '-')}.webp`} ``
+
+**Langkah 4 — Git commit + push:**
+```bash
+git add public/images/games/game-{adab-dalam-islam,melestarikan-alam,membangun-toleransi}.{png,webp} src/app/game/page.tsx
+git commit -m "fix(game): add cover images for 3 new games (Adab, Alam, Toleransi)"
+git push origin main
+
+# Commit kedua — tambah .webp untuk 3 game lama
+git add public/images/games/game-{jujur-dan-amanah,kitab-allah-swt,pai-interaktif}.webp
+git commit -m "fix(game): add missing .webp for 3 legacy games (Jujur, Kitab Allah, PAI)"
+git push origin main
+```
+
+**Langkah 5 — Deploy ke Vercel:**
+```bash
+npx vercel --prod --yes
+```
+
+**Alat yang dipakai:**
+| Alat | Fungsi |
+|------|--------|
+| `convert` (ImageMagick) | Konversi PNG → WebP, kompresi lossy quality 80% |
+| `git add` / `git commit` / `git push` | Version control ke GitHub |
+| `npx vercel --prod --yes` | Deploy langsung ke Vercel production |
+
+**Jebakan yang teridentifikasi:**
+- Migrasi ekstensi file (`.png`→`.webp`) harus **serentak untuk semua game**. Kalau setengah-setengah, game lama broken.
+- ImageMagick `convert` sudah terinstall di sistem. Kalau belum ada: `sudo apt install imagemagick`
+- WebP tidak didukung di browser sangat lawas (IE11). Tapi project ini target SMP/MTs — semua pake HP modern, aman.
+
+**Dampak:**
+- Semua 6 game di halaman `/game` sekarang punya gambar cover (WebP, loading cepat)
+- Total file gambar game: 6 PNG (master) + 6 WebP (production)
+- Panduan penambahan game baru di-update — WAJIB sertakan `.webp`
+
+### Sesi 15 (12 Juni 2026) — Security Audit & Fix (CRITICAL/HIGH)
+**Effort: ~2 jam**
+
+**Latar Belakang:**
+Audit keamanan menyeluruh menggunakan skill dari `~/security-research/Claude-BugHunter/skills/`:
+- `security-review`, `hunt-xss`, `hunt-api-misconfig`, `hunt-idor`, `hunt-cloud-misconfig`, `offensive-osint`
+
+**Temuan kritis yang diperbaiki:**
+
+| # | Level | Temuan | Fix |
+|---|-------|--------|-----|
+| 1 | 🔴 CRITICAL | Mass Assignment: siapa pun bisa submit nilai resmi tanpa verifikasi via `/api/kuis/selesai` | JWT token flow: `/api/siswa/cek` → sign JWT (30 menit) → `/api/kuis/selesai` verify JWT |
+| 2 | 🔴 CRITICAL | IDOR: `/api/kuis/rekap` expose semua data siswa tanpa auth | API key protection (`x-api-key` header) + password gate di frontend |
+| 3 | 🟠 HIGH | Stored XSS: `/api/doa` simpan HTML mentah tanpa sanitasi | `sanitizeText()` — strip HTML tags + limit length di server |
+| 4 | 🟠 HIGH | No rate limiting di aplikasi | In-memory rate limiter per-IP (Map + cleanup interval) |
+| 5 | 🟠 HIGH | X-Frame-Options conflict: Worker `SAMEORIGIN` override `DENY` | Worker diset ke `DENY` konsisten |
+| 6 | 🟡 MEDIUM | No CSP di `next.config.ts` (hanya di Worker) | CSP header ditambahkan di `next.config.ts` sebagai fallback |
+| 7 | 🟡 MEDIUM | No HSTS | `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload` |
+| 8 | 🟡 MEDIUM | No Zod validation di API | Zod schemas untuk semua 4 endpoint (`DoaSchema`, `SiswaCekSchema`, `KuisSelesaiSchema`) |
+| 9 | 🟡 MEDIUM | Lenis dead dependency | `npm uninstall lenis` |
+
+**Library baru:**
+| Library | Fungsi | Alasan modern 2026 |
+|---------|--------|-------------------|
+| `jose` | JWT sign/verify | Edge-compatible, successor `jsonwebtoken`, zero-dep |
+| `zod` (v4, sudah ter-install via Next.js) | Schema validation | TypeScript-first, auto-infer types |
+
+**File baru:**
+| File | Fungsi |
+|------|--------|
+| `src/lib/auth.ts` | `signQuizToken()` / `verifyQuizToken()` — JWT HS256, 30 menit expiry |
+| `src/lib/rate-limit.ts` | `checkRateLimit()` — in-memory Map dengan cleanup tiap 60 detik |
+| `src/lib/sanitize.ts` | `stripHtml()` / `sanitizeText()` — hapus semua tag HTML |
+| `src/lib/validation.ts` | Zod schemas untuk semua endpoint |
+
+**File diubah:**
+| File | Perubahan |
+|------|-----------|
+| `src/app/api/doa/route.ts` | Zod + sanitize + rate limiter |
+| `src/app/api/siswa/cek/route.ts` | Zod + rate limiter + return JWT token |
+| `src/app/api/kuis/selesai/route.ts` | Zod + JWT verify + rate limiter |
+| `src/app/api/kuis/rekap/route.ts` | Rate limiter + API key auth |
+| `src/components/evaluasi/QuizLogin.tsx` | Pass `token` dari API ke parent |
+| `src/components/evaluasi/QuizEngine.tsx` | Simpan + kirim `token` ke submit API |
+| `src/app/pendidik/page.tsx` | Password gate sebelum akses rekap |
+| `next.config.ts` | +CSP +HSTS (fallback defense-in-depth) |
+| `workers/akal-center/index.ts` | `SAMEORIGIN` → `DENY` |
+| `package.json` | Hapus `lenis` |
+| `.env.example` | +`JWT_SECRET` +`ADMIN_API_KEY` |
+
+**Env var baru untuk Vercel:**
+```
+JWT_SECRET=       # String random min 32 karakter — untuk sign JWT
+ADMIN_API_KEY=    # String bebas — untuk akses rekap nilai di /pendidik
+```
+
+**Arsitektur JWT Flow (2026 modern — stateless, no DB):**
+```
+Siswa login → /api/siswa/cek → sign JWT {nama, kelas, exp:30m} → client simpan di memory
+        ↓
+Submit kuis → /api/kuis/selesai → verify JWT → jika valid & match → simpan ke Sheets
+        ↓
+Tanpa token valid → 401 Unauthorized
+```
+
 ## Belum Selesai / Bisa Dilanjutkan
 
 | Item | Status | Effort Estimasi | Keterangan |

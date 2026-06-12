@@ -1,8 +1,25 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { readRows } from "@/lib/google-sheets";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
-export async function GET() {
+const ADMIN_KEY = process.env.ADMIN_API_KEY || "";
+
+export async function GET(req: NextRequest) {
   try {
+    const ip = ipFromRequest(req);
+    const limit = checkRateLimit(`rekap:${ip}`, 20, 60_000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: `Terlalu banyak permintaan` },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+      );
+    }
+
+    const apiKey = req.headers.get("x-api-key");
+    if (!ADMIN_KEY || apiKey !== ADMIN_KEY) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const [daftarSiswa, rekapNilai] = await Promise.all([
       readRows("DaftarSiswa!A:D"),
       readRows("RekapNilai!A:H"),
@@ -10,7 +27,6 @@ export async function GET() {
 
     const siswaRows = daftarSiswa.slice(1).map(([_, nama, kelas]) => ({ nama, kelas }));
     const nilaiRows = rekapNilai.slice(1);
-
     const siswaSudah = new Set(nilaiRows.map((r) => r[1]?.toLowerCase()));
 
     const rekap = siswaRows.map((siswa) => {

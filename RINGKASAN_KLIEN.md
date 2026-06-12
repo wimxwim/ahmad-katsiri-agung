@@ -54,6 +54,7 @@
 | 2026-06-11 | Sesi 12: 5 bab baru (total 14 bab), game link update, tim verifikator, foto Bang Agung (resize 400×400), LCP optimasi WebP |
 | 2026-06-11 | Sesi 13: Cache-busting foto Bang Agung (?v=2) — fix foto lama muncul di HP |
 | 2026-06-11 | Sesi 14: Update playbook agensi — 39 error terklasifikasi + arsitektur Vercel/Cloudflare/Domain |
+| 2026-06-12 | Sesi 15: Security Audit & Fix — JWT auth, rate limiting, sanitasi XSS, CSP/HSTS, Zod validation, lenis removal |
 
 ---
 
@@ -118,15 +119,27 @@ Buka file `src/app/game/page.tsx`, cari array `GAMES`, lalu tambah objek baru:
 - Simpan di urutan yang diinginkan (paling baru biasanya ditaruh paling atas)
 - URL adalah link Canva yang dikirim klien
 
-### 2. (Opsional) Tautkan ke Materi Terkait
-Kalau game berhubungan dengan salah satu dari 9 bab materi:
+### 2. Siapkan Gambar Cover (WAJIB — format WebP)
+Setiap game WAJIB punya gambar cover ukuran 16:9 (1600×900 px) di folder `public/images/games/`:
+- Nama file: `game-{slug}.webp` (huruf kecil, spasi jadi `-`)
+- Contoh: `game-adab-dalam-islam.webp`, `game-melestarikan-alam.webp`
+- Source file PNG ditaruh di tempat yang sama (sebagai master)
+
+Cara konversi PNG → WebP (pake ImageMagick):
+```bash
+convert "public/images/games/game-nama-game.png" -quality 80 "public/images/games/game-nama-game.webp"
+```
+> ⚠️ **PENTING:** Pastikan SEMUA game punya file `.webp`. Kalau ada game yang cuma punya `.png`, gambar di website akan broken (karena kode di `page.tsx` sudah pakai `.webp`).
+
+### 3. (Opsional) Tautkan ke Materi Terkait
+Kalau game berhubungan dengan salah satu dari 14 bab materi:
 1. Buka `src/data/materi.ts`
 2. Cari entry bab yang sesuai (misal `"amanah-dan-jujur"`)
 3. Tambah field `gameUrl: "https://namagame.my.canva.site/",`
    (letakkan setelah `soalUrl` atau `videoUrl`)
 4. Otomatis card "Game Terkait" akan muncul di sidebar halaman detail materi
 
-### 3. Deploy
+### 4. Deploy
 ```bash
 npm run build
 git add -A

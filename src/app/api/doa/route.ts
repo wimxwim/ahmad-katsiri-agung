@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { appendRow, readRows } from "@/lib/google-sheets";
 import { sendTelegram } from "@/lib/telegram";
+import { DoaSchema } from "@/lib/validation";
+import { sanitizeText } from "@/lib/sanitize";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 const SHEET_RANGE = "DoaUcapan!A:D";
 
@@ -24,15 +27,26 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { nama, isi } = await req.json();
-    if (!isi || isi.trim().length === 0) {
-      return NextResponse.json({ error: "Isi doa tidak boleh kosong" }, { status: 400 });
-    }
-    if (isi.length > 400) {
-      return NextResponse.json({ error: "Maksimal 400 karakter" }, { status: 400 });
+    const ip = ipFromRequest(req);
+    const limit = checkRateLimit(`doa:${ip}`, 5, 10_000);
+    if (!limit.allowed) {
+      return NextResponse.json(
+        { error: `Terlalu banyak permintaan. Coba lagi ${limit.retryAfter} detik.` },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+      );
     }
 
-    const cleanNama = nama?.trim() || "Anonim";
+    const raw = await req.json();
+    const parsed = DoaSchema.safeParse(raw);
+    if (!parsed.success) {
+      const msg = parsed.error.issues[0]?.message || "Data tidak valid";
+      return NextResponse.json({ error: msg }, { status: 400 });
+    }
+
+    const { nama, isi } = parsed.data;
+    const cleanNama = sanitizeText(nama, 60);
+    const cleanIsi = sanitizeText(isi, 400);
+
     const now = new Date().toLocaleString("id-ID", {
       timeZone: "Asia/Jakarta",
       dateStyle: "medium",
@@ -40,10 +54,10 @@ export async function POST(req: NextRequest) {
     });
     const id = `doa_${Date.now()}`;
 
-    await appendRow(SHEET_RANGE, [[id, cleanNama, isi.trim(), now]]);
+    await appendRow(SHEET_RANGE, [[id, cleanNama, cleanIsi, now]]);
 
     await sendTelegram(
-      `🤲 *DOA & UCAPAN BARU MASUK!*\n\n👤 *Pengirim:* ${cleanNama}\n💬 _${isi.trim()}_`
+      `🤲 *DOA & UCAPAN BARU MASUK!*\n\n👤 *Pengirim:* ${cleanNama}\n💬 _${cleanIsi}_`
     );
 
     return NextResponse.json({ success: true });
