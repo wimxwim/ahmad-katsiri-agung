@@ -203,9 +203,41 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     soalUrl: "/pdf/melestarikan-alam-cerminan-orang-beriman-soal.pdf",
     prevSlug: "salat-mencegah-perbuatan-keji-dan-mungkar",
     prevTitle: "Salat Mencegah Keji & Mungkar",
-    pendahuluan: "",
-    konten: [],
-    poinPenting: [],
+    pendahuluan: "Melestarikan alam adalah cerminan keimanan seorang muslim. Allah menciptakan alam semesta dengan sempurna dan memberikan amanah kepada manusia untuk menjaganya. Manusia sebagai khalifah di bumi bertanggung jawab memakmurkan dan melestarikan alam, bukan merusaknya.",
+    konten: [
+      {
+        judul: "Kandungan Surah Al-Furqan [25] Ayat 48\u201349",
+        isi: "Ayat ini menggambarkan kekuasaan Allah Yang Mahasempurna, yaitu Dialah yang meniupkan angin sebagai pembawa kabar gembira akan datangnya hujan. Allah menurunkan air hujan dalam keadaan amat bersih (suci lagi menyucikan). Tanah yang kering menjadi hidup setelah menerima hujan, dipenuhi tetumbuhan dengan bunga-bungaan beraneka warna. Manusia dan hewan sangat membutuhkan air. Inilah anugerah Allah yang perlu direnungkan manusia sebagai bentuk syukur atas nikmat alam.",
+      },
+      {
+        judul: "Kandungan Surah Al-A\u2019raf [7] Ayat 56",
+        isi: "Allah melarang manusia berbuat kerusakan di bumi setelah diciptakan dengan baik. Allah tidak menyukai orang-orang yang melampaui batas. Manusia diperintahkan berdoa kepada Allah dengan rasa takut dan harapan. Sesungguhnya rahmat Allah sangat dekat kepada orang yang berbuat kebaikan. Ayat ini menjadi landasan utama tentang larangan merusak alam dan lingkungan.",
+      },
+      {
+        judul: "Pentingnya Melestarikan Alam",
+        isi: "Manusia menjadi faktor penentu dalam menjaga kelestarian lingkungan. Keserakahan manusia dalam menguasai alam sering menimbulkan kerusakan seperti kerusakan sumber daya alam, penyusutan hutan, erosi, sungai tercemar, dan polusi udara. Kerusakan di darat seperti pembangunan di daerah resapan air menyebabkan banjir dan tanah longsor. Kerusakan di laut seperti pencemaran air laut merusak ekosistem. Allah telah menghamparkan bumi beserta isinya sebagai sumber kehidupan, maka sudah sepantasnya manusia bersyukur.",
+      },
+      {
+        judul: "Perilaku Melestarikan Alam",
+        isi: "Beberapa perilaku yang mencerminkan pelestarian alam: (1) Menanam pohon sebagai kontribusi penghijauan dan sedekah jariyah. (2) Membuang sampah pada tempatnya. (3) Mendaur ulang barang bekas menjadi hal berguna. (4) Mengurangi penggunaan kendaraan bermotor. (5) Menggunakan air seperlunya. (6) Menghemat penggunaan listrik. (7) Mengurangi konsumsi kemasan plastik sekali pakai. (8) Membawa tempat bekal dari rumah.",
+      },
+    ],
+    dalil: {
+      surah: "QS. Al-A\u2019raf [7]: 56",
+      arab: "\u0648\u064E\u0644\u064E\u0627 \u062A\u064F\u0641\u0652\u0633\u0650\u062F\u064F\u0648\u0627\u0652 \u0641\u0650\u064A \u0671\u0644\u0623\u064E\u0631\u0652\u0636\u0650 \u0628\u064E\u0639\u0652\u062F\u064E \u0625\u0650\u0635\u0652\u0644\u064E\u0670\u062D\u0650\u0647\u064E\u0627",
+      arti: "Dan janganlah kamu berbuat kerusakan di bumi setelah (diciptakan) dengan baik.",
+    },
+    dimensi: [
+      { nomor: 1, judul: "Alam sebagai Amanah Allah", deskripsi: "Alam semesta adalah amanah Allah yang harus dijaga dan dilestarikan, bukan dieksploitasi untuk kepentingan sesaat." },
+      { nomor: 2, judul: "Larangan Merusak Alam", deskripsi: "Allah melarang keras perbuatan merusak alam, baik di darat maupun di laut. Kerusakan alam adalah bentuk keingkaran terhadap nikmat Allah." },
+      { nomor: 3, judul: "Syukur atas Nikmat Alam", deskripsi: "Melestarikan alam adalah wujud syukur kepada Allah atas nikmat ciptaan-Nya yang tak terhingga." },
+    ],
+    poinPenting: [
+      "QS. Al-Furqan [25]: 48\u201349 menjelaskan nikmat air hujan sebagai rahmat Allah.",
+      "QS. Al-A\u2019raf [7]: 56 melarang keras perbuatan merusak bumi.",
+      "Menanam pohon adalah sedekah jariyah yang pahalanya terus mengalir.",
+      "Melestarikan alam adalah wujud keimanan dan syukur kepada Allah.",
+    ],
   },
 
   "amanah-dan-jujur": {
@@ -388,9 +420,45 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     nextTitle: "Moderasi Beragama",
     prevSlug: "beriman-kepada-nabi-dan-rasul",
     prevTitle: "Beriman kepada Nabi & Rasul",
-    pendahuluan: "",
-    konten: [],
-    poinPenting: [],
+    pendahuluan: "Toleransi (tasamuh) adalah sikap saling menghormati dan menghargai perbedaan dalam kehidupan bermasyarakat. Islam mengajarkan toleransi dalam batasan yang jelas, terutama dalam hubungan antarumat beragama. Allah menciptakan manusia berbangsa-bangsa dan bersuku-suku agar saling mengenal, bukan untuk saling bermusuhan.",
+    konten: [
+      {
+        judul: "Pengertian Toleransi",
+        isi: "Kata toleransi berasal dari bahasa Latin tolerare yang berarti menahan, membiarkan, dan tabah. Dalam bahasa Arab disebut tasamuh, dari kata samaha yang berarti ampun, maaf, dan lapang dada. Toleransi adalah sikap saling menghormati, saling menghargai keyakinan orang, tidak memaksakan kehendak, serta tidak mencela atau menghina agama lain. Dalam Islam, toleransi bukan hanya kepada sesama manusia tetapi juga kepada alam semesta, binatang, dan lingkungan hidup.",
+      },
+      {
+        judul: "Kandungan QS. Al-Hujurat [49] Ayat 13",
+        isi: "Ayat ini menjelaskan bahwa Allah menciptakan manusia dari seorang laki-laki (Adam) dan seorang perempuan (Hawa) dan menjadikannya berbangsa-bangsa, bersuku-suku agar saling mengenal dan menolong. Allah tidak menyukai kesombongan karena keturunan atau kekayaan. Yang paling mulia di sisi Allah hanyalah orang yang paling bertakwa. Ayat ini menegaskan bahwa semua manusia sama derajat kemanusiaannya.",
+      },
+      {
+        judul: "Prinsip dan Batasan Toleransi",
+        isi: "Toleransi yang dilarang adalah dalam masalah akidah, yaitu mempertukarkan akidah atau turut serta dalam peribadatan agama lain. Lima prinsip toleransi: (1) Untukmu agamamu, untukku agamaku (QS. Al-Kafirun [109]: 6). (2) Tidak berhubungan dengan perayaan nonmuslim. (3) Tidak menghadiri acara maksiat. (4) Toleransi sebatas wilayah muamalah. (5) Toleransi tidak berkenaan dengan akidah dan ibadah. Tiga konsep dasar toleransi menurut Islam: kebebasan beragama (al-hurriyyah al-diniyyah), kemanusiaan (al-insaniyyah), dan moderatisme (al-washatiyyah).",
+      },
+      {
+        judul: "Toleransi dengan Umat Beragama",
+        isi: "Rasulullah saw. telah menunjukkan sikap toleran dalam Piagam Madinah, siap bekerja sama dengan nonmuslim untuk saling melindungi. Perilaku toleransi: berbuat baik dan adil kepada setiap agama, menolong siapa pun tanpa memandang agama, tetap menjalin hubungan dengan kerabat nonmuslim, boleh memberi hadiah kepada nonmuslim, tidak memaksakan kehendak, tidak memaksakan orang lain menganut agama kita, tidak mencela atau menghina agama lain, dan tidak melarang umat lain beribadah sesuai keyakinannya.",
+      },
+      {
+        judul: "Hikmah Toleransi",
+        isi: "Beberapa hikmah bersikap toleransi: (1) Menyadari bahwa Allah menciptakan manusia dengan beragam bentuk fisik, ras, dan budaya. (2) Menciptakan perdamaian dan kerukunan antarmasyarakat. (3) Mendorong masyarakat menjadi insan yang adil dan bijak. (4) Masyarakat tidak mudah terprovokasi oleh isu-isu perpecahan. (5) Memupuk rasa persaudaraan antarsesama. (6) Memudahkan terjalinnya kerja sama dan gotong royong. (7) Terhindar dari perpecahan dan pertikaian.",
+      },
+    ],
+    dalil: {
+      surah: "QS. Al-Hujurat [49]: 13",
+      arab: "\u064A\u0670\u0670\u0670\u0670\u0627\u064E\u0649\u0651\u064F\u0647\u064E\u0627 \u0671\u0644\u0646\u0651\u064E\u0627\u0633\u064F \u0625\u0650\u0646\u0651\u064E\u0627 \u062E\u064E\u0644\u064E\u0642\u0652\u0646\u0670\u0670\u0643\u064F\u0645\u0652 \u0645\u0650\u0646 \u0630\u064E\u0643\u064E\u0631\u064D \u0648\u064E\u0623\u064F\u0646\u062B\u0670\u0649",
+      arti: "Wahai manusia, sesungguhnya Kami telah menciptakan kamu dari seorang laki-laki dan perempuan, dan menjadikan kamu berbangsa-bangsa dan bersuku-suku agar kamu saling mengenal.",
+    },
+    dimensi: [
+      { nomor: 1, judul: "Konsep Tasamuh dalam Islam", deskripsi: "Toleransi adalah sikap saling menghormati dan menghargai perbedaan tanpa mengorbankan akidah dan keyakinan." },
+      { nomor: 2, judul: "Prinsip Toleransi", deskripsi: "Toleransi dalam Islam memiliki batasan yang jelas: tidak boleh menyangkut akidah, peribadatan, dan identitas agama." },
+      { nomor: 3, judul: "Hikmah Toleransi", deskripsi: "Toleransi menciptakan perdamaian, kerukunan, dan persaudaraan dalam kehidupan bermasyarakat yang beragam." },
+    ],
+    poinPenting: [
+      "Toleransi (tasamuh) adalah sikap saling menghormati keyakinan orang lain.",
+      "QS. Al-Hujurat [49]: 13 menegaskan kesetaraan manusia di sisi Allah.",
+      "Akidah dan ibadah adalah batasan toleransi yang tidak boleh dilanggar.",
+      "Rasulullah mencontohkan toleransi dalam Piagam Madinah.",
+    ],
   },
 
   "moderasi-beragama": {
@@ -408,9 +476,41 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     gameUrl: "https://kuis-bangun-ruang9.my.canva.site/moderasi-beragama",
     prevSlug: "membangun-toleransi",
     prevTitle: "Membangun Toleransi",
-    pendahuluan: "",
-    konten: [],
-    poinPenting: [],
+    pendahuluan: "Moderasi beragama (wasatiah) adalah sikap tengah dalam beragama, tidak ekstrem kiri maupun kanan. Islam adalah agama wasatiah yang mengajarkan keseimbangan antara kehidupan dunia dan akhirat. Umat Islam disebut ummatan wasathan, umat pilihan yang adil dan menjadi saksi bagi umat manusia.",
+    konten: [
+      {
+        judul: "Kandungan QS. Al-Baqarah [2] Ayat 143",
+        isi: "Umat Islam adalah ummatan wasathan, umat yang mendapat petunjuk dari Allah sehingga menjadi umat yang adil serta pilihan. Umat Islam harus senantiasa menegakkan keadilan dan kebenaran serta membela yang hak dan melenyapkan yang batil. Mereka dalam segala persoalan hidup berada di tengah antara orang yang mementingkan kebendaan semata dan orang yang hanya mementingkan ukhrawi. Perubahan kiblat dari Baitulmakdis ke Ka'bah adalah untuk menguji keimanan manusia. Allah tidak akan menyia-nyiakan iman dan amal orang yang mematuhi Rasul.",
+      },
+      {
+        judul: "Pengertian Moderasi Beragama",
+        isi: "Moderasi beragama adalah konsep yang menekankan sikap saling menghormati dan toleransi di antara kelompok agama yang berbeda. Menurut Quraish Shihab, wasatiah adalah keseimbangan dalam segala persoalan hidup duniawi maupun ukhrawi. Islam mengajarkan umatnya agar meraih materi yang bersifat duniawi tetapi dengan nilai-nilai samawi. Manusia tidak boleh tenggelam dalam materialisme, tidak juga terbang tinggi dalam spiritualisme. Ketika pandangan mengarah ke langit, kaki harus tetap berpijak di bumi.",
+      },
+      {
+        judul: "Ciri-Ciri Moderasi Beragama",
+        isi: "Tiga hal utama yang merupakan syarat menjadi umat terbaik menurut QS. Ali Imran: 110: (1) Amar makruf \u2014 menyeru kepada kebajikan. (2) Nahi munkar \u2014 mencegah kemungkaran. (3) Beriman kepada Allah. Umat yang moderat adalah umat yang mengajak kepada kebaikan, memiliki pengetahuan yang luas, dan mampu mengamalkannya secara berulang-ulang dalam kehidupan sehari-hari.",
+      },
+      {
+        judul: "Aplikasi Moderasi dalam Kehidupan",
+        isi: "Lima cara mengaplikasikan moderasi beragama: (1) Menghargai perbedaan \u2014 tidak merendahkan atau mengolok-olok agama orang lain. (2) Meningkatkan pemahaman \u2014 membaca literatur agama dan mengikuti dialog antaragama. (3) Mempraktikkan nilai-nilai agama \u2014 kejujuran, kasih sayang, dan perdamaian. (4) Menciptakan dialog \u2014 mendengarkan dan memahami pandangan orang lain. (5) Menjaga sikap tenang dan tidak mudah terprovokasi dalam situasi yang berpotensi konflik.",
+      },
+    ],
+    dalil: {
+      surah: "QS. Al-Baqarah [2]: 143",
+      arab: "\u0648\u064E\u0643\u064E\u0630\u0670\u0670\u0644\u0650\u0643\u064E \u062C\u064E\u0639\u064E\u0644\u0652\u0646\u0670\u0670\u0643\u064F\u0645\u0652 \u0623\u064F\u0645\u0651\u064E\u0629\u064B \u0648\u064E\u0633\u064E\u0637\u064B\u0627",
+      arti: "Dan demikian pula Kami menjadikan kamu (umat Islam) sebagai umat pertengahan (adil dan pilihan).",
+    },
+    dimensi: [
+      { nomor: 1, judul: "Ummatan Wasathan", deskripsi: "Umat Islam adalah umat pertengahan yang adil dan pilihan, menjadi saksi atas seluruh umat manusia dengan sikap moderat." },
+      { nomor: 2, judul: "Keseimbangan Dunia dan Akhirat", deskripsi: "Moderasi mengajarkan keseimbangan antara urusan dunia dan akhirat, tidak ekstrem dalam salah satu sisi." },
+      { nomor: 3, judul: "Praktik Moderasi dalam Kehidupan", deskripsi: "Sikap moderat diwujudkan melalui amar makruf, nahi munkar, menghargai perbedaan, dan dialog antaragama." },
+    ],
+    poinPenting: [
+      "Umat Islam adalah ummatan wasathan, umat pertengahan yang adil dan pilihan.",
+      "Moderasi beragama adalah keseimbangan dalam segala persoalan hidup.",
+      "Tiga syarat umat terbaik: amar makruf, nahi munkar, dan beriman kepada Allah.",
+      "Sikap moderat mencegah ekstremisme dan radikalisme dalam beragama.",
+    ],
   },
 
   "adab-dalam-islam": {
@@ -590,9 +690,41 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     nextTitle: "Manusia sebagai Khalifah",
     prevSlug: "beriman-kepada-qada-dan-qadar",
     prevTitle: "Beriman kepada Qada & Qadar",
-    pendahuluan: "",
-    konten: [],
-    poinPenting: [],
+    pendahuluan: "Mencari ilmu adalah kewajiban setiap muslim. Islam menjanjikan derajat yang tinggi bagi orang-orang yang beriman dan berilmu. Dalam Al-Qur'an, Allah memerintahkan hamba-Nya untuk senantiasa mencari ilmu dan mengamalkannya dalam kehidupan sehari-hari.",
+    konten: [
+      {
+        judul: "Kandungan Surah Al-Mujadalah [58] Ayat 11",
+        isi: "Ayat ini memberikan penjelasan tentang adab dalam majelis dan keutamaan orang berilmu. Para sahabat berlomba-lomba mencari tempat dekat Rasulullah untuk mendengar perkataan beliau. Orang yang memberikan kelapangan kepada sesama muslim, maka Allah akan memberi kelapangan pula di dunia dan akhirat. Allah akan mengangkat derajat orang yang beriman dan berilmu. Orang yang mempunyai derajat tertinggi di sisi Allah adalah yang beriman dan berilmu serta mengamalkannya.",
+      },
+      {
+        judul: "Kandungan Surah Az-Zumar [39] Ayat 9",
+        isi: "Ayat ini menanyakan apakah sama orang-orang yang mengetahui dengan orang-orang yang tidak mengetahui. Orang yang mengetahui pahala dan siksa akan berbeda dengan yang tidak mengetahuinya. Hanya orang-orang yang berakal (ulul albab) yang dapat mengambil pelajaran dari tanda-tanda kebesaran Allah. Ulul albab adalah orang yang senantiasa mengingat Allah dan kebesaran-Nya, memiliki kemampuan berpikir kritis, dan gemar berliterasi.",
+      },
+      {
+        judul: "Keutamaan Ilmu dan Orang yang Mencari Ilmu",
+        isi: "Ilmu pengetahuan memiliki peran besar dalam kehidupan. Dengan ilmu, manusia dapat membedakan antara benar dan salah. Ilmu membantu manusia memahami kewajibannya untuk bertakwa kepada Allah. Allah akan mengangkat derajat manusia yang berilmu di dunia dan akhirat. Rasulullah bersabda: 'Barang siapa yang menempuh jalan untuk mencari ilmu, maka Allah akan mudahkan baginya jalan menuju surga.' (HR. Muslim). Menuntut ilmu adalah kewajiban setiap muslim dari buaian hingga liang lahat.",
+      },
+      {
+        judul: "Adab-Adab Menuntut Ilmu",
+        isi: "Enam adab menuntut ilmu: (1) Niat karena Allah \u2014 menuntut ilmu dengan ikhlas agar ilmu bermanfaat. (2) Selalu berdoa \u2014 'Ya Allah, berikanlah manfaat atas ilmu yang Engkau ajarkan, ajarilah aku hal bermanfaat, dan tambahkanlah ilmu.' (3) Bersungguh-sungguh \u2014 antusias dan tidak pernah merasa puas dengan ilmu yang didapat. (4) Menjauhi maksiat \u2014 maksiat membuat sulit berkonsentrasi dan ilmu sulit dipahami. (5) Jangan sombong \u2014 rendah hati adalah kunci mendapatkan ilmu bermanfaat. (6) Memperhatikan guru \u2014 menyimak ajaran guru dengan baik sebagai bentuk adab.",
+      },
+    ],
+    dalil: {
+      surah: "QS. Al-Mujadalah [58]: 11",
+      arab: "\u064A\u0670\u0670\u0670\u064E\u0649\u0651\u064F\u0647\u064E\u0627 \u0671\u0644\u0651\u064E\u0630\u0650\u064A\u0646\u064E \u0621\u064E\u0627\u0645\u064E\u0646\u064F\u0648\u0627\u0652 \u0625\u0650\u0630\u064E\u0627 \u0642\u0650\u064A\u0644\u064E \u0644\u064E\u0643\u064F\u0645\u0652 \u062A\u064E\u0641\u064E\u0633\u0651\u064E\u062D\u064F\u0648\u0627\u0652 \u0641\u0650\u064A \u0671\u0644\u0652\u0645\u064E\u062C\u0670\u0670\u0644\u0650\u0633\u0650",
+      arti: "Wahai orang-orang yang beriman, apabila dikatakan kepadamu 'Berilah kelapangan di dalam majelis-majelis,' maka lapangkanlah, niscaya Allah akan memberi kelapangan untukmu.",
+    },
+    dimensi: [
+      { nomor: 1, judul: "Iman dan Ilmu", deskripsi: "Orang yang beriman dan berilmu memiliki derajat tertinggi di sisi Allah. Ilmu tanpa iman akan menyesatkan, iman tanpa ilmu akan lemah." },
+      { nomor: 2, judul: "Ulul Albab", deskripsi: "Ulul albab adalah orang berakal yang mampu mengambil pelajaran dari tanda-tanda kebesaran Allah dan gemar berliterasi." },
+      { nomor: 3, judul: "Semangat Mencari Ilmu", deskripsi: "Menuntut ilmu adalah kewajiban setiap muslim sepanjang hayat. Allah memudahkan jalan surga bagi penuntut ilmu." },
+    ],
+    poinPenting: [
+      "QS. Al-Mujadalah [58]: 11 menjelaskan bahwa Allah mengangkat derajat orang berilmu.",
+      "QS. Az-Zumar [39]: 9 menjelaskan bahwa tidak sama orang berilmu dengan yang tidak.",
+      "Rasulullah bersabda bahwa siapa yang menempuh jalan mencari ilmu, Allah mudahkan jalannya ke surga.",
+      "Ada enam adab menuntut ilmu: niat ikhlas, berdoa, sungguh-sungguh, jauhi maksiat, rendah hati, dan hormati guru.",
+    ],
   },
 
   "manusia-khalifah-di-muka-bumi": {
@@ -610,8 +742,40 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     gameUrl: "https://kuis-bangun-ruang9.my.canva.site/manusia-sebagai-khalifah-di-bumi",
     prevSlug: "semangat-mencari-ilmu",
     prevTitle: "Semangat Mencari Ilmu",
-    pendahuluan: "",
-    konten: [],
-    poinPenting: [],
+    pendahuluan: "Manusia diciptakan Allah sebagai khalifah di muka bumi untuk mengelola dan memakmurkan alam. Tugas sebagai khalifah adalah amanah yang akan dimintai pertanggungjawaban di hadapan Allah. Manusia dibekali akal dan ilmu untuk menjalankan tugas mulia ini.",
+    konten: [
+      {
+        judul: "Kandungan Surah Al-Baqarah [2] Ayat 30",
+        isi: "Ayat ini adalah pemberitahuan Allah kepada malaikat bahwa Dia akan menciptakan manusia sebagai khalifah di muka bumi. Malaikat meragukan kemampuan manusia karena memiliki sifat merusak dan menumpahkan darah. Allah menjawab bahwa hanya Dialah yang mengetahui alasannya. Manusia sebagai khalifah dibekali akal dan diajarkan berbagai ilmu pengetahuan. Setiap manusia adalah pemimpin dan akan ditanya mengenai pertanggungjawabannya (HR. Bukhari).",
+      },
+      {
+        judul: "Kandungan Surah Al-Qasas [28] Ayat 77",
+        isi: "Ayat ini mengajarkan keseimbangan hidup dunia dan akhirat. Manusia tidak boleh hanya mementingkan dunia dan melupakan akhirat, begitu pula sebaliknya. Lima hal pokok dalam ayat ini: (1) Perintah mencari kebahagiaan dunia akhirat. (2) Larangan melupakan kenikmatan dunia. (3) Perintah berbuat baik kepada orang lain. (4) Larangan berbuat kerusakan di bumi. (5) Allah tidak menyukai orang yang berbuat kerusakan. Ayat ini juga merupakan nasihat kepada Qarun yang serakah.",
+      },
+      {
+        judul: "Fungsi dan Kedudukan Manusia sebagai Khalifah",
+        isi: "Fungsi manusia di dunia adalah sebagai khalifah, tujuan penciptaannya adalah untuk beribadah kepada Allah, dan tujuan hidupnya adalah mendapatkan kesenangan dunia serta ketenangan akhirat. Khalifah adalah seseorang yang diberi tugas sebagai pelaksana tugas-tugas yang telah ditentukan Allah. Jabatan manusia sebagai khalifah adalah amanat Allah. Manusia memiliki keistimewaan dibanding makhluk lain dari segi fisik dan personalitas karakter. Sebagai khalifatullah, manusia harus bertindak sebagaimana Allah bertindak kepada semua makhluk-Nya.",
+      },
+      {
+        judul: "Perilaku Pengamalan Ayat",
+        isi: "Perilaku yang mencerminkan QS. Al-Baqarah [2]: 30: (1) Menjalankan tugas sebagai khalifah dengan menjaga dan melestarikan bumi. (2) Tidak berbuat kerusakan di muka bumi. (3) Membuang sampah pada tempatnya. (4) Tidak berbuat syirik. (5) Menjalankan perintah Allah dan menjauhi larangan-Nya. Perilaku yang mencerminkan QS. Al-Qasas [28]: 77: (1) Hidup seimbang dengan mengutamakan kebahagiaan akhirat. (2) Menikmati kehidupan dunia sesuai ridha Allah. (3) Tidak hidup serakah seperti Qarun. (4) Tidak sibuk mengejar harta sehingga lupa akhirat. Hadis tentang kasih sayang: 'Sayangilah penduduk yang ada di bumi, niscaya akan disayangi penduduk langit.' (HR. Tirmizi).",
+      },
+    ],
+    dalil: {
+      surah: "QS. Al-Baqarah [2]: 30",
+      arab: "\u0648\u064E\u0625\u0650\u0630\u0652 \u0642\u064E\u0627\u0644\u064E \u0631\u064E\u0628\u0651\u064F\u0643\u064E \u0644\u0650\u0644\u0652\u0645\u064E\u0644\u064E\u0670\u0670\u0626\u0650\u0643\u064E\u0629\u0650 \u0625\u0650\u0646\u0651\u0650\u064A \u062C\u064E\u0627\u0639\u0650\u0644\u064C \u0641\u0650\u064A \u0671\u0644\u0623\u064E\u0631\u0652\u0636\u0650 \u062E\u064E\u0644\u0650\u064A\u0641\u064E\u0629\u064B",
+      arti: "Ingatlah ketika Tuhanmu berfirman kepada para malaikat: 'Sesungguhnya Aku hendak menjadikan seorang khalifah di bumi.'",
+    },
+    dimensi: [
+      { nomor: 1, judul: "Konsep Khalifah di Bumi", deskripsi: "Manusia sebagai khalifah bertugas mengelola dan memakmurkan bumi, menjaga kelestarian alam, dan melaksanakan perintah Allah." },
+      { nomor: 2, judul: "Keseimbangan Dunia dan Akhirat", deskripsi: "Manusia harus menjaga keseimbangan antara kepentingan dunia dan akhirat, tidak boleh tenggelam dalam materialisme atau spiritualisme semata." },
+      { nomor: 3, judul: "Kasih Sayang sebagai Khalifah", deskripsi: "Sebagai khalifah, manusia harus menebarkan kebaikan dan kasih sayang kepada seluruh makhluk di bumi." },
+    ],
+    poinPenting: [
+      "Manusia adalah khalifah di bumi yang bertanggung jawab memakmurkan dan menjaganya.",
+      "QS. Al-Baqarah [2]: 30 menegaskan penciptaan manusia sebagai khalifah.",
+      "QS. Al-Qasas [28]: 77 mengajarkan keseimbangan hidup dunia dan akhirat.",
+      '"Sayangilah penduduk bumi, niscaya akan disayangi penduduk langit." (HR. Tirmizi)',
+    ],
   },
 };
