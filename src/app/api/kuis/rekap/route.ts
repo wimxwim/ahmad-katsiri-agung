@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { readRows } from "@/lib/google-sheets";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
+export const runtime = "nodejs";
+
 const ADMIN_KEY = process.env.ADMIN_API_KEY || "";
 
 export async function GET(req: NextRequest) {
@@ -44,7 +46,11 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({ rekap });
-  } catch {
-    return NextResponse.json({ rekap: [] });
+  } catch (e) {
+    console.error("rekap error:", e);
+    return NextResponse.json(
+      { error: "Gagal memuat data dari server" },
+      { status: 500 }
+    );
   }
 }

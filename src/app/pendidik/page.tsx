@@ -324,6 +324,7 @@ function RekapSection() {
 
   async function fetchRekap(key: string) {
     setLoading(true);
+    setKeyError("");
     try {
       const r = await fetch("/api/kuis/rekap", {
         headers: { "x-api-key": key },
@@ -331,6 +332,12 @@ function RekapSection() {
       if (r.status === 401) {
         setLocked(true);
         setKeyError("Kunci akses salah");
+        setLoading(false);
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        setKeyError(err.error || "Gagal memuat data");
         setLoading(false);
         return;
       }
