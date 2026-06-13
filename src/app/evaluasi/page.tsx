@@ -8,7 +8,7 @@ import { QuizEngine } from "@/components/evaluasi/QuizEngine";
 import Link from "next/link";
 
 const KELAS = [7, 8, 9] as const;
-const GRADIENT_SLUGS = new Set(['amanah-dan-jujur', 'beriman-kepada-malaikat']);
+const GRADIENT_SLUGS = new Set(['adab-dalam-islam', 'amanah-dan-jujur', 'beriman-kepada-hari-akhir', 'beriman-kepada-kitab-allah', 'beriman-kepada-malaikat', 'beriman-kepada-nabi-dan-rasul', 'beriman-kepada-qada-dan-qadar', 'salat-mencegah-perbuatan-keji-dan-mungkar']);
 
 export default function EvaluasiPage() {
   const [filterKelas, setFilterKelas] = useState<number | null>(null);

@@ -199,7 +199,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 5,
     waktuBaca: "5 MIN BACA",
     icon: "\uD83C\uDF33",
-    videoUrl: "https://www.youtube.com/embed/YToBg3hUZhI",
+    videoUrl: "https://www.youtube.com/embed/ZT-dbhqxtCo",
     soalUrl: "/pdf/melestarikan-alam-cerminan-orang-beriman-soal.pdf",
     prevSlug: "salat-mencegah-perbuatan-keji-dan-mungkar",
     prevTitle: "Salat Mencegah Keji & Mungkar",
