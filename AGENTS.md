@@ -303,6 +303,10 @@ export interface BabMateri {
 18. **Cloudflare API Token SSL:** Token harus punya permission `SSL and Certificates:Edit`. Token tanpa SSL edit permission tidak bisa enable HSTS/Always Use HTTPS via API.
 19. **Wrangler route vs custom_domain:** Worker route di Cloudflare (akalcenter.my.id/*) butuh zone-based routing, bukan custom_domain. custom_domain butuh Workers Paid plan. Jebakan: route baru muncul kalau zone udah aktif.
 20. **Foto lama muncul di HP setelah diganti:** Foto di halaman `/tentang` tampil baru di desktop tapi lama di HP. Penyebab: Cloudflare Worker cache max-age 1 minggu untuk gambar. Fix: tambah `?v=2` di URL gambar (cache-busting query param). Atau purge Cloudflare cache via dashboard.
+21. **CSP blocking analytics beacon:** `connect-src` gak include `vitals.vercel-insights.com` → Speed Insights silent fail. Fix: selalu audit CSP barengan setiap tambah third-party (analytics, chat, monitoring).
+22. **Worker cache blocking security header update:** `Cache-Control: max-age=300` untuk HTML — setelah deploy perubahan CSP, butuh 5 menit propagasi. User bingung. Fix: pake `max-age=0, must-revalidate` untuk HTML di Worker.
+23. **API error catch return 200:** Silent `{ rekap: [] }` bikin frontend kira data kosong. User frustrasi. Fix: selalu return status code explicit + error message.
+24. **Input type="password" tanpa instruksi:** Target user non-IT bingung, kira isi nama siswa. Fix: pake `type="text"` + contoh value di bawah input.
 
 ---
 
@@ -652,6 +656,7 @@ Tanpa token valid → 401 Unauthorized
 | 7 | **Video Kelas 7 Melestarikan Alam** | Fix | videoUrl diganti dari `YToBg3hUZhI` (Kelas 8, salah embed) ke `ZT-dbhqxtCo` (Kelas 7 Bab 6 Alam Semesta). |
 | 8 | **Rekap Nilai "0 dari 0" bug** | 🔴 CRITICAL | 2 root cause: (a) API return `{"error":"Unauthorized"}` dengan **status 200** (bukan 401) — frontend kira data valid kosong; (b) Catch block server silent return `{ rekap: [] }`. Fix: tambah pengecekan `data.error` di response body + server catch return 500. |
 | 9 | **Rekap UI clarity** | UX | Input diganti dari `type="password"` (titik-titik) ke `type="text"` + contoh kunci `akal-admin-2026` di bawah form. |
+| 10 | **Speed Insights data nol** | 🔴 CRITICAL | 3 root cause: (a) CSP `connect-src` gak include `vitals.vercel-insights.com` — beacon diblokir; (b) Worker set `max-age=300` di HTML — setelah deploy CSP fix, Vercel edge cache masih ngasih response lama; (c) Speed Insights belum di-enable di dashboard Vercel. Fix: CSP + Worker `max-age=0, must-revalidate` + enable dashboard. |
 
 **File baru:**
 | File | Fungsi |
@@ -673,6 +678,40 @@ Tanpa token valid → 401 Unauthorized
 **Jebakan:**
 - API rekap return `{"error":"Unauthorized"}` dengan HTTP 200, bukan 401 — tidak clear apakah ini bug Next.js 16 atau Vercel edge behavior. Frontend harus double-check response body untuk `error` field.
 - Input `type="password"` membingungkan user (dikira field nama siswa). Ganti ke `type="text"` + placeholder jelas.
+- CSP `connect-src` harus include semua domain third-party (analytics, monitoring) — kalau kurang, beacon silent fail.
+- Worker `Cache-Control: max-age=300` untuk HTML — setelah deploy perubahan security header, butuh ~5 menit propagasi. Fix: `max-age=0, must-revalidate`.
+
+### 🔴 After-Action Review — Jangan Diulang di Project Lain
+
+**1. Error catch block jangan silent**
+```typescript
+// ❌ JANGAN: Error jadi 200 OK — user lihat "data kosong" padahal ada error
+} catch {
+    return NextResponse.json({ rekap: [] });
+}
+
+// ✅ HARUS: return status code explicit + pesan error
+} catch (e) {
+    console.error(e);
+    return NextResponse.json({ error: "Pesan jelas" }, { status: 500 });
+}
+```
+
+**2. Frontend jangan cuma percaya HTTP status code**
+API bisa return 200 tapi body `{"error":"..."}` — frontend harus cek body juga, jangan cuma `r.status === 401`.
+
+**3. Third-party analytics/monitoring → audit CSP + cache barengan**
+Setiap nambah script eksternal (analytics, chatbot, monitoring):
+- Cek `connect-src` CSP dulu: domain beacon harus di-allowlist
+- Cek cache layer: Worker/Vercel Edge jangan blocking update header dengan `max-age` panjang
+- **Jangan ngebug CSP dulu baru nyadar cache blocking — audit barengan.**
+
+**4. Test API via browser, bukan cuma curl**
+Curl test lulus, tapi pas user buka di browser error. Selalu test dari Incognito/HP beneran.
+
+**5. Production checklist Vercel jangan skip**
+Vercel kasih checklist (Connect Git, Custom Domain, Preview, Enable Analytics, Enable Speed Insights).
+Yang ke-4 dan ke-5 gak otomatis — harus di-klik manual di dashboard.
 
 ---
 
@@ -952,7 +991,7 @@ selanjutnya. Update file ini jika ada perubahan.
 | 2026-06-12 | Sesi 15: Security Audit & Fix — JWT auth, rate limiting, sanitasi XSS, CSP/HSTS, Zod validation, lenis removal |
 | 2026-06-12 | Sesi 16: Cleanup XSS test data from Google Sheets + merge .md files ke AGENTS.md + reset ADMIN_API_KEY/JWT_SECRET |
 | 2026-06-12 | Sesi 17: Re-Audit Fix — 4 HIGH + 7 MEDIUM + 8 LOW (Worker transparent proxy, rate limiter di CDN, Zod leak, sanitizer upgrade, origin binding, crypto shuffle) |
-| 2026-06-13 | Sesi 18: DoaUcapan cleanup, Game Terkait dinamis, 6 game cover WebP baru, GRADIENT_SLUGS semua bab, video Melestarikan Alam fix, Rekap "0 dari 0" bug fix (data.error check + catch block 500), UX rekap clearer (text input + contoh key) |
+| 2026-06-13 | Sesi 18: DoaUcapan cleanup, Game Terkait dinamis, 6 game cover WebP baru, GRADIENT_SLUGS semua bab, video Melestarikan Alam fix, Rekap "0 dari 0" bug fix (data.error check + catch block 500), UX rekap clearer (text input + contoh key), Speed Insights fix (CSP + Worker cache + enable dashboard), After-Action Review documented |
 
 ---
 

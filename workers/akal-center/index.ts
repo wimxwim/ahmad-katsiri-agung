@@ -89,7 +89,7 @@ export default {
       response.headers.set('Cache-Control', 'public, max-age=604800');
     } else if (!url.pathname.startsWith('/api/')) {
       response = new Response(response.body, response);
-      response.headers.set('Cache-Control', 'public, max-age=300');
+      response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
     }
 
     return response;
