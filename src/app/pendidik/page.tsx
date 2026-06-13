@@ -38,7 +38,7 @@ export default function PendidikPage() {
         </p>
       </motion.header>
 
-      <section className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6 md:gap-8 md:auto-rows-[280px] mb-24 sm:mb-32">
+      <section className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6 md:gap-8 mb-24 sm:mb-32">
         <FeatureCard
           colSpan="md:col-span-8"
           icon={BookOpen}

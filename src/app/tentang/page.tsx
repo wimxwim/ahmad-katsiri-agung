@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { BookHeart, ArrowRight, UserCircle } from "lucide-react";
+import { BookHeart, ArrowRight } from "lucide-react";
 
 export default function TentangPage() {
   return (
@@ -96,42 +96,29 @@ export default function TentangPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
-            <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-6 text-center">
+            <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-6">
               Tim Verifikator
             </h2>
-            <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
-              {[
-                {
-                  nama: "Sabilil Muttaqin, M.Ed., Ph.D",
-                  peran: "Verifikator Ahli 1 Materi",
-                },
-                {
-                  nama: "Dr. Ekawati, M.A.",
-                  peran: "Verifikator Ahli 2 Materi",
-                },
-                {
-                  nama: "Dr. Hamam Faizin, M.A.",
-                  peran: "Verifikator Ahli 3 Media",
-                },
-              ].map((v, i) => (
-                <div
-                  key={v.nama}
-                  className="p-5 sm:p-6 rounded-2xl bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass text-center"
-                >
-                  <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <UserCircle className="w-10 h-10 text-primary/40" />
-                  </div>
-                  <h3 className="font-heading text-sm sm:text-base text-on-surface mb-1">
-                    {v.nama}
-                  </h3>
-                  <p className="text-xs text-on-surface-variant">{v.peran}</p>
-                </div>
-              ))}
+            <div className="grid sm:grid-cols-2 gap-6 sm:gap-8">
+              <div>
+                <h3 className="font-heading text-base sm:text-lg text-primary mb-3">
+                  Verifikator Ahli Materi
+                </h3>
+                <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
+                  Sabilil Muttaqin, M.Ed., Ph.D., Dr. Ekawati, M.A., Dr. Hamam Faizin, M.A., dan Nofi Maria Krisnawati, M.Pd.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-heading text-base sm:text-lg text-primary mb-3">
+                  Verifikator Ahli Media
+                </h3>
+                <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
+                  Sabilil Muttaqin, M.Ed., Ph.D., dan Nofi Maria Krisnawati, M.Pd., Ph.D (Cand.)
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-on-surface-variant/60 text-center mt-4">
-              * Foto verifikator akan segera diperbarui
-            </p>
           </motion.div>
         </div>
 

@@ -8,6 +8,7 @@ import { QuizEngine } from "@/components/evaluasi/QuizEngine";
 import Link from "next/link";
 
 const KELAS = [7, 8, 9] as const;
+const GRADIENT_SLUGS = new Set(['amanah-dan-jujur', 'beriman-kepada-malaikat']);
 
 export default function EvaluasiPage() {
   const [filterKelas, setFilterKelas] = useState<number | null>(null);
@@ -172,12 +173,20 @@ export default function EvaluasiPage() {
               onClick={() => setSelectedSlug(meta.slug)}
               className="group block w-full text-left bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-6 lg:p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
             >
-              <div className="aspect-[4/3] rounded-2xl bg-primary/5 border border-white/40 mb-6 overflow-hidden relative">
-                <img
-                  src={`/images/evaluasi/${meta.slug}.png`}
-                  alt={meta.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
+              <div className="aspect-[4/3] rounded-2xl border border-white/40 mb-6 overflow-hidden">
+                {GRADIENT_SLUGS.has(meta.slug) ? (
+                  <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center p-6">
+                    <p className="font-heading text-xl sm:text-2xl text-white text-center leading-snug">
+                      {meta.title}
+                    </p>
+                  </div>
+                ) : (
+                  <img
+                    src={`/images/evaluasi/${meta.slug}.png`}
+                    alt={meta.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                )}
               </div>
 
               <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider mb-4">

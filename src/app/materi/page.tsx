@@ -17,6 +17,7 @@ const ALL_MATERI = [
 ];
 
 const KELAS = [7, 8, 9] as const;
+const GRADIENT_SLUGS = new Set(['beriman-kepada-malaikat', 'amanah-dan-jujur']);
 
 export default function MateriPage() {
   const [filterKelas, setFilterKelas] = useState<number | null>(null);
@@ -132,11 +133,19 @@ export default function MateriPage() {
               className="group block h-full bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-6 lg:p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
             >
               <div className="aspect-[4/3] rounded-2xl bg-primary/5 border border-white/40 mb-6 overflow-hidden relative">
-                <img
-                  src={`/images/materi/${materi.slug}.png`}
-                  alt={materi.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
+                {GRADIENT_SLUGS.has(materi.slug) ? (
+                  <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center p-6">
+                    <p className="font-heading text-xl sm:text-2xl text-white text-center leading-snug">
+                      {materi.title}
+                    </p>
+                  </div>
+                ) : (
+                  <img
+                    src={`/images/materi/${materi.slug}.png`}
+                    alt={materi.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                )}
               </div>
 
               <div className="flex items-center gap-2 mb-4">

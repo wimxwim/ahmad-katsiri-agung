@@ -144,7 +144,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     icon: "\uD83D\uDD4C",
     videoUrl: "https://www.youtube.com/embed/47RUiGZ5804",
     soalUrl: "/pdf/salat-mencegah-perbuatan-keji-dan-mungkar-soal.pdf",
-    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/salat-mencegah-perbuatan-keji-dan-mungkar",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/salat-mencegah-perbuatan-keji-dan-mungkarr",
     pendahuluan: "Salat bukan sekadar ritual, tetapi benteng moral yang mencegah pelakunya dari perbuatan keji dan mungkar. Bab ini mengupas makna salat, ketentuannya, dan hikmah di balik perintah salat.",
     konten: [
       {
@@ -199,6 +199,8 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 5,
     waktuBaca: "5 MIN BACA",
     icon: "\uD83C\uDF33",
+    videoUrl: "https://www.youtube.com/embed/YToBg3hUZhI",
+    soalUrl: "/pdf/melestarikan-alam-cerminan-orang-beriman-soal.pdf",
     prevSlug: "salat-mencegah-perbuatan-keji-dan-mungkar",
     prevTitle: "Salat Mencegah Keji & Mungkar",
     pendahuluan: "",
@@ -273,7 +275,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     icon: "\uD83D\uDCD6",
     videoUrl: "https://www.youtube.com/embed/bC-i_9hisSw",
     soalUrl: "/pdf/beriman-kepada-kitab-allah-soal.pdf",
-    gameUrl: "https://jujurdanamanah.my.canva.site/beriman-kepada-kitab-kitab-allah-swt",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-kitab-allah",
     pendahuluan: "Iman kepada kitab-kitab Allah adalah rukun iman ketiga. Allah menurunkan kitab-kitab kepada para nabi sebagai petunjuk bagi umat manusia. Empat kitab utama yang wajib diimani: Taurat, Zabur, Injil, dan Al-Qur'an.",
     konten: [
       {
@@ -381,6 +383,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     waktuBaca: "5 MIN BACA",
     icon: "\uD83E\uDD1D",
     videoUrl: "https://www.youtube.com/embed/GZHC7bqDHZg",
+    soalUrl: "/pdf/membangun-toleransi-soal.pdf",
     nextSlug: "moderasi-beragama",
     nextTitle: "Moderasi Beragama",
     prevSlug: "beriman-kepada-nabi-dan-rasul",
@@ -401,6 +404,8 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     waktuBaca: "5 MIN BACA",
     icon: "\u2696\uFE0F",
     videoUrl: "https://www.youtube.com/embed/gI5cfO3yVOw",
+    soalUrl: "/pdf/moderasi-beragama-soal.pdf",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/moderasi-beragama",
     prevSlug: "membangun-toleransi",
     prevTitle: "Membangun Toleransi",
     pendahuluan: "",
@@ -474,7 +479,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     icon: "\u2600\uFE0F",
     videoUrl: "https://www.youtube.com/embed/S4UDs5v8uzI",
     soalUrl: "/pdf/beriman-kepada-hari-akhir-soal.pdf",
-    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-hari-akhir",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/aplikasi-tanpa-judul",
     pendahuluan: "Iman kepada hari akhir adalah rukun iman kelima. Percaya dengan sepenuh hati bahwa alam semesta dan seisinya akan hancur dan berakhir. Kehidupan dunia hanya sementara, sedangkan kehidupan di akhirat adalah yang kekal. Keimanan ini mendorong seseorang untuk rajin beribadah dan selalu berbuat kebaikan.",
     konten: [
       {
@@ -579,6 +584,8 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     waktuBaca: "5 MIN BACA",
     icon: "\uD83D\uDCDA",
     videoUrl: "https://www.youtube.com/embed/MmRnGxByoUQ",
+    soalUrl: "/pdf/semangat-mencari-ilmu-soal.pdf",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/semangat-mencari-ilmu",
     nextSlug: "manusia-khalifah-di-muka-bumi",
     nextTitle: "Manusia sebagai Khalifah",
     prevSlug: "beriman-kepada-qada-dan-qadar",
@@ -598,6 +605,9 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     subTopik: 5,
     waktuBaca: "5 MIN BACA",
     icon: "\uD83C\uDF0D",
+    videoUrl: "https://www.youtube.com/embed/7RqFgDfP7J0",
+    soalUrl: "/pdf/manusia-khalifah-di-muka-bumi-soal.pdf",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/manusia-sebagai-khalifah-di-bumi",
     prevSlug: "semangat-mencari-ilmu",
     prevTitle: "Semangat Mencari Ilmu",
     pendahuluan: "",

@@ -2,55 +2,86 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { Gamepad2, ExternalLink, ArrowRight, Sparkles } from "lucide-react";
+import { Gamepad2, ExternalLink, ArrowRight } from "lucide-react";
 
 const GAMES = [
   {
-    title: "Game Adab dalam Islam",
-    desc: "Game interaktif tentang adab-adab dalam Islam untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islamm",
+    title: "Game Beriman kepada Malaikat",
+    desc: "Game interaktif tentang malaikat Allah untuk siswa SMP.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-malaikat",
+    badge: "EKSTERNAL",
+    image: "/images/games/game-beriman-kepada-malaikat.webp",
+  },
+  {
+    title: "Game Membiasakan Tabayyun dan Menjauhi Ghibah",
+    desc: "Game interaktif tentang tabayyun dan menjauhi ghibah untuk siswa SMP.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/membiasakan-tabayyun-dan-menjauhi-ghibah",
     badge: "EKSTERNAL",
   },
   {
-    title: "Game Beriman kepada Hari Akhir",
-    desc: "Game interaktif tentang iman kepada hari akhir untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-hari-akhir",
+    title: "Game Salat Mencegah Perbuatan Keji dan Mungkar",
+    desc: "Game interaktif tentang hikmah salat mencegah perbuatan keji dan mungkar.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/salat-mencegah-perbuatan-keji-dan-mungkarr",
     badge: "EKSTERNAL",
   },
   {
-    title: "Game Beriman kepada Qada & Qadar",
-    desc: "Game interaktif tentang qada dan qadar untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-qada-qadar",
+    title: "Game Amanah dan Jujur",
+    desc: "Game interaktif tentang sifat amanah dan jujur dalam kehidupan sehari-hari.",
+    url: "https://jujurdanamanah.my.canva.site/",
     badge: "EKSTERNAL",
+    image: "/images/games/game-jujur-dan-amanah.webp",
+  },
+  {
+    title: "Game Kitab Allah SWT",
+    desc: "Game interaktif mengenal kitab-kitab Allah SWT untuk siswa SMP.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-kitab-allah",
+    badge: "EKSTERNAL",
+    image: "/images/games/game-kitab-allah-swt.webp",
   },
   {
     title: "Game Beriman kepada Nabi dan Rasul",
     desc: "Game interaktif tentang nabi dan rasul untuk siswa SMP.",
     url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-nabi-dan-rasul",
     badge: "EKSTERNAL",
+    image: "/images/games/game-beriman-kepada-nabi-dan-rasul.webp",
   },
   {
-    title: "Game Beriman kepada Malaikat",
-    desc: "Game interaktif tentang malaikat Allah untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-malaikat",
+    title: "Game Moderasi Beragama",
+    desc: "Game interaktif tentang moderasi beragama sebagai wujud Islam rahmatan lil alamin.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/moderasi-beragama",
     badge: "EKSTERNAL",
   },
   {
-    title: "Game Melestarikan Alam",
-    desc: "Game interaktif tentang melestarikan alam sebagai cerminan orang beriman.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islam",
+    title: "Game Adab dalam Islam",
+    desc: "Game interaktif tentang adab-adab dalam Islam untuk siswa SMP.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islamm",
+    badge: "EKSTERNAL",
+    image: "/images/games/game-adab-dalam-islam.webp",
+  },
+  {
+    title: "Game Beriman kepada Hari Akhir",
+    desc: "Game interaktif tentang iman kepada hari akhir untuk siswa SMP.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/aplikasi-tanpa-judul",
+    badge: "EKSTERNAL",
+    image: "/images/games/game-beriman-kepada-hari-akhir.webp",
+  },
+  {
+    title: "Game Beriman kepada Qada & Qadar",
+    desc: "Game interaktif tentang qada dan qadar untuk siswa SMP.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-qada-dan-qadar",
+    badge: "EKSTERNAL",
+    image: "/images/games/game-beriman-kepada-qada-&-qadar.webp",
+  },
+  {
+    title: "Game Semangat Mencari Ilmu",
+    desc: "Game interaktif tentang semangat mencari ilmu sebagai kewajiban setiap muslim.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/semangat-mencari-ilmu",
     badge: "EKSTERNAL",
   },
   {
-    title: "Game Membangun Toleransi",
-    desc: "Game interaktif tentang membangun toleransi dalam kehidupan beragama.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islam",
-    badge: "EKSTERNAL",
-  },
-  {
-    title: "Game Kitab Allah SWT",
-    desc: "Game interaktif mengenal kitab-kitab Allah SWT untuk siswa SMP.",
-    url: "https://jujurdanamanah.my.canva.site/beriman-kepada-kitab-kitab-allah-swt",
+    title: "Game Manusia sebagai Khalifah di Bumi",
+    desc: "Game interaktif tentang peran dan tanggung jawab manusia sebagai khalifah di muka bumi.",
+    url: "https://kuis-bangun-ruang9.my.canva.site/manusia-sebagai-khalifah-di-bumi",
     badge: "EKSTERNAL",
   },
 ];
@@ -89,7 +120,7 @@ export default function GamePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: 0.5,
-              delay: i * 0.1,
+              delay: i * 0.07,
               ease: [0.16, 1, 0.3, 1] as const,
             }}
             className="group block bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
@@ -99,11 +130,19 @@ export default function GamePage() {
             </span>
 
             <div className="aspect-[16/9] rounded-2xl bg-primary/5 border border-white/40 mb-6 overflow-hidden relative">
-              <img
-                src={`/images/games/${game.title.toLowerCase().replace(/\s+/g, '-')}.webp`}
-                alt={game.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              />
+              {game.image ? (
+                <img
+                  src={game.image}
+                  alt={game.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center p-4">
+                  <p className="font-heading text-lg sm:text-xl text-white text-center leading-snug">
+                    {game.title}
+                  </p>
+                </div>
+              )}
             </div>
 
             <h3 className="font-heading text-xl sm:text-2xl text-on-surface mb-3">
