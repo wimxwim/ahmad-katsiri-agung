@@ -320,11 +320,11 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
               <p className="text-xs font-bold tracking-[0.15em] uppercase text-tertiary">
                 GAME TERKAIT
               </p>
-              <p className="font-heading text-base text-on-surface">Jujur dan Amanah</p>
+              <p className="font-heading text-base text-on-surface">{materi.title}</p>
             </div>
           </div>
           <p className="text-base text-on-surface-variant leading-relaxed mb-4">
-            Game interaktif tentang kejujuran dan amanah — ayo mainkan!
+            Game interaktif tentang {materi.title.toLowerCase()} — ayo mainkan!
           </p>
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-tertiary group-hover:gap-3 transition-all">
             Mainkan Game
