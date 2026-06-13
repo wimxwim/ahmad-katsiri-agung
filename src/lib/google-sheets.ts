@@ -1,4 +1,4 @@
-import { google, sheets_v4 } from "googleapis";
+import { google } from "googleapis";
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;
 
@@ -46,4 +46,15 @@ export async function findRow(
     }
   }
   return null;
+}
+
+export async function overwriteRows(range: string, values: string[][]) {
+  if (!SHEET_ID) throw new Error("GOOGLE_SHEET_ID not set");
+  const sheets = getClient();
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: SHEET_ID,
+    range,
+    valueInputOption: "USER_ENTERED",
+    requestBody: { values },
+  });
 }
