@@ -637,6 +637,45 @@ Tanpa token valid → 401 Unauthorized
 | 9 | **M-2: Origin binding JWT** | `kuis/selesai/route.ts` — cek Origin/Referer header cocok dengan domain yang diizinkan |
 | 10 | **L1-L8: LOW fixes** | maxLength validation, CSP report-uri, cf-connecting-ip, crypto shuffle, error log, private key check |
 
+### Sesi 18 (13 Juni 2026) — Session Fixes & Rekap Bug
+
+**Effort: ~3 jam**
+
+| # | Perubahan | Kategori | Detail |
+|---|-----------|----------|--------|
+| 1 | **DoaUcapan cleanup** | Maintenance | 17 test entries removed via temp API route, tersisa 10 doa asli. Tambah `overwriteRows()` di `google-sheets.ts` (clear sebelum update). Temp route dihapus setelah selesai. |
+| 2 | **Game Terkait sidebar dinamis** | Fix | Sebelumnya hardcoded "Jujur dan Amanah". Sekarang pakai `materi.title` + deskripsi auto-generated. File: `MateriDetailClient.tsx`. |
+| 3 | **5 game cover images missing** | Bug | Tabayyun, Salat, Moderasi, Semangat Ilmu, Khalifah — tidak punya gambar cover. Dibuat gradient WebP (hijau + teks) via ImageMagick. |
+| 4 | **Game image "Beriman kepada Kitab Allah"** | Bug | Gambar Islam salah (masjid, bukan konten bab). Ganti ke gradient hijau + teks. |
+| 5 | **Semua 14 game cover images regenerated** | Design | Format seragam: gradient hijau + teks (title + kelas + bab). 6 file baru + 8 regenerated. |
+| 6 | **GRADIENT_SLUGS expanded** | Fix | `materi/page.tsx` → semua 14 slugs, `evaluasi/page.tsx` → semua 8 slugs. Semua card pake gradient teks, bukan PNG. |
+| 7 | **Video Kelas 7 Melestarikan Alam** | Fix | videoUrl diganti dari `YToBg3hUZhI` (Kelas 8, salah embed) ke `ZT-dbhqxtCo` (Kelas 7 Bab 6 Alam Semesta). |
+| 8 | **Rekap Nilai "0 dari 0" bug** | 🔴 CRITICAL | 2 root cause: (a) API return `{"error":"Unauthorized"}` dengan **status 200** (bukan 401) — frontend kira data valid kosong; (b) Catch block server silent return `{ rekap: [] }`. Fix: tambah pengecekan `data.error` di response body + server catch return 500. |
+| 9 | **Rekap UI clarity** | UX | Input diganti dari `type="password"` (titik-titik) ke `type="text"` + contoh kunci `akal-admin-2026` di bawah form. |
+
+**File baru:**
+| File | Fungsi |
+|------|--------|
+| `public/images/games/game-*.webp` (6 baru) | Gradient cover: Tabayyun, Salat, Moderasi, Semangat Ilmu, Khalifah |
+| `src/lib/google-sheets.ts` | Ditambah fungsi `overwriteRows()` — clear + update |
+
+**File diubah:**
+| File | Perubahan |
+|------|-----------|
+| `src/components/materi/MateriDetailClient.tsx` | Game Terkait card dinamis |
+| `src/app/materi/page.tsx` | GRADIENT_SLUGS: 14 slugs |
+| `src/app/evaluasi/page.tsx` | GRADIENT_SLUGS: 8 slugs |
+| `src/app/game/page.tsx` | `image` field di semua 12 GAMES entries |
+| `src/data/materi.ts` | videoUrl Melestarikan Alam update |
+| `src/app/api/kuis/rekap/route.ts` | Catch block return 500 + log |
+| `src/app/pendidik/page.tsx` | fetchRekap check `data.error`, UX clearer |
+
+**Jebakan:**
+- API rekap return `{"error":"Unauthorized"}` dengan HTTP 200, bukan 401 — tidak clear apakah ini bug Next.js 16 atau Vercel edge behavior. Frontend harus double-check response body untuk `error` field.
+- Input `type="password"` membingungkan user (dikira field nama siswa). Ganti ke `type="text"` + placeholder jelas.
+
+---
+
 ## Belum Selesai / Bisa Dilanjutkan
 
 | Item | Status | Effort Estimasi | Keterangan |
@@ -645,10 +684,13 @@ Tanpa token valid → 401 Unauthorized
 | `untuk-pendidik/` — Pusat Komando | 🔲 Belum | 1-2 jam | Stitch HTML sudah ada di Downloads |
 | `analisis-dalil/` — QS Al-Isra:34 | 🔲 Belum | 1 jam | 3 varian mobile di stitch Downloads |
 | `/peserta-didik` | 🔲 Placeholder | 30-60 menit | Tanya klien mau isi apa |
-| PPT slide decks (9 file) | ✅ Sebagian | 1 jam | 5 PPT sudah di `public/ppt/` & link di `/materi`, 4 sisanya belum |
-| Video bab lain (7 bab belum) | ⏳ Seadanya | 10 menit/video | Tunggu link YouTube |
-| Telegram ID Bang Agung | ✅ Tersimpan | — | `TELEGRAM_CHAT_ID_2` di Vercel env — notif dual chat |
+| Video 2 bab belum | 🔲 Belum | 10 menit | `beriman-kepada-nabi-dan-rasul` (8/3), `adab-dalam-islam` (9/1) — tunggu link YouTube |
 | Buku PAI PDF Kls 7/8/9 | 🔲 Belum | 15 menit | Link di materi ajar |
+| Google Classroom link | 🔲 Belum | 15 menit | Feasible, tunggu URL Classroom dari Bang Agung |
+| Canva 2 games (Melestarikan Alam, Toleransi) | 🔲 URL 404 | 5 menit | Game exist di halaman `/game` tapi link Canva return 404 — nunggu Bang Agung publish |
+| Naskah soal 6 bab | 🔲 Belum | — | Tabayyun, Melestarikan Alam, Toleransi, Moderasi, Semangat Ilmu, Khalifah — nunggu dari Bang Agung |
+| **Cleanup orphaned files** | 🔲 Belum | 15 menit | `public/ppt/` 5 file unreferenced, `public/images/games/*.png` 5 file orphaned, `PROTA KELAS 9.pdf` duplikat |
+| **`membiasakan-tabayyun` PDF soal** | 🔲 Belum | — | Satu-satunya bab tanpa `soalUrl` — nunggu file |
 
 ### Stitch Materials (Referensi untuk Halaman Baru)
 
@@ -910,12 +952,13 @@ selanjutnya. Update file ini jika ada perubahan.
 | 2026-06-12 | Sesi 15: Security Audit & Fix — JWT auth, rate limiting, sanitasi XSS, CSP/HSTS, Zod validation, lenis removal |
 | 2026-06-12 | Sesi 16: Cleanup XSS test data from Google Sheets + merge .md files ke AGENTS.md + reset ADMIN_API_KEY/JWT_SECRET |
 | 2026-06-12 | Sesi 17: Re-Audit Fix — 4 HIGH + 7 MEDIUM + 8 LOW (Worker transparent proxy, rate limiter di CDN, Zod leak, sanitizer upgrade, origin binding, crypto shuffle) |
+| 2026-06-13 | Sesi 18: DoaUcapan cleanup, Game Terkait dinamis, 6 game cover WebP baru, GRADIENT_SLUGS semua bab, video Melestarikan Alam fix, Rekap "0 dari 0" bug fix (data.error check + catch block 500), UX rekap clearer (text input + contoh key) |
 
 ---
 
 ## Env Var Terbaru
 
-| Env Var | Nilai (per 12 Juni 2026) | Catatan |
+| Env Var | Nilai (per 13 Juni 2026) | Catatan |
 |---------|--------------------------|---------|
 | `ADMIN_API_KEY` | `akal-admin-2026` | Untuk akses rekap nilai di `/pendidik` |
 | `JWT_SECRET` | `akal-jwt-secret-2026-32chars!` | Untuk sign/verify token kuis siswa |
