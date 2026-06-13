@@ -30,10 +30,14 @@ export async function POST(req: NextRequest) {
     const header = rows[0] || ["ID", "Nama", "Isi", "Waktu"];
     const data = rows.slice(1);
 
+    const seen = new Set<string>();
     const removed: { nama: string; isi: string }[] = [];
     const keep = data.filter((row) => {
+      const id = (row[0] || "").trim();
       const nama = (row[1] || "").trim();
       const isi = (row[2] || "").trim();
+      if (seen.has(id)) return false;
+      seen.add(id);
       const isTest = isTestEntry(nama, isi);
       if (isTest) removed.push({ nama, isi });
       return !isTest;
