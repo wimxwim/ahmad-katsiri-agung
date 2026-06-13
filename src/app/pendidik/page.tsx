@@ -368,19 +368,24 @@ function RekapSection() {
           <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl text-on-surface mb-2">
             Rekap Nilai Siswa
           </h2>
-          <p className="text-sm text-on-surface-variant">Masukkan kunci akses untuk melihat data</p>
+          <p className="text-sm text-on-surface-variant">
+            Masukkan kunci akses admin untuk melihat data rekap
+          </p>
         </div>
         <form
           onSubmit={handleSubmitKey}
           className="max-w-sm mx-auto bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl p-6 shadow-glass"
         >
           <input
-            type="password"
+            type="text"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
-            placeholder="Kunci akses rekap nilai"
-            className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 mb-4 transition-all"
+            placeholder="Masukkan kunci admin di sini"
+            className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 mb-3 transition-all"
           />
+          <p className="text-[11px] text-on-surface-variant/60 mb-4 text-center">
+            Contoh: <code className="bg-primary/5 px-1.5 py-0.5 rounded text-primary text-[10px]">akal-admin-2026</code>
+          </p>
           {keyError && (
             <p className="text-xs text-red-500 mb-4 text-center">{keyError}</p>
           )}
