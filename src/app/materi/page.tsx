@@ -8,16 +8,21 @@ const ALL_MATERI = [
   { slug: "beriman-kepada-malaikat", title: "Beriman kepada Malaikat", kelas: 7, bab: 1, ringkasan: "Mengenal malaikat Allah dan tugas-tugasnya sebagai rukun iman.", subTopik: 6, icon: "🪽" },
   { slug: "membiasakan-tabayyun-menjauhi-ghibah", title: "Membiasakan Tabayyun, Menjauhi Ghibah", kelas: 7, bab: 2, ringkasan: "Belajar memverifikasi informasi dan menjaga lisan dari ghibah di era digital.", subTopik: 5, icon: "🔍" },
   { slug: "salat-mencegah-perbuatan-keji-dan-mungkar", title: "Salat Mencegah Perbuatan Keji", kelas: 7, bab: 3, ringkasan: "Memahami hikmah salat sebagai benteng dari perbuatan keji dan mungkar.", subTopik: 7, icon: "🕌" },
+  { slug: "melestarikan-alam-cerminan-orang-beriman", title: "Melestarikan Alam Cerminan Orang Beriman", kelas: 7, bab: 4, ringkasan: "Menjaga dan melestarikan alam sebagai wujud keimanan kepada Allah SWT.", subTopik: 5, icon: "🌳" },
   { slug: "amanah-dan-jujur", title: "Amanah dan Jujur", kelas: 8, bab: 1, ringkasan: "Meneladani sifat amanah dan jujur dalam kehidupan sehari-hari.", subTopik: 8, icon: "🤝" },
   { slug: "beriman-kepada-kitab-allah", title: "Beriman kepada Kitab Allah", kelas: 8, bab: 2, ringkasan: "Meyakini kitab-kitab Allah sebagai pedoman hidup umat manusia.", subTopik: 6, icon: "📖" },
   { slug: "beriman-kepada-nabi-dan-rasul", title: "Beriman kepada Nabi dan Rasul", kelas: 8, bab: 3, ringkasan: "Meneladani kisah para nabi dan rasul dalam menyampaikan risalah.", subTopik: 12, icon: "🌟" },
+  { slug: "membangun-toleransi", title: "Membangun Toleransi", kelas: 8, bab: 4, ringkasan: "Membangun sikap toleransi dalam kehidupan beragama dan bermasyarakat.", subTopik: 5, icon: "🤝" },
+  { slug: "moderasi-beragama", title: "Moderasi Beragama", kelas: 8, bab: 5, ringkasan: "Menerapkan sikap moderat dalam beragama sebagai wujud Islam rahmatan lil alamin.", subTopik: 5, icon: "⚖️" },
   { slug: "adab-dalam-islam", title: "Adab dalam Islam", kelas: 9, bab: 1, ringkasan: "Menerapkan adab-adab mulia dalam pergaulan sehari-hari sesuai tuntunan Islam.", subTopik: 10, icon: "🌿" },
   { slug: "beriman-kepada-hari-akhir", title: "Beriman kepada Hari Akhir", kelas: 9, bab: 2, ringkasan: "Memahami tanda-tanda dan peristiwa hari akhir sebagai penguat iman.", subTopik: 7, icon: "☀️" },
   { slug: "beriman-kepada-qada-dan-qadar", title: "Beriman kepada Qada dan Qadar", kelas: 9, bab: 3, ringkasan: "Meyakini takdir Allah sebagai motivasi untuk terus berusaha dan berdoa.", subTopik: 5, icon: "✨" },
+  { slug: "semangat-mencari-ilmu", title: "Semangat Mencari Ilmu", kelas: 9, bab: 4, ringkasan: "Menumbuhkan semangat mencari ilmu sebagai kewajiban setiap muslim.", subTopik: 5, icon: "📚" },
+  { slug: "manusia-khalifah-di-muka-bumi", title: "Manusia sebagai Khalifah di Muka Bumi", kelas: 9, bab: 5, ringkasan: "Memahami peran dan tanggung jawab manusia sebagai khalifah di muka bumi.", subTopik: 5, icon: "🌍" },
 ];
 
 const KELAS = [7, 8, 9] as const;
-const GRADIENT_SLUGS = new Set(['beriman-kepada-malaikat', 'amanah-dan-jujur']);
+const GRADIENT_SLUGS = new Set(['beriman-kepada-malaikat', 'amanah-dan-jujur', 'melestarikan-alam-cerminan-orang-beriman', 'membangun-toleransi', 'moderasi-beragama', 'semangat-mencari-ilmu', 'manusia-khalifah-di-muka-bumi']);
 
 export default function MateriPage() {
   const [filterKelas, setFilterKelas] = useState<number | null>(null);
