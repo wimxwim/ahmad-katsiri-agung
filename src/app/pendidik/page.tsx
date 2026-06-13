@@ -342,6 +342,12 @@ function RekapSection() {
         return;
       }
       const data = await r.json();
+      if (data.error) {
+        setLocked(true);
+        setKeyError(data.error === "Unauthorized" ? "Kunci akses salah" : data.error);
+        setLoading(false);
+        return;
+      }
       setRekap(data.rekap || []);
       setLocked(false);
     } catch {
