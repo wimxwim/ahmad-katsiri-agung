@@ -17,12 +17,14 @@ const GAMES = [
     desc: "Game interaktif tentang tabayyun dan menjauhi ghibah untuk siswa SMP.",
     url: "https://kuis-bangun-ruang9.my.canva.site/membiasakan-tabayyun-dan-menjauhi-ghibah",
     badge: "EKSTERNAL",
+    image: "/images/games/game-membiasakan-tabayyun-dan-menjauhi-ghibah.webp",
   },
   {
     title: "Game Salat Mencegah Perbuatan Keji dan Mungkar",
     desc: "Game interaktif tentang hikmah salat mencegah perbuatan keji dan mungkar.",
     url: "https://kuis-bangun-ruang9.my.canva.site/salat-mencegah-perbuatan-keji-dan-mungkarr",
     badge: "EKSTERNAL",
+    image: "/images/games/game-salat-mencegah-perbuatan-keji-dan-mungkar.webp",
   },
   {
     title: "Game Amanah dan Jujur",
@@ -50,6 +52,7 @@ const GAMES = [
     desc: "Game interaktif tentang moderasi beragama sebagai wujud Islam rahmatan lil alamin.",
     url: "https://kuis-bangun-ruang9.my.canva.site/moderasi-beragama",
     badge: "EKSTERNAL",
+    image: "/images/games/game-moderasi-beragama.webp",
   },
   {
     title: "Game Adab dalam Islam",
@@ -77,12 +80,14 @@ const GAMES = [
     desc: "Game interaktif tentang semangat mencari ilmu sebagai kewajiban setiap muslim.",
     url: "https://kuis-bangun-ruang9.my.canva.site/semangat-mencari-ilmu",
     badge: "EKSTERNAL",
+    image: "/images/games/game-semangat-mencari-ilmu.webp",
   },
   {
     title: "Game Manusia sebagai Khalifah di Bumi",
     desc: "Game interaktif tentang peran dan tanggung jawab manusia sebagai khalifah di muka bumi.",
     url: "https://kuis-bangun-ruang9.my.canva.site/manusia-sebagai-khalifah-di-bumi",
     badge: "EKSTERNAL",
+    image: "/images/games/game-manusia-khalifah-di-muka-bumi.webp",
   },
 ];
 
