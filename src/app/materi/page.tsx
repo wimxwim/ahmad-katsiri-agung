@@ -22,7 +22,7 @@ const ALL_MATERI = [
 ];
 
 const KELAS = [7, 8, 9] as const;
-const GRADIENT_SLUGS = new Set(['beriman-kepada-malaikat', 'amanah-dan-jujur', 'melestarikan-alam-cerminan-orang-beriman', 'membangun-toleransi', 'moderasi-beragama', 'semangat-mencari-ilmu', 'manusia-khalifah-di-muka-bumi']);
+const GRADIENT_SLUGS = new Set(['beriman-kepada-malaikat', 'membiasakan-tabayyun-menjauhi-ghibah', 'salat-mencegah-perbuatan-keji-dan-mungkar', 'melestarikan-alam-cerminan-orang-beriman', 'amanah-dan-jujur', 'beriman-kepada-kitab-allah', 'beriman-kepada-nabi-dan-rasul', 'membangun-toleransi', 'moderasi-beragama', 'adab-dalam-islam', 'beriman-kepada-hari-akhir', 'beriman-kepada-qada-dan-qadar', 'semangat-mencari-ilmu', 'manusia-khalifah-di-muka-bumi']);
 
 export default function MateriPage() {
   const [filterKelas, setFilterKelas] = useState<number | null>(null);
