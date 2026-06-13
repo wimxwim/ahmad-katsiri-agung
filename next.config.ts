@@ -8,7 +8,7 @@ const csp = [
   "font-src 'self' https://fonts.gstatic.com data:",
   "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
   "media-src 'self' https://*.youtube.com https://*.googlevideo.com",
-  "connect-src 'self' https://*.vercel.app https://*.googleapis.com https://*.google-analytics.com https://*.youtube.com https://*.googlevideo.com",
+  "connect-src 'self' https://*.vercel.app https://*.vercel-insights.com https://*.googleapis.com https://*.google-analytics.com https://*.youtube.com https://*.googlevideo.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
