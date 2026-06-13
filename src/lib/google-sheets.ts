@@ -51,10 +51,16 @@ export async function findRow(
 export async function overwriteRows(range: string, values: string[][]) {
   if (!SHEET_ID) throw new Error("GOOGLE_SHEET_ID not set");
   const sheets = getClient();
-  await sheets.spreadsheets.values.update({
+  await sheets.spreadsheets.values.clear({
     spreadsheetId: SHEET_ID,
     range,
-    valueInputOption: "USER_ENTERED",
-    requestBody: { values },
   });
+  if (values.length > 0) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SHEET_ID,
+      range,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values },
+    });
+  }
 }
