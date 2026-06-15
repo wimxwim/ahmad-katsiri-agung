@@ -1,32 +1,10 @@
 import { config, collection, fields } from "@keystatic/core";
 
-export function getShowAdminUI(): boolean {
-  try {
-    return !!process.env["NEXT_PUBLIC_KEYSTATIC_GITHUB_CLIENT_ID"];
-  } catch {
-    return false;
-  }
-}
-
-function shouldUseGitHub(): boolean {
-  try {
-    if (typeof window !== "undefined") return true;
-    return !!process.env["NEXT_PUBLIC_KEYSTATIC_GITHUB_CLIENT_ID"];
-  } catch {
-    return false;
-  }
-}
-
 export default config({
-  storage: (() => {
-    if (shouldUseGitHub()) {
-      return {
-        kind: "github",
-        repo: { owner: "wimxwim", name: "ahmad-katsiri-agung" },
-      };
-    }
-    return { kind: "local" };
-  })(),
+  storage: {
+    kind: "github",
+    repo: { owner: "wimxwim", name: "ahmad-katsiri-agung" },
+  },
   collections: {
     materi: collection({
       label: "Bab Materi",
