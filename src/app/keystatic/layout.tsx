@@ -1,9 +1,9 @@
 import KeystaticApp from "./keystatic";
-import { getShowAdminUI } from "../../../keystatic.config";
 import { notFound } from "next/navigation";
 
 export default function RootLayout() {
-  if (getShowAdminUI() === false) {
+  const clientId = process.env.NEXT_PUBLIC_KEYSTATIC_GITHUB_CLIENT_ID;
+  if (!clientId) {
     notFound();
   }
   return <KeystaticApp />;
