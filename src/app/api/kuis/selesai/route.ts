@@ -24,7 +24,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const raw = await req.json();
+    const text = await req.text();
+    if (text.length > 50_000) {
+      return NextResponse.json({ error: "Payload terlalu besar" }, { status: 413 });
+    }
+    const raw = JSON.parse(text);
     const parsed = KuisSelesaiSchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });

@@ -29,8 +29,9 @@ export async function GET(req: NextRequest) {
         waktu,
       }));
     return NextResponse.json({ doa: doaList });
-  } catch {
-    return NextResponse.json({ doa: [] });
+  } catch (e) {
+    console.error("GET /api/doa gagal:", e);
+    return NextResponse.json({ error: "Gagal mengambil data doa" }, { status: 500 });
   }
 }
 
@@ -45,7 +46,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const raw = await req.json();
+    const text = await req.text();
+    if (text.length > 10_000) {
+      return NextResponse.json({ error: "Payload terlalu besar" }, { status: 413 });
+    }
+    const raw = JSON.parse(text);
     const parsed = DoaSchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });

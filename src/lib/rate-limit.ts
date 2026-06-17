@@ -32,7 +32,7 @@ export function checkRateLimit(
     return { allowed: true, remaining: maxRequests - 1, retryAfter: 0 };
   }
 
-  entry.count++;
+  entry.count += 1;
   if (entry.count > maxRequests) {
     const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
     return { allowed: false, remaining: 0, retryAfter };
@@ -42,7 +42,9 @@ export function checkRateLimit(
 }
 
 export function ipFromRequest(request: Request): string {
-  return request.headers.get("cf-connecting-ip")
-    || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-    || "unknown";
+  const cfIp = request.headers.get("cf-connecting-ip");
+  if (cfIp) return cfIp;
+  const xForwardedFor = request.headers.get("x-forwarded-for");
+  if (xForwardedFor) return xForwardedFor.split(",")[0]?.trim();
+  return request.headers.get("x-real-ip") || "unknown";
 }
