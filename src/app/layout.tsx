@@ -14,6 +14,7 @@ import {
   getHaditsFromCms,
   getMateriFromCms,
   getSoalMetaFromCms,
+  getSoalFromCms,
   getAboutFromCms,
   getPendidikPageFromCms,
   getPerangkatAjarFromCms,
@@ -116,13 +117,14 @@ export const viewport: Viewport = {
 async function loadCmsData(): Promise<CmsData> {
   if (!CMS_ENABLED) return {};
   try {
-    const [nav, siteConfig, games, hadits, rawMateri, soalMeta, about, pendidikPage, perangkatAjar] = await Promise.all([
+    const [nav, siteConfig, games, hadits, rawMateri, soalMeta, rawSoal, about, pendidikPage, perangkatAjar] = await Promise.all([
       getNavigationFromCms(),
       getSiteConfigFromCms(),
       getGamesFromCms(),
       getHaditsFromCms(),
       getMateriFromCms(),
       getSoalMetaFromCms(),
+      getSoalFromCms(),
       getAboutFromCms(),
       getPendidikPageFromCms(),
       getPerangkatAjarFromCms(),
@@ -182,6 +184,7 @@ async function loadCmsData(): Promise<CmsData> {
       materiList,
       materiDetail,
       soalMeta: soalMeta ?? undefined,
+      soalData: rawSoal ?? undefined,
       about: about ?? undefined,
       pendidikPage: pendidikPage ?? undefined,
       perangkatAjar: perangkatAjar ?? undefined,

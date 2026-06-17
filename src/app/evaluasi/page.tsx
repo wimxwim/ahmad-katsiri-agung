@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { ClipboardList, GraduationCap, ArrowRight, Sparkles } from "lucide-react";
-import { SOAL_META, ALL_SOAL } from "@/data/soal";
+import { SOAL_META as SOAL_META_HARD, ALL_SOAL as ALL_SOAL_HARD } from "@/data/soal";
+import { useCmsData } from "@/components/providers/CmsProvider";
 import { QuizEngine } from "@/components/evaluasi/QuizEngine";
 import Link from "next/link";
 
@@ -11,6 +12,10 @@ const KELAS = [7, 8, 9] as const;
 const GRADIENT_SLUGS = new Set(['adab-dalam-islam', 'amanah-dan-jujur', 'beriman-kepada-hari-akhir', 'beriman-kepada-kitab-allah', 'beriman-kepada-malaikat', 'beriman-kepada-nabi-dan-rasul', 'beriman-kepada-qada-dan-qadar', 'salat-mencegah-perbuatan-keji-dan-mungkar']);
 
 export default function EvaluasiPage() {
+  const { soalMeta, soalData } = useCmsData();
+  const SOAL_META = soalMeta ?? SOAL_META_HARD;
+  const ALL_SOAL = soalData ?? ALL_SOAL_HARD;
+
   const [filterKelas, setFilterKelas] = useState<number | null>(null);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
 
