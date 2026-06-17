@@ -1,10 +1,25 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Bricolage_Grotesque, Inter, Amiri, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers/Providers";
 import { Navbar } from "@/components/layout/Navbar";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWA } from "@/components/layout/FloatingWA";
+import type { CmsData } from "@/components/providers/CmsProvider";
+import {
+  getNavigationFromCms,
+  getSiteConfigFromCms,
+  getGamesFromCms,
+  getHaditsFromCms,
+  getMateriFromCms,
+  getSoalMetaFromCms,
+  getAboutFromCms,
+  getPendidikPageFromCms,
+  getPerangkatAjarFromCms,
+} from "@/lib/cms";
+import { CMS_ENABLED } from "@/lib/cms-config";
+import type { CmsMateriListItem, CmsMateriFull } from "@/components/providers/CmsProvider";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -98,17 +113,106 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+async function loadCmsData(): Promise<CmsData> {
+  if (!CMS_ENABLED) return {};
+  try {
+    const [nav, siteConfig, games, hadits, rawMateri, soalMeta, about, pendidikPage, perangkatAjar] = await Promise.all([
+      getNavigationFromCms(),
+      getSiteConfigFromCms(),
+      getGamesFromCms(),
+      getHaditsFromCms(),
+      getMateriFromCms(),
+      getSoalMetaFromCms(),
+      getAboutFromCms(),
+      getPendidikPageFromCms(),
+      getPerangkatAjarFromCms(),
+    ]);
+
+    let materiList: CmsMateriListItem[] | undefined;
+    let materiDetail: Record<string, CmsMateriFull> | undefined;
+    if (rawMateri) {
+      const slugs = Object.keys(rawMateri);
+      materiList = slugs.map((slug) => {
+        const m = rawMateri[slug];
+        return {
+          slug: m.slug,
+          title: m.title,
+          kelas: m.kelas,
+          bab: m.bab,
+          ringkasan: m.ringkasan,
+          subTopik: m.subTopik,
+          icon: m.icon,
+        };
+      });
+      materiDetail = slugs.reduce(
+        (acc, slug) => {
+          const m = rawMateri[slug];
+          acc[slug] = {
+            slug: m.slug,
+            title: m.title,
+            kelas: m.kelas,
+            bab: m.bab,
+            babLabel: m.babLabel,
+            ringkasan: m.ringkasan,
+            subTopik: m.subTopik,
+            waktuBaca: m.waktuBaca,
+            icon: m.icon,
+            videoUrl: m.videoUrl,
+            pendahuluan: m.pendahuluan,
+            konten: m.konten,
+            dalil: m.dalil,
+            dimensi: m.dimensi,
+            poinPenting: m.poinPenting,
+            prevSlug: m.prevSlug,
+            prevTitle: m.prevTitle,
+            nextSlug: m.nextSlug,
+            nextTitle: m.nextTitle,
+          };
+          return acc;
+        },
+        {} as Record<string, CmsMateriFull>,
+      );
+    }
+
+    return {
+      navigation: nav ?? undefined,
+      siteConfig: siteConfig ?? undefined,
+      games: games ?? undefined,
+      hadits: hadits ?? undefined,
+      materiList,
+      materiDetail,
+      soalMeta: soalMeta ?? undefined,
+      about: about ?? undefined,
+      pendidikPage: pendidikPage ?? undefined,
+      perangkatAjar: perangkatAjar ?? undefined,
+    };
+  } catch {
+    return {};
+  }
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cmsData = await loadCmsData();
+
+  const headersList = await headers();
+  const nonce = headersList.get("x-nonce") ?? "";
+
   return (
     <html
       lang="id"
       className={`${bricolageGrotesque.variable} ${inter.variable} ${amiri.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-body">
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html: `window.__NEXT_SCRIPT_NONCE='${nonce}'`,
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
@@ -166,12 +270,12 @@ export default function RootLayout({
             }),
           }}
         />
-        <Providers>
+        <Providers cmsData={cmsData}>
           <Navbar />
           <BottomTabBar />
           <main className="flex-1 pt-24 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-x-hidden">{children}</main>
-          <Footer />
-          <FloatingWA />
+          <Footer navigation={cmsData.navigation} />
+          <FloatingWA waNumber={cmsData.navigation?.waNumber} />
         </Providers>
         <Analytics />
         <SpeedInsights />
