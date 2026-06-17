@@ -992,15 +992,21 @@ selanjutnya. Update file ini jika ada perubahan.
 | 2026-06-12 | Sesi 16: Cleanup XSS test data from Google Sheets + merge .md files ke AGENTS.md + reset ADMIN_API_KEY/JWT_SECRET |
 | 2026-06-12 | Sesi 17: Re-Audit Fix — 4 HIGH + 7 MEDIUM + 8 LOW (Worker transparent proxy, rate limiter di CDN, Zod leak, sanitizer upgrade, origin binding, crypto shuffle) |
 | 2026-06-13 | Sesi 18: DoaUcapan cleanup, Game Terkait dinamis, 6 game cover WebP baru, GRADIENT_SLUGS semua bab, video Melestarikan Alam fix, Rekap "0 dari 0" bug fix (data.error check + catch block 500), UX rekap clearer (text input + contoh key), Speed Insights fix (CSP + Worker cache + enable dashboard), After-Action Review documented |
+| 2026-06-18 | Sesi 19: CMS Keystatic integration — 9 collections/singletons (materi, soal, game, hadits, navigation, siteConfig, about, pendidikPage, perangkatAjar), CSS fallback tiap halaman, middleware CSP nonce+strict-dynamic, security audit (10 fix: H-1/H-2/H-3/M-2/M-3/M-4/M-6/M-7/L-1/L-2), GitHub App OAuth setup (App ID 4080075, Client ID Iv23liAhXMj8s8L7I0Y1), GitHub App installed on repo wimxwim/ahmad-katsiri-agung, Vercel env vars set for production CMS, deploy ke akalcenter.my.id with github storage mode, fix evaluasi soal data from CMS, fix .env.example comment syntax |
 
 ---
 
 ## Env Var Terbaru
 
-| Env Var | Nilai (per 13 Juni 2026) | Catatan |
+| Env Var | Nilai (per 18 Juni 2026) | Catatan |
 |---------|--------------------------|---------|
 | `ADMIN_API_KEY` | `akal-admin-2026` | Untuk akses rekap nilai di `/pendidik` |
 | `JWT_SECRET` | `akal-jwt-secret-2026-32chars!` | Untuk sign/verify token kuis siswa |
+| `KEYSTATIC_GITHUB_CLIENT_ID` | `Iv23liAhXMj8s8L7I0Y1` | GitHub App OAuth client ID untuk CMS |
+| `KEYSTATIC_GITHUB_CLIENT_SECRET` | (tersimpan aman di Vercel) | Client secret GitHub App akal-center-cms |
+| `KEYSTATIC_SECRET` | (tersimpan aman di Vercel) | Encryption key untuk Keystatic CMS |
+| `NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND` | `github` | Mode production: github (bukan local) |
+| `NEXT_PUBLIC_USE_CMS` | `true` | Mengaktifkan override data dari CMS |
 | Lainnya | (sama seperti sebelumnya) | GOOGLE_SHEETS_*, TELEGRAM_* tidak berubah |
 
 ---
