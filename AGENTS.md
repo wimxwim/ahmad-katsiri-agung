@@ -1203,6 +1203,39 @@ npx vercel --prod --yes          # 5. Deploy ke Vercel
 
 ---
 
+## CMS Multi-User — Persiapan Akses Bang Agung
+
+Saat ini CMS cuma bisa diakses akun `wimxwim` karena:
+1. GitHub App `akal-center-cms` dibuat di akun personal `wimxwim`
+2. Repo `wimxwim/ahmad-katsiri-agung` cuma accessible sama `wimxwim`
+3. OAuth login cuma grant access ke user yang punya akses nulis ke repo
+
+### Yang Perlu Dilakukan Nanti (setelah Bang Agung punya akun GitHub)
+
+| Step | Detail | Eksekutor |
+|------|--------|-----------|
+| 1 | Bang Agung buat akun GitHub (github.com/signup) — gratis | Bang Agung |
+| 2 | `wimxwim` invite Bang Agung sebagai collaborator di repo ini (`https://github.com/wimxwim/ahmad-katsiri-agung/settings/access`) | wimxwim |
+| 3 | Bang Agung buka email GitHub → Accept invitation | Bang Agung |
+| 4 | Bang Agung buka `https://akalcenter.my.id/keystatic` → Login with GitHub → Authorize app | Bang Agung |
+| 5 | Selesai — Bang Agung bisa edit konten CMS langsung dari browser | — |
+
+### Cara Invite Collaborator (Step 2 detail)
+1. Buka `https://github.com/wimxwim/ahmad-katsiri-agung/settings/access`
+2. Klik "Add people" → masukkan username GitHub Bang Agung
+3. Pilih role "Write" (bisa edit content via CMS, tidak bisa merge ke main)
+4. Klik "Add [username] to this repository"
+5. Bang Agung akan dapat email invite → tinggal accept
+
+### ⚠️ Catatan Penting
+- **Role cukup "Write"** — Bang Agung cuma perlu push ke branch CMS (bukan main)
+- Keystatic CMS commit otomatis ke branch `keystatic-changes/{timestamp}` — Bang Agung tidak perlu urusan Git
+- CMS hanya nulis ke `content/` folder — tidak bisa edit file kode
+- Akun Bang Agung bisa di-revoke kapan saja dari GitHub settings
+- **Biaya:** gratis (GitHub free plan support unlimited collaborators)
+
+---
+
 ## Catatan & Log Update (Riwayat Pengerjaan)
 
 ```

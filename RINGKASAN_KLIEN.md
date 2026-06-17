@@ -55,6 +55,10 @@
 | 2026-06-11 | Sesi 13: Cache-busting foto Bang Agung (?v=2) — fix foto lama muncul di HP |
 | 2026-06-11 | Sesi 14: Update playbook agensi — 39 error terklasifikasi + arsitektur Vercel/Cloudflare/Domain |
 | 2026-06-12 | Sesi 15: Security Audit & Fix — JWT auth, rate limiting, sanitasi XSS, CSP/HSTS, Zod validation, lenis removal |
+| 2026-06-12 | Sesi 16: Cleanup XSS test data from Google Sheets + merge .md files ke AGENTS.md + reset ADMIN_API_KEY/JWT_SECRET |
+| 2026-06-12 | Sesi 17: Re-Audit Fix — 4 HIGH + 7 MEDIUM + 8 LOW (Worker transparent proxy, rate limiter di CDN, Zod leak, sanitizer upgrade, origin binding, crypto shuffle) |
+| 2026-06-13 | Sesi 18: DoaUcapan cleanup, Game Terkait dinamis, 6 game cover WebP baru, GRADIENT_SLUGS semua bab, video Melestarikan Alam fix, Rekap "0 dari 0" bug fix (data.error check + catch block 500), UX rekap clearer (text input + contoh key), Speed Insights fix (CSP + Worker cache + enable dashboard), After-Action Review documented |
+| 2026-06-18 | Sesi 19: CMS Keystatic integration — 9 collections/singletons (materi, soal, game, hadits, navigation, siteConfig, about, pendidikPage, perangkatAjar), CSS fallback tiap halaman, middleware CSP nonce+strict-dynamic, security audit (10 fix: H-1/H-2/H-3/M-2/M-3/M-4/M-6/M-7/L-1/L-2), GitHub App OAuth setup (App ID 4080075, Client ID Iv23liAhXMj8s8L7I0Y1), GitHub App installed on repo wimxwim/ahmad-katsiri-agung, Vercel env vars set for production CMS, deploy ke akalcenter.my.id with github storage mode, fix evaluasi soal data from CMS, fix .env.example comment syntax |
 
 ---
 
