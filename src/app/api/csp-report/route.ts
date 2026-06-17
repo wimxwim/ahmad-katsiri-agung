@@ -1,7 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST() {
-  // CSP violation report — log only, no response needed
-  // Production deployments should log these to an external service
+export async function POST(req: NextRequest) {
+  try {
+    const report = await req.json();
+    console.error("CSP Violation:", JSON.stringify(report));
+  } catch {
+    console.error("CSP report gagal diparse");
+  }
   return NextResponse.json({ ok: true });
 }

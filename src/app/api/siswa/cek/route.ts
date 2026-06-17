@@ -17,7 +17,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const raw = await req.json();
+    const text = await req.text();
+    if (text.length > 5_000) {
+      return NextResponse.json({ error: "Payload terlalu besar" }, { status: 413 });
+    }
+    const raw = JSON.parse(text);
     const parsed = SiswaCekSchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
@@ -26,23 +30,31 @@ export async function POST(req: NextRequest) {
     const { nama, tanggalLahir } = parsed.data;
     const rows = await readRows(SHEET_RANGE);
 
+    let matchedNama = "";
+    let matchedKelas = "";
     for (const row of rows.slice(1)) {
       const [_, rowNama, rowKelas, rowTtl] = row;
       if (
         rowNama?.toLowerCase().trim() === nama.toLowerCase().trim() &&
         rowTtl?.toLowerCase().trim() === tanggalLahir.toLowerCase().trim()
       ) {
-        const token = await signQuizToken(rowNama, rowKelas);
-        return NextResponse.json({
-          found: true,
-          nama: rowNama,
-          kelas: rowKelas,
-          token,
-        });
+        matchedNama = rowNama;
+        matchedKelas = rowKelas;
+        break;
       }
     }
 
-    return NextResponse.json({ found: false, error: "Nama atau Tanggal Lahir tidak cocok" });
+    if (matchedNama) {
+      const token = await signQuizToken(matchedNama, matchedKelas);
+      return NextResponse.json({
+        found: true,
+        nama: matchedNama,
+        kelas: matchedKelas,
+        token,
+      });
+    }
+
+    return NextResponse.json({ found: false });
   } catch {
     return NextResponse.json({ error: "Gagal memeriksa data siswa" }, { status: 500 });
   }

@@ -19,7 +19,7 @@ export async function appendRow(range: string, values: string[][]) {
   await sheets.spreadsheets.values.append({
     spreadsheetId: SHEET_ID,
     range,
-    valueInputOption: "USER_ENTERED",
+    valueInputOption: "RAW",
     requestBody: { values },
   });
 }
@@ -59,7 +59,7 @@ export async function overwriteRows(range: string, values: string[][]) {
     await sheets.spreadsheets.values.update({
       spreadsheetId: SHEET_ID,
       range,
-      valueInputOption: "USER_ENTERED",
+      valueInputOption: "RAW",
       requestBody: { values },
     });
   }
