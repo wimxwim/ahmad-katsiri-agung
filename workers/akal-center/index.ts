@@ -65,8 +65,8 @@ export default {
     const upstreamUrl = ORIGIN + url.pathname + url.search;
 
     const headers = new Headers(request.headers);
-    headers.set('Host', new URL(ORIGIN).hostname);
     headers.set('X-From-Worker', 'akal-center');
+    headers.set('X-Forwarded-Host', url.hostname);
 
     const isStatic = url.pathname.startsWith('/_next/static/');
     const isPdf = url.pathname.startsWith('/pdf/');
@@ -76,6 +76,7 @@ export default {
       method: request.method,
       headers,
       body: ['GET', 'HEAD'].includes(request.method) ? null : request.body,
+      redirect: 'manual',
     });
 
     let response = await fetch(upstreamRequest);
