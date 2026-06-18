@@ -26,6 +26,7 @@ export function middleware(request: NextRequest) {
     `base-uri 'self'`,
     `form-action 'self'`,
     `report-uri /api/csp-report`,
+    `report-to csp-endpoint`,
   ].join("; ");
 
   const requestHeaders = new Headers(request.headers);
@@ -36,6 +37,14 @@ export function middleware(request: NextRequest) {
   });
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("x-nonce", nonce);
+  response.headers.set(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains; preload"
+  );
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set("Reporting-Endpoints", 'csp-endpoint="/api/csp-report"');
 
   return response;
 }

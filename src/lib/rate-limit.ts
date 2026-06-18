@@ -4,6 +4,7 @@ interface RateLimitEntry {
 }
 
 const store = new Map<string, RateLimitEntry>();
+const MAX_STORE_SIZE = 10_000;
 
 const CLEANUP_INTERVAL = 60_000;
 let lastCleanup = Date.now();
@@ -28,7 +29,9 @@ export function checkRateLimit(
   const entry = store.get(key);
 
   if (!entry || now > entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + windowMs });
+    if (store.size < MAX_STORE_SIZE) {
+      store.set(key, { count: 1, resetAt: now + windowMs });
+    }
     return { allowed: true, remaining: maxRequests - 1, retryAfter: 0 };
   }
 

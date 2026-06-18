@@ -5,6 +5,12 @@ import { KuisSelesaiSchema } from "@/lib/validation";
 import { verifyQuizToken } from "@/lib/auth";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
+function extractBearerToken(req: NextRequest): string | null {
+  const auth = req.headers.get("authorization");
+  if (!auth?.startsWith("Bearer ")) return null;
+  return auth.slice(7).trim();
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Session binding: verify Origin matches our domain
@@ -34,7 +40,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
     }
 
-    const { namaSiswa, kelas, status, judulBab, skor, totalSoal, jawabanSalah, token } = parsed.data;
+    const { namaSiswa, kelas, status, judulBab, skor, totalSoal, jawabanSalah } = parsed.data;
+    const token = extractBearerToken(req);
 
     if (status === "resmi") {
       if (!token) {

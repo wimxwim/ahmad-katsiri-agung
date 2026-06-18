@@ -8,6 +8,13 @@ const ADMIN_KEY = process.env.ADMIN_API_KEY || "";
 
 export async function GET(req: NextRequest) {
   try {
+    const origin = req.headers.get("origin") || req.headers.get("referer") || "";
+    const allowedOrigins = ["https://akalcenter.my.id", "https://ahmad-katsiri-agung.vercel.app", "http://localhost:3000"];
+    const originOk = allowedOrigins.some((o) => origin.startsWith(o));
+    if (!originOk) {
+      return NextResponse.json({ error: "Akses ditolak" }, { status: 403 });
+    }
+
     const ip = ipFromRequest(req);
     const limit = checkRateLimit(`rekap:${ip}`, 20, 60_000);
     if (!limit.allowed) {

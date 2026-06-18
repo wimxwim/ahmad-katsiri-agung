@@ -71,9 +71,13 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
       }));
 
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (loginData.token) {
+        headers["Authorization"] = `Bearer ${loginData.token}`;
+      }
       await fetch("/api/kuis/selesai", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           namaSiswa: loginData.namaSiswa,
           kelas: loginData.kelas,
@@ -83,7 +87,6 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
           skor: hitungSkor(),
           totalSoal: shuffledSoal.length,
           jawabanSalah,
-          token: loginData.token,
         }),
       });
     } catch (err) {
