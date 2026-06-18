@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
     `font-src 'self' https://fonts.gstatic.com data:`,
     `frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com`,
     `media-src 'self' https://*.youtube.com https://*.googlevideo.com`,
-    `connect-src 'self' https://*.vercel.app https://*.vercel-insights.com https://*.googleapis.com https://*.google-analytics.com https://*.youtube.com https://*.googlevideo.com`,
+    `connect-src 'self' https://*.vercel.app https://*.vercel-insights.com https://*.googleapis.com https://*.google-analytics.com https://*.youtube.com https://*.googlevideo.com https://api.github.com https://*.githubusercontent.com`,
     `object-src 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,
