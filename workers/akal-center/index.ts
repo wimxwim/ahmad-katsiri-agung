@@ -81,6 +81,17 @@ export default {
 
     let response = await fetch(upstreamRequest);
 
+    // Fix redirect URLs: replace Vercel origin with the actual domain
+    // This is needed because Keystatic constructs redirect_uri from req.url
+    // which on Vercel uses the Vercel deployment URL, not the custom domain
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (location && location.includes(ORIGIN)) {
+        response = new Response(response.body, response);
+        response.headers.set('location', location.replace(ORIGIN, `${url.protocol}//${url.host}`));
+      }
+    }
+
     // Only override Cache-Control for cacheable assets; let origin handle everything else
     if (isStatic) {
       response = new Response(response.body, response);
