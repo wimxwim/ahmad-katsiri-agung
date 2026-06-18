@@ -1,7 +1,5 @@
 "use client";
 
-"use client";
-
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
@@ -14,8 +12,17 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
+import { useCmsData } from "@/components/providers/CmsProvider";
 
 export default function PendidikPage() {
+  const { pendidikPage } = useCmsData();
+
+  const statsList = pendidikPage?.stats ?? [
+    { value: "98%", label: "EFISIENSI WAKTU" },
+    { value: "12K+", label: "GURU AKTIF" },
+    { value: "240TB", label: "DATA TERARSIP" },
+  ];
+
   return (
     <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 md:pt-32 pb-16 md:pb-32">
       <motion.header
@@ -71,11 +78,7 @@ export default function PendidikPage() {
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8 md:gap-12 border-t border-primary/10 pt-12 sm:pt-16 md:pt-24 mb-24 sm:mb-32">
-        {[
-          { value: "98%", label: "EFISIENSI WAKTU" },
-          { value: "12K+", label: "GURU AKTIF" },
-          { value: "240TB", label: "DATA TERARSIP" },
-        ].map((stat, i) => (
+        {statsList.map((stat, i) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 30 }}
@@ -200,24 +203,31 @@ function FeatureCard({
   );
 }
 
-const PERANGKAT = [
-  { kelas: 7, label: "PROTA", file: "/pdf/perangkat/prota-7.pdf" },
-  { kelas: 9, label: "PROTA", file: "/pdf/perangkat/prota-9.pdf" },
-  { kelas: 7, label: "PROSEM", file: "/pdf/perangkat/prosem-7.pdf" },
-  { kelas: 8, label: "PROSEM", file: "/pdf/perangkat/prosem-8.pdf" },
-  { kelas: 9, label: "PROSEM", file: "/pdf/perangkat/prosem-9.pdf" },
-  { kelas: 7, label: "ATP", file: "/pdf/perangkat/atp-7.pdf" },
-  { kelas: 8, label: "ATP", file: "/pdf/perangkat/atp-8.pdf" },
-  { kelas: 9, label: "ATP", file: "/pdf/perangkat/atp-9.pdf" },
-];
-
 const KELAS_LIST = [7, 8, 9] as const;
 
 function PerangkatSection() {
+  const { perangkatAjar } = useCmsData();
   const [kelas, setKelas] = useState<number>(7);
 
+  const PERANGKAT = perangkatAjar?.items?.length
+    ? perangkatAjar.items.map((p) => ({
+        kelas: parseInt(p.kelas),
+        label: p.label,
+        file: p.file,
+        tersedia: p.tersedia,
+      }))
+    : [
+        { kelas: 7, label: "PROTA", file: "/pdf/perangkat/prota-7.pdf", tersedia: true },
+        { kelas: 9, label: "PROTA", file: "/pdf/perangkat/prota-9.pdf", tersedia: true },
+        { kelas: 7, label: "PROSEM", file: "/pdf/perangkat/prosem-7.pdf", tersedia: true },
+        { kelas: 8, label: "PROSEM", file: "/pdf/perangkat/prosem-8.pdf", tersedia: true },
+        { kelas: 9, label: "PROSEM", file: "/pdf/perangkat/prosem-9.pdf", tersedia: true },
+        { kelas: 7, label: "ATP", file: "/pdf/perangkat/atp-7.pdf", tersedia: true },
+        { kelas: 8, label: "ATP", file: "/pdf/perangkat/atp-8.pdf", tersedia: true },
+        { kelas: 9, label: "ATP", file: "/pdf/perangkat/atp-9.pdf", tersedia: true },
+      ];
+
   const items = PERANGKAT.filter((p) => p.kelas === kelas);
-  const adaProta8 = PERANGKAT.some((p) => p.kelas === 8 && p.label === "PROTA");
 
   return (
     <motion.div
@@ -264,8 +274,7 @@ function PerangkatSection() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {["PROTA", "PROSEM", "ATP"].map((label) => {
           const item = items.find((p) => p.label === label);
-          const tersedia = !!item;
-          const kosongK8 = label === "PROTA" && kelas === 8;
+          const tersedia = item?.tersedia ?? !!item;
           return (
             <div
               key={label}
@@ -287,7 +296,7 @@ function PerangkatSection() {
               }`}>
                 {kelas === 7 ? "Kelas 7" : kelas === 8 ? "Kelas 8" : "Kelas 9"}
               </span>
-              {tersedia ? (
+              {tersedia && item ? (
                 <a
                   href={item.file}
                   download
@@ -298,7 +307,7 @@ function PerangkatSection() {
                 </a>
               ) : (
                 <span className="text-[10px] text-on-surface-variant/30 italic">
-                  {kosongK8 ? "Belum tersedia" : "—"}
+                  {label === "PROTA" && kelas === 8 ? "Belum tersedia" : "—"}
                 </span>
               )}
             </div>

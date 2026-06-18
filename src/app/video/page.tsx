@@ -4,15 +4,20 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Play, Clock, BookOpen, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { ALL_MATERI } from "@/data/materi";
+import { useCmsData } from "@/components/providers/CmsProvider";
+import { ALL_MATERI as ALL_MATERI_HARD } from "@/data/materi";
 
-const BAB_LIST = Object.values(ALL_MATERI).sort(
+const BAB_LIST_HARD = Object.values(ALL_MATERI_HARD).sort(
   (a, b) => a.kelas - b.kelas || a.bab - b.bab
 );
 
 const KELAS = [7, 8, 9] as const;
 
 export default function VideoPage() {
+  const { materiDetail } = useCmsData();
+  const BAB_LIST = materiDetail
+    ? Object.values(materiDetail).sort((a, b) => a.kelas - b.kelas || a.bab - b.bab)
+    : BAB_LIST_HARD;
   const [filterKelas, setFilterKelas] = useState<number | null>(null);
   const [playing, setPlaying] = useState<string | null>(null);
 

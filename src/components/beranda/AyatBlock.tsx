@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Quote, Sparkles } from "lucide-react";
+import { useCmsData } from "../providers/CmsProvider";
 
-const HADITS_LIST = [
+const HADITS_FALLBACK = [
   {
     teks: "Sesungguhnya kejujuran itu membawa kepada kebaikan dan kebaikan itu membawa ke Surga.",
     sumber: "HR. Muslim",
@@ -32,16 +33,19 @@ const HADITS_LIST = [
 ];
 
 export function AyatBlock() {
+  const { hadits: cmsHadits } = useCmsData();
+  const haditsList = cmsHadits && cmsHadits.length > 0 ? cmsHadits : HADITS_FALLBACK;
+
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % HADITS_LIST.length);
+      setIndex((prev) => (prev + 1) % haditsList.length);
     }, 8000);
     return () => clearInterval(timer);
-  }, []);
+  }, [haditsList.length]);
 
-  const hadits = HADITS_LIST[index];
+  const hadits = haditsList[index];
 
   return (
     <section className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 py-12 sm:py-16">
@@ -82,7 +86,7 @@ export function AyatBlock() {
           </div>
 
           <div className="flex items-center justify-center gap-2">
-            {HADITS_LIST.map((_, i) => (
+            {haditsList.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setIndex(i)}

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ALL_MATERI } from "@/data/materi";
+import { getAllMateri, getMateriBySlug } from "@/lib/cms-data";
 import { MateriDetailClient } from "@/components/materi/MateriDetailClient";
 
 export default async function DetailBabPage({
@@ -8,7 +8,7 @@ export default async function DetailBabPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const materi = ALL_MATERI[slug];
+  const materi = await getMateriBySlug(slug);
 
   if (!materi) {
     notFound();
@@ -18,5 +18,6 @@ export default async function DetailBabPage({
 }
 
 export async function generateStaticParams() {
-  return Object.keys(ALL_MATERI).map((slug) => ({ slug }));
+  const all = await getAllMateri();
+  return Object.keys(all).map((slug) => ({ slug }));
 }

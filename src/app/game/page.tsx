@@ -3,8 +3,9 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import { Gamepad2, ExternalLink, ArrowRight } from "lucide-react";
+import { useCmsData } from "@/components/providers/CmsProvider";
 
-const GAMES = [
+const GAMES_FALLBACK = [
   {
     title: "Game Beriman kepada Malaikat",
     desc: "Game interaktif tentang malaikat Allah untuk siswa SMP.",
@@ -92,6 +93,18 @@ const GAMES = [
 ];
 
 export default function GamePage() {
+  const { games } = useCmsData();
+
+  const gameList = games && games.length > 0
+    ? games.map((g) => ({
+        title: g.judul,
+        desc: g.desc,
+        url: g.url,
+        badge: g.badge,
+        image: g.image,
+      }))
+    : GAMES_FALLBACK;
+
   return (
     <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 pb-24 sm:pb-32">
       <motion.div
@@ -115,7 +128,7 @@ export default function GamePage() {
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 max-w-5xl mx-auto mb-16 sm:mb-24">
-        {GAMES.map((game, i) => (
+        {gameList.map((game, i) => (
           <motion.a
             key={game.title}
             href={game.url}

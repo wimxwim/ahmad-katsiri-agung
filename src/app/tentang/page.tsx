@@ -3,8 +3,18 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import { BookHeart, ArrowRight } from "lucide-react";
+import { useCmsData } from "@/components/providers/CmsProvider";
 
 export default function TentangPage() {
+  const { about } = useCmsData();
+
+  const filosofi = about?.filosofi ?? "AKAL Center percaya bahwa pembelajaran Aqidah Akhlaq harus relevan dengan kehidupan digital siswa. Kami menerapkan model Deep Learning — sadar, bermakna, dan menyenangkan — untuk membentuk karakter Islami generasi muda.";
+  const pendiriNama = about?.pendiriNama ?? "Ahmad Katsiri Aggung, S.Pd.";
+  const pendiriFoto = about?.pendiriFoto ?? "/images/tentang/ahmad-katsiri.jpg?v=2";
+  const visi = about?.visi ?? "Menjadi platform pembelajaran PAI nomor satu di Indonesia yang membuat setiap siswa jatuh cinta pada pelajaran agama Islam.";
+  const misiList = about?.misi ?? [];
+  const verifikator = about?.verifikator ?? [];
+
   return (
     <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 md:pt-40 pb-16 md:pb-32">
       <motion.section
@@ -40,10 +50,7 @@ export default function TentangPage() {
               Filosofi Kami
             </h2>
             <p className="text-on-surface-variant leading-relaxed">
-              AKAL Center percaya bahwa pembelajaran Aqidah Akhlaq harus
-              relevan dengan kehidupan digital siswa. Kami menerapkan model Deep
-              Learning — sadar, bermakna, dan menyenangkan — untuk membentuk
-              karakter Islami generasi muda.
+              {filosofi}
             </p>
           </motion.div>
 
@@ -57,8 +64,8 @@ export default function TentangPage() {
             <div className="flex flex-col sm:flex-row gap-6 items-start">
               <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 bg-primary/10">
                 <img
-                  src="/images/tentang/ahmad-katsiri.jpg?v=2"
-                  alt="Ahmad Katsiri Aggung, S.Pd."
+                  src={pendiriFoto}
+                  alt={pendiriNama}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -67,9 +74,7 @@ export default function TentangPage() {
                   Tentang Pendiri
                 </h2>
                 <p className="text-on-surface-variant leading-relaxed">
-                  <strong>Ahmad Katsiri Aggung, S.Pd.</strong> adalah pendidik PAI
-                  yang berdedikasi untuk menghadirkan pengalaman belajar agama yang
-                  bermakna bagi generasi muda Indonesia.
+                  <strong>{pendiriNama}</strong> adalah pendidik PAI yang berdedikasi untuk menghadirkan pengalaman belajar agama yang bermakna bagi generasi muda Indonesia.
                 </p>
               </div>
             </div>
@@ -85,10 +90,19 @@ export default function TentangPage() {
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-4">
               Visi & Misi
             </h2>
-            <p className="text-on-surface-variant leading-relaxed">
-              Menjadi platform pembelajaran PAI nomor satu di Indonesia yang
-              membuat setiap siswa jatuh cinta pada pelajaran agama Islam.
+            <p className="text-on-surface-variant leading-relaxed mb-4">
+              {visi}
             </p>
+            {misiList.length > 0 && (
+              <ul className="space-y-2">
+                {misiList.map((m, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-on-surface-variant">
+                    <span className="text-primary mt-1 shrink-0">•</span>
+                    <span>{m}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </motion.div>
 
           <motion.div

@@ -2,9 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, BookOpen, ClipboardList, Gamepad2, Info } from "lucide-react";
+import {
+  Home,
+  BookOpen,
+  ClipboardList,
+  Gamepad2,
+  Info,
+  type LucideIcon,
+} from "lucide-react";
+import { useCmsData } from "../providers/CmsProvider";
 
-const TABS = [
+const ICON_MAP: Record<string, LucideIcon> = {
+  Home,
+  BookOpen,
+  ClipboardList,
+  Gamepad2,
+  Info,
+};
+
+const TABS_FALLBACK = [
   { href: "/", label: "Beranda", icon: Home },
   { href: "/materi", label: "Materi", icon: BookOpen },
   { href: "/evaluasi", label: "Kuis", icon: ClipboardList },
@@ -14,6 +30,16 @@ const TABS = [
 
 export function BottomTabBar() {
   const pathname = usePathname();
+  const { navigation } = useCmsData();
+
+  const cmsTabs = navigation?.bottomTabs;
+  const tabs = cmsTabs
+    ? cmsTabs.map((t) => ({
+        href: t.href,
+        label: t.label,
+        icon: ICON_MAP[t.icon] ?? Home,
+      }))
+    : TABS_FALLBACK;
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -23,7 +49,7 @@ export function BottomTabBar() {
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-2xl border-t border-border-precision shadow-[0_-4px_30px_rgba(0,0,0,0.06)]">
       <div className="flex items-center justify-around h-16" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-        {TABS.map((tab) => {
+        {tabs.map((tab) => {
           const active = isActive(tab.href);
           const Icon = tab.icon;
           return (
@@ -40,7 +66,7 @@ export function BottomTabBar() {
                 <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary" />
               )}
               <Icon
-                className={`w-5 h-5 ${active ? "" : ""}`}
+                className="w-5 h-5"
                 aria-hidden="true"
                 fill={active ? "currentColor" : "none"}
               />

@@ -1,11 +1,18 @@
 "use client";
 
 import { MotionConfig } from "motion/react";
+import { CmsProvider, type CmsData } from "./CmsProvider";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  children,
+  cmsData = {},
+}: {
+  children: React.ReactNode;
+  cmsData?: CmsData;
+}) {
   return (
     <MotionConfig reducedMotion="user">
-      {children}
+      <CmsProvider data={cmsData}>{children}</CmsProvider>
     </MotionConfig>
   );
 }
