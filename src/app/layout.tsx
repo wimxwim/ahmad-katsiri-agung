@@ -205,10 +205,11 @@ export default async function RootLayout({
   const nonce = headersList.get("x-nonce") ?? "";
 
   return (
-    <html
-      lang="id"
-      className={`${bricolageGrotesque.variable} ${inter.variable} ${amiri.variable} ${jetbrainsMono.variable} h-full antialiased`}
-    >
+      <html
+        lang="id"
+        className={`${bricolageGrotesque.variable} ${inter.variable} ${amiri.variable} ${jetbrainsMono.variable} h-full antialiased`}
+        nonce={nonce}
+      >
       <body className="min-h-full flex flex-col font-body">
         <script
           nonce={nonce}
