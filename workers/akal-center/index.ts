@@ -83,12 +83,19 @@ export default {
 
     // Fix redirect URLs: replace Vercel origin with the actual domain
     // This is needed because Keystatic constructs redirect_uri from req.url
-    // which on Vercel uses the Vercel deployment URL, not the custom domain
+    // which on Vercel uses the Vercel deployment URL, not the custom domain.
+    // The ORIGIN appears in Query params (URL-encoded) or as full URL.
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get('location');
-      if (location && location.includes(ORIGIN)) {
-        response = new Response(response.body, response);
-        response.headers.set('location', location.replace(ORIGIN, `${url.protocol}//${url.host}`));
+      if (location) {
+        const actualOrigin = `${url.protocol}//${url.host}`;
+        const encodedOrigin = encodeURIComponent(ORIGIN);
+        const decodedOrigin = ORIGIN;
+        if (location.includes(decodedOrigin) || location.includes(encodedOrigin)) {
+          const fixed = location.replaceAll(decodedOrigin, actualOrigin).replaceAll(encodedOrigin, encodeURIComponent(actualOrigin));
+          response = new Response(response.body, response);
+          response.headers.set('location', fixed);
+        }
       }
     }
 
