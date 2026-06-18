@@ -1,14 +1,17 @@
 const ALLOWED_METHODS = ['GET', 'HEAD', 'POST', 'OPTIONS'];
 const ORIGIN = 'https://ahmad-katsiri-agung.vercel.app';
+const TIMEOUT_MS = 15_000;
 
-// Simple per-IP rate limiter (Cloudflare Worker has persistent state per colo)
+// ── Rate limiter ──
 interface RateEntry {
   count: number;
   resetAt: number;
 }
 const rateStore = new Map<string, RateEntry>();
+const MAX_STORE_SIZE = 10_000;
 
 function checkRateLimit(key: string, maxRequests: number, windowMs: number): boolean {
+  if (rateStore.size > MAX_STORE_SIZE) return true; // degrace gracefully
   const now = Date.now();
   const entry = rateStore.get(key);
   if (!entry || now > entry.resetAt) {
@@ -31,6 +34,14 @@ function cleanupStore() {
   }
 }
 
+// ── Security headers that the Worker ›preserves‹ from origin
+// (we only add what Vercel doesn't already set)
+const SECURITY_HEADERS = {
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+};
+
 export default {
   async fetch(request) {
     if (!ALLOWED_METHODS.includes(request.method)) {
@@ -46,7 +57,6 @@ export default {
         || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
         || 'unknown';
 
-      // Stricter for POST (submissions), looser for GET (reads)
       const maxReq = request.method === 'POST' ? 10 : 30;
       const windowMs = request.method === 'POST' ? 30_000 : 60_000;
       const key = `${request.method}:${url.pathname}:${ip}`;
@@ -66,25 +76,41 @@ export default {
 
     const headers = new Headers(request.headers);
     headers.set('X-From-Worker', 'akal-center');
-    headers.set('X-Forwarded-Host', url.hostname);
 
     const isStatic = url.pathname.startsWith('/_next/static/');
     const isPdf = url.pathname.startsWith('/pdf/');
     const isAsset = /\.(ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot)$/i.test(url.pathname);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
     const upstreamRequest = new Request(upstreamUrl, {
       method: request.method,
       headers,
       body: ['GET', 'HEAD'].includes(request.method) ? null : request.body,
       redirect: 'manual',
+      signal: controller.signal,
     });
 
-    let response = await fetch(upstreamRequest);
+    let response;
+    try {
+      response = await fetch(upstreamRequest);
+    } catch (err) {
+      clearTimeout(timeout);
+      if (err.name === 'AbortError') {
+        return new Response(JSON.stringify({ error: 'Upstream timeout' }), {
+          status: 504,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify({ error: 'Upstream error' }), {
+        status: 502,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    clearTimeout(timeout);
 
     // Fix redirect URLs: replace Vercel origin with the actual domain
-    // This is needed because Keystatic constructs redirect_uri from req.url
-    // which on Vercel uses the Vercel deployment URL, not the custom domain.
-    // The ORIGIN appears in Query params (URL-encoded) or as full URL.
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get('location');
       if (location) {
@@ -99,16 +125,23 @@ export default {
       }
     }
 
+    // Create a mutable response for header overrides
+    response = new Response(response.body, response);
+
     // Only override Cache-Control for cacheable assets; let origin handle everything else
     if (isStatic) {
-      response = new Response(response.body, response);
       response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
     } else if (isPdf || isAsset) {
-      response = new Response(response.body, response);
       response.headers.set('Cache-Control', 'public, max-age=604800');
     } else if (!url.pathname.startsWith('/api/')) {
-      response = new Response(response.body, response);
       response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+    }
+
+    // Security headers (defense-in-depth; don't override origin's CSP)
+    for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+      if (!response.headers.has(key)) {
+        response.headers.set(key, value);
+      }
     }
 
     return response;

@@ -29,5 +29,4 @@ export const KuisSelesaiSchema = z.object({
   skor: z.number().int().min(0),
   totalSoal: z.number().int().positive(),
   jawabanSalah: z.array(JawabanSalahSchema).max(50),
-  token: z.string().optional(),
 });
