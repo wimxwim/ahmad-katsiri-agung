@@ -83,9 +83,9 @@ interface RawMateri {
   waktuBaca: string;
   icon: string;
   videoUrl: string;
-  pdfUrl: string;
-  pptUrl: string;
-  soalUrl: string;
+  pdfUrl: string | null;
+  pptUrl: string | null;
+  soalUrl: string | null;
   gameUrl: string;
   pendahuluan: string;
   konten: { judul: string; isi: string }[];
