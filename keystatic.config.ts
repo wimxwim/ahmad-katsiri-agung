@@ -42,9 +42,9 @@ export default config({
         waktuBaca: fields.text({ label: "Waktu Baca" }),
         icon: fields.text({ label: "Icon (emoji)" }),
         videoUrl: fields.url({ label: "Video YouTube URL" }),
-        pdfUrl: fields.url({ label: "URL Modul Ajar PDF" }),
-        pptUrl: fields.url({ label: "URL Slide PPT" }),
-        soalUrl: fields.url({ label: "URL Naskah Soal PDF" }),
+        pdfUrl: fields.file({ label: "Upload Modul Ajar PDF", publicPath: "/api/assets" }),
+        pptUrl: fields.file({ label: "Upload Slide PPT", publicPath: "/api/assets" }),
+        soalUrl: fields.file({ label: "Upload Naskah Soal PDF", publicPath: "/api/assets" }),
         gameUrl: fields.url({ label: "URL Game Terkait" }),
         pendahuluan: fields.text({ label: "Pendahuluan", multiline: true }),
         konten: fields.array(
