@@ -9,6 +9,8 @@ export interface BabMateri {
   waktuBaca: string;
   icon: string;
   videoUrl?: string;
+  pdfUrl?: string;
+  pptUrl?: string;
   soalUrl?: string;
   gameUrl?: string;
   dalil?: {

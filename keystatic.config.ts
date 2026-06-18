@@ -42,6 +42,8 @@ export default config({
         waktuBaca: fields.text({ label: "Waktu Baca" }),
         icon: fields.text({ label: "Icon (emoji)" }),
         videoUrl: fields.url({ label: "Video YouTube URL" }),
+        pdfUrl: fields.url({ label: "URL Modul Ajar PDF" }),
+        pptUrl: fields.url({ label: "URL Slide PPT" }),
         soalUrl: fields.url({ label: "URL Naskah Soal PDF" }),
         gameUrl: fields.url({ label: "URL Game Terkait" }),
         pendahuluan: fields.text({ label: "Pendahuluan", multiline: true }),

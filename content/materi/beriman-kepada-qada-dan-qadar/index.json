@@ -6,7 +6,7 @@
   "ringkasan": "Meyakini takdir Allah sebagai motivasi untuk terus berusaha dan berdoa.",
   "subTopik": 5,
   "waktuBaca": "5 MIN BACA",
-  "icon": "✨",
+  "icon": "\u2728",
   "videoUrl": "https://www.youtube.com/embed/j-M4Q08tFtw",
   "soalUrl": "/pdf/beriman-kepada-qada-dan-qadar-soal.pdf",
   "gameUrl": "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-qada-dan-qadar",
@@ -22,7 +22,7 @@
     },
     {
       "judul": "Takdir Mualak",
-      "isi": "Takdir Mualak adalah takdir yang masih dapat diubah melalui usaha dan ikhtiar manusia. 'Mualak' berarti sesuatu yang digantungkan — mengikutsertakan peran manusia. Contoh: kesehatan — sakit bisa sembuh dengan berobat, kepandaian — dengan belajar tekun, kekayaan — dengan kerja keras, keberhasilan dan kesuksesan. Takdir bisa berubah karena doa dan perbuatan baik seperti silaturahmi, berbakti pada orang tua, dan menyantuni yatim."
+      "isi": "Takdir Mualak adalah takdir yang masih dapat diubah melalui usaha dan ikhtiar manusia. 'Mualak' berarti sesuatu yang digantungkan \u2014 mengikutsertakan peran manusia. Contoh: kesehatan \u2014 sakit bisa sembuh dengan berobat, kepandaian \u2014 dengan belajar tekun, kekayaan \u2014 dengan kerja keras, keberhasilan dan kesuksesan. Takdir bisa berubah karena doa dan perbuatan baik seperti silaturahmi, berbakti pada orang tua, dan menyantuni yatim."
     },
     {
       "judul": "Kaitan Takdir, Ikhtiar, dan Tawakal",
@@ -31,7 +31,7 @@
   ],
   "dalil": {
     "surah": "QS. At-Taubah [9]: 51",
-    "arab": "ۖقُل لَّن يُصِيبَنَا إِلَّا مَا كَتَبَ ٱللَّهُ لَنَا",
+    "arab": "\u06d6\u0642\u064f\u0644 \u0644\u0651\u064e\u0646 \u064a\u064f\u0635\u0650\u064a\u0628\u064e\u0646\u064e\u0627 \u0625\u0650\u0644\u0651\u064e\u0627 \u0645\u064e\u0627 \u0643\u064e\u062a\u064e\u0628\u064e \u0671\u0644\u0644\u0651\u064e\u0647\u064f \u0644\u064e\u0646\u064e\u0627",
     "arti": "Katakanlah: 'Tidak akan menimpa kami sesuatu pun melainkan apa yang telah ditetapkan Allah bagi kami.'"
   },
   "dimensi": [
@@ -59,5 +59,7 @@
   "prevSlug": "beriman-kepada-hari-akhir",
   "prevTitle": "Beriman kepada Hari Akhir",
   "nextSlug": "semangat-mencari-ilmu",
-  "nextTitle": "Semangat Mencari Ilmu"
+  "nextTitle": "Semangat Mencari Ilmu",
+  "pdfUrl": "/pdf/beriman-kepada-qada-dan-qadar.pdf",
+  "pptUrl": "/pdf/beriman-kepada-qada-dan-qadar-ppt.pdf"
 }

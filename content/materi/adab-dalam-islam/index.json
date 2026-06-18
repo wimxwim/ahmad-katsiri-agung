@@ -6,7 +6,7 @@
   "ringkasan": "Menerapkan adab-adab mulia dalam pergaulan sehari-hari sesuai tuntunan Islam.",
   "subTopik": 10,
   "waktuBaca": "6 MIN BACA",
-  "icon": "🌿",
+  "icon": "\ud83c\udf3f",
   "videoUrl": "",
   "soalUrl": "/pdf/adab-dalam-islam-soal.pdf",
   "gameUrl": "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islamm",
@@ -30,12 +30,12 @@
     },
     {
       "judul": "Adab dalam Berkomunikasi",
-      "isi": "Enam etika komunikasi dalam Islam: (1) Qawlan sadidan — perkataan benar, lurus, jujur. (2) Qawlan baligha — efektif, tepat sasaran. (3) Qawlan karimah — perkataan mulia. (4) Qawlan ma'rufan — perkataan baik, pantas. (5) Qawlan layyina — perkataan lemah lembut. (6) Qawlan maisura — mudah diterima."
+      "isi": "Enam etika komunikasi dalam Islam: (1) Qawlan sadidan \u2014 perkataan benar, lurus, jujur. (2) Qawlan baligha \u2014 efektif, tepat sasaran. (3) Qawlan karimah \u2014 perkataan mulia. (4) Qawlan ma'rufan \u2014 perkataan baik, pantas. (5) Qawlan layyina \u2014 perkataan lemah lembut. (6) Qawlan maisura \u2014 mudah diterima."
     }
   ],
   "dalil": {
     "surah": "QS. Al-Qalam [68]: 4",
-    "arab": "ۖوَإِنَّكَ لَعَلَىٰ خُلُقٍ عَظِيمٍ",
+    "arab": "\u06d6\u0648\u064e\u0625\u0650\u0646\u0651\u064e\u0643\u064e \u0644\u064e\u0639\u064e\u0644\u064e\u0649\u0670 \u062e\u064f\u0644\u064f\u0642\u064d \u0639\u064e\u0638\u0650\u064a\u0645\u064d",
     "arti": "Dan sesungguhnya engkau (Muhammad) benar-benar berbudi pekerti yang agung."
   },
   "dimensi": [
@@ -63,5 +63,7 @@
   "prevSlug": "",
   "prevTitle": "",
   "nextSlug": "beriman-kepada-hari-akhir",
-  "nextTitle": "Beriman kepada Hari Akhir"
+  "nextTitle": "Beriman kepada Hari Akhir",
+  "pdfUrl": "/pdf/adab-dalam-islam.pdf",
+  "pptUrl": "/pdf/adab-dalam-islam-ppt.pdf"
 }

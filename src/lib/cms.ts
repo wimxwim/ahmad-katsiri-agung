@@ -83,6 +83,8 @@ interface RawMateri {
   waktuBaca: string;
   icon: string;
   videoUrl: string;
+  pdfUrl: string;
+  pptUrl: string;
   soalUrl: string;
   gameUrl: string;
   pendahuluan: string;
@@ -145,6 +147,8 @@ export async function getMateriFromCms(): Promise<Record<string, BabMateri> | nu
         waktuBaca: raw.waktuBaca,
         icon: raw.icon,
         videoUrl: raw.videoUrl || undefined,
+        pdfUrl: raw.pdfUrl || undefined,
+        pptUrl: raw.pptUrl || undefined,
         soalUrl: raw.soalUrl || undefined,
         gameUrl: raw.gameUrl || undefined,
         pendahuluan: raw.pendahuluan,

@@ -6,7 +6,7 @@
   "ringkasan": "Menumbuhkan semangat mencari ilmu sebagai kewajiban setiap muslim.",
   "subTopik": 5,
   "waktuBaca": "5 MIN BACA",
-  "icon": "📚",
+  "icon": "\ud83d\udcda",
   "videoUrl": "https://www.youtube.com/embed/MmRnGxByoUQ",
   "soalUrl": "/pdf/semangat-mencari-ilmu-soal.pdf",
   "gameUrl": "https://kuis-bangun-ruang9.my.canva.site/semangat-mencari-ilmu",
@@ -26,12 +26,12 @@
     },
     {
       "judul": "Adab-Adab Menuntut Ilmu",
-      "isi": "Enam adab menuntut ilmu: (1) Niat karena Allah — menuntut ilmu dengan ikhlas agar ilmu bermanfaat. (2) Selalu berdoa — 'Ya Allah, berikanlah manfaat atas ilmu yang Engkau ajarkan, ajarilah aku hal bermanfaat, dan tambahkanlah ilmu.' (3) Bersungguh-sungguh — antusias dan tidak pernah merasa puas dengan ilmu yang didapat. (4) Menjauhi maksiat — maksiat membuat sulit berkonsentrasi dan ilmu sulit dipahami. (5) Jangan sombong — rendah hati adalah kunci mendapatkan ilmu bermanfaat. (6) Memperhatikan guru — menyimak ajaran guru dengan baik sebagai bentuk adab."
+      "isi": "Enam adab menuntut ilmu: (1) Niat karena Allah \u2014 menuntut ilmu dengan ikhlas agar ilmu bermanfaat. (2) Selalu berdoa \u2014 'Ya Allah, berikanlah manfaat atas ilmu yang Engkau ajarkan, ajarilah aku hal bermanfaat, dan tambahkanlah ilmu.' (3) Bersungguh-sungguh \u2014 antusias dan tidak pernah merasa puas dengan ilmu yang didapat. (4) Menjauhi maksiat \u2014 maksiat membuat sulit berkonsentrasi dan ilmu sulit dipahami. (5) Jangan sombong \u2014 rendah hati adalah kunci mendapatkan ilmu bermanfaat. (6) Memperhatikan guru \u2014 menyimak ajaran guru dengan baik sebagai bentuk adab."
     }
   ],
   "dalil": {
     "surah": "QS. Al-Mujadalah [58]: 11",
-    "arab": "يَٰٰٰىُّهَا ٱلَّذِينَ ءَامَنُواْ إِذَا قِيلَ لَكُمْ تَفَسَّحُواْ فِي ٱلْمَجٰٰلِسِ",
+    "arab": "\u064a\u0670\u0670\u0670\u064e\u0649\u0651\u064f\u0647\u064e\u0627 \u0671\u0644\u0651\u064e\u0630\u0650\u064a\u0646\u064e \u0621\u064e\u0627\u0645\u064e\u0646\u064f\u0648\u0627\u0652 \u0625\u0650\u0630\u064e\u0627 \u0642\u0650\u064a\u0644\u064e \u0644\u064e\u0643\u064f\u0645\u0652 \u062a\u064e\u0641\u064e\u0633\u0651\u064e\u062d\u064f\u0648\u0627\u0652 \u0641\u0650\u064a \u0671\u0644\u0652\u0645\u064e\u062c\u0670\u0670\u0644\u0650\u0633\u0650",
     "arti": "Wahai orang-orang yang beriman, apabila dikatakan kepadamu 'Berilah kelapangan di dalam majelis-majelis,' maka lapangkanlah, niscaya Allah akan memberi kelapangan untukmu."
   },
   "dimensi": [
@@ -60,5 +60,7 @@
   "prevSlug": "beriman-kepada-qada-dan-qadar",
   "prevTitle": "Beriman kepada Qada & Qadar",
   "nextSlug": "manusia-khalifah-di-muka-bumi",
-  "nextTitle": "Manusia sebagai Khalifah"
+  "nextTitle": "Manusia sebagai Khalifah",
+  "pdfUrl": "/pdf/semangat-mencari-ilmu.pdf",
+  "pptUrl": "/pdf/semangat-mencari-ilmu-ppt.pdf"
 }
