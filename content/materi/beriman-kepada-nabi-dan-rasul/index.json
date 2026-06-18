@@ -6,7 +6,7 @@
   "ringkasan": "Meneladani kisah para nabi dan rasul dalam menyampaikan risalah.",
   "subTopik": 12,
   "waktuBaca": "7 MIN BACA",
-  "icon": "🌟",
+  "icon": "\ud83c\udf1f",
   "videoUrl": "",
   "soalUrl": "/pdf/beriman-kepada-nabi-dan-rasul-soal.pdf",
   "gameUrl": "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-nabi-dan-rasul",
@@ -22,7 +22,7 @@
     },
     {
       "judul": "Rasul Ulul Azmi",
-      "isi": "Ulul Azmi adalah rasul pilihan dengan keteguhan dan kesabaran luar biasa. Lima rasul Ulul Azmi: (1) Nabi Nuh a.s. — berdakwah hampir seribu tahun, mukjizat kapal besar selamat dari banjir. (2) Nabi Ibrahim a.s. — menghancurkan berhala, api menjadi dingin. (3) Nabi Musa a.s. — tongkat menjadi ular, membelah lautan. (4) Nabi Isa a.s. — berbicara saat bayi, menghidupkan orang mati. (5) Nabi Muhammad SAW — membelah bulan, Al-Qur'an sebagai mukjizat terbesar."
+      "isi": "Ulul Azmi adalah rasul pilihan dengan keteguhan dan kesabaran luar biasa. Lima rasul Ulul Azmi: (1) Nabi Nuh a.s. \u2014 berdakwah hampir seribu tahun, mukjizat kapal besar selamat dari banjir. (2) Nabi Ibrahim a.s. \u2014 menghancurkan berhala, api menjadi dingin. (3) Nabi Musa a.s. \u2014 tongkat menjadi ular, membelah lautan. (4) Nabi Isa a.s. \u2014 berbicara saat bayi, menghidupkan orang mati. (5) Nabi Muhammad SAW \u2014 membelah bulan, Al-Qur'an sebagai mukjizat terbesar."
     },
     {
       "judul": "Perilaku yang Mencerminkan Iman",
@@ -31,7 +31,7 @@
   ],
   "dalil": {
     "surah": "QS. An-Nisa [4]: 136",
-    "arab": "ۖيٰاَىُّهَا ٱلَّذِينَ ءَامَنُواْ ءَامِنُواْ بِٱللَّهِ وَرُسُلِهِ",
+    "arab": "\u06d6\u064a\u0670\u0627\u064e\u0649\u0651\u064f\u0647\u064e\u0627 \u0671\u0644\u0651\u064e\u0630\u0650\u064a\u0646\u064e \u0621\u064e\u0627\u0645\u064e\u0646\u064f\u0648\u0627\u0652 \u0621\u064e\u0627\u0645\u0650\u0646\u064f\u0648\u0627\u0652 \u0628\u0650\u0671\u0644\u0644\u0651\u064e\u0647\u0650 \u0648\u064e\u0631\u064f\u0633\u064f\u0644\u0650\u0647\u0650",
     "arti": "Wahai orang-orang yang beriman, tetaplah beriman kepada Allah dan Rasul-Nya."
   },
   "dimensi": [
@@ -59,5 +59,7 @@
   "prevSlug": "beriman-kepada-kitab-allah",
   "prevTitle": "Beriman kepada Kitab Allah",
   "nextSlug": "membangun-toleransi",
-  "nextTitle": "Membangun Toleransi"
+  "nextTitle": "Membangun Toleransi",
+  "pdfUrl": "/pdf/beriman-kepada-nabi-dan-rasul.pdf",
+  "pptUrl": "/pdf/beriman-kepada-nabi-dan-rasul-ppt.pdf"
 }

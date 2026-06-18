@@ -6,7 +6,7 @@
   "ringkasan": "Memahami tanda-tanda dan peristiwa hari akhir sebagai penguat iman.",
   "subTopik": 7,
   "waktuBaca": "6 MIN BACA",
-  "icon": "☀️",
+  "icon": "\u2600\ufe0f",
   "videoUrl": "https://www.youtube.com/embed/S4UDs5v8uzI",
   "soalUrl": "/pdf/beriman-kepada-hari-akhir-soal.pdf",
   "gameUrl": "https://kuis-bangun-ruang9.my.canva.site/aplikasi-tanpa-judul",
@@ -22,7 +22,7 @@
     },
     {
       "judul": "Tahapan Setelah Kematian",
-      "isi": "Enam tahapan: (1) Yaumul Barzakh — alam kubur, ditanyai Malaikat Munkar dan Nakir. (2) Yaumul Ba'si — hari kebangkitan, Israfil meniup sangkakala kedua. (3) Yaumul Mahsyar — dikumpulkan di padang Mahsyar. (4) Yaumul Hisab — hari perhitungan, amal diperiksa satu persatu. (5) Yaumul Mizan — hari penimbangan amal dengan timbangan yang adil. (6) Yaumul Jaza — hari pembalasan, surga bagi yang baik dan neraka bagi yang buruk."
+      "isi": "Enam tahapan: (1) Yaumul Barzakh \u2014 alam kubur, ditanyai Malaikat Munkar dan Nakir. (2) Yaumul Ba'si \u2014 hari kebangkitan, Israfil meniup sangkakala kedua. (3) Yaumul Mahsyar \u2014 dikumpulkan di padang Mahsyar. (4) Yaumul Hisab \u2014 hari perhitungan, amal diperiksa satu persatu. (5) Yaumul Mizan \u2014 hari penimbangan amal dengan timbangan yang adil. (6) Yaumul Jaza \u2014 hari pembalasan, surga bagi yang baik dan neraka bagi yang buruk."
     },
     {
       "judul": "Perilaku yang Mencerminkan Iman",
@@ -31,7 +31,7 @@
   ],
   "dalil": {
     "surah": "QS. Al-Hajj [22]: 7",
-    "arab": "ۖوَأَنَّ ٱلسَّاعَةَ ءَاتِيَةٌ لَّا رَيْبَ فِيهَا",
+    "arab": "\u06d6\u0648\u064e\u0623\u064e\u0646\u0651\u064e \u0671\u0644\u0633\u0651\u064e\u0627\u0639\u064e\u0629\u064e \u0621\u064e\u0627\u062a\u0650\u064a\u064e\u0629\u064c \u0644\u0651\u064e\u0627 \u0631\u064e\u064a\u0652\u0628\u064e \u0641\u0650\u064a\u0647\u064e\u0627",
     "arti": "Dan sungguh, hari Kiamat itu pasti datang, tidak ada keraguan padanya."
   },
   "dimensi": [
@@ -59,5 +59,7 @@
   "prevSlug": "adab-dalam-islam",
   "prevTitle": "Adab dalam Islam",
   "nextSlug": "beriman-kepada-qada-dan-qadar",
-  "nextTitle": "Beriman kepada Qada dan Qadar"
+  "nextTitle": "Beriman kepada Qada dan Qadar",
+  "pdfUrl": "/pdf/beriman-kepada-hari-akhir.pdf",
+  "pptUrl": "/pdf/beriman-kepada-hari-akhir-ppt.pdf"
 }

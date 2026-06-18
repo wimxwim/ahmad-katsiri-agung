@@ -231,14 +231,14 @@ function SidebarRight({ materi }: { materi: BabMateri }) {
 
         <div className="mt-8 pt-6 border-t border-border-precision space-y-3">
           <a
-            href={`/pdf/${materi.slug}.pdf`}
+            href={materi.pdfUrl || `/pdf/${materi.slug}.pdf`}
             className="flex items-center justify-center gap-3 w-full py-3.5 bg-primary text-on-primary rounded-2xl font-semibold hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] transition-all duration-300"
           >
             <Download className="w-4 h-4" aria-hidden="true" />
             Unduh Modul Ajar
           </a>
           <a
-            href={`/pdf/${materi.slug}-ppt.pdf`}
+            href={materi.pptUrl || `/pdf/${materi.slug}-ppt.pdf`}
             className="flex items-center justify-center gap-3 w-full py-3.5 border-2 border-primary/20 text-primary rounded-2xl font-semibold hover:bg-primary hover:text-on-primary hover:border-primary active:scale-[0.98] transition-all duration-300"
           >
             <Download className="w-4 h-4" aria-hidden="true" />

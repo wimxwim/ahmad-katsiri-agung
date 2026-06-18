@@ -6,7 +6,7 @@
   "ringkasan": "Memahami hikmah salat sebagai benteng dari perbuatan keji dan mungkar.",
   "subTopik": 7,
   "waktuBaca": "6 MIN BACA",
-  "icon": "🕌",
+  "icon": "\ud83d\udd4c",
   "videoUrl": "https://www.youtube.com/embed/47RUiGZ5804",
   "soalUrl": "/pdf/salat-mencegah-perbuatan-keji-dan-mungkar-soal.pdf",
   "gameUrl": "https://kuis-bangun-ruang9.my.canva.site/salat-mencegah-perbuatan-keji-dan-mungkarr",
@@ -30,12 +30,12 @@
     },
     {
       "judul": "Hikmah Salat Khusyuk",
-      "isi": "Enam hikmah salat khusyuk: (1) Mencegah dari perbuatan mungkar — QS. Al-Ankabut [29]: 45. (2) Mendidik pribadi yang disiplin — salat pada waktu tertentu mengajarkan disiplin. (3) Melatih pribadi yang tangguh — QS. Al-Ma'arij [70]: 19-23. (4) Meninggikan derajat — setiap sujud mengangkat satu derajat. (5) Membersihkan kesalahan dan dosa — salat mengampuni dosa antara satu salat dengan berikutnya. (6) Meraih pertolongan Allah."
+      "isi": "Enam hikmah salat khusyuk: (1) Mencegah dari perbuatan mungkar \u2014 QS. Al-Ankabut [29]: 45. (2) Mendidik pribadi yang disiplin \u2014 salat pada waktu tertentu mengajarkan disiplin. (3) Melatih pribadi yang tangguh \u2014 QS. Al-Ma'arij [70]: 19-23. (4) Meninggikan derajat \u2014 setiap sujud mengangkat satu derajat. (5) Membersihkan kesalahan dan dosa \u2014 salat mengampuni dosa antara satu salat dengan berikutnya. (6) Meraih pertolongan Allah."
     }
   ],
   "dalil": {
     "surah": "QS. Al-Ankabut [29]: 45",
-    "arab": "ۖإِنَّ ٱلصَّلَوٰةَ تَنْهَىٰ عَنِ ٱلْفَحْشَاءِ وَٱلْمُنكَرِ",
+    "arab": "\u06d6\u0625\u0650\u0646\u0651\u064e \u0671\u0644\u0635\u0651\u064e\u0644\u064e\u0648\u0670\u0629\u064e \u062a\u064e\u0646\u0652\u0647\u064e\u0649\u0670 \u0639\u064e\u0646\u0650 \u0671\u0644\u0652\u0641\u064e\u062d\u0652\u0634\u064e\u0627\u0621\u0650 \u0648\u064e\u0671\u0644\u0652\u0645\u064f\u0646\u0643\u064e\u0631\u0650",
     "arti": "Sesungguhnya salat itu mencegah dari perbuatan keji dan mungkar."
   },
   "dimensi": [
@@ -63,5 +63,7 @@
   "prevSlug": "membiasakan-tabayyun-menjauhi-ghibah",
   "prevTitle": "Tabayyun & Ghibah",
   "nextSlug": "melestarikan-alam-cerminan-orang-beriman",
-  "nextTitle": "Melestarikan Alam"
+  "nextTitle": "Melestarikan Alam",
+  "pdfUrl": "/pdf/salat-mencegah-perbuatan-keji-dan-mungkar.pdf",
+  "pptUrl": "/pdf/salat-mencegah-perbuatan-keji-dan-mungkar-ppt.pdf"
 }

@@ -6,7 +6,7 @@
   "ringkasan": "Menerapkan sikap moderat dalam beragama sebagai wujud Islam rahmatan lil alamin.",
   "subTopik": 5,
   "waktuBaca": "5 MIN BACA",
-  "icon": "⚖️",
+  "icon": "\u2696\ufe0f",
   "videoUrl": "https://www.youtube.com/embed/gI5cfO3yVOw",
   "soalUrl": "/pdf/moderasi-beragama-soal.pdf",
   "gameUrl": "https://kuis-bangun-ruang9.my.canva.site/moderasi-beragama",
@@ -22,16 +22,16 @@
     },
     {
       "judul": "Ciri-Ciri Moderasi Beragama",
-      "isi": "Tiga hal utama yang merupakan syarat menjadi umat terbaik menurut QS. Ali Imran: 110: (1) Amar makruf — menyeru kepada kebajikan. (2) Nahi munkar — mencegah kemungkaran. (3) Beriman kepada Allah. Umat yang moderat adalah umat yang mengajak kepada kebaikan, memiliki pengetahuan yang luas, dan mampu mengamalkannya secara berulang-ulang dalam kehidupan sehari-hari."
+      "isi": "Tiga hal utama yang merupakan syarat menjadi umat terbaik menurut QS. Ali Imran: 110: (1) Amar makruf \u2014 menyeru kepada kebajikan. (2) Nahi munkar \u2014 mencegah kemungkaran. (3) Beriman kepada Allah. Umat yang moderat adalah umat yang mengajak kepada kebaikan, memiliki pengetahuan yang luas, dan mampu mengamalkannya secara berulang-ulang dalam kehidupan sehari-hari."
     },
     {
       "judul": "Aplikasi Moderasi dalam Kehidupan",
-      "isi": "Lima cara mengaplikasikan moderasi beragama: (1) Menghargai perbedaan — tidak merendahkan atau mengolok-olok agama orang lain. (2) Meningkatkan pemahaman — membaca literatur agama dan mengikuti dialog antaragama. (3) Mempraktikkan nilai-nilai agama — kejujuran, kasih sayang, dan perdamaian. (4) Menciptakan dialog — mendengarkan dan memahami pandangan orang lain. (5) Menjaga sikap tenang dan tidak mudah terprovokasi dalam situasi yang berpotensi konflik."
+      "isi": "Lima cara mengaplikasikan moderasi beragama: (1) Menghargai perbedaan \u2014 tidak merendahkan atau mengolok-olok agama orang lain. (2) Meningkatkan pemahaman \u2014 membaca literatur agama dan mengikuti dialog antaragama. (3) Mempraktikkan nilai-nilai agama \u2014 kejujuran, kasih sayang, dan perdamaian. (4) Menciptakan dialog \u2014 mendengarkan dan memahami pandangan orang lain. (5) Menjaga sikap tenang dan tidak mudah terprovokasi dalam situasi yang berpotensi konflik."
     }
   ],
   "dalil": {
     "surah": "QS. Al-Baqarah [2]: 143",
-    "arab": "وَكَذٰٰلِكَ جَعَلْنٰٰكُمْ أُمَّةً وَسَطًا",
+    "arab": "\u0648\u064e\u0643\u064e\u0630\u0670\u0670\u0644\u0650\u0643\u064e \u062c\u064e\u0639\u064e\u0644\u0652\u0646\u0670\u0670\u0643\u064f\u0645\u0652 \u0623\u064f\u0645\u0651\u064e\u0629\u064b \u0648\u064e\u0633\u064e\u0637\u064b\u0627",
     "arti": "Dan demikian pula Kami menjadikan kamu (umat Islam) sebagai umat pertengahan (adil dan pilihan)."
   },
   "dimensi": [
@@ -60,5 +60,7 @@
   "prevSlug": "membangun-toleransi",
   "prevTitle": "Membangun Toleransi",
   "nextSlug": "",
-  "nextTitle": ""
+  "nextTitle": "",
+  "pdfUrl": "/pdf/moderasi-beragama.pdf",
+  "pptUrl": "/pdf/moderasi-beragama-ppt.pdf"
 }

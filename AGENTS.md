@@ -993,6 +993,7 @@ selanjutnya. Update file ini jika ada perubahan.
 | 2026-06-12 | Sesi 17: Re-Audit Fix — 4 HIGH + 7 MEDIUM + 8 LOW (Worker transparent proxy, rate limiter di CDN, Zod leak, sanitizer upgrade, origin binding, crypto shuffle) |
 | 2026-06-13 | Sesi 18: DoaUcapan cleanup, Game Terkait dinamis, 6 game cover WebP baru, GRADIENT_SLUGS semua bab, video Melestarikan Alam fix, Rekap "0 dari 0" bug fix (data.error check + catch block 500), UX rekap clearer (text input + contoh key), Speed Insights fix (CSP + Worker cache + enable dashboard), After-Action Review documented |
 | 2026-06-18 | Sesi 19: CMS Keystatic integration — 9 collections/singletons (materi, soal, game, hadits, navigation, siteConfig, about, pendidikPage, perangkatAjar), CSS fallback tiap halaman, middleware CSP nonce+strict-dynamic, security audit (10 fix: H-1/H-2/H-3/M-2/M-3/M-4/M-6/M-7/L-1/L-2), GitHub App OAuth setup (App ID 4080075, Client ID Iv23liAhXMj8s8L7I0Y1), GitHub App installed on repo wimxwim/ahmad-katsiri-agung, Vercel env vars set for production CMS, deploy ke akalcenter.my.id with github storage mode, fix evaluasi soal data from CMS, fix .env.example comment syntax |
+| 2026-06-18 | Sesi 20: Fix CSP nonce propagation + connect-src for Keystatic dashboard. **Keystatic CMS fully live!** — 2 bugs fixed: (1) `nonce={nonce}` missing on `<html>` element → scripts had no CSP nonce, blocked browser; (2) `api.github.com` missing from CSP `connect-src` → Keystatic GraphQL calls silently blocked. Worker redirect URL fix for OAuth callback. Full flow verified: cookies cleared → "Log in with GitHub" → OAuth → dashboard at `/keystatic/branch/main`. |
 
 ---
 
@@ -1011,7 +1012,147 @@ selanjutnya. Update file ini jika ada perubahan.
 
 ---
 
-## Panduan Pengubahan Logo & Favicon (Masa Depan)
+## Keystatic CMS Integration (18 Juni 2026)
+
+### Arsitektur
+
+```
+User → Browser → CSP middleware → Next.js App Router
+                                        │
+                          ┌─────────────┴──────────────┐
+                          │ /keystatic/*                │ /api/keystatic/*         
+                          │ (Dashboard UI)              │ (OAuth API)       
+                          └─────────────┬──────────────┘
+                                        │
+                    ┌───────────────────┼───────────────────┐
+                    │                                       │
+            GitHub OAuth                             GitHub API
+            login/authorize                           GraphQL + REST
+                    │                                       │
+              github.com                           api.github.com
+```
+
+### Alur OAuth (Step by Step)
+
+```
+Sesi 20 — CSP nonce propagation + connect-src for Keystatic dashboard
+```
+
+**Step-by-step OAuth flow:**
+1. User buka `akalcenter.my.id/keystatic`
+2. `src/app/keystatic/layout.tsx` guard: cek env vars → lolos → render `<KeystaticApp />`
+3. `makePage(config)` → client component hydrate
+4. `getSyncAuth()` baca cookie `keystatic-gh-access-token` → null (belum login)
+5. `getAuth()` → POST `/api/keystatic/github/refresh-token` → gagal (no token)
+6. Keystatic redirect `window.location.href = "/api/keystatic/github/login"`
+7. API handler `githubLogin()` → `redirect 307 ke GitHub OAuth authorize URL`
+8. Worker intercepts 307 → ganti `Location` header (Vercel origin → akalcenter.my.id)
+9. Browser ke `github.com/login/oauth/authorize?redirect_uri=...`
+10. GitHub → user authorize app → redirect ke callback URL
+11. `githubOauthCallback()` → exchange code for token → Set-Cookie → redirect ke `/keystatic`
+12. Load ulang → `getSyncAuth()` baca cookie → token ada → GitHub GraphQL query
+13. Query sukses → `RedirectToBranch` → push ke `/keystatic/branch/main`
+14. Dashboard render penuh (collections + singletons)
+
+### Dua Bug yang Ditemukan & Diperbaiki
+
+| # | Bug | Gejala | Akar | Fix |
+|---|-----|--------|------|-----|
+| 1 | **CSP nonce kosong** | Semua script di HTML `nonce=""` → diblokir browser. Landing page statis masih jalan karena gak butuh JS heavy, tapi Keystatic gak pernah hydrate. | `nonce={nonce}` cuma di `<script>` tag inline, bukan di `<html>` element. Next.js baca nonce dari `<html nonce={...}>` untuk auto-gen script tags. | `src/app/layout.tsx:211` — tambah `nonce={nonce}` ke `<html>` |
+| 2 | **GitHub API diblokir CSP** | Keystatic dashboard gak nampilin data — shell kosong. Script berjalan tapi fetch ke GitHub GraphQL (`api.github.com/graphql`) silent fail karena `connect-src` CSP. | CSP `connect-src` cuma allow Vercel/Google/YouTube — `api.github.com` dan `*.githubusercontent.com` gak ada. | `src/middleware.ts:24` — tambah `https://api.github.com https://*.githubusercontent.com` |
+
+### Nonce Propagation Mechanism
+
+```
+middleware.ts:
+  nonce = crypto.randomUUID()         // ← generate random UUID tiap request
+  requestHeaders.set("x-nonce", nonce) // ← kirim ke server components
+  response CSP header: 'nonce-{nonce}'  // ← kirim ke browser
+
+layout.tsx:
+  const headersList = await headers()
+  const nonce = headersList.get("x-nonce") ?? ""
+
+  <html nonce={nonce}>                 // ← Next.js baca dari sini
+    <script nonce={nonce}>             // ← inline script manual
+      __NEXT_SCRIPT_NONCE='{nonce}'    // ← client runtime baca
+```
+
+**Kenapa `<html nonce={nonce}>` penting?**
+- Next.js 16 App Router membaca nonce dari prop `<html>`
+- Tanpa ini, semua framework-generated `<script src="...">` punya `nonce=""` (empty)
+- Dengan `strict-dynamic`, script NONCE-hash adalah satu-satunya yang dipercaya
+- Setelah script trusted jalan, semua script yang dinamis diload olehnya inherit trust
+
+**CSP Directives (current `src/middleware.ts`):**
+```
+default-src 'self'
+script-src 'nonce-{uuid}' 'strict-dynamic' 'self' https://www.youtube.com ...
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com
+img-src 'self' data: blob: https:
+font-src 'self' https://fonts.gstatic.com data:
+frame-src 'self' https://www.youtube.com ...
+media-src 'self' https://*.youtube.com ...
+connect-src 'self' https://*.vercel.app ... https://api.github.com https://*.githubusercontent.com
+object-src 'none'
+base-uri 'self'
+form-action 'self'
+report-uri /api/csp-report
+```
+
+### File- file Kunci
+
+| File | Fungsi |
+|------|--------|
+| `keystatic.config.ts` | 9 collections/singletons — definisi schema CMS |
+| `content/` | Data CMS (disimpan di git, bukan DB) |
+| `src/app/keystatic/layout.tsx` | Guard — blok akses kalau env var gak lengkap |
+| `src/app/keystatic/keystatic.ts` | `"use client"` — entry point `makePage(config)` |
+| `src/app/keystatic/[[...params]]/page.tsx` | RSC — return `null` (layout render KeystaticApp) |
+| `src/app/api/keystatic/[...params]/route.ts` | API handler — OAuth + token management |
+| `src/middleware.ts` | CSP + nonce generator — exclude `/api` routes |
+| `src/app/layout.tsx` | Root layout — baca nonce dari middleware |
+| `next.config.ts` | Redirect `/session` → `/api/keystatic/session` |
+| `src/app/session/route.ts` | GET/POST redirect ke `/api/keystatic/session` |
+| `workers/akal-center/index.ts` | Worker — redirect URL fix (Vercel → domain) |
+
+### Env Vars Tambahan (Sesi 19-20)
+
+| Env Var | Nilai | Catatan |
+|---------|-------|---------|
+| `KEYSTATIC_GITHUB_CLIENT_ID` | `Iv23liAhXMj8s8L7I0Y1` | Client ID GitHub App |
+| `KEYSTATIC_GITHUB_CLIENT_SECRET` | (rahasia) | Client Secret GitHub App |
+| `KEYSTATIC_SECRET` | (rahasia) | Encryption key untuk session |
+| `NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND` | `github` | github (prod) / local (dev) |
+| `NEXT_PUBLIC_USE_CMS` | `true` | Nyala/tutup CMS override |
+
+### Testing Flow
+
+```bash
+# 1. Hapus semua cookies di browser
+browser-act --session sesi cookies clear --url "https://akalcenter.my.id" --force
+
+# 2. Navigasi ke /keystatic
+browser-act --session sesi navigate "https://akalcenter.my.id/keystatic"
+
+# 3. Verifikasi tombol "Log in with GitHub" muncul
+browser-act --session sesi state    # cari <a role=button>Log in with GitHub</a>
+
+# 4. Klik login → otomatis redirect ke GitHub OAuth
+#    (browser harus punya session GitHub yg sudah authorize app)
+
+# 5. Setelah callback → dashboard di /keystatic/branch/main
+browser-act --session sesi state    # cek daftar collections + singletons
+```
+
+### Known Issues / Next Steps
+
+- `NEXT_PUBLIC_KEYSTATIC_GITHUB_APP_SLUG` belum di-set (opsional — cuma perlu kalau install ulang GitHub App)
+- Bang Agung perlu akun GitHub → invite sebagai collaborator → CMS multi-user
+- Worker cache `max-age=0, must-revalidate` untuk HTML — OAuth callback harus selalu fresh
+- Branch prefix `cms/` — Keystatic commit otomatis, PR perlu di-merge manual
+
+---
 
 Jika Anda ingin memperbarui logo/favicon website di kemudian hari, siapkan file logo baru format SVG (misal namanya `LOGO_BARU.svg` di folder Downloads), lalu jalankan perintah-perintah berikut di terminal proyek:
 
