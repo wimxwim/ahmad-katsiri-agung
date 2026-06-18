@@ -4,6 +4,15 @@ const nextConfig: NextConfig = {
   experimental: {
     viewTransition: true,
   },
+  async redirects() {
+    return [
+      {
+        source: "/session",
+        destination: "/api/keystatic/session",
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {
