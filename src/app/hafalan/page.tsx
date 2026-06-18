@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { ChevronLeft, ChevronRight, RotateCcw, BookOpen, Sparkles } from "lucide-react";
-import { ALL_MATERI } from "@/data/materi";
+import { useCmsData } from "@/components/providers/CmsProvider";
+import { ALL_MATERI as ALL_MATERI_HARD } from "@/data/materi";
 
-const DALIL_LIST = Object.values(ALL_MATERI)
+const DALIL_LIST_HARD = Object.values(ALL_MATERI_HARD)
   .filter((b) => b.dalil)
   .map((b) => ({
     id: b.slug,
@@ -17,6 +18,19 @@ const DALIL_LIST = Object.values(ALL_MATERI)
   }));
 
 export default function HafalanPage() {
+  const { materiDetail } = useCmsData();
+  const DALIL_LIST = materiDetail
+    ? Object.values(materiDetail)
+        .filter((b) => b.dalil)
+        .map((b) => ({
+          id: b.slug,
+          bab: b.title,
+          kelas: `Kelas ${b.kelas} — Bab ${b.bab}`,
+          surah: b.dalil!.surah,
+          arab: b.dalil!.arab,
+          arti: b.dalil!.arti,
+        }))
+    : DALIL_LIST_HARD;
   const [current, setCurrent] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [hafal, setHafal] = useState<Set<string>>(new Set());

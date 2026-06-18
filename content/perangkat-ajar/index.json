@@ -1,0 +1,58 @@
+{
+  "items": [
+    {
+      "kelas": "7",
+      "label": "PROTA",
+      "file": "/pdf/perangkat/prota-7.pdf",
+      "tersedia": true
+    },
+    {
+      "kelas": "8",
+      "label": "PROTA",
+      "file": "",
+      "tersedia": false
+    },
+    {
+      "kelas": "9",
+      "label": "PROTA",
+      "file": "/pdf/perangkat/prota-9.pdf",
+      "tersedia": true
+    },
+    {
+      "kelas": "7",
+      "label": "PROSEM",
+      "file": "/pdf/perangkat/prosem-7.pdf",
+      "tersedia": true
+    },
+    {
+      "kelas": "8",
+      "label": "PROSEM",
+      "file": "/pdf/perangkat/prosem-8.pdf",
+      "tersedia": true
+    },
+    {
+      "kelas": "9",
+      "label": "PROSEM",
+      "file": "/pdf/perangkat/prosem-9.pdf",
+      "tersedia": true
+    },
+    {
+      "kelas": "7",
+      "label": "ATP",
+      "file": "/pdf/perangkat/atp-7.pdf",
+      "tersedia": true
+    },
+    {
+      "kelas": "8",
+      "label": "ATP",
+      "file": "/pdf/perangkat/atp-8.pdf",
+      "tersedia": true
+    },
+    {
+      "kelas": "9",
+      "label": "ATP",
+      "file": "/pdf/perangkat/atp-9.pdf",
+      "tersedia": true
+    }
+  ]
+}

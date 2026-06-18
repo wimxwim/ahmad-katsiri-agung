@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCmsData } from "../providers/CmsProvider";
 
-const NAV_ITEMS = [
+const NAV_ITEMS_FALLBACK = [
   { href: "/", label: "Beranda" },
   { href: "/pendidik", label: "Pendidik" },
   { href: "/materi", label: "Materi" },
@@ -14,6 +15,8 @@ const NAV_ITEMS = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const { navigation } = useCmsData();
+  const navItems = navigation?.navbarItems ?? NAV_ITEMS_FALLBACK;
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -32,7 +35,7 @@ export function Navbar() {
         </Link>
 
         <ul className="hidden md:flex items-center gap-1">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <li key={item.href}>
               <Link
                 href={item.href}

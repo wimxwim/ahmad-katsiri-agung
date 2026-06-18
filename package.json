@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "migrate:cms": "npx tsx scripts/migrate-cms.ts",
     "deploy:cdn": "cd workers/akal-center && npx wrangler deploy",
     "deploy:all": "npm run build && npm run deploy:cdn && npx vercel --prod --yes"
   },
