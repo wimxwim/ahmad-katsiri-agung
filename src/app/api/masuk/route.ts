@@ -83,23 +83,16 @@ export async function POST(request: NextRequest) {
       return response;
     }
 
-    return NextResponse.json({ error: "Mode tidak valid" }, { status: 400 });
-  } catch (e) {
-    console.error("Login error:", e);
-    return NextResponse.json(
-      { error: "Terjadi kesalahan server" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE() {
-  try {
-    const response = NextResponse.json({ success: true });
+    // Logout
+  if (mode === "logout") {
+    const response = NextResponse.json({ success: true, redirect: "/masuk" });
     response.cookies.delete(SESSION_COOKIE_NAME);
     return response;
+  }
+
+  return NextResponse.json({ error: "Mode tidak valid" }, { status: 400 });
   } catch (e) {
-    console.error("Logout error:", e);
+    console.error("Login error:", e);
     return NextResponse.json(
       { error: "Terjadi kesalahan server" },
       { status: 500 }

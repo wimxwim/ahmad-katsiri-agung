@@ -82,8 +82,11 @@ function LogoutButton({ role }: { role: string }) {
   return (
     <button
       onClick={async () => {
-        await fetch("/api/masuk", { method: "DELETE" });
-        router.push("/masuk");
+        const fd = new FormData();
+        fd.set("_mode", "logout");
+        const res = await fetch("/api/masuk", { method: "POST", body: fd });
+        const data = await res.json();
+        if (data.redirect) router.push(data.redirect);
       }}
       className="hidden md:block text-xs text-on-surface-variant hover:text-red-500 transition-colors px-2 py-1 cursor-pointer"
       title={`${role === "guru" ? "Guru" : "Murid"} — Keluar`}
