@@ -1,16 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Home,
   BookOpen,
   ClipboardList,
   Gamepad2,
   Info,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 import { useCmsData } from "../providers/CmsProvider";
+import { useSession } from "../providers/SessionProvider";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Home,
@@ -30,7 +32,9 @@ const TABS_FALLBACK = [
 
 export function BottomTabBar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { navigation } = useCmsData();
+  const session = useSession();
 
   if (pathname.startsWith("/masuk")) return null;
 
@@ -46,6 +50,14 @@ export function BottomTabBar() {
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
+  };
+
+  const handleLogout = async () => {
+    const fd = new FormData();
+    fd.set("_mode", "logout");
+    const res = await fetch("/api/masuk", { method: "POST", body: fd });
+    const data = await res.json();
+    if (data.redirect) router.push(data.redirect);
   };
 
   return (
@@ -80,6 +92,18 @@ export function BottomTabBar() {
             </Link>
           );
         })}
+        {session && (
+          <button
+            onClick={handleLogout}
+            className="relative flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 min-h-[44px] h-full text-on-surface-variant/60 hover:text-red-500 transition-colors duration-200"
+            title="Keluar"
+          >
+            <LogOut className="w-5 h-5" aria-hidden="true" />
+            <span className="text-[10px] font-semibold leading-none opacity-70">
+              Keluar
+            </span>
+          </button>
+        )}
       </div>
     </nav>
   );

@@ -88,10 +88,11 @@ function LogoutButton({ role }: { role: string }) {
         const data = await res.json();
         if (data.redirect) router.push(data.redirect);
       }}
-      className="hidden md:block text-xs text-on-surface-variant hover:text-red-500 transition-colors px-2 py-1 cursor-pointer"
+      className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-red-500 transition-colors px-2 py-1 cursor-pointer"
       title={`${role === "guru" ? "Guru" : "Murid"} — Keluar`}
     >
-      ✕
+      <span>✕</span>
+      <span className="hidden sm:inline">Keluar</span>
     </button>
   );
 }
