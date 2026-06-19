@@ -23,7 +23,7 @@ const GAMES_FALLBACK = [
   {
     title: "Game Salat Mencegah Perbuatan Keji dan Mungkar",
     desc: "Game interaktif tentang hikmah salat mencegah perbuatan keji dan mungkar.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/salat-mencegah-perbuatan-keji-dan-mungkarr",
+    url: "https://kuis-bangun-ruang9.my.canva.site/salat-mencegah-perbuatan-keji-dan-mungkar",
     badge: "EKSTERNAL",
     image: "/images/games/game-salat-mencegah-perbuatan-keji-dan-mungkar.webp",
   },
@@ -58,7 +58,7 @@ const GAMES_FALLBACK = [
   {
     title: "Game Adab dalam Islam",
     desc: "Game interaktif tentang adab-adab dalam Islam untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islamm",
+    url: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islam",
     badge: "EKSTERNAL",
     image: "/images/games/game-adab-dalam-islam.webp",
   },
