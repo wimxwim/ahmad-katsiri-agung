@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useActionState } from "react";
+import { useState } from "react";
 import { loginMurid, loginGuru } from "@/lib/auth-actions";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 type Mode = "pilih" | "murid" | "guru";
 
 export function FormMasuk() {
   const [mode, setMode] = useState<Mode>("pilih");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
   async function handleMuridSubmit(e: React.FormEvent<HTMLFormElement>) {

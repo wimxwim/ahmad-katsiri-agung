@@ -14,7 +14,7 @@ export default config({
     materi: collection({
       label: "Bab Materi",
       slugField: "title",
-      path: "content/materi/*",
+      path: "content/materi/*/",
       format: { data: "json" },
       columns: ["title", "kelas", "bab"],
       schema: {
@@ -83,7 +83,7 @@ export default config({
     soal: collection({
       label: "Bank Soal",
       slugField: "title",
-      path: "content/soal/*",
+      path: "content/soal/*/",
       format: { data: "json" },
       columns: ["title", "kelas", "bab"],
       schema: {
@@ -126,7 +126,7 @@ export default config({
     game: collection({
       label: "Game Edukasi",
       slugField: "judul",
-      path: "content/game/*",
+      path: "content/game/*/",
       format: { data: "json" },
       columns: ["judul", "badge"],
       schema: {
@@ -146,12 +146,13 @@ export default config({
     }),
     hadits: collection({
       label: "Koleksi Hadits",
-      slugField: "sumber",
-      path: "content/hadits/*",
+      slugField: "slug",
+      path: "content/hadits/*/",
       format: { data: "json" },
-      columns: ["sumber"],
+      columns: ["sumber", "teks"],
       schema: {
-        sumber: fields.slug({ name: { label: "Sumber Hadits" } }),
+        slug: fields.slug({ name: { label: "Slug" } }),
+        sumber: fields.text({ label: "Sumber Hadits" }),
         teks: fields.text({ label: "Teks Hadits", multiline: true }),
       },
     }),
