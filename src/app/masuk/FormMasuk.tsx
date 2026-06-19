@@ -18,11 +18,15 @@ export function FormMasuk() {
     setError("");
     const form = e.currentTarget;
     const formData = new FormData(form);
-    const result = await loginMurid(formData);
-    if (result.error) {
-      setError(result.error);
-    } else if (result.success && result.redirect) {
-      router.push(result.redirect);
+    try {
+      const result = await loginMurid(formData);
+      if (result.error) {
+        setError(result.error);
+      } else if (result.success && result.redirect) {
+        router.push(result.redirect);
+      }
+    } catch (err) {
+      setError("Gagal: " + (err instanceof Error ? err.message : "Terjadi kesalahan"));
     }
   }
 
@@ -31,11 +35,15 @@ export function FormMasuk() {
     setError("");
     const form = e.currentTarget;
     const formData = new FormData(form);
-    const result = await loginGuru(formData);
-    if (result.error) {
-      setError(result.error);
-    } else if (result.success && result.redirect) {
-      router.push(result.redirect);
+    try {
+      const result = await loginGuru(formData);
+      if (result.error) {
+        setError(result.error);
+      } else if (result.success && result.redirect) {
+        router.push(result.redirect);
+      }
+    } catch (err) {
+      setError("Gagal: " + (err instanceof Error ? err.message : "Terjadi kesalahan"));
     }
   }
 
