@@ -2,6 +2,7 @@
 
 import { MotionConfig } from "motion/react";
 import { CmsProvider, type CmsData } from "./CmsProvider";
+import { SessionProvider } from "./SessionProvider";
 
 export function Providers({
   children,
@@ -12,7 +13,9 @@ export function Providers({
 }) {
   return (
     <MotionConfig reducedMotion="user">
-      <CmsProvider data={cmsData}>{children}</CmsProvider>
+      <CmsProvider data={cmsData}>
+        <SessionProvider>{children}</SessionProvider>
+      </CmsProvider>
     </MotionConfig>
   );
 }

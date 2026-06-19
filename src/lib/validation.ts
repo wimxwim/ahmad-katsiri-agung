@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+export const LoginMuridSchema = z.object({
+  nama: z.string().min(1, "Nama harus diisi").max(100),
+  kelas: z.string().min(1, "Kelas harus diisi").max(10),
+  noAbsen: z.string().min(1, "No. Absen harus diisi").max(5),
+  nis: z.string().max(30).optional().default(""),
+  sekolah: z.string().max(100).optional().default(""),
+});
+
+export const LoginGuruSchema = z.object({
+  nama: z.string().min(1, "Nama harus diisi").max(100),
+  password: z.string().min(1, "Kata sandi harus diisi"),
+});
+
 export const DoaSchema = z.object({
   nama: z.string().max(60).optional().default("Anonim"),
   isi: z

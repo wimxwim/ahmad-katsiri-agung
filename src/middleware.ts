@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifySession } from "@/lib/auth";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
 
-export function middleware(request: NextRequest) {
+const PUBLIC_ROUTES = ["/masuk", "/keystatic", "/session"];
+
+const TEACHER_ROUTES = ["/pendidik"];
+
+export async function middleware(request: NextRequest) {
   const nonce = crypto.randomUUID();
+  const { pathname } = request.nextUrl;
 
+  // ── CSP & Security Headers ──────────────────────────────────────
   const scriptSrc = [
     `'nonce-${nonce}'`,
     "'strict-dynamic'",
@@ -45,6 +53,32 @@ export function middleware(request: NextRequest) {
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("Reporting-Endpoints", 'csp-endpoint="/api/csp-report"');
+
+  // ── Session Guard ───────────────────────────────────────────────
+  const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+  if (isPublic) return response;
+
+  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
+  if (!sessionCookie?.value) {
+    const loginUrl = new URL("/masuk", request.url);
+    loginUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  const session = await verifySession(sessionCookie.value);
+  if (!session) {
+    const loginUrl = new URL("/masuk", request.url);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  if (session.role !== "guru") {
+    const isTeacherRoute = TEACHER_ROUTES.some((route) =>
+      pathname.startsWith(route)
+    );
+    if (isTeacherRoute) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+  }
 
   return response;
 }

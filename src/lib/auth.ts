@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
+import type { SesiPayload } from "./session";
 
 const getSecret = () => {
   const secret = process.env.JWT_SECRET;
@@ -23,6 +24,23 @@ export async function verifyQuizToken(token: string): Promise<QuizTokenPayload |
   try {
     const { payload } = await jwtVerify(token, getSecret());
     return payload as QuizTokenPayload;
+  } catch {
+    return null;
+  }
+}
+
+export async function signSession(payload: Omit<SesiPayload, "iss" | "exp" | "iat">): Promise<string> {
+  return new SignJWT(payload as unknown as JWTPayload)
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("8h")
+    .sign(getSecret());
+}
+
+export async function verifySession(token: string): Promise<SesiPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, getSecret());
+    return payload as SesiPayload;
   } catch {
     return null;
   }

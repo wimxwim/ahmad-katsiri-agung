@@ -32,6 +32,8 @@ export function BottomTabBar() {
   const pathname = usePathname();
   const { navigation } = useCmsData();
 
+  if (pathname.startsWith("/masuk")) return null;
+
   const cmsTabs = navigation?.bottomTabs;
   const tabs = cmsTabs
     ? cmsTabs.map((t) => ({

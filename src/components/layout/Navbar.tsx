@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCmsData } from "../providers/CmsProvider";
+import { useSession } from "../providers/SessionProvider";
+import { logout } from "@/lib/auth-actions";
 
 const NAV_ITEMS_FALLBACK = [
   { href: "/", label: "Beranda" },
@@ -13,10 +15,20 @@ const NAV_ITEMS_FALLBACK = [
   { href: "/tentang", label: "Tentang" },
 ];
 
+const TEACHER_LABELS = new Set(["Pendidik"]);
+
 export function Navbar() {
   const pathname = usePathname();
   const { navigation } = useCmsData();
-  const navItems = navigation?.navbarItems ?? NAV_ITEMS_FALLBACK;
+  const session = useSession();
+
+  if (pathname.startsWith("/masuk")) return null;
+
+  const navItems = (navigation?.navbarItems ?? NAV_ITEMS_FALLBACK)
+    .filter((item) => {
+      if (session?.role === "guru") return true;
+      return !TEACHER_LABELS.has(item.label);
+    });
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -34,27 +46,48 @@ export function Navbar() {
           <span className="truncate md:max-w-none">AKAL Center</span>
         </Link>
 
-        <ul className="hidden md:flex items-center gap-1">
-          {navItems.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
-                className={`relative px-4 py-2 text-sm rounded-full transition-colors duration-200 ${
-                  isActive(item.href)
-                    ? "bg-primary/10 text-primary font-semibold"
-                    : "text-on-surface-variant hover:text-primary hover:bg-primary/5"
-                }`}
-              >
-                {item.label}
-                {isActive(item.href) && (
-                  <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
-                )}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className="flex items-center gap-2">
+          <ul className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  className={`relative px-4 py-2 text-sm rounded-full transition-colors duration-200 ${
+                    isActive(item.href)
+                      ? "bg-primary/10 text-primary font-semibold"
+                      : "text-on-surface-variant hover:text-primary hover:bg-primary/5"
+                  }`}
+                >
+                  {item.label}
+                  {isActive(item.href) && (
+                    <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                  )}
+                </Link>
+              </li>
+            ))}
+          </ul>
+          {session && (
+            <LogoutButton role={session.role} />
+          )}
+        </div>
       </nav>
     </header>
+  );
+}
+
+function LogoutButton({ role }: { role: string }) {
+  const pathname = usePathname();
+  if (pathname.startsWith("/masuk")) return null;
+  return (
+    <form action={logout} className="hidden md:block">
+      <button
+        type="submit"
+        className="text-xs text-on-surface-variant hover:text-red-500 transition-colors px-2 py-1"
+        title={`${role === "guru" ? "Guru" : "Murid"} — Keluar`}
+      >
+        ✕
+      </button>
+    </form>
   );
 }

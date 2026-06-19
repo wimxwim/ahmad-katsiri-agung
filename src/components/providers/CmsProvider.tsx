@@ -54,6 +54,10 @@ export interface CmsMateriFull {
   waktuBaca: string;
   icon: string;
   videoUrl?: string;
+  pdfUrl?: string;
+  pptUrl?: string;
+  soalUrl?: string;
+  gameUrl?: string;
   pendahuluan: string;
   konten: { judul: string; isi: string }[];
   dalil?: { surah: string; arab: string; arti: string };
