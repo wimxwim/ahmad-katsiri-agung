@@ -36,9 +36,9 @@ export function FormMasuk() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-surface p-0 sm:p-6">
-      <div className="w-full max-w-5xl bg-white rounded-none sm:rounded-[32px] overflow-hidden shadow-glass-lg flex flex-col sm:grid sm:grid-cols-[1.05fr_0.95fr] min-h-[560px]">
+      <div className="w-full max-w-5xl bg-white rounded-none md:rounded-[32px] overflow-hidden shadow-glass-lg flex flex-col md:grid md:grid-cols-[1.05fr_0.95fr] min-h-screen md:min-h-[560px]">
         {/* LEFT PANEL — Brand & Info */}
-        <aside className="relative bg-gradient-to-br from-primary to-[#003d24] text-white px-8 py-10 sm:px-11 sm:py-12 flex flex-col justify-between overflow-hidden min-h-[320px] sm:min-h-0">
+        <aside className="relative bg-gradient-to-br from-primary to-[#003d24] text-white px-6 py-6 md:px-11 md:py-12 flex flex-col justify-between overflow-hidden md:min-h-0">
           <div className="absolute inset-0 opacity-10"
             style={{
               backgroundImage: `radial-gradient(circle at 80% 15%, #fff 0 2px, transparent 3px)`,
@@ -54,14 +54,14 @@ export function FormMasuk() {
                 AKAL Center
               </span>
             </div>
-            <h1 className="font-heading text-2xl sm:text-[30px] leading-tight mb-2">
+            <h1 className="font-heading text-xl md:text-[30px] leading-tight mb-2">
               Belajar Pendidikan Agama Islam jadi mudah & menyenangkan.
             </h1>
-            <p className="text-white/80 text-sm sm:text-[15px] max-w-[36ch]">
+            <p className="text-white/80 text-[13px] md:text-[15px] max-w-[36ch]">
               Platform belajar PAI untuk SMP/MTs — materi, latihan, dan perangkat ajar dalam satu tempat.
             </p>
           </div>
-          <ul className="relative z-10 space-y-3 mt-6">
+          <ul className="relative z-10 space-y-3 mt-6 hidden md:block">
             {[
               "Materi PAI lengkap per bab",
               "Video pembelajaran & PPT",
@@ -78,11 +78,11 @@ export function FormMasuk() {
               </li>
             ))}
           </ul>
-          <p className="relative z-10 text-xs text-white/60 mt-6 hidden sm:block">
+          <p className="relative z-10 text-xs text-white/60 mt-6 hidden md:block">
             Bisa dibuka lewat HP maupun komputer.
           </p>
           {/* Chips untuk mobile */}
-          <div className="relative z-10 flex flex-wrap gap-2 mt-4 sm:hidden">
+          <div className="relative z-10 flex flex-wrap gap-2 mt-4 md:hidden">
             {["📘 Materi", "🎬 Video", "🎮 Game", "📝 Kuis", "📿 Hafalan"].map((chip) => (
               <span
                 key={chip}
@@ -95,13 +95,13 @@ export function FormMasuk() {
         </aside>
 
         {/* RIGHT PANEL — Form */}
-        <main className="px-8 py-10 sm:px-11 sm:py-12 flex flex-col justify-center">
+        <main className="px-6 py-6 md:px-11 md:py-12 flex flex-col justify-center">
           {mode === "pilih" && (
             <div>
-              <h2 className="font-heading text-2xl text-on-surface mb-1">
+              <h2 className="font-heading text-xl md:text-2xl text-on-surface mb-1">
                 Selamat datang 👋
               </h2>
-              <p className="text-sm text-on-surface-variant mb-8">
+              <p className="text-[13px] md:text-sm text-on-surface-variant mb-6 md:mb-8">
                 Pilih cara kamu masuk ke AKAL Center.
               </p>
               <div className="space-y-4">
