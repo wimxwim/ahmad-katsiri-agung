@@ -10,9 +10,11 @@ import {
   Sparkles,
   Trophy,
   BookOpen,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { QuizLogin } from "@/components/evaluasi/QuizLogin";
+import { useSession } from "@/components/providers/SessionProvider";
 import type { SoalItem, BabSoal } from "@/data/soal";
 
 type QuizState = "login" | "intro" | "playing" | "result";
@@ -45,6 +47,19 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const submittedRef = useRef(false);
+
+  const session = useSession();
+
+  useEffect(() => {
+    if (session && session.role === "murid" && quizState === "login") {
+      setLoginData({
+        namaSiswa: session.nama,
+        kelas: session.kelas ?? "-",
+        status: "latihan",
+      });
+      setQuizState("intro");
+    }
+  }, [session, quizState]);
 
   const soal = shuffledSoal[currentIndex];
   const totalSoal = shuffledSoal.length;
@@ -153,6 +168,20 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
   };
 
   if (quizState === "login") {
+    if (session && session.role === "murid") {
+      return (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center max-w-lg mx-auto py-16"
+        >
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-sm text-on-surface-variant">
+            Mengarahkan ke kuis, {session.nama}...
+          </p>
+        </motion.div>
+      );
+    }
     return <QuizLogin onLogin={handleLogin} />;
   }
 

@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 interface ClientSession {
   role: string;
   nama: string;
+  kelas?: string;
 }
 
 const SessionContext = createContext<ClientSession | null>(null);
@@ -15,7 +16,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const raw = (window as unknown as Record<string, unknown>).__SESSION;
     if (raw && typeof raw === "object" && "role" in raw && "nama" in raw) {
-      setSession(raw as ClientSession);
+      const r = raw as Record<string, unknown>;
+      setSession({ role: r.role as string, nama: r.nama as string, kelas: r.kelas as string | undefined });
     }
   }, []);
 
