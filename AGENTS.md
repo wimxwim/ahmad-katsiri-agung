@@ -726,10 +726,10 @@ Yang ke-4 dan ke-5 gak otomatis — harus di-klik manual di dashboard.
 | Video 2 bab belum | 🔲 Belum | 10 menit | `beriman-kepada-nabi-dan-rasul` (8/3), `adab-dalam-islam` (9/1) — tunggu link YouTube |
 | Buku PAI PDF Kls 7/8/9 | 🔲 Belum | 15 menit | Link di materi ajar |
 | Google Classroom link | 🔲 Belum | 15 menit | Feasible, tunggu URL Classroom dari Bang Agung |
-| Canva 2 games (Melestarikan Alam, Toleransi) | 🔲 URL 404 | 5 menit | Game exist di halaman `/game` tapi link Canva return 404 — nunggu Bang Agung publish |
-| Naskah soal 6 bab | 🔲 Belum | — | Tabayyun, Melestarikan Alam, Toleransi, Moderasi, Semangat Ilmu, Khalifah — nunggu dari Bang Agung |
-| **Cleanup orphaned files** | 🔲 Belum | 15 menit | `public/ppt/` 5 file unreferenced, `public/images/games/*.png` 5 file orphaned, `PROTA KELAS 9.pdf` duplikat |
-| **`membiasakan-tabayyun` PDF soal** | 🔲 Belum | — | Satu-satunya bab tanpa `soalUrl` — nunggu file |
+| Naskah soal 6 bab | ✅ 5/6 Selesai | — | ✅ Melestarikan Alam, Toleransi, Moderasi, Semangat Ilmu, Khalifah — ditambahkan ke `soal.ts` (25 PG each). 🔲 Tabayyun — belum ada file |
+| **Cleanup orphaned files** | ✅ Selesai | — | `public/ppt/` 5 file deleted, `public/images/games/*.png` 8 file deleted, `PROTA KELAS 9.pdf` duplikat deleted |
+| **`membiasakan-tabayyun` PDF soal** | 🔲 Belum | — | Satu-satunya bab tanpa `soalUrl` — nunggu file dari Bang Agung |
+| **URL typo fix (Canva games)** | ✅ Selesai | — | `mungkarr` → `mungkar`, `islamm` → `islam` di `game/page.tsx` dan `materi.ts` |
 
 ### Stitch Materials (Referensi untuk Halaman Baru)
 

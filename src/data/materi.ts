@@ -146,7 +146,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     icon: "\uD83D\uDD4C",
     videoUrl: "https://www.youtube.com/embed/47RUiGZ5804",
     soalUrl: "/pdf/salat-mencegah-perbuatan-keji-dan-mungkar-soal.pdf",
-    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/salat-mencegah-perbuatan-keji-dan-mungkarr",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/salat-mencegah-perbuatan-keji-dan-mungkar",
     pendahuluan: "Salat bukan sekadar ritual, tetapi benteng moral yang mencegah pelakunya dari perbuatan keji dan mungkar. Bab ini mengupas makna salat, ketentuannya, dan hikmah di balik perintah salat.",
     konten: [
       {
@@ -526,7 +526,7 @@ export const ALL_MATERI: Record<string, BabMateri> = {
     waktuBaca: "6 MIN BACA",
     icon: "\uD83C\uDF3F",
     soalUrl: "/pdf/adab-dalam-islam-soal.pdf",
-    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islamm",
+    gameUrl: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islam",
     pendahuluan: "Adab adalah inti dari akhlak Islam. Rasulullah SAW diutus untuk menyempurnakan akhlak mulia. Adab bukan sekadar sopan santun, tetapi cerminan keimanan seorang muslim dalam berinteraksi dengan Allah, sesama manusia, dan lingkungan.",
     konten: [
       {
