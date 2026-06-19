@@ -87,3 +87,9 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ error: "Mode tidak valid" }, { status: 400 });
 }
+
+export async function DELETE() {
+  const cookieStore = await cookies();
+  cookieStore.delete(SESSION_COOKIE_NAME);
+  return NextResponse.json({ success: true });
+}

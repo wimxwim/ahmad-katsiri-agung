@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCmsData } from "../providers/CmsProvider";
 import { useSession } from "../providers/SessionProvider";
-import { logout } from "@/lib/auth-actions";
 
 const NAV_ITEMS_FALLBACK = [
   { href: "/", label: "Beranda" },
@@ -78,16 +77,18 @@ export function Navbar() {
 
 function LogoutButton({ role }: { role: string }) {
   const pathname = usePathname();
+  const router = useRouter();
   if (pathname.startsWith("/masuk")) return null;
   return (
-    <form action={logout} className="hidden md:block">
-      <button
-        type="submit"
-        className="text-xs text-on-surface-variant hover:text-red-500 transition-colors px-2 py-1"
-        title={`${role === "guru" ? "Guru" : "Murid"} — Keluar`}
-      >
-        ✕
-      </button>
-    </form>
+    <button
+      onClick={async () => {
+        await fetch("/api/masuk", { method: "DELETE" });
+        router.push("/masuk");
+      }}
+      className="hidden md:block text-xs text-on-surface-variant hover:text-red-500 transition-colors px-2 py-1 cursor-pointer"
+      title={`${role === "guru" ? "Guru" : "Murid"} — Keluar`}
+    >
+      ✕
+    </button>
   );
 }

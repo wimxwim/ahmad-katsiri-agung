@@ -681,6 +681,65 @@ Tanpa token valid → 401 Unauthorized
 - CSP `connect-src` harus include semua domain third-party (analytics, monitoring) — kalau kurang, beacon silent fail.
 - Worker `Cache-Control: max-age=300` untuk HTML — setelah deploy perubahan security header, butuh ~5 menit propagasi. Fix: `max-age=0, must-revalidate`.
 
+### Sesi 21 (19 Juni 2026) — Fix CMS Collections "0 entries"
+
+**Effort: ~1 jam**
+
+**Masalah:** Dashboard Keystatic CMS menampilkan "0 entries" untuk semua collection (Materi, Soal, Game, Hadits) meskipun file JSON sudah ada di `content/`.
+
+**Root Cause:** Collection paths di `keystatic.config.ts` menggunakan pattern tanpa trailing slash (`content/materi/*`), yang mengharapkan file flat `content/materi/{slug}.json`. Tapi struktur file aktual adalah subdirectory: `content/materi/{slug}/index.json`.
+
+**Akar masalah detail — Perbedaan path pattern Keystatic:**
+| Path pattern | Struktur file yang diharapkan | Contoh |
+|---|---|---|
+| `content/materi/*` (tanpa `/`) | `content/materi/{slug}.json` | File flat, tanpa subfolder |
+| `content/materi/*/` (dengan `/`) | `content/materi/{slug}/index.json` | Setiap entry di subfolder sendiri |
+
+Karena kita buat file `index.json` di dalam subfolder (dari script seed content), Keystatic tidak bisa menemukan entry — direktori tidak match dengan pattern.
+
+**Fix path — 4 collection paths di `keystatic.config.ts`:**
+| File | Before | After |
+|------|--------|-------|
+| `keystatic.config.ts:17` | `path: "content/materi/*"` | `path: "content/materi/*/"` |
+| `keystatic.config.ts:86` | `path: "content/soal/*"` | `path: "content/soal/*/"` |
+| `keystatic.config.ts:129` | `path: "content/game/*"` | `path: "content/game/*/"` |
+| `keystatic.config.ts:150` | `path: "content/hadits/*"` | `path: "content/hadits/*/"` |
+
+**Additional issues found & fixed:**
+
+| # | Issue | Akar | Fix |
+|---|-------|------|-----|
+| 1 | **Hadits slugField collision** | `slugField: "sumber"` — 3 dari 6 hadits bersumber "HR. Muslim" → slug duplikat | Ganti ke `slugField: "slug"` dengan field slug unik (`hadits-01` s/d `hadits-06`). Tambah `slug` field di schema (`fields.slug`) dan di semua 6 file JSON |
+| 2 | **Game Qada & Qadar `&` di judul** | `judul: "Game Beriman kepada Qada & Qadar"` — karakter `&` slugify jadi `--` (double dash) → `game-beriman-kepada-qada--qadar` ≠ dir name `game-beriman-kepada-qada-qadar` | Ganti `&` → `dan` di judul, image path, dan rename image file |
+| 3 | **Image file dengan `&` di nama** | `public/images/games/game-beriman-kepada-qada-&-qadar.webp` — karakter `&` di URL file bisa diinterpretasi sebagai query separator | Rename ke `game-beriman-kepada-qada-dan-qadar.webp` + update referensi di JSON |
+
+**File diubah:**
+| File | Perubahan |
+|------|-----------|
+| `keystatic.config.ts` | 4 collection paths + hadits schema (slugField + new slug field) |
+| `content/hadits/hadits-01/index.json` | + `"slug": "hadits-01"` |
+| `content/hadits/hadits-02/index.json` | + `"slug": "hadits-02"` |
+| `content/hadits/hadits-03/index.json` | + `"slug": "hadits-03"` |
+| `content/hadits/hadits-04/index.json` | + `"slug": "hadits-04"` |
+| `content/hadits/hadits-05/index.json` | + `"slug": "hadits-05"` |
+| `content/hadits/hadits-06/index.json` | + `"slug": "hadits-06"` |
+| `content/game/game-beriman-kepada-qada-qadar/index.json` | `&` → `dan` di judul & image |
+| `public/images/games/game-beriman-kepada-qada-&-qadar.webp` | Renamed → `...qada-dan-qadar.webp` |
+
+**Verifikasi — Semua 4 collections tampil penuh di CMS:**
+| Collection | Expected | Result |
+|---|---|---|
+| Bab Materi | 14 | ✅ **14/14** |
+| Bank Soal | 8 | ✅ **8/8** |
+| Game Edukasi | 12 | ✅ **12/12** |
+| Koleksi Hadits | 6 | ✅ **6/6** |
+
+**Testing CMS akun Bang Agung (katsiriagung99):**
+- Saat ini CMS masih login sebagai `wimxwim` karena session GitHub tersimpan di browser
+- Untuk login sebagai Bang Agung: buka `github.com/logout` → login sebagai `katsiriagung99` → buka `akalcenter.my.id/keystatic`
+- Atau pakai browser profile/incognito terpisah
+- Tidak ada tombol logout explicit di Keystatic UI — auth dikelola via cookie GitHub OAuth
+
 ### 🔴 After-Action Review — Jangan Diulang di Project Lain
 
 **1. Error catch block jangan silent**
@@ -994,6 +1053,7 @@ selanjutnya. Update file ini jika ada perubahan.
 | 2026-06-13 | Sesi 18: DoaUcapan cleanup, Game Terkait dinamis, 6 game cover WebP baru, GRADIENT_SLUGS semua bab, video Melestarikan Alam fix, Rekap "0 dari 0" bug fix (data.error check + catch block 500), UX rekap clearer (text input + contoh key), Speed Insights fix (CSP + Worker cache + enable dashboard), After-Action Review documented |
 | 2026-06-18 | Sesi 19: CMS Keystatic integration — 9 collections/singletons (materi, soal, game, hadits, navigation, siteConfig, about, pendidikPage, perangkatAjar), CSS fallback tiap halaman, middleware CSP nonce+strict-dynamic, security audit (10 fix: H-1/H-2/H-3/M-2/M-3/M-4/M-6/M-7/L-1/L-2), GitHub App OAuth setup (App ID 4080075, Client ID Iv23liAhXMj8s8L7I0Y1), GitHub App installed on repo wimxwim/ahmad-katsiri-agung, Vercel env vars set for production CMS, deploy ke akalcenter.my.id with github storage mode, fix evaluasi soal data from CMS, fix .env.example comment syntax |
 | 2026-06-18 | Sesi 20: Fix CSP nonce propagation + connect-src for Keystatic dashboard. **Keystatic CMS fully live!** — 2 bugs fixed: (1) `nonce={nonce}` missing on `<html>` element → scripts had no CSP nonce, blocked browser; (2) `api.github.com` missing from CSP `connect-src` → Keystatic GraphQL calls silently blocked. Worker redirect URL fix for OAuth callback. Full flow verified: cookies cleared → "Log in with GitHub" → OAuth → dashboard at `/keystatic/branch/main`. |
+| 2026-06-19 | Sesi 21: **Fix CMS Collections "0 entries"** — Root cause: `keystatic.config.ts` collection paths missing trailing slash (`content/materi/*` → `content/materi/*/`). Juga fix: hadits slugField collision (3× "HR. Muslim", ganti pakai slug field), game Qada & Qadar `&` di judul/image path, image file rename. Semua 4 collections verified: Materi 14/14, Soal 8/8, Game 12/12, Hadits 6/6. CMS siap dipakai Bang Agung via GitHub login katsiriagung99. |
 
 ---
 
