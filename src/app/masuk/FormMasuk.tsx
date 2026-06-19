@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { loginMurid, loginGuru } from "@/lib/auth-actions";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -13,30 +12,18 @@ export function FormMasuk() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  async function handleMuridSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>, mode: "murid" | "guru") {
     e.preventDefault();
     setError("");
     const form = e.currentTarget;
     const formData = new FormData(form);
+    formData.set("_mode", mode);
     try {
-      const result = await loginMurid(formData);
-      if (result.error) {
-        setError(result.error);
-      } else if (result.success && result.redirect) {
-        router.push(result.redirect);
-      }
-    } catch (err) {
-      setError("Gagal: " + (err instanceof Error ? err.message : "Terjadi kesalahan"));
-    }
-  }
-
-  async function handleGuruSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError("");
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    try {
-      const result = await loginGuru(formData);
+      const res = await fetch("/api/masuk", {
+        method: "POST",
+        body: formData,
+      });
+      const result = await res.json();
       if (result.error) {
         setError(result.error);
       } else if (result.success && result.redirect) {
@@ -159,7 +146,7 @@ export function FormMasuk() {
               <p className="text-sm text-on-surface-variant mb-6">
                 Tanpa daftar akun — cukup isi di bawah ini.
               </p>
-              <form onSubmit={handleMuridSubmit} className="space-y-4">
+              <form onSubmit={(e) => handleLogin(e, "murid")} className="space-y-4">
                 <div>
                   <label className="block text-[13px] font-semibold text-on-surface mb-1.5">
                     Nama lengkap
@@ -251,7 +238,7 @@ export function FormMasuk() {
               <p className="text-sm text-on-surface-variant mb-6">
                 Khusus pengajar — butuh kata sandi.
               </p>
-              <form onSubmit={handleGuruSubmit} className="space-y-4">
+              <form onSubmit={(e) => handleLogin(e, "guru")} className="space-y-4">
                 <div>
                   <label className="block text-[13px] font-semibold text-on-surface mb-1.5">
                     Nama guru
