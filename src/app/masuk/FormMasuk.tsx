@@ -259,17 +259,28 @@ export function FormMasuk() {
                   <label className="block text-[13px] font-semibold text-on-surface mb-1.5">
                     Kata sandi guru
                   </label>
-                  <input
-                    name="password"
-                    type="password"
-                    required
-                    placeholder="••••••••"
-                    className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
-                  />
+                  <div className="relative">
+                    <input
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      placeholder="••••••••"
+                      className="w-full px-4 py-[13px] pr-11 border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
+                      aria-label={showPassword ? "Sembunyikan sandi" : "Tampilkan sandi"}
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
                 </div>
                 {error && (
                   <p className="text-xs text-red-500 text-center">{error}</p>
                 )}
+                <p className="text-xs text-on-surface-variant/60 italic">Petunjuk: tanyakan kata sandi ke admin.</p>
                 <button
                   type="submit"
                   className="w-full py-[15px] bg-primary text-on-primary rounded-[13px] font-semibold text-[16px] cursor-pointer transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
