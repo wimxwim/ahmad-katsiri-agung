@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useCmsData } from "../providers/CmsProvider";
 import { useSession } from "../providers/SessionProvider";
 
@@ -77,7 +77,6 @@ export function Navbar() {
 
 function LogoutButton({ role }: { role: string }) {
   const pathname = usePathname();
-  const router = useRouter();
   if (pathname.startsWith("/masuk")) return null;
   return (
     <button
@@ -86,7 +85,7 @@ function LogoutButton({ role }: { role: string }) {
         fd.set("_mode", "logout");
         const res = await fetch("/api/masuk", { method: "POST", body: fd });
         const data = await res.json();
-        if (data.redirect) router.push(data.redirect);
+        if (data.redirect) window.location.href = data.redirect;
       }}
       className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-red-500 transition-colors px-2 py-1 cursor-pointer"
       title={`${role === "guru" ? "Guru" : "Murid"} — Keluar`}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Home,
   BookOpen,
@@ -32,7 +32,6 @@ const TABS_FALLBACK = [
 
 export function BottomTabBar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { navigation } = useCmsData();
   const session = useSession();
 
@@ -57,7 +56,7 @@ export function BottomTabBar() {
     fd.set("_mode", "logout");
     const res = await fetch("/api/masuk", { method: "POST", body: fd });
     const data = await res.json();
-    if (data.redirect) router.push(data.redirect);
+    if (data.redirect) window.location.href = data.redirect;
   };
 
   return (

@@ -27,7 +27,7 @@ export function FormMasuk() {
       if (result.error) {
         setError(result.error);
       } else if (result.success && result.redirect) {
-        router.push(result.redirect);
+        window.location.href = result.redirect;
       }
     } catch (err) {
       setError("Gagal: " + (err instanceof Error ? err.message : "Terjadi kesalahan"));
