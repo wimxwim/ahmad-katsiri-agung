@@ -21,6 +21,43 @@ export const DoaSchema = z.object({
     .max(400, "Maksimal 400 karakter"),
 });
 
+export const RefleksiSchema = z.object({
+  nama: z.string().max(60).optional().default("Anonim"),
+  pelajaran: z
+    .string()
+    .min(1, "Apa yang dipelajari harus diisi")
+    .max(500, "Maksimal 500 karakter"),
+  akhlakBaik: z
+    .string()
+    .min(1, "Akhlak baik harus diisi")
+    .max(500, "Maksimal 500 karakter"),
+  perluDiperbaiki: z
+    .string()
+    .min(1, "Hal yang perlu diperbaiki harus diisi")
+    .max(500, "Maksimal 500 karakter"),
+});
+
+export const DiskusiSchema = z.object({
+  nama: z.string().max(60).optional().default("Anonim"),
+  kategori: z.enum(["tanya-jawab", "berbagi-pengalaman", "studi-kasus"]),
+  judul: z
+    .string()
+    .min(1, "Judul harus diisi")
+    .max(150, "Maksimal 150 karakter"),
+  isi: z
+    .string()
+    .min(1, "Isi diskusi harus diisi")
+    .max(1000, "Maksimal 1000 karakter"),
+});
+
+export const BalasanSchema = z.object({
+  nama: z.string().max(60).optional().default("Anonim"),
+  isi: z
+    .string()
+    .min(1, "Isi balasan harus diisi")
+    .max(1000, "Maksimal 1000 karakter"),
+});
+
 export const SiswaCekSchema = z.object({
   nama: z.string().min(1, "Nama harus diisi"),
   tanggalLahir: z.string().min(1, "Tanggal lahir harus diisi"),

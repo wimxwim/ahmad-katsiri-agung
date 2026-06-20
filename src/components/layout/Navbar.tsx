@@ -11,6 +11,8 @@ const NAV_ITEMS_FALLBACK = [
   { href: "/materi", label: "Materi" },
   { href: "/evaluasi", label: "Evaluasi" },
   { href: "/game", label: "Game" },
+  { href: "/refleksi", label: "Refleksi" },
+  { href: "/diskusi", label: "Diskusi" },
   { href: "/tentang", label: "Tentang" },
 ];
 

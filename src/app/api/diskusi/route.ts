@@ -1,44 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
 import { appendRow, readRows } from "@/lib/google-sheets";
 import { sendTelegram, escapeMarkdown } from "@/lib/telegram";
-import { DoaSchema } from "@/lib/validation";
+import { DiskusiSchema } from "@/lib/validation";
 import { sanitizeText } from "@/lib/sanitize";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
-const SHEET_RANGE = "DoaUcapan!A:D";
+const SHEET_RANGE = "Diskusi!A:G";
 
 export async function GET(req: NextRequest) {
   try {
     const ip = ipFromRequest(req);
-    const limit = checkRateLimit(`doa-get:${ip}`, 30, 60_000);
+    const limit = checkRateLimit(`diskusi-get:${ip}`, 30, 60_000);
     if (!limit.allowed) {
       return NextResponse.json(
-        { error: `Terlalu banyak permintaan.` },
+        { error: "Terlalu banyak permintaan." },
         { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
       );
     }
 
     const rows = await readRows(SHEET_RANGE);
-    const doaList = rows
+    const list = rows
       .slice(1)
       .reverse()
-      .map(([id, nama, isi, waktu]) => ({
+      .map(([id, nama, kategori, judul, isi, waktu, slug]) => ({
         id,
         nama: nama || "Anonim",
+        kategori,
+        judul,
         isi,
         waktu,
+        slug,
       }));
-    return NextResponse.json({ doa: doaList });
+
+    return NextResponse.json({ diskusi: list });
   } catch (e) {
-    console.error("GET /api/doa gagal:", e);
-    return NextResponse.json({ error: "Gagal mengambil data doa" }, { status: 500 });
+    console.error("GET /api/diskusi gagal:", e);
+    return NextResponse.json({ error: "Gagal mengambil data" }, { status: 500 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const ip = ipFromRequest(req);
-    const limit = checkRateLimit(`doa:${ip}`, 5, 10_000);
+    const limit = checkRateLimit(`diskusi:${ip}`, 5, 15_000);
     if (!limit.allowed) {
       return NextResponse.json(
         { error: `Terlalu banyak permintaan. Coba lagi ${limit.retryAfter} detik.` },
@@ -51,30 +55,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Payload terlalu besar" }, { status: 413 });
     }
     const raw = JSON.parse(text);
-    const parsed = DoaSchema.safeParse(raw);
+    const parsed = DiskusiSchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
     }
 
-    const { nama, isi } = parsed.data;
+    const { nama, kategori, judul, isi } = parsed.data;
     const cleanNama = sanitizeText(nama, 60);
-    const cleanIsi = sanitizeText(isi, 400);
+    const cleanJudul = sanitizeText(judul, 150);
+    const cleanIsi = sanitizeText(isi, 1000);
 
     const now = new Date().toLocaleString("id-ID", {
       timeZone: "Asia/Jakarta",
       dateStyle: "medium",
       timeStyle: "short",
     });
-    const id = `doa_${Date.now()}`;
+    const id = `dsk_${Date.now()}`;
+    const slug = id;
 
-    await appendRow(SHEET_RANGE, [[id, cleanNama, cleanIsi, now]]);
+    await appendRow(SHEET_RANGE, [
+      [id, cleanNama, kategori, cleanJudul, cleanIsi, now, slug],
+    ]);
 
     await sendTelegram(
-      `🤲 *DOA & UCAPAN BARU MASUK!*\n\n👤 *Pengirim:* ${escapeMarkdown(cleanNama)}\n💬 ${escapeMarkdown(cleanIsi)}`
+      `💬 *DISKUSI BARU!*\n\n👤 ${escapeMarkdown(cleanNama)}\n🏷 ${escapeMarkdown(kategori)}\n📌 ${escapeMarkdown(cleanJudul)}\n\n${escapeMarkdown(cleanIsi.slice(0, 200))}${cleanIsi.length > 200 ? "…" : ""}`
     );
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, slug });
   } catch {
-    return NextResponse.json({ error: "Gagal mengirim doa" }, { status: 500 });
+    return NextResponse.json({ error: "Gagal mengirim diskusi" }, { status: 500 });
   }
 }

@@ -8,6 +8,8 @@ import {
   ClipboardList,
   Gamepad2,
   Info,
+  Brain,
+  MessageSquare,
   LogOut,
   type LucideIcon,
 } from "lucide-react";
@@ -20,12 +22,16 @@ const ICON_MAP: Record<string, LucideIcon> = {
   ClipboardList,
   Gamepad2,
   Info,
+  Brain,
+  MessageSquare,
 };
 
 const TABS_FALLBACK = [
   { href: "/", label: "Beranda", icon: Home },
   { href: "/materi", label: "Materi", icon: BookOpen },
   { href: "/evaluasi", label: "Kuis", icon: ClipboardList },
+  { href: "/refleksi", label: "Refleksi", icon: Brain },
+  { href: "/diskusi", label: "Diskusi", icon: MessageSquare },
   { href: "/game", label: "Game", icon: Gamepad2 },
   { href: "/tentang", label: "Tentang", icon: Info },
 ];

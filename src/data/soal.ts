@@ -2080,6 +2080,165 @@ export const ALL_SOAL: Record<string, BabSoal> = {
       },
     ],
   }
+,
+  "membiasakan-tabayyun-menjauhi-ghibah": {
+    slug: "membiasakan-tabayyun-menjauhi-ghibah",
+    title: "Membiasakan Tabayyun, Menjauhi Ghibah",
+    kelas: 7,
+    bab: 2,
+    soal: [
+      {
+        nomor: 1,
+        pertanyaan: "Secara bahasa, kata 'tabayun' berasal dari kata 'tabayyana' yang berarti...",
+        opsi: { A: "Bermusyawarah", B: "Jelas, terang, dan tampak", C: "Berdebat", D: "Menyembunyikan" },
+        jawaban: "B",
+      },
+      {
+        nomor: 2,
+        pertanyaan: "Menurut Quraish Shihab, tabayun berarti...",
+        opsi: { A: "Berprasangka baik kepada sesama", B: "Telitilah dan bersungguh-sungguh", C: "Menerima semua informasi", D: "Menolak pendapat orang lain" },
+        jawaban: "B",
+      },
+      {
+        nomor: 3,
+        pertanyaan: "Tabayun adalah sikap tidak tergesa-gesa dalam menilai sesuatu dengan didahului upaya...",
+        opsi: { A: "Menyebarkan informasi ke siapa pun", B: "Mencari informasi yang benar", C: "Langusng percaya pada berita viral", D: "Menghakimi orang yang berbeda pendapat" },
+        jawaban: "B",
+      },
+      {
+        nomor: 4,
+        pertanyaan: "Allah Swt. berfirman dalam Q.S. Al-Hujurat [49]: 6: 'In jaakum fasiqu binabai'in fatabayyanu'. Arti dari kata 'fatabayyanu' adalah...",
+        opsi: { A: "Maka sebarkanlah", B: "Maka telitilah kebenarannya", C: "Maka diamlah", D: "Maka catatlah" },
+        jawaban: "B",
+      },
+      {
+        nomor: 5,
+        pertanyaan: "Dalam Q.S. Al-Hujurat [49]: 6, siapa yang disebutkan datang membawa berita?",
+        opsi: { A: "Orang alim", B: "Orang fasik", C: "Malaikat", D: "Nabi" },
+        jawaban: "B",
+      },
+      {
+        nomor: 6,
+        pertanyaan: "Larangan untuk tidak tabayun dalam Q.S. Al-Hujurat [49]: 6 dapat mengakibatkan...",
+        opsi: { A: "Mendapat pahala", B: "Menyesal karena mencelakakan suatu kaum karena kebodohan", C: "Dihormati masyarakat", D: "Mendapat hadiah dari orang lain" },
+        jawaban: "B",
+      },
+      {
+        nomor: 7,
+        pertanyaan: "Dua langkah utama dalam bertabayun adalah...",
+        opsi: { A: "Membaca dan bertanya", B: "Berdebat dan mengkritik", C: "Diam dan menyendiri", D: "Menulis dan menyebarkan" },
+        jawaban: "A",
+      },
+      {
+        nomor: 8,
+        pertanyaan: "Salah satu ciri tabayun yang baik adalah...",
+        opsi: { A: "Informasi hanya dari satu sumber", B: "Memastikan sumber informasi benar dan terpercaya", C: "Langsung percaya pada informasi yang viral", D: "Menolak informasi dari siapa pun" },
+        jawaban: "B",
+      },
+      {
+        nomor: 9,
+        pertanyaan: "Ketika menerima informasi yang belum jelas kebenarannya, sikap yang tepat adalah...",
+        opsi: { A: "Langsung membagikan ke grup WhatsApp", B: "Melakukan verifikasi atau tabayun terlebih dahulu", C: "Mengomentari dengan kasar", D: "Mengabaikan tanpa peduli" },
+        jawaban: "B",
+      },
+      {
+        nomor: 10,
+        pertanyaan: "Secara etimologi, kata 'ghibah' berarti...",
+        opsi: { A: "Hadir atau datang", B: "Ghaib atau tidak hadir", C: "Berbicara", D: "Mendengarkan" },
+        jawaban: "B",
+      },
+      {
+        nomor: 11,
+        pertanyaan: "Secara syar'i, ghibah adalah...",
+        opsi: { A: "Membicarakan kebaikan seseorang di depan umum", B: "Menceritakan seseorang yang tidak di tempat dengan sesuatu yang tidak disukainya", C: "Memberi nasihat secara terbuka", D: "Berdiskusi tentang ilmu pengetahuan" },
+        jawaban: "B",
+      },
+      {
+        nomor: 12,
+        pertanyaan: "Berikut ini yang termasuk aib yang dighibahi, kecuali...",
+        opsi: { A: "Aib badan", B: "Aib keturunan", C: "Aib akhlak", D: "Kebaikan yang dilakukan di masjid" },
+        jawaban: "D",
+      },
+      {
+        nomor: 13,
+        pertanyaan: "Allah Swt. melarang ghibah dalam Q.S. Al-Hujurat [49]: 12 dengan perumpamaan yang sangat keras, yaitu seperti...",
+        opsi: { A: "Memakan bangkai hewan", B: "Memakan daging saudaranya yang sudah mati", C: "Membunuh orang tanpa dosa", D: "Mencuri harta anak yatim" },
+        jawaban: "B",
+      },
+      {
+        nomor: 14,
+        pertanyaan: "Salah satu dampak buruk ghibah bagi pelaku adalah...",
+        opsi: { A: "Mendapat pahala dari Allah", B: "Merusak reputasi diri dan membuat orang lain resah", C: "Semakin disayang teman-teman", D: "Dijamin masuk surga" },
+        jawaban: "B",
+      },
+      {
+        nomor: 15,
+        pertanyaan: "Ghibah dapat menyebabkan masalah psikologis seperti...",
+        opsi: { A: "Rasa percaya diri meningkat", B: "Depresi dan gangguan mental", C: "Semakin bijaksana", D: "Lebih disukai banyak orang" },
+        jawaban: "B",
+      },
+      {
+        nomor: 16,
+        pertanyaan: "Cara menghindari ghibah dalam kehidupan sehari-hari adalah...",
+        opsi: { A: "Mengikuti tren berita terbaru", B: "Tahan diri untuk tidak berkomentar buruk tentang orang lain", C: "Aktif di grup diskusi", D: "Sering mengecek media sosial" },
+        jawaban: "B",
+      },
+      {
+        nomor: 17,
+        pertanyaan: "Perilaku tabayun sangat penting di era digital karena...",
+        opsi: { A: "Semua informasi di internet sudah terverifikasi", B: "Banyak informasi palsu (hoaks) yang beredar", C: "Internet tidak membutuhkan tabayun", D: "Hanya berita cetak yang perlu diverifikasi" },
+        jawaban: "B",
+      },
+      {
+        nomor: 18,
+        pertanyaan: "Hikmah menerapkan sikap tabayun dalam kehidupan sehari-hari adalah...",
+        opsi: { A: "Semakin banyak musuh", B: "Terhindar dari penyesalan akibat informasi yang salah", C: "Membuang-buang waktu", D: "Semakin sulit bergaul" },
+        jawaban: "B",
+      },
+      {
+        nomor: 19,
+        pertanyaan: "Q.S. Al-Hujurat [49]: 12 secara khusus membahas tentang larangan...",
+        opsi: { A: "Tabayun", B: "Ghibah", C: "Musyawarah", D: "Jihad" },
+        jawaban: "B",
+      },
+      {
+        nomor: 20,
+        pertanyaan: "Perbedaan antara tabayun dan prasangka buruk (su'uzhan) adalah...",
+        opsi: { A: "Tabayun mencari kebenaran, su'uzhan menghakimi tanpa bukti", B: "Sama-sama buruk", C: "Tabayun lebih buruk dari su'uzhan", D: "Tidak ada perbedaan" },
+        jawaban: "A",
+      },
+      {
+        nomor: 21,
+        pertanyaan: "Sikap yang mencerminkan nilai tabayun di sekolah adalah...",
+        opsi: { A: "Langsung memarahi teman yang dituduh mencuri", B: "Mengklarifikasi kabar buruk tentang teman kepada yang bersangkutan", C: "Menyebarkan berita guru yang galak", D: "Mempercayai gosip tanpa bertanya" },
+        jawaban: "B",
+      },
+      {
+        nomor: 22,
+        pertanyaan: "Nabi Muhammad saw. bersabda bahwa 'cukuplah seseorang dikatakan berdosa apabila ia...'",
+        opsi: { A: "Banyak beribadah", B: "Menceritakan segala hal yang didengarnya", C: "Banyak bersedekah", D: "Rajin belajar" },
+        jawaban: "B",
+      },
+      {
+        nomor: 23,
+        pertanyaan: "Salah satu langkah bertabayun adalah bertanya kepada...",
+        opsi: { A: "Siapa pun yang kita temui di jalan", B: "Orang yang mempunyai pemahaman lebih dan dapat dipercaya", C: "Anak kecil", D: "Orang yang tidak dikenal" },
+        jawaban: "B",
+      },
+      {
+        nomor: 24,
+        pertanyaan: "Akibat buruk ghibah dalam hubungan sosial adalah...",
+        opsi: { A: "Mempererat tali silaturahmi", B: "Merusak relasi dan menghancurkan kepercayaan", C: "Menambah teman baru", D: "Meningkatkan popularitas" },
+        jawaban: "B",
+      },
+      {
+        nomor: 25,
+        pertanyaan: "Pesan moral utama dari bab 'Membiasakan Tabayyun, Menjauhi Ghibah' adalah...",
+        opsi: { A: "Selalu curiga terhadap berita apa pun", B: "Verifikasi informasi sebelum mempercayai dan jaga lisan dari ghibah", C: "Jangan pernah menerima informasi dari orang fasik", D: "Hanya diam dan tidak peduli dengan lingkungan sekitar" },
+        jawaban: "B",
+      },
+    ],
+  }
 
 };
 
@@ -2097,4 +2256,5 @@ export const SOAL_META = [
   { slug: "moderasi-beragama", title: "Moderasi Beragama", kelas: 8, bab: 5, jumlahSoal: 25 },
   { slug: "semangat-mencari-ilmu", title: "Semangat Mencari Ilmu", kelas: 9, bab: 4, jumlahSoal: 25 },
   { slug: "manusia-khalifah-di-muka-bumi", title: "Manusia sebagai Khalifah di Muka Bumi", kelas: 9, bab: 5, jumlahSoal: 25 },
+  { slug: "membiasakan-tabayyun-menjauhi-ghibah", title: "Membiasakan Tabayyun, Menjauhi Ghibah", kelas: 7, bab: 2, jumlahSoal: 25 },
 ];
