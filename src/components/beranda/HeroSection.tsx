@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import { BookOpen, Gamepad2, GraduationCap, ArrowRight } from "lucide-react";
+import { EASE_CURVE } from "@/lib/constants";
 
 export function HeroSection() {
   return (
@@ -62,7 +63,7 @@ export function HeroSection() {
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] as const }}
+          transition={{ duration: 0.7, delay: 0.2, ease: EASE_CURVE }}
           className="relative"
         >
           <div className="absolute -inset-10 bg-primary/5 blur-[60px] rounded-full" />

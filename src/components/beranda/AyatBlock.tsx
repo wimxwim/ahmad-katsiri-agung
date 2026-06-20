@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Quote, Sparkles } from "lucide-react";
+import { Quote } from "lucide-react";
 import { useCmsData } from "../providers/CmsProvider";
+import { EASE_CURVE } from "@/lib/constants";
 
 const HADITS_FALLBACK = [
   {
@@ -53,7 +54,7 @@ export function AyatBlock() {
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.7, ease: EASE_CURVE }}
         className="relative bg-[#0d1b0e] rounded-[40px] sm:rounded-[80px] py-16 sm:py-24 md:py-32 px-5 sm:px-8 text-center border border-tertiary-fixed-dim/20 overflow-hidden"
       >
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-tertiary-fixed-dim to-transparent" />
@@ -70,7 +71,7 @@ export function AyatBlock() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
+              transition={{ duration: 0.5, ease: EASE_CURVE }}
               className="font-heading text-xl sm:text-2xl md:text-4xl lg:text-5xl leading-relaxed md:leading-[1.8] text-white/95 mb-8"
             >
               &ldquo;{hadits.teks}&rdquo;

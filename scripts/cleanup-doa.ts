@@ -26,7 +26,7 @@ async function main() {
   let removedCount = 0;
 
   for (let i = 1; i < rows.length; i++) {
-    const [id, nama, isi, waktu] = rows[i];
+    const [_, nama, isi] = rows[i];
     const isTest = testEntries.some(
       ([tn, ti]) => nama?.trim() === tn && isi?.trim() === ti
     );

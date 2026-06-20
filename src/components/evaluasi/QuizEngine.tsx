@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { EASE_CURVE } from "@/lib/constants";
 import {
   CheckCircle2,
   XCircle,
@@ -18,8 +19,6 @@ import { useSession } from "@/components/providers/SessionProvider";
 import type { SoalItem, BabSoal } from "@/data/soal";
 
 type QuizState = "login" | "intro" | "playing" | "result";
-
-const letterMap = ["A", "B", "C", "D", "E"];
 
 function shuffleArray<T>(arr: T[]): T[] {
   const shuffled = [...arr];
@@ -127,8 +126,6 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
     }
   }, [loginData, shuffledSoal, jawaban, bab]);
 
-  const isCorrect = selected === soal?.jawaban;
-
   const startQuiz = useCallback(() => {
     setShuffledSoal(shuffleArray(bab.soal));
     setJawaban({});
@@ -208,7 +205,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="text-center max-w-lg mx-auto"
       >
         <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8">
@@ -302,7 +299,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
                   key={s.nomor}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04, ease: [0.16, 1, 0.3, 1] as const }}
+                  transition={{ delay: i * 0.04, ease: EASE_CURVE }}
                   className={`bg-glass backdrop-blur-2xl border rounded-[24px] p-6 shadow-glass ${
                     correct
                       ? "border-green-300/30"
@@ -373,7 +370,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="max-w-lg mx-auto text-center"
       >
         <div className="text-6xl mb-6">{result.emoji}</div>
@@ -400,7 +397,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${persentase}%` }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] as const }}
+              transition={{ duration: 1, ease: EASE_CURVE }}
               className="h-full bg-primary rounded-full"
             />
           </div>
@@ -480,7 +477,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
+            transition={{ duration: 0.4, ease: EASE_CURVE }}
             className="h-full bg-primary rounded-full"
           />
         </div>
@@ -492,7 +489,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
+          transition={{ duration: 0.25, ease: EASE_CURVE }}
         >
           <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass mb-6 min-h-[260px]">
             <p className="text-on-surface font-heading text-xl leading-relaxed mb-8">
@@ -500,7 +497,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
             </p>
 
             <div className="space-y-3">
-              {opsiEntries.map(([key, val], idx) => {
+              {opsiEntries.map(([key, val]) => {
                 let className =
                   "w-full text-left px-5 py-4 rounded-2xl border-2 text-base font-medium transition-all duration-300 flex items-center gap-4";
 

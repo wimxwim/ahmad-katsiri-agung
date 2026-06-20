@@ -13,6 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
+import { EASE_CURVE } from "@/lib/constants";
 
 export default function PendidikPage() {
   const { pendidikPage } = useCmsData();
@@ -28,7 +29,7 @@ export default function PendidikPage() {
       <motion.header
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="max-w-4xl mx-auto text-center mb-32"
       >
         <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider mb-8">
@@ -84,7 +85,7 @@ export default function PendidikPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] as const }}
+            transition={{ duration: 0.5, delay: i * 0.1, ease: EASE_CURVE }}
             className="text-center"
           >
             <p className="font-heading text-3xl sm:text-5xl md:text-7xl text-primary mb-2">
@@ -105,7 +106,7 @@ export default function PendidikPage() {
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="relative bg-primary-container rounded-[42px_18px_42px_18px] p-8 sm:p-12 md:p-20 overflow-hidden text-center"
       >
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-primary/10 blur-[120px] rounded-full -mr-32 -mt-32 pointer-events-none" />
@@ -162,7 +163,7 @@ function FeatureCard({
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] as const }}
+      transition={{ duration: 0.5, delay, ease: EASE_CURVE }}
       className={`${colSpan} group bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[42px_18px_42px_18px] p-6 sm:p-8 md:p-10 flex flex-col justify-between shadow-glass hover:-translate-y-2 transition-transform duration-500 relative overflow-hidden`}
     >
       <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-primary/5 blur-3xl rounded-full group-hover:opacity-100 opacity-50 transition-opacity pointer-events-none" />
@@ -234,7 +235,7 @@ function PerangkatSection() {
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
+      transition={{ duration: 0.5, delay: 0.25, ease: EASE_CURVE }}
       className="md:col-span-8 bg-glass backdrop-blur-2xl border border-glass-stroke rounded-[32px_16px_32px_16px] p-6 sm:p-8 md:p-10 shadow-glass"
     >
       <div className="flex flex-col sm:flex-row items-start gap-6 mb-6">

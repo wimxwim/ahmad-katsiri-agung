@@ -6,6 +6,7 @@ import { Play, Clock, BookOpen, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useCmsData } from "@/components/providers/CmsProvider";
 import { ALL_MATERI as ALL_MATERI_HARD } from "@/data/materi";
+import { EASE_CURVE } from "@/lib/constants";
 
 const BAB_LIST_HARD = Object.values(ALL_MATERI_HARD).sort(
   (a, b) => a.kelas - b.kelas || a.bab - b.bab
@@ -30,7 +31,7 @@ export default function VideoPage() {
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="text-center mb-12 sm:mb-16"
       >
         <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8">
@@ -90,7 +91,7 @@ export default function VideoPage() {
               transition={{
                 duration: 0.5,
                 delay: idx * 0.06,
-                ease: [0.16, 1, 0.3, 1] as const,
+                ease: EASE_CURVE,
               }}
             >
               <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[40px] overflow-hidden shadow-glass hover:shadow-2xl hover:-translate-y-1 transition-all duration-500">
@@ -151,7 +152,7 @@ export default function VideoPage() {
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
                           exit={{ opacity: 0, height: 0 }}
-                          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
+                          transition={{ duration: 0.4, ease: EASE_CURVE }}
                         >
                           <div className="aspect-video">
                             <iframe

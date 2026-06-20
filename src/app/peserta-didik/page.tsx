@@ -2,7 +2,8 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { GraduationCap, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { EASE_CURVE } from "@/lib/constants";
 
 export default function PesertaDidikPage() {
   return (
@@ -10,7 +11,7 @@ export default function PesertaDidikPage() {
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="max-w-2xl mx-auto text-center"
       >
         <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-3xl overflow-hidden mx-auto mb-8 bg-primary/5">

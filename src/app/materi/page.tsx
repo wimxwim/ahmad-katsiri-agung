@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BookOpen, Sparkles, CheckCircle2 } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
 import { ALL_MATERI as ALL_MATERI_HARD } from "@/data/materi";
+import { GRADIENT_SLUGS } from "@/lib/constants";
 
 const ALL_MATERI_FALLBACK = Object.values(ALL_MATERI_HARD)
   .sort((a, b) => a.kelas - b.kelas || a.bab - b.bab)
@@ -19,7 +20,6 @@ const ALL_MATERI_FALLBACK = Object.values(ALL_MATERI_HARD)
   }));
 
 const KELAS = [7, 8, 9] as const;
-const GRADIENT_SLUGS = new Set(['beriman-kepada-malaikat', 'membiasakan-tabayyun-menjauhi-ghibah', 'salat-mencegah-perbuatan-keji-dan-mungkar', 'melestarikan-alam-cerminan-orang-beriman', 'amanah-dan-jujur', 'beriman-kepada-kitab-allah', 'beriman-kepada-nabi-dan-rasul', 'membangun-toleransi', 'moderasi-beragama', 'adab-dalam-islam', 'beriman-kepada-hari-akhir', 'beriman-kepada-qada-dan-qadar', 'semangat-mencari-ilmu', 'manusia-khalifah-di-muka-bumi']);
 
 export default function MateriPage() {
   const { materiList } = useCmsData();

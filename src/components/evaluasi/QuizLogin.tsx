@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { Users, Globe, ArrowRight, Loader2 } from "lucide-react";
+import { EASE_CURVE } from "@/lib/constants";
 
 interface LoginData {
   namaSiswa: string;
@@ -58,7 +59,7 @@ export function QuizLogin({ onLogin }: QuizLoginProps) {
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="text-center max-w-lg mx-auto"
       >
         <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8">
@@ -122,7 +123,7 @@ export function QuizLogin({ onLogin }: QuizLoginProps) {
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="text-center max-w-md mx-auto"
       >
         <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
@@ -197,7 +198,7 @@ export function QuizLogin({ onLogin }: QuizLoginProps) {
     <motion.div
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+      transition={{ duration: 0.6, ease: EASE_CURVE }}
       className="text-center max-w-md mx-auto"
     >
       <div className="w-16 h-16 rounded-3xl bg-tertiary-fixed-dim/10 flex items-center justify-center mx-auto mb-6">

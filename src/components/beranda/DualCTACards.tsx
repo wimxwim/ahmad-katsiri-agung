@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import { CheckCircle, Sparkles, ArrowRight } from "lucide-react";
+import { EASE_CURVE } from "@/lib/constants";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -14,7 +15,7 @@ const containerVariants = {
 
 const cardVariants = {
   hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE_CURVE } },
 };
 
 export function DualCTACards() {

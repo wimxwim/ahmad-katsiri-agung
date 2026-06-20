@@ -8,9 +8,9 @@ import {
   Gamepad2,
   ClipboardList,
   ArrowRight,
-  Users,
   BookMarked,
 } from "lucide-react";
+import { EASE_CURVE } from "@/lib/constants";
 
 const features = [
   {
@@ -71,7 +71,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_CURVE } },
 };
 
 export function FeatureGrid() {

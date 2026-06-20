@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { ChevronLeft, ChevronRight, RotateCcw, BookOpen, Sparkles } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
 import { ALL_MATERI as ALL_MATERI_HARD } from "@/data/materi";
+import { EASE_CURVE } from "@/lib/constants";
 
 const DALIL_LIST_HARD = Object.values(ALL_MATERI_HARD)
   .filter((b) => b.dalil)
@@ -66,7 +67,7 @@ export default function HafalanPage() {
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="text-center mb-10"
       >
         <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
@@ -93,7 +94,7 @@ export default function HafalanPage() {
           initial={{ opacity: 0, x: 60 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -60 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+          transition={{ duration: 0.3, ease: EASE_CURVE }}
           className="cursor-pointer"
           onClick={() => setFlipped(!flipped)}
         >

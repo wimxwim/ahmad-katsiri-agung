@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { ArrowLeft, Share2, Play, Pause, BookOpen, PenLine, ArrowRight } from "lucide-react";
+import { EASE_CURVE } from "@/lib/constants";
 
 const WORD_DATA = [
   { arab: "أَوْفُوا۟", latin: "Awfu", arti: "Penuhilah", color: "border-l-tertiary" },
@@ -21,7 +22,7 @@ export default function AnalisisDalilPage() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.4, ease: EASE_CURVE }}
         className="sticky top-0 z-40 -mx-3 sm:-mx-4 md:-mx-6 px-3 sm:px-4 md:px-6 py-4 backdrop-blur-md bg-surface/60 flex items-center justify-between mb-6"
       >
         <Link
@@ -41,7 +42,7 @@ export default function AnalisisDalilPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] as const }}
+          transition={{ duration: 0.5, delay: 0.1, ease: EASE_CURVE }}
         >
           <div className="bg-glass backdrop-blur-2xl border border-border-precision p-5 sm:p-8 rounded-2xl sm:rounded-[32px] shadow-glass relative overflow-hidden">
             <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl" />
@@ -65,7 +66,7 @@ export default function AnalisisDalilPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] as const }}
+          transition={{ duration: 0.5, delay: 0.2, ease: EASE_CURVE }}
         >
           <div className="bg-glass backdrop-blur-2xl border border-border-precision p-5 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-glass flex items-center gap-4 sm:gap-6">
             <button
@@ -103,7 +104,7 @@ export default function AnalisisDalilPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+          transition={{ duration: 0.5, delay: 0.3, ease: EASE_CURVE }}
           className="space-y-4"
         >
           <div className="flex items-center justify-between px-2">
@@ -127,7 +128,7 @@ export default function AnalisisDalilPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
+          transition={{ duration: 0.5, delay: 0.4, ease: EASE_CURVE }}
         >
           <div className="bg-glass backdrop-blur-2xl border border-border-precision p-5 sm:p-6 rounded-2xl sm:rounded-[24px] shadow-glass space-y-4">
             <div className="flex items-center gap-3">
@@ -149,7 +150,7 @@ export default function AnalisisDalilPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
+          transition={{ duration: 0.5, delay: 0.5, ease: EASE_CURVE }}
         >
           <div className="bg-gradient-to-br from-primary to-primary-container p-[1px] rounded-2xl sm:rounded-[24px]">
             <div className="bg-white/90 backdrop-blur-xl p-5 sm:p-6 rounded-2xl sm:rounded-[23px] space-y-5 sm:space-y-6">
@@ -181,7 +182,7 @@ export default function AnalisisDalilPage() {
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+          transition={{ duration: 0.5, delay: 0.6, ease: EASE_CURVE }}
           className="text-center"
         >
           <Link

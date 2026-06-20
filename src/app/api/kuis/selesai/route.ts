@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
     }
 
-    const { namaSiswa, kelas, noAbsen, nis, sekolah, status, judulBab, skor, totalSoal, jawabanSalah } = parsed.data;
+    const { namaSiswa, kelas, noAbsen, status, judulBab, skor, totalSoal, jawabanSalah } = parsed.data;
     const token = extractBearerToken(req);
 
     if (status === "resmi") {

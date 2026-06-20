@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { Gamepad2, ExternalLink, ArrowRight } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
+import { EASE_CURVE } from "@/lib/constants";
 
 const GAMES_FALLBACK = [
   {
@@ -70,11 +71,11 @@ const GAMES_FALLBACK = [
     image: "/images/games/game-beriman-kepada-hari-akhir.webp",
   },
   {
-    title: "Game Beriman kepada Qada & Qadar",
+    title: "Game Beriman kepada Qada dan Qadar",
     desc: "Game interaktif tentang qada dan qadar untuk siswa SMP.",
     url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-qada-dan-qadar",
     badge: "EKSTERNAL",
-    image: "/images/games/game-beriman-kepada-qada-&-qadar.webp",
+    image: "/images/games/game-beriman-kepada-qada-dan-qadar.webp",
   },
   {
     title: "Game Semangat Mencari Ilmu",
@@ -110,7 +111,7 @@ export default function GamePage() {
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="text-center mb-12 sm:mb-20"
       >
         <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8">
@@ -139,7 +140,7 @@ export default function GamePage() {
             transition={{
               duration: 0.5,
               delay: i * 0.07,
-              ease: [0.16, 1, 0.3, 1] as const,
+              ease: EASE_CURVE,
             }}
             className="group block bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
           >
@@ -181,7 +182,7 @@ export default function GamePage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.5, delay: 0.4, ease: EASE_CURVE }}
         className="text-center"
       >
         <Link

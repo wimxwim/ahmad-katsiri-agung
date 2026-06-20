@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { LoginMuridSchema, LoginGuruSchema } from "./validation";
-import { signSession, verifySession } from "./auth";
+import { signSession } from "./auth";
 import { SESSION_COOKIE_NAME, SESSION_DURATION_SECONDS } from "./session";
 
 export async function loginMurid(formData: FormData) {

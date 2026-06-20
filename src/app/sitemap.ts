@@ -1,17 +1,22 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = "https://ahmad-katsiri-agung.vercel.app";
+const BASE_URL = "https://akalcenter.my.id";
 
 const MATERI_SLUGS = [
   "beriman-kepada-malaikat",
   "membiasakan-tabayyun-menjauhi-ghibah",
   "salat-mencegah-perbuatan-keji-dan-mungkar",
+  "melestarikan-alam-cerminan-orang-beriman",
   "amanah-dan-jujur",
   "beriman-kepada-kitab-allah",
   "beriman-kepada-nabi-dan-rasul",
+  "membangun-toleransi",
+  "moderasi-beragama",
   "adab-dalam-islam",
   "beriman-kepada-hari-akhir",
   "beriman-kepada-qada-dan-qadar",
+  "semangat-mencari-ilmu",
+  "manusia-khalifah-di-muka-bumi",
 ] as const;
 
 const STATIC_PAGES = [

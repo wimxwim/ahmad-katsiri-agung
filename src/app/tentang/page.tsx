@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { BookHeart, ArrowRight } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
+import { EASE_CURVE } from "@/lib/constants";
 
 export default function TentangPage() {
   const { about } = useCmsData();
@@ -13,14 +14,13 @@ export default function TentangPage() {
   const pendiriFoto = about?.pendiriFoto ?? "/images/tentang/ahmad-katsiri.jpg?v=2";
   const visi = about?.visi ?? "Menjadi platform pembelajaran PAI nomor satu di Indonesia yang membuat setiap siswa jatuh cinta pada pelajaran agama Islam.";
   const misiList = about?.misi ?? [];
-  const verifikator = about?.verifikator ?? [];
 
   return (
     <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 md:pt-40 pb-16 md:pb-32">
       <motion.section
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="max-w-3xl mx-auto"
       >
           <div className="text-center mb-12 sm:mb-20">
@@ -43,7 +43,7 @@ export default function TentangPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
+            transition={{ duration: 0.5, ease: EASE_CURVE }}
             className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-4">
@@ -58,7 +58,7 @@ export default function TentangPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] as const }}
+            transition={{ duration: 0.5, delay: 0.1, ease: EASE_CURVE }}
             className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
             <div className="flex flex-col sm:flex-row gap-6 items-start">
@@ -84,7 +84,7 @@ export default function TentangPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] as const }}
+            transition={{ duration: 0.5, delay: 0.2, ease: EASE_CURVE }}
             className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-4">
@@ -109,7 +109,7 @@ export default function TentangPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+            transition={{ duration: 0.5, delay: 0.3, ease: EASE_CURVE }}
             className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-6">

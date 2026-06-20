@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
-import { ClipboardList, GraduationCap, ArrowRight, Sparkles } from "lucide-react";
+import { ClipboardList, GraduationCap, ArrowRight } from "lucide-react";
 import { SOAL_META as SOAL_META_HARD, ALL_SOAL as ALL_SOAL_HARD } from "@/data/soal";
 import { useCmsData } from "@/components/providers/CmsProvider";
 import { QuizEngine } from "@/components/evaluasi/QuizEngine";
+import { GRADIENT_SLUGS, EASE_CURVE } from "@/lib/constants";
 import Link from "next/link";
 
 const KELAS = [7, 8, 9] as const;
-const GRADIENT_SLUGS = new Set(['adab-dalam-islam', 'amanah-dan-jujur', 'beriman-kepada-hari-akhir', 'beriman-kepada-kitab-allah', 'beriman-kepada-malaikat', 'beriman-kepada-nabi-dan-rasul', 'beriman-kepada-qada-dan-qadar', 'salat-mencegah-perbuatan-keji-dan-mungkar']);
 
 export default function EvaluasiPage() {
   const { soalMeta, soalData } = useCmsData();
@@ -73,7 +73,7 @@ export default function EvaluasiPage() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
+      transition: { duration: 0.5, ease: EASE_CURVE },
     },
   };
 
@@ -82,7 +82,7 @@ export default function EvaluasiPage() {
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="text-center mb-12 sm:mb-16"
       >
         <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8">
@@ -103,7 +103,7 @@ export default function EvaluasiPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const, delay: 0.1 }}
+        transition={{ duration: 0.5, ease: EASE_CURVE, delay: 0.1 }}
         className="mb-12 sm:mb-16 max-w-2xl mx-auto bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-6 sm:p-8 shadow-glass"
       >
         <div className="flex items-start gap-4">

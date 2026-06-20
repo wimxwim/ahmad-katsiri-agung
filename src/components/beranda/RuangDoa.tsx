@@ -3,6 +3,7 @@
 import { useState, useEffect, FormEvent } from "react";
 import { motion } from "motion/react";
 import { Send, Heart } from "lucide-react";
+import { EASE_CURVE } from "@/lib/constants";
 
 interface DoaItem {
   id: string;
@@ -73,7 +74,7 @@ export function RuangDoa() {
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+        transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="max-w-3xl mx-auto"
       >
         <div className="text-center mb-10">
@@ -128,7 +129,7 @@ export function RuangDoa() {
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03, ease: [0.16, 1, 0.3, 1] as const }}
+              transition={{ delay: i * 0.03, ease: EASE_CURVE }}
               className="bg-glass/70 backdrop-blur-xl border border-border-precision rounded-2xl p-5 shadow-glass"
             >
               <div className="flex items-center justify-between mb-2">

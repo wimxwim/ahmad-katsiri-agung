@@ -6,7 +6,7 @@ const PUBLIC_ROUTES = ["/masuk", "/keystatic", "/session"];
 
 const TEACHER_ROUTES = ["/pendidik"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const nonce = crypto.randomUUID();
   const { pathname } = request.nextUrl;
 
