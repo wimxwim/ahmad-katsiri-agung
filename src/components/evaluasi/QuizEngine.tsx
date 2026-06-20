@@ -37,6 +37,9 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
   const [loginData, setLoginData] = useState<{
     namaSiswa: string;
     kelas: string;
+    noAbsen?: string;
+    nis?: string;
+    sekolah?: string;
     status: "resmi" | "latihan";
     token?: string;
   } | null>(null);
@@ -47,15 +50,21 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
   const [showFeedback, setShowFeedback] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const submittedRef = useRef(false);
+  const autoLoginRef = useRef(false);
+  const [submitError, setSubmitError] = useState("");
 
   const session = useSession();
 
   useEffect(() => {
-    if (session && session.role === "murid" && quizState === "login") {
+    if (session && session.role === "murid" && quizState === "login" && !autoLoginRef.current) {
+      autoLoginRef.current = true;
       setLoginData({
         namaSiswa: session.nama,
         kelas: session.kelas ?? "-",
-        status: "latihan",
+        noAbsen: session.noAbsen,
+        nis: session.nis,
+        sekolah: session.sekolah,
+        status: "resmi",
       });
       setQuizState("intro");
     }
@@ -65,7 +74,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
   const totalSoal = shuffledSoal.length;
 
   const handleLogin = useCallback(
-    (data: { namaSiswa: string; kelas: string; status: "resmi" | "latihan"; token?: string }) => {
+    (data: { namaSiswa: string; kelas: string; noAbsen?: string; nis?: string; sekolah?: string; status: "resmi" | "latihan"; token?: string }) => {
       setLoginData(data);
       setQuizState("intro");
     },
@@ -75,6 +84,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
   const submitHasil = useCallback(async () => {
     if (submittedRef.current || !loginData) return;
     submittedRef.current = true;
+    setSubmitError("");
 
     const jawabanSalah = shuffledSoal
       .filter((s) => jawaban[s.nomor] !== s.jawaban)
@@ -90,12 +100,15 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
       if (loginData.token) {
         headers["Authorization"] = `Bearer ${loginData.token}`;
       }
-      await fetch("/api/kuis/selesai", {
+      const res = await fetch("/api/kuis/selesai", {
         method: "POST",
         headers,
         body: JSON.stringify({
           namaSiswa: loginData.namaSiswa,
           kelas: loginData.kelas,
+          noAbsen: loginData.noAbsen,
+          nis: loginData.nis,
+          sekolah: loginData.sekolah,
           status: loginData.status,
           judulBab: bab.title,
           slugBab: bab.slug,
@@ -104,8 +117,13 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
           jawabanSalah,
         }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: "Gagal menyimpan hasil" }));
+        setSubmitError(data.error || "Gagal menyimpan hasil");
+      }
     } catch (err) {
       console.error("Submit hasil kuis gagal:", err);
+      setSubmitError("Gagal terhubung ke server. Coba lagi.");
     }
   }, [loginData, shuffledSoal, jawaban, bab]);
 
@@ -403,6 +421,12 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
           </div>
         </div>
 
+        {submitError && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-2xl p-4 text-sm text-red-700">
+            ⚠️ {submitError}
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={startQuiz}
@@ -465,12 +489,12 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
       <AnimatePresence mode="wait">
         <motion.div
           key={soal.nomor}
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -30 }}
-          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
         >
-          <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass mb-6">
+          <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass mb-6 min-h-[260px]">
             <p className="text-on-surface font-heading text-xl leading-relaxed mb-8">
               {soal.pertanyaan}
             </p>
@@ -532,7 +556,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
         </motion.div>
       </AnimatePresence>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center min-h-[60px]">
         {showFeedback ? (
           <button
             onClick={handleNext}
@@ -551,7 +575,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
             )}
           </button>
         ) : (
-          <p className="text-sm text-on-surface-variant">
+          <p className="text-sm text-on-surface-variant self-center">
             Pilih jawaban di atas
           </p>
         )}

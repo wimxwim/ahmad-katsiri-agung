@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 type Mode = "pilih" | "murid" | "guru";
@@ -10,7 +9,6 @@ export function FormMasuk() {
   const [mode, setMode] = useState<Mode>("pilih");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const router = useRouter();
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>, mode: "murid" | "guru") {
     e.preventDefault();
@@ -177,6 +175,7 @@ export function FormMasuk() {
                     <input
                       name="noAbsen"
                       required
+                      inputMode="numeric"
                       placeholder="mis. 14"
                       className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/50 outline-none focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
                     />

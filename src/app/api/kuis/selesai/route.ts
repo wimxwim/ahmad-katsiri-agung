@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { appendRow, readRows } from "@/lib/google-sheets";
-import { sendTelegram } from "@/lib/telegram";
+import { appendRow } from "@/lib/google-sheets";
+import { sendTelegram, escapeMarkdown } from "@/lib/telegram";
 import { KuisSelesaiSchema } from "@/lib/validation";
-import { verifyQuizToken } from "@/lib/auth";
+import { verifyQuizToken, verifySession } from "@/lib/auth";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 function extractBearerToken(req: NextRequest): string | null {
@@ -40,19 +41,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
     }
 
-    const { namaSiswa, kelas, status, judulBab, skor, totalSoal, jawabanSalah } = parsed.data;
+    const { namaSiswa, kelas, noAbsen, nis, sekolah, status, judulBab, skor, totalSoal, jawabanSalah } = parsed.data;
     const token = extractBearerToken(req);
 
     if (status === "resmi") {
-      if (!token) {
-        return NextResponse.json({ error: "Token verifikasi diperlukan" }, { status: 401 });
-      }
-      const payload = await verifyQuizToken(token);
-      if (!payload) {
-        return NextResponse.json({ error: "Token tidak valid atau kedaluwarsa" }, { status: 401 });
-      }
-      if (payload.nama !== namaSiswa || payload.kelas !== kelas) {
-        return NextResponse.json({ error: "Data tidak cocok dengan token" }, { status: 403 });
+      if (token) {
+        const payload = await verifyQuizToken(token);
+        if (!payload) {
+          return NextResponse.json({ error: "Token tidak valid atau kedaluwarsa" }, { status: 401 });
+        }
+        if (payload.nama !== namaSiswa || payload.kelas !== kelas) {
+          return NextResponse.json({ error: "Data tidak cocok dengan token" }, { status: 403 });
+        }
+      } else {
+        // Fallback: verify via session cookie (login from /masuk)
+        const sessionCookie = req.cookies.get(SESSION_COOKIE_NAME);
+        if (!sessionCookie?.value) {
+          return NextResponse.json({ error: "Sesi tidak ditemukan" }, { status: 401 });
+        }
+        const session = await verifySession(sessionCookie.value);
+        if (!session) {
+          return NextResponse.json({ error: "Sesi tidak valid" }, { status: 401 });
+        }
+        if (session.nama !== namaSiswa || (session.kelas && session.kelas !== kelas)) {
+          return NextResponse.json({ error: "Data tidak cocok dengan sesi" }, { status: 403 });
+        }
       }
     }
 
@@ -62,21 +75,30 @@ export async function POST(req: NextRequest) {
       dateStyle: "medium",
       timeStyle: "short",
     });
+    const isoNow = new Date().toISOString();
 
     const detailSalah = jawabanSalah
-      .map((j) => `Soal ${j.nomor}: ${j.pertanyaan}\n    Jawaban: ${j.jawabanSiswa}\n    Kunci:   ${j.kunciJawaban}`)
+      .map(
+        (j) =>
+          `Soal ${j.nomor}: ${escapeMarkdown(j.pertanyaan)}\n    Jawaban: ${escapeMarkdown(j.jawabanSiswa)}\n    Kunci:   ${escapeMarkdown(j.kunciJawaban)}`
+      )
       .join("\n\n");
 
     const labelStatus = status === "resmi" ? "SISWA RESMI" : "LATIHAN UMUM";
     const icon = status === "resmi" ? "🟢" : "⚪";
     const lulus = persentase >= 70 ? "🌟" : "📚";
 
+    const safeNama = escapeMarkdown(namaSiswa);
+    const safeKelas = escapeMarkdown(kelas);
+    const safeJudul = escapeMarkdown(judulBab);
+    const safeNoAbsen = noAbsen ? escapeMarkdown(noAbsen) : "";
+
     const message = [
       `${icon} *LAPORAN KUIS BARU — ${labelStatus}*`,
       ``,
-      `👤 *Nama:* ${namaSiswa}`,
-      `🏫 *Kelas:* ${kelas}`,
-      `📖 *Materi:* ${judulBab}`,
+      `👤 *Nama:* ${safeNama}`,
+      `🏫 *Kelas:* ${safeKelas}${safeNoAbsen ? `\n🔢 *No. Absen:* ${safeNoAbsen}` : ""}`,
+      `📖 *Materi:* ${safeJudul}`,
       ``,
       `📊 *HASIL EVALUASI:*`,
       `• Skor Akhir: ${skor} / ${totalSoal}`,
@@ -88,18 +110,26 @@ export async function POST(req: NextRequest) {
       `📅 *Dikirim:* ${now}`,
     ].join("\n");
 
-    if (status === "resmi") {
-      // Dedup: skip if record already exists for this student + bab
-      const existing = await readRows("RekapNilai!A:H");
-      const sudahAda = existing.slice(1).some(
-        (r) => r[1]?.toLowerCase() === namaSiswa.toLowerCase() && r[4]?.toLowerCase() === judulBab.toLowerCase()
-      );
-      if (!sudahAda) {
-        const id = `nilai_${Date.now()}`;
-        await appendRow("RekapNilai!A:H", [
-          [id, namaSiswa, kelas, "✅ Selesai", judulBab, String(skor), String(totalSoal), now],
-        ]);
-      }
+    // ── Google Sheets: simpan hasil kuis otomatis ────────────────
+    const labelLulus = persentase >= 70 ? "✅ Lulus" : "❌ Tidak";
+
+    try {
+      await appendRow("RekapNilai!A:J", [
+        [
+          isoNow,
+          namaSiswa,
+          kelas,
+          noAbsen || "-",
+          status === "resmi" ? "Siswa Resmi" : "Latihan",
+          judulBab,
+          String(skor),
+          String(totalSoal),
+          String(persentase),
+          labelLulus,
+        ],
+      ]);
+    } catch (e) {
+      console.error("Gagal menyimpan ke RekapNilai:", e);
     }
 
     await sendTelegram(message);

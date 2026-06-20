@@ -212,11 +212,18 @@ export default async function RootLayout({
 
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  let sessionData: { role: string; nama: string; kelas?: string } | null = null;
+  let sessionData: { role: string; nama: string; kelas?: string; noAbsen?: string; nis?: string; sekolah?: string } | null = null;
   if (sessionCookie?.value) {
     const verified = await verifySession(sessionCookie.value);
     if (verified) {
-      sessionData = { role: verified.role, nama: verified.nama, kelas: verified.kelas };
+      sessionData = {
+        role: verified.role,
+        nama: verified.nama,
+        kelas: verified.kelas,
+        noAbsen: verified.noAbsen,
+        nis: verified.nis,
+        sekolah: verified.sekolah,
+      };
     }
   }
 

@@ -1025,12 +1025,12 @@ selanjutnya. Update file ini jika ada perubahan.
 ## Status Project
 
 - [x] Detail bisnis diterima dari klien
-- [ ] Harga deal & kontrak ditandatangani
-- [ ] Mockup desain dibuat
-- [ ] Mockup disetujui klien
-- [x] Coding selesai (v2 — 24 halaman statis, 14 bab materi)
-- [ ] Review bersama klien
+- [x] Coding selesai (14 bab materi, 8 bank soal, kuis, doa, game, video, CMS)
 - [x] Deploy ke domain production → ✅ Live di akalcenter.my.id
+- [x] Keystatic CMS terintegrasi — Bang Agung bisa edit konten via browser
+- [x] Data flow otomatis: website → Google Sheets + Telegram (hasil kuis, doa)
+- [ ] Review bersama klien
+- [ ] Bang Agung perlu akun GitHub → invite sebagai collaborator → CMS multi-user
 
 ---
 
@@ -1054,12 +1054,13 @@ selanjutnya. Update file ini jika ada perubahan.
 | 2026-06-18 | Sesi 19: CMS Keystatic integration — 9 collections/singletons (materi, soal, game, hadits, navigation, siteConfig, about, pendidikPage, perangkatAjar), CSS fallback tiap halaman, middleware CSP nonce+strict-dynamic, security audit (10 fix: H-1/H-2/H-3/M-2/M-3/M-4/M-6/M-7/L-1/L-2), GitHub App OAuth setup (App ID 4080075, Client ID Iv23liAhXMj8s8L7I0Y1), GitHub App installed on repo wimxwim/ahmad-katsiri-agung, Vercel env vars set for production CMS, deploy ke akalcenter.my.id with github storage mode, fix evaluasi soal data from CMS, fix .env.example comment syntax |
 | 2026-06-18 | Sesi 20: Fix CSP nonce propagation + connect-src for Keystatic dashboard. **Keystatic CMS fully live!** — 2 bugs fixed: (1) `nonce={nonce}` missing on `<html>` element → scripts had no CSP nonce, blocked browser; (2) `api.github.com` missing from CSP `connect-src` → Keystatic GraphQL calls silently blocked. Worker redirect URL fix for OAuth callback. Full flow verified: cookies cleared → "Log in with GitHub" → OAuth → dashboard at `/keystatic/branch/main`. |
 | 2026-06-19 | Sesi 21: **Fix CMS Collections "0 entries"** — Root cause: `keystatic.config.ts` collection paths missing trailing slash (`content/materi/*` → `content/materi/*/`). Juga fix: hadits slugField collision (3× "HR. Muslim", ganti pakai slug field), game Qada & Qadar `&` di judul/image path, image file rename. Semua 4 collections verified: Materi 14/14, Soal 8/8, Game 12/12, Hadits 6/6. CMS siap dipakai Bang Agung via GitHub login katsiriagung99. |
+| 2026-06-20 | **Sesi 22: Audit & Redesign data flow** — Fix 3 kritikal: (1) Google Sheets `RekapNilai` **di-renable** dengan 10 kolom baru (sebelumnya DISABLED total — hasil kuis gak tercatat); (2) Telegram markdown escaping + truncation (sebelumnya jawaban dengan `_` bikin notif gagal silent); (3) `rekap/route.ts` di-sederhanakan — gak perlu join DaftarSiswa lagi tinggal baca RekapNilai langsung. Frontend tabel rekap di `/pendidik` diperbarui sesuai struktur baru. Update AGENTS.md dengan section Data Flow & Monitoring — struktur sheets, panduan audit, ceklis monitoring. |
 
 ---
 
 ## Env Var Terbaru
 
-| Env Var | Nilai (per 18 Juni 2026) | Catatan |
+| Env Var | Nilai (per 20 Juni 2026) | Catatan |
 |---------|--------------------------|---------|
 | `ADMIN_API_KEY` | `akal-admin-2026` | Untuk akses rekap nilai di `/pendidik` |
 | `JWT_SECRET` | `akal-jwt-secret-2026-32chars!` | Untuk sign/verify token kuis siswa |
@@ -1434,6 +1435,127 @@ Saat ini CMS cuma bisa diakses akun `wimxwim` karena:
 - CMS hanya nulis ke `content/` folder — tidak bisa edit file kode
 - Akun Bang Agung bisa di-revoke kapan saja dari GitHub settings
 - **Biaya:** gratis (GitHub free plan support unlimited collaborators)
+
+---
+
+---
+
+## Data Flow & Monitoring (Sesi 22 — 20 Juni 2026)
+
+### Arsitektur Data Flow (Sekarang)
+
+```
+User → Website (akalcenter.my.id)
+  │
+  ├─ Submit Doa → /api/doa
+  │   ├─ ✅ Google Sheets (DoaUcapan!A:D)
+  │   └─ ✅ Telegram (notifikasi doa baru)
+  │
+  ├─ Login Siswa → /api/siswa/cek
+  │   ├─ ✅ Baca DaftarSiswa dari Sheets (verifikasi Nama + TTL)
+  │   └─ ✅ Generate JWT token (30 menit)
+  │
+  └─ Selesai Kuis → /api/kuis/selesai
+      ├─ ✅ Google Sheets (RekapNilai!A:J) — 10 kolom
+      ├─ ✅ Telegram (laporan lengkap + detail salah)
+      └─ ✅ JWT verify / Session verify
+```
+
+### Google Sheets — Struktur Baru (per 20 Juni 2026)
+
+**Sheet: `RekapNilai` (A-J, 10 kolom)**
+| Kolom | Field | Contoh | Catatan |
+|-------|-------|--------|---------|
+| A | Tanggal (ISO) | `2026-06-20T14:30:00.000Z` | auto dari server |
+| B | Nama Siswa | `Ahmad Fauzi` | dari form/quiz |
+| C | Kelas | `7` | dari form/quiz |
+| D | No. Absen | `12` atau `-` | dari form/quiz |
+| E | Status | `Siswa Resmi` / `Latihan` | dari pilihan mode |
+| F | Judul Bab | `Amanah dan Jujur` | dari soal |
+| G | Skor | `8` | jumlah benar |
+| H | Total Soal | `10` | jumlah soal |
+| I | Persentase | `80` | angka saja (0-100) |
+| J | Lulus? | `✅ Lulus` / `❌ Tidak` | >= 70 = lulus |
+
+**Dulu:** tiap baris diisi manual Bang Agung, cuma catat yang "resmi" dan dedup.
+**Sekarang:** tiap kuis selesai → otomatis nambah baris baru (resmi & latihan), tanpa dedup.
+
+**Sheet: `DoaUcapan` (A-D) — tidak berubah**
+| A ID | B Nama | C Isi Doa | D Waktu |
+Masih diisi otomatis dari website via `/api/doa`.
+
+**Sheet: `DaftarSiswa` (A-D) — tidak berubah**
+| A No | B Nama Lengkap | C Kelas | D Tanggal Lahir |
+Diisi manual Bang Agung (daftar siswa). Dipakai untuk verifikasi Nama+TTL di `/api/siswa/cek`.
+
+### Telegram — Notifikasi (per 20 Juni 2026)
+
+| Event | Dikirim ke | Format | Isi |
+|-------|-----------|--------|-----|
+| Doa baru masuk | 2 chat ID | Markdown | Emoji + nama + isi doa |
+| Kuis selesai | 2 chat ID | Markdown | Nama, kelas, bab, skor, persentase, detail salah |
+
+**Fix Markdown (20 Juni):**
+- Sebelumnya: teks bebas dari user langsung dimasukkan ke pesan Telegram → kalau ada `_` atau `*` di jawaban siswa, markdown jadi rusak → API Telegram return 400 → `.catch()` silent — **notif gak sampai**
+- Sekarang: `escapeMarkdown()` di `lib/telegram.ts` — semua `_ * ` [ ( ` di-escape pake backslash
+- Pesan juga di-truncate ke 4000 karakter (batas Telegram 4096)
+
+### Google Analytics — Status (per 20 Juni 2026)
+
+**Config:**
+- Library: `@next/third-parties/google` (`GoogleAnalytics` component)
+- GA4 ID: `G-FKHV466K10` (fallback) — bisa di-override via Keystatic CMS (`siteConfig.googleAnalyticsId`)
+- CSP: `https://*.google-analytics.com` ada di `script-src` dan `connect-src`
+
+**Kenapa GA mungkin kosong:**
+1. **GA4 property belum diverifikasi** — perlu dicek di console.google.com apakah properti GA4 aktif
+2. **Traffic masih rendah** — situs sekolah, pengunjung harian mungkin <10
+3. **Ad blocker** — banyak siswa/guru pakai browser dengan ad blocker
+4. **CSP blocking** — meski sudah include `*.google-analytics.com`, pastikan tidak ada CSP violation (cek browser console)
+5. **CMS override salah** — kalau `siteConfig.googleAnalyticsId` diisi string kosong di Keystatic, fallback tidak terpakai
+
+**Verifikasi GA jalan:**
+1. Buka akalcenter.my.id di browser → buka DevTools → Network → filter "google-analytics"
+2. Cari request ke `google-analytics.com/g/collect` — kalau ada, GA jalan
+3. Buka Google Analytics dashboard → Real-time → lihat apakah ada active user
+
+### Panduan Audit Berkala
+
+**Ceklis tiap minggu/bulan:**
+1. ✅ **RekapNilai** — buka Google Sheets → tab RekapNilai → ada baris baru? Kalau kosong, berarti siswa belum ada yang selesai kuis.
+2. ✅ **Telegram** — cek chat @AKAL_Centre_bot — apakah notifikasi masuk tiap ada doa/kuis?
+3. ✅ **DoaUcapan** — buka tab DoaUcapan → ada baris baru doa dari pengunjung? Kalau kosong sejak lama, cek `/api/doa`.
+4. ✅ **Google Analytics** — cek real-time report. Kalau 0 user selama berhari-hari, ada yang salah.
+5. ✅ **DaftarSiswa** — pastikan data siswa masih up to date (terutama kalo ada siswa baru).
+6. ✅ **Build & Deploy** — `npx next build` zero errors? Kalau error, cek di terminal.
+
+**File yang perlu dicek kalau ada masalah:**
+| Gejala | File yang dicek |
+|--------|-----------------|
+| RekapNilai kosong | `api/kuis/selesai/route.ts` (cari `appendRow("RekapNilai!A:J")`) |
+| Telegram gak bunyi | `lib/telegram.ts` (cari `sendTelegram`), `api/kuis/selesai/route.ts` |
+| Doa gak masuk | `api/doa/route.ts` (cari `await appendRow(SHEET_RANGE)`) |
+| Siswa gak bisa login | `api/siswa/cek/route.ts` (cari `readRows(SHEET_RANGE)`) |
+| GA gak muncul | `layout.tsx` line 317 (`GoogleAnalytics`), `middleware.ts` CSP |
+| Quiz layout bergerak | `components/evaluasi/QuizEngine.tsx` (`AnimatePresence`, `min-h`) |
+
+### Env Var — Update Lengkap
+
+| Env Var | Status | Fungsi |
+|---------|--------|--------|
+| `GOOGLE_SHEET_ID` | ✅ | ID spreadsheet Google Sheets |
+| `GOOGLE_SHEETS_CLIENT_EMAIL` | ✅ | Service Account email |
+| `GOOGLE_SHEETS_PRIVATE_KEY` | ✅ | Private key (dengan `\n` literal) |
+| `TELEGRAM_BOT_TOKEN` | ✅ | Token bot @AKAL_Centre_bot |
+| `TELEGRAM_CHAT_ID` | ✅ | Chat ID primary (Bang Agung) |
+| `TELEGRAM_CHAT_ID_2` | ✅ | Chat ID secondary |
+| `JWT_SECRET` | ✅ | Untuk sign/verify token kuis |
+| `ADMIN_API_KEY` | ✅ | Untuk akses rekap di `/pendidik` |
+| `KEYSTATIC_GITHUB_CLIENT_ID` | ✅ | GitHub App OAuth |
+| `KEYSTATIC_GITHUB_CLIENT_SECRET` | ✅ | (rahasia) |
+| `KEYSTATIC_SECRET` | ✅ | Encryption key CMS |
+| `NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND` | ✅ | `github` |
+| `NEXT_PUBLIC_USE_CMS` | ✅ | `true` |
 
 ---
 

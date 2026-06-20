@@ -320,7 +320,7 @@ function PerangkatSection() {
 
 function RekapSection() {
   const [rekap, setRekap] = useState<
-    { nama: string; kelas: string; status: string; skor: string; tanggal: string }[]
+    { tanggal: string; nama: string; kelas: string; noAbsen: string; tipe: string; bab: string; skor: string; total: string; persentase: string; lulus: string }[]
   >([]);
   const [loading, setLoading] = useState(true);
   const [locked, setLocked] = useState(true);
@@ -375,10 +375,10 @@ function RekapSection() {
       <div>
         <div className="text-center mb-10">
           <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl text-on-surface mb-2">
-            Rekap Nilai Siswa
+            Rekap Hasil Kuis
           </h2>
           <p className="text-sm text-on-surface-variant">
-            Masukkan kunci akses admin untuk melihat data rekap
+            Masukkan kunci akses admin untuk melihat data hasil kuis siswa
           </p>
         </div>
         <form
@@ -403,26 +403,23 @@ function RekapSection() {
             disabled={loading}
             className="w-full inline-flex items-center justify-center gap-2 bg-primary text-on-primary px-6 py-3.5 rounded-xl font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 disabled:opacity-40"
           >
-            {loading ? "Memeriksa..." : "Lihat Rekap Nilai"}
+            {loading ? "Memeriksa..." : "Lihat Rekap Kuis"}
           </button>
         </form>
       </div>
     );
   }
 
-  const belum = rekap.filter((r) => r.status === "belum");
-  const sudah = rekap.filter((r) => r.status === "sudah");
-
   return (
     <div>
       <div className="text-center mb-10">
         <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl text-on-surface mb-2">
-          Rekap Nilai Siswa
+          Rekap Hasil Kuis
         </h2>
         <p className="text-sm text-on-surface-variant">
           {loading
             ? "Memuat data..."
-            : `${sudah.length} dari ${rekap.length} siswa telah mengerjakan kuis`}
+            : `${rekap.length} pengerjaan kuis tercatat`}
         </p>
       </div>
 
@@ -433,7 +430,7 @@ function RekapSection() {
       ) : rekap.length === 0 ? (
         <div className="text-center py-12 bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl p-10">
           <p className="text-sm text-on-surface-variant">
-            Belum ada data. Pastikan Google Sheets sudah terhubung dan siswa sudah login.
+            Belum ada data. Siswa akan tercatat otomatis saat mengerjakan kuis.
           </p>
         </div>
       ) : (
@@ -442,53 +439,47 @@ function RekapSection() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border-precision bg-primary/5">
+                  <th className="text-left px-4 sm:px-6 py-4 font-semibold text-on-surface">Tanggal</th>
                   <th className="text-left px-4 sm:px-6 py-4 font-semibold text-on-surface">Nama</th>
                   <th className="text-left px-4 sm:px-6 py-4 font-semibold text-on-surface">Kelas</th>
-                  <th className="text-center px-4 sm:px-6 py-4 font-semibold text-on-surface">Status</th>
+                  <th className="text-left px-4 sm:px-6 py-4 font-semibold text-on-surface">Bab</th>
                   <th className="text-center px-4 sm:px-6 py-4 font-semibold text-on-surface">Skor</th>
-                  <th className="text-right px-4 sm:px-6 py-4 font-semibold text-on-surface">Tanggal</th>
+                  <th className="text-center px-4 sm:px-6 py-4 font-semibold text-on-surface">Hasil</th>
                 </tr>
               </thead>
               <tbody>
                 {rekap.map((row, i) => (
                   <tr
-                    key={row.nama + i}
+                    key={`${row.nama}-${row.tanggal}-${i}`}
                     className="border-b border-border-precision/50 hover:bg-white/40 transition-colors"
                   >
-                    <td className="px-4 sm:px-6 py-4 text-on-surface font-medium">{row.nama}</td>
+                    <td className="px-4 sm:px-6 py-4 text-on-surface-variant text-xs whitespace-nowrap">
+                      {new Date(row.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+                    </td>
+                    <td className="px-4 sm:px-6 py-4 text-on-surface font-medium whitespace-nowrap">{row.nama}</td>
                     <td className="px-4 sm:px-6 py-4 text-on-surface-variant">{row.kelas}</td>
+                    <td className="px-4 sm:px-6 py-4 text-on-surface-variant max-w-[160px] truncate">{row.bab}</td>
+                    <td className="px-4 sm:px-6 py-4 text-center font-semibold text-on-surface">
+                      {row.skor}/{row.total}
+                    </td>
                     <td className="px-4 sm:px-6 py-4 text-center">
-                      {row.status === "sudah" ? (
+                      {row.lulus.includes("✅") ? (
                         <span className="inline-flex items-center gap-1 text-green-600 text-xs font-semibold">
-                          <CheckCircle2 className="w-4 h-4" />
-                          Sudah
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          {row.persentase}%
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-red-400 text-xs font-semibold">
-                          <XCircle className="w-4 h-4" />
-                          Belum
+                          <XCircle className="w-3.5 h-3.5" />
+                          {row.persentase}%
                         </span>
                       )}
-                    </td>
-                    <td className="px-4 sm:px-6 py-4 text-center font-semibold text-on-surface">
-                      {row.skor}
-                    </td>
-                    <td className="px-4 sm:px-6 py-4 text-right text-on-surface-variant text-xs">
-                      {row.tanggal}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-
-      {!loading && belum.length > 0 && (
-        <div className="mt-6 text-center">
-          <p className="text-xs text-on-surface-variant">
-            {belum.length} siswa belum mengerjakan. Ingatkan via grup WhatsApp atau tatap muka.
-          </p>
         </div>
       )}
     </div>

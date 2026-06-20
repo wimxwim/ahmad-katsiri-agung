@@ -36,6 +36,9 @@ const JawabanSalahSchema = z.object({
 export const KuisSelesaiSchema = z.object({
   namaSiswa: z.string().min(1),
   kelas: z.string(),
+  noAbsen: z.string().optional(),
+  nis: z.string().optional(),
+  sekolah: z.string().optional(),
   status: z.enum(["resmi", "latihan"]),
   judulBab: z.string(),
   slugBab: z.string(),

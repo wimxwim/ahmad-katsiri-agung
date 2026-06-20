@@ -29,28 +29,21 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [daftarSiswa, rekapNilai] = await Promise.all([
-      readRows("DaftarSiswa!A:D"),
-      readRows("RekapNilai!A:H"),
-    ]);
+    const rekapNilai = await readRows("RekapNilai!A:J");
+    const rows = rekapNilai.slice(1).reverse(); // skip header, newest first
 
-    const siswaRows = daftarSiswa.slice(1).map(([_, nama, kelas]) => ({ nama, kelas }));
-    const nilaiRows = rekapNilai.slice(1);
-    const siswaSudah = new Set(nilaiRows.map((r) => r[1]?.toLowerCase()));
-
-    const rekap = siswaRows.map((siswa) => {
-      const sudah = siswaSudah.has(siswa.nama?.toLowerCase());
-      const entry = nilaiRows.find(
-        (r) => r[1]?.toLowerCase() === siswa.nama?.toLowerCase()
-      );
-      return {
-        nama: siswa.nama,
-        kelas: siswa.kelas,
-        status: sudah ? "sudah" : "belum",
-        skor: entry ? `${entry[5]}/${entry[6]}` : "-",
-        tanggal: entry ? entry[7] : "-",
-      };
-    });
+    const rekap = rows.map((r) => ({
+      tanggal: r[0] || "-",
+      nama: r[1] || "-",
+      kelas: r[2] || "-",
+      noAbsen: r[3] || "-",
+      tipe: r[4] || "-",
+      bab: r[5] || "-",
+      skor: r[6] || "0",
+      total: r[7] || "0",
+      persentase: r[8] || "0",
+      lulus: r[9] || "-",
+    }));
 
     return NextResponse.json({ rekap });
   } catch (e) {
