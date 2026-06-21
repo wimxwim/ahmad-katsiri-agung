@@ -3,6 +3,7 @@ import { verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
 
 // Semua rute publik — hanya /pendidik yang butuh session guru
+// CATATAN: "/" harus exact match biar "/pendidik" gak ke-catch
 const PUBLIC_ROUTES = [
   "/",
   "/materi",
@@ -70,7 +71,10 @@ export async function proxy(request: NextRequest) {
   response.headers.set("Reporting-Endpoints", 'csp-endpoint="/api/csp-report"');
 
   // ── Session Guard (hanya /pendidik yang butuh login guru) ──────
-  const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+  const isPublic = PUBLIC_ROUTES.some((route) => {
+    if (route === "/") return pathname === "/";
+    return pathname.startsWith(route);
+  });
   if (isPublic) return response;
 
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
