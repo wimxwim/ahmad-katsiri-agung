@@ -21,6 +21,14 @@
       "label": "Game"
     },
     {
+      "href": "/refleksi",
+      "label": "Refleksi"
+    },
+    {
+      "href": "/diskusi",
+      "label": "Diskusi"
+    },
+    {
       "href": "/tentang",
       "label": "Tentang"
     }
@@ -42,6 +50,11 @@
       "icon": "ClipboardList"
     },
     {
+      "href": "/refleksi",
+      "label": "Refleksi",
+      "icon": "Brain"
+    },
+    {
       "href": "/game",
       "label": "Game",
       "icon": "Gamepad2"
@@ -60,6 +73,14 @@
     {
       "href": "/materi",
       "label": "Materi"
+    },
+    {
+      "href": "/refleksi",
+      "label": "Refleksi Diri"
+    },
+    {
+      "href": "/diskusi",
+      "label": "Ruang Diskusi"
     },
     {
       "href": "/hafalan",
