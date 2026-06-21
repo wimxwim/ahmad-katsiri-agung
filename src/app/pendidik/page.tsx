@@ -78,6 +78,27 @@ export default function PendidikPage() {
         <PerangkatSection />
       </section>
 
+      <section className="mb-16 sm:mb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: EASE_CURVE }}
+        >
+          <Link
+            href="/admin/bulk-soal"
+            className="inline-flex items-center gap-2 text-sm bg-primary/5 hover:bg-primary/10 text-primary px-4 sm:px-6 py-3 rounded-2xl border border-border-precision transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Impor Soal Massal
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+          <p className="text-xs text-on-surface-variant mt-2 ml-1">
+            Paste soal dalam format teks &rarr; dapatkan JSON siap-CMS. Dibuat karena Bang Agung capek input 1 per 1.
+          </p>
+        </motion.div>
+      </section>
+
       <section className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8 md:gap-12 border-t border-primary/10 pt-12 sm:pt-16 md:pt-24 mb-24 sm:mb-32">
         {statsList.map((stat, i) => (
           <motion.div
@@ -329,19 +350,24 @@ function RekapSection() {
   const [keyError, setKeyError] = useState("");
 
   useEffect(() => {
-    setLoading(false);
+    const guru = (window as any).__SESSION?.role === "guru";
+    if (guru) {
+      fetchRekap();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
-  async function fetchRekap(key: string) {
+  async function fetchRekap(key?: string) {
     setLoading(true);
     setKeyError("");
     try {
-      const r = await fetch("/api/kuis/rekap", {
-        headers: { "x-api-key": key },
-      });
+      const headers: Record<string, string> = {};
+      if (key) headers["x-api-key"] = key;
+      const r = await fetch("/api/kuis/rekap", { headers });
       if (r.status === 401) {
         setLocked(true);
-        setKeyError("Kunci akses salah");
+        setKeyError("Sesi berakhir. Silakan login ulang.");
         setLoading(false);
         return;
       }
@@ -366,11 +392,6 @@ function RekapSection() {
     setLoading(false);
   }
 
-  function handleSubmitKey(e: React.FormEvent) {
-    e.preventDefault();
-    fetchRekap(apiKey.trim());
-  }
-
   if (locked) {
     return (
       <div>
@@ -379,34 +400,39 @@ function RekapSection() {
             Rekap Hasil Kuis
           </h2>
           <p className="text-sm text-on-surface-variant">
-            Masukkan kunci akses admin untuk melihat data hasil kuis siswa
+            Data hasil kuis siswa — akses khusus pendidik
           </p>
         </div>
-        <form
-          onSubmit={handleSubmitKey}
-          className="max-w-sm mx-auto bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl p-6 shadow-glass"
-        >
-          <input
-            type="text"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="Masukkan kunci admin di sini"
-            className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 mb-3 transition-all"
-          />
-          <p className="text-[11px] text-on-surface-variant/60 mb-4 text-center">
-            Contoh: <code className="bg-primary/5 px-1.5 py-0.5 rounded text-primary text-[10px]">akal-admin-2026</code>
-          </p>
-          {keyError && (
-            <p className="text-xs text-red-500 mb-4 text-center">{keyError}</p>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full inline-flex items-center justify-center gap-2 bg-primary text-on-primary px-6 py-3.5 rounded-xl font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 disabled:opacity-40"
+        <div className="max-w-sm mx-auto bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl p-6 shadow-glass text-center space-y-4">
+          <p className="text-sm text-on-surface-variant">Login sebagai pendidik untuk mengakses data ini.</p>
+          <Link
+            href="/masuk-guru"
+            className="inline-flex items-center justify-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-xl font-semibold hover:brightness-110 transition-all"
           >
-            {loading ? "Memeriksa..." : "Lihat Rekap Kuis"}
-          </button>
-        </form>
+            Masuk sebagai Pendidik
+          </Link>
+          <details className="text-left">
+            <summary className="text-xs text-on-surface-variant/60 cursor-pointer hover:text-on-surface-variant">
+              Atau gunakan kunci akses langsung
+            </summary>
+            <form onSubmit={(e) => { e.preventDefault(); fetchRekap(apiKey.trim()); }} className="mt-3">
+              <input
+                type="text"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Kunci akses admin"
+                className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 mb-2 transition-all"
+              />
+              {keyError && <p className="text-xs text-red-500 mb-2 text-center">{keyError}</p>}
+              <button
+                type="submit"
+                className="w-full inline-flex items-center justify-center gap-2 bg-primary/10 text-primary px-6 py-2.5 rounded-xl font-semibold hover:bg-primary/20 transition-all text-sm"
+              >
+                Buka dengan Kunci
+              </button>
+            </form>
+          </details>
+        </div>
       </div>
     );
   }

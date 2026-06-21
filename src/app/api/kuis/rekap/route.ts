@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { readRows } from "@/lib/google-sheets";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { verifySession } from "@/lib/auth";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
 
 export const runtime = "nodejs";
 
@@ -24,8 +27,21 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Auth: x-api-key (legacy) atau session guru
     const apiKey = req.headers.get("x-api-key");
-    if (!ADMIN_KEY || apiKey !== ADMIN_KEY) {
+    const isKeyValid = ADMIN_KEY && apiKey === ADMIN_KEY;
+
+    let isGuruSession = false;
+    if (!isKeyValid) {
+      const cookieStore = await cookies();
+      const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
+      if (sessionCookie?.value) {
+        const session = await verifySession(sessionCookie.value);
+        isGuruSession = session?.role === "guru";
+      }
+    }
+
+    if (!isKeyValid && !isGuruSession) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

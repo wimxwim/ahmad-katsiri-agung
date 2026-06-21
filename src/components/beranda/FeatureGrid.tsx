@@ -28,7 +28,6 @@ const features = [
     link: "/video",
     colSpan: "md:col-span-5",
     gradient: true,
-    badge: "+500 Siswa Menonton",
   },
   {
     icon: Gamepad2,
@@ -45,10 +44,6 @@ const features = [
     link: "/evaluasi",
     colSpan: "md:col-span-8",
     gradient: true,
-    stats: [
-      { value: "98%", label: "Kepuasan" },
-      { value: "12K+", label: "Siswa Aktif" },
-    ],
   },
   {
     icon: BookMarked,
@@ -117,24 +112,6 @@ export function FeatureGrid() {
               <p className="text-on-surface-variant leading-relaxed mb-6">
                 {f.desc}
               </p>
-
-              {f.stats && (
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  {f.stats.map((s) => (
-                    <div
-                      key={s.label}
-                      className="bg-white/40 rounded-2xl p-4 text-center"
-                    >
-                      <p className="font-heading text-2xl font-bold text-primary">
-                        {s.value}
-                      </p>
-                      <p className="text-xs text-on-surface-variant mt-1">
-                        {s.label}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
 
               {f.badge && (
                 <div className="flex items-center gap-3 mb-6">

@@ -9,7 +9,6 @@ const FOOTER_LINKS_FALLBACK = [
   { href: "/video", label: "Video" },
   { href: "/evaluasi", label: "Kuis" },
   { href: "/game", label: "Game Edukasi" },
-  { href: "/pendidik", label: "Pendidik" },
   { href: "/tentang", label: "Tentang Kami" },
 ];
 
