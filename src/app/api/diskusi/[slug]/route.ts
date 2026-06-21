@@ -98,7 +98,7 @@ export async function POST(req: NextRequest, context: RouteContext) {
     const id = `bal_${Date.now()}`;
 
     await appendRow(BALASAN_RANGE, [
-      [id, slug, cleanNama, cleanIsi, "", now],
+      [id, slug, cleanNama, cleanIsi, "balasan", now],
     ]);
 
     await sendTelegram(
