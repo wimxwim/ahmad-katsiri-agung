@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 
 type Mode = "pilih" | "murid" | "guru";
@@ -116,9 +117,9 @@ export function FormMasuk() {
                   </span>
                   <span className="text-primary/40 text-xl group-hover:text-primary transition-colors">›</span>
                 </button>
-                <button
-                  onClick={() => setMode("guru")}
-                  className="group flex items-center gap-4 w-full text-left border border-border-precision bg-white rounded-[18px] p-[18px] transition-all duration-200 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-glass cursor-pointer"
+                <Link
+                  href="/masuk-guru"
+                  className="group flex items-center gap-4 w-full text-left border border-border-precision bg-white rounded-[18px] p-[18px] transition-all duration-200 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-glass"
                 >
                   <span className="w-[50px] h-[50px] rounded-[14px] bg-surface grid place-items-center text-[26px] shrink-0">
                     🧑‍🏫
@@ -128,7 +129,7 @@ export function FormMasuk() {
                     <span className="text-[13px] text-on-surface-variant">Akses penuh + rekap nilai</span>
                   </span>
                   <span className="text-primary/40 text-xl group-hover:text-primary transition-colors">›</span>
-                </button>
+                </Link>
               </div>
             </div>
           )}

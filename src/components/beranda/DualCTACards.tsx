@@ -85,8 +85,8 @@ export function DualCTACards() {
 
             <ul className="space-y-4 mb-10">
               {[
-                { title: "Gamifikasi Progress", desc: "Dapatkan badge dan level saat menyelesaikan materi." },
-                { title: "Forum Komunitas", desc: "Diskusikan materi dengan teman sekelas." },
+                { title: "Materi & Kuis", desc: "Akses semua materi dan kuis PAI lengkap per bab." },
+                { title: "Ruang Diskusi", desc: "Tanya jawab dan diskusi materi bersama teman." },
               ].map((item) => (
                 <li key={item.title} className="flex gap-4">
                   <Sparkles className="w-6 h-6 text-secondary-fixed shrink-0 mt-0.5" aria-hidden="true" />

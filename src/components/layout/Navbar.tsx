@@ -9,11 +9,11 @@ const NAV_ITEMS_FALLBACK = [
   { href: "/", label: "Beranda" },
   { href: "/pendidik", label: "Pendidik" },
   { href: "/materi", label: "Materi" },
-  { href: "/evaluasi", label: "Evaluasi" },
+  { href: "/evaluasi", label: "Kuis" },
+  { href: "/video", label: "Video" },
   { href: "/game", label: "Game" },
-  { href: "/refleksi", label: "Refleksi" },
+  { href: "/hafalan", label: "Hafalan" },
   { href: "/diskusi", label: "Diskusi" },
-  { href: "/tentang", label: "Tentang" },
 ];
 
 const TEACHER_LABELS = new Set(["Pendidik"]);

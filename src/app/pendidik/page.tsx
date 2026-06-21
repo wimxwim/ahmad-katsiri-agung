@@ -20,8 +20,8 @@ export default function PendidikPage() {
 
   const statsList = pendidikPage?.stats ?? [
     { value: "98%", label: "EFISIENSI WAKTU" },
-    { value: "12K+", label: "GURU AKTIF" },
-    { value: "240TB", label: "DATA TERARSIP" },
+    { value: "14", label: "BAB MATERI" },
+    { value: "3", label: "TINGKAT KELAS" },
   ];
 
   return (
@@ -143,7 +143,7 @@ export default function PendidikPage() {
           </p>
           <div className="flex flex-col md:flex-row gap-5 justify-center">
             <Link
-              href="/materi"
+              href="/masuk-guru"
               className="inline-flex items-center gap-2 bg-primary-fixed-dim text-on-primary-fixed px-8 py-4 rounded-full font-semibold hover:scale-105 active:scale-[0.98] shadow-xl transition-transform duration-300"
             >
               Daftar Sekarang

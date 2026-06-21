@@ -52,6 +52,11 @@ export function BottomTabBar() {
       }))
     : TABS_FALLBACK;
 
+  const displayedTabs = [...tabs];
+  if (session?.role === "guru") {
+    displayedTabs.push({ href: "/pendidik", label: "Pendidik", icon: ClipboardList });
+  }
+
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
@@ -68,7 +73,7 @@ export function BottomTabBar() {
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-2xl border-t border-border-precision shadow-[0_-4px_30px_rgba(0,0,0,0.06)]">
       <div className="flex items-center justify-around h-16" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-        {tabs.map((tab) => {
+        {displayedTabs.map((tab) => {
           const active = isActive(tab.href);
           const Icon = tab.icon;
           return (

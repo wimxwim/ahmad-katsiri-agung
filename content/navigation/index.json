@@ -14,23 +14,23 @@
     },
     {
       "href": "/evaluasi",
-      "label": "Evaluasi"
+      "label": "Kuis"
+    },
+    {
+      "href": "/video",
+      "label": "Video"
     },
     {
       "href": "/game",
       "label": "Game"
     },
     {
-      "href": "/refleksi",
-      "label": "Refleksi"
+      "href": "/hafalan",
+      "label": "Hafalan"
     },
     {
       "href": "/diskusi",
       "label": "Diskusi"
-    },
-    {
-      "href": "/tentang",
-      "label": "Tentang"
     }
   ],
   "bottomTabs": [

@@ -36,13 +36,6 @@ export function HeroSection() {
               Mulai Belajar
             </Link>
             <Link
-              href="/materi"
-              className="inline-flex items-center gap-2 bg-glass backdrop-blur-md border border-glass-stroke text-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:bg-white/60 active:scale-[0.98] transition-transform duration-300"
-            >
-              Jelajahi Materi
-              <ArrowRight className="w-5 h-5" aria-hidden="true" />
-            </Link>
-            <Link
               href="/game"
               className="inline-flex items-center gap-2 bg-tertiary-container text-on-tertiary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:brightness-110 active:scale-[0.98] transition-transform duration-300"
             >

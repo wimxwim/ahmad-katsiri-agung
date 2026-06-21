@@ -2,9 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
 
-const PUBLIC_ROUTES = ["/masuk", "/keystatic", "/session"];
-
-const TEACHER_ROUTES = ["/pendidik"];
+// Semua rute publik — hanya /pendidik yang butuh session guru
+const PUBLIC_ROUTES = [
+  "/",
+  "/materi",
+  "/game",
+  "/evaluasi",
+  "/video",
+  "/hafalan",
+  "/dalil",
+  "/diskusi",
+  "/tentang",
+  "/peserta-didik",
+  "/refleksi",
+  "/masuk",
+  "/masuk-guru",
+  "/keystatic",
+  "/session",
+];
 
 export async function proxy(request: NextRequest) {
   const nonce = crypto.randomUUID();
@@ -54,30 +69,19 @@ export async function proxy(request: NextRequest) {
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("Reporting-Endpoints", 'csp-endpoint="/api/csp-report"');
 
-  // ── Session Guard ───────────────────────────────────────────────
+  // ── Session Guard (hanya /pendidik yang butuh login guru) ──────
   const isPublic = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
   if (isPublic) return response;
 
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-  if (!sessionCookie?.value) {
-    const loginUrl = new URL("/masuk", request.url);
+  const session = sessionCookie?.value
+    ? await verifySession(sessionCookie.value)
+    : null;
+
+  if (!session || session.role !== "guru") {
+    const loginUrl = new URL("/masuk-guru", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
-  }
-
-  const session = await verifySession(sessionCookie.value);
-  if (!session) {
-    const loginUrl = new URL("/masuk", request.url);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  if (session.role !== "guru") {
-    const isTeacherRoute = TEACHER_ROUTES.some((route) =>
-      pathname.startsWith(route)
-    );
-    if (isTeacherRoute) {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
   }
 
   return response;

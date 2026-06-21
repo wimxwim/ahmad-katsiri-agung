@@ -32,7 +32,7 @@ const features = [
   {
     icon: Gamepad2,
     title: "Game Edukasi",
-    desc: "Simulasi tantangan kejujuran dalam format RPG yang seru dan mendidik.",
+    desc: "Game edukasi interaktif lintas bab PAI untuk belajar sambil bermain.",
     link: "/game",
     colSpan: "md:col-span-4",
     gradient: false,
@@ -40,7 +40,7 @@ const features = [
   {
     icon: ClipboardList,
     title: "Kuis & Evaluasi",
-    desc: "Asesmen berbasis AI yang beradaptasi dengan tingkat pemahaman setiap siswa.",
+    desc: "Uji pemahaman dari 14 bab PAI dengan soal pilihan ganda interaktif.",
     link: "/evaluasi",
     colSpan: "md:col-span-8",
     gradient: true,
