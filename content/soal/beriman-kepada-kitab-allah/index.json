@@ -4,22 +4,31 @@
   "bab": 2,
   "soal": [
     {
-      "nomor": 9,
-      "pertanyaan": "Isi utama dari kitab Zabur adalah...",
-      "opsiA": "Hukum-hukum syariat",
-      "opsiB": "Nyanyian pujian, doa, zikir, dan hikmah",
-      "opsiC": "Ramalan masa depan",
-      "opsiD": "Sejarah raja-raja Arab",
+      "nomor": 1,
+      "pertanyaan": "Keimanan kepada kitab-kitab Allah Swt. bukan sekadar membenarkan keberadaannya di masa lalu, melainkan harus berdampak pada cara pandang hidup seorang Muslim. Jika seseorang mengaku beriman kepada Al-Qur'an namun ia enggan menjadikan aturan di dalamnya sebagai solusi atas permasalahan hidupnya, maka esensi keimanan orang tersebut dapat dikategorikan sebagai...",
+      "opsiA": "Iman yang sempurna karena pengakuan lisan adalah syarat utama",
+      "opsiB": "Iman yang parsial karena memisahkan antara keyakinan dan perbuatan",
+      "opsiC": "Iman yang kuat karena ia tetap menghormati Al-Qur'an sebagai benda suci",
+      "opsiD": "Iman yang dinamis karena menyesuaikan hukum dengan perkembangan zaman",
       "jawaban": "B"
     },
     {
-      "nomor": 10,
-      "pertanyaan": "Kitab Injil diturunkan kepada Nabi Isa a.s. sebagai pembenar bagi kitab sebelumnya, yaitu...",
-      "opsiA": "Al-Qur'an",
-      "opsiB": "Zabur",
-      "opsiC": "Taurat",
-      "opsiD": "Suhuf Ibrahim",
-      "jawaban": "C"
+      "nomor": 2,
+      "pertanyaan": "Perhatikan kutipan makna Q.S. al-Baqarah [2]: 136 berikut: '...kami tidak membeda-bedakan seorang pun di antara mereka dan kami berserah diri kepada-Nya.' Analisis yang paling tepat mengenai kaitan ayat ini dengan konsep moderasi beragama adalah...",
+      "opsiA": "Umat Islam harus mengikuti ajaran syariat kitab-kitab sebelum Al-Qur'an secara utuh",
+      "opsiB": "Mengakui bahwa semua Rasul membawa risalah tauhid yang sama sehingga tidak ada kebencian antar umat beragama",
+      "opsiC": "Menyamakan semua agama karena semuanya berasal dari Tuhan yang sama tanpa ada perbedaan syariat",
+      "opsiD": "Membatasi pergaulan hanya dengan orang-orang yang memiliki kitab suci saja",
+      "jawaban": "B"
+    },
+    {
+      "nomor": 3,
+      "pertanyaan": "Kitab Taurat diturunkan kepada Nabi Musa as. dengan kandungan utama yang dikenal sebagai 'Ten Commandments'. Jika dianalisis dari perspektif sosial, larangan saksi palsu dalam Taurat bertujuan untuk...",
+      "opsiA": "Menjaga kemurnian ibadah ritual kepada Allah Swt.",
+      "opsiB": "Membangun fondasi keadilan hukum dan integritas dalam masyarakat",
+      "opsiC": "Memperkuat posisi ekonomi kaum Bani Israil di masa Mesir kuno",
+      "opsiD": "Menghindari hukuman fisik yang diberlakukan oleh para raja",
+      "jawaban": "B"
     },
     {
       "nomor": 11,
@@ -31,6 +40,15 @@
       "jawaban": "B"
     },
     {
+      "nomor": 4,
+      "pertanyaan": "Kitab Zabur yang diturunkan kepada Nabi Dawud as. memiliki karakteristik unik dibanding kitab lainnya karena didominasi oleh mazmur (puji-pujian). Hikmah dari diturunkannya kitab dalam bentuk puji-pujian dan doa ini adalah...",
+      "opsiA": "Karena Nabi Dawud as. tidak memerlukan hukum-hukum syariat",
+      "opsiB": "Sebagai sarana penyucian jiwa dan pendekatan diri secara emosional kepada Sang Pencipta",
+      "opsiC": "Untuk menunjukkan bahwa seni musik adalah satu-satunya jalan menuju Tuhan",
+      "opsiD": "Karena masyarakat saat itu sudah sangat patuh pada hukum Taurat",
+      "jawaban": "B"
+    },
+    {
       "nomor": 12,
       "pertanyaan": "Al-Qur'an diturunkan kepada Nabi Muhammad saw. secara berangsur-angsur selama...",
       "opsiA": "10 tahun 10 bulan 10 hari",
@@ -38,6 +56,15 @@
       "opsiC": "30 tahun",
       "opsiD": "40 tahun",
       "jawaban": "B"
+    },
+    {
+      "nomor": 5,
+      "pertanyaan": "Kitab Injil membawa ajaran untuk meluruskan penyimpangan yang terjadi pada masa itu. Salah satu misi utama Nabi Isa as. melalui Injil adalah...",
+      "opsiA": "Menghapuskan seluruh hukum yang ada di dalam kitab Taurat",
+      "opsiB": "Mengajarkan kasih sayang dan semangat spiritualitas tanpa perlu adanya tauhid",
+      "opsiC": "Membenarkan kitab sebelumnya serta membawa kabar gembira (basir) mengenai rasul terakhir",
+      "opsiD": "Memfokuskan ajaran hanya pada urusan duniawi dan politik",
+      "jawaban": "C"
     },
     {
       "nomor": 13,
@@ -58,12 +85,30 @@
       "jawaban": "D"
     },
     {
+      "nomor": 6,
+      "pertanyaan": "Al-Qur'an disebut sebagai kitab yang bersifat 'Muhaimin'. Maksud dari sifat Muhaimin dalam hubungannya dengan kitab-kitab terdahulu adalah...",
+      "opsiA": "Al-Qur'an menghapus seluruh sejarah keberadaan kitab-kitab sebelum Islam",
+      "opsiB": "Al-Qur'an menjadi penjaga dan tolok ukur untuk memverifikasi kebenaran ajaran kitab terdahulu",
+      "opsiC": "Al-Qur'an merupakan salinan identik dari kitab Taurat, Zabur, dan Injil",
+      "opsiD": "Al-Qur'an hanya berlaku bagi bangsa Arab saja sebagai penjaga tradisi",
+      "jawaban": "B"
+    },
+    {
       "nomor": 15,
       "pertanyaan": "Salah satu keutamaan Al-Qur'an dibandingkan kitab lainnya adalah...",
       "opsiA": "Hanya boleh dibaca oleh orang Arab",
       "opsiB": "Isinya sulit dipahami",
       "opsiC": "Dijamin keasliannya oleh Allah Swt. sampai hari kiamat",
       "opsiD": "Hanya berlaku untuk zaman Nabi Muhammad saja",
+      "jawaban": "C"
+    },
+    {
+      "nomor": 7,
+      "pertanyaan": "Dalam sejarah, kitab-kitab sebelum Al-Qur'an mengalami perubahan (tahrif) oleh tangan manusia. Mengapa Al-Qur'an dijamin keasliannya hingga akhir zaman sesuai Q.S. al-Hijr [15]: 9? Faktor utamanya adalah...",
+      "opsiA": "Karena bahasa Arab adalah bahasa yang paling mudah dipelajari",
+      "opsiB": "Karena umat Islam memiliki teknologi cetak yang sangat canggih",
+      "opsiC": "Karena adanya tradisi hafalan (hifz) yang kuat dan penjagaan langsung dari Allah Swt.",
+      "opsiD": "Karena Al-Qur'an tidak mengandung hukum yang berat bagi manusia",
       "jawaban": "C"
     },
     {
@@ -74,6 +119,15 @@
       "opsiC": "100 kebaikan",
       "opsiD": "1000 kebaikan",
       "jawaban": "B"
+    },
+    {
+      "nomor": 8,
+      "pertanyaan": "Zaid adalah seorang pelajar yang gemar membaca Al-Qur'an. Suatu hari ia melihat temannya menyebarkan berita bohong (hoaks). Jika Zaid mengamalkan perilaku iman kepada Al-Qur'an, tindakan yang paling tepat adalah...",
+      "opsiA": "Membiarkannya karena itu bukan urusannya",
+      "opsiB": "Ikut menyebarkan karena merasa berita tersebut menarik",
+      "opsiC": "Menasihati temannya dengan merujuk pada perintah tabayyun dalam Al-Qur'an",
+      "opsiD": "Menjauhi temannya tanpa memberikan penjelasan apa pun",
+      "jawaban": "C"
     },
     {
       "nomor": 17,
@@ -94,6 +148,15 @@
       "jawaban": "C"
     },
     {
+      "nomor": 9,
+      "pertanyaan": "Kelebihan Al-Qur'an dibandingkan kitab suci lainnya adalah sifatnya yang 'shalihun likulli zamanin wa makanin'. Pernyataan yang mendukung konsep ini dalam kehidupan modern adalah...",
+      "opsiA": "Al-Qur'an mengandung teori-teori sains modern yang baru terbukti berabad-abad kemudian",
+      "opsiB": "Al-Qur'an hanya membahas masalah ibadah mahdhah seperti salat dan puasa",
+      "opsiC": "Hukum-hukum dalam Al-Qur'an bersifat kaku dan tidak bisa diinterpretasikan",
+      "opsiD": "Al-Qur'an memaksa manusia untuk hidup seperti masyarakat gurun pasir",
+      "jawaban": "A"
+    },
+    {
       "nomor": 19,
       "pertanyaan": "Tujuan Allah Swt. menurunkan kitab-kitab kepada para rasul adalah agar...",
       "opsiA": "Manusia memiliki banyak koleksi buku",
@@ -110,6 +173,15 @@
       "opsiC": "Nabi Isa a.s.",
       "opsiD": "Nabi Ismail a.s.",
       "jawaban": "C"
+    },
+    {
+      "nomor": 10,
+      "pertanyaan": "Beriman kepada kitab Allah harus dibuktikan dengan perilaku. Di bawah ini yang merupakan cerminan perilaku beriman kepada kitab-kitab Allah secara komprehensif adalah...",
+      "opsiA": "Hanya membaca Al-Qur'an saat ada musibah agar hati tenang",
+      "opsiB": "Mempelajari tafsirnya, menghafalkannya, dan berusaha menerapkan nilai-nilainya dalam etika bermasyarakat",
+      "opsiC": "Mengoleksi berbagai jenis cetakan kitab suci untuk dipajang di lemari",
+      "opsiD": "Meyakini kebenaran Al-Qur'an namun tetap mengikuti ramalan bintang untuk menentukan nasib",
+      "jawaban": "B"
     },
     {
       "nomor": 21,
@@ -154,96 +226,6 @@
       "opsiB": "Karena kitab tersebut berasal dari sumber yang sama, yaitu wahyu Allah",
       "opsiC": "Karena disuruh oleh teman",
       "opsiD": "Karena isinya sama persis dengan Al-Qur'an",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 1,
-      "pertanyaan": "Keimanan kepada kitab-kitab Allah Swt. bukan sekadar membenarkan keberadaannya di masa lalu, melainkan harus berdampak pada cara pandang hidup seorang Muslim. Jika seseorang mengaku beriman kepada Al-Qur'an namun ia enggan menjadikan aturan di dalamnya sebagai solusi atas permasalahan hidupnya, maka esensi keimanan orang tersebut dapat dikategorikan sebagai...",
-      "opsiA": "Iman yang sempurna karena pengakuan lisan adalah syarat utama",
-      "opsiB": "Iman yang parsial karena memisahkan antara keyakinan dan perbuatan",
-      "opsiC": "Iman yang kuat karena ia tetap menghormati Al-Qur'an sebagai benda suci",
-      "opsiD": "Iman yang dinamis karena menyesuaikan hukum dengan perkembangan zaman",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 2,
-      "pertanyaan": "Perhatikan kutipan makna Q.S. al-Baqarah [2]: 136 berikut: '...kami tidak membeda-bedakan seorang pun di antara mereka dan kami berserah diri kepada-Nya.' Analisis yang paling tepat mengenai kaitan ayat ini dengan konsep moderasi beragama adalah...",
-      "opsiA": "Umat Islam harus mengikuti ajaran syariat kitab-kitab sebelum Al-Qur'an secara utuh",
-      "opsiB": "Mengakui bahwa semua Rasul membawa risalah tauhid yang sama sehingga tidak ada kebencian antar umat beragama",
-      "opsiC": "Menyamakan semua agama karena semuanya berasal dari Tuhan yang sama tanpa ada perbedaan syariat",
-      "opsiD": "Membatasi pergaulan hanya dengan orang-orang yang memiliki kitab suci saja",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 3,
-      "pertanyaan": "Kitab Taurat diturunkan kepada Nabi Musa as. dengan kandungan utama yang dikenal sebagai 'Ten Commandments'. Jika dianalisis dari perspektif sosial, larangan saksi palsu dalam Taurat bertujuan untuk...",
-      "opsiA": "Menjaga kemurnian ibadah ritual kepada Allah Swt.",
-      "opsiB": "Membangun fondasi keadilan hukum dan integritas dalam masyarakat",
-      "opsiC": "Memperkuat posisi ekonomi kaum Bani Israil di masa Mesir kuno",
-      "opsiD": "Menghindari hukuman fisik yang diberlakukan oleh para raja",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 4,
-      "pertanyaan": "Kitab Zabur yang diturunkan kepada Nabi Dawud as. memiliki karakteristik unik dibanding kitab lainnya karena didominasi oleh mazmur (puji-pujian). Hikmah dari diturunkannya kitab dalam bentuk puji-pujian dan doa ini adalah...",
-      "opsiA": "Karena Nabi Dawud as. tidak memerlukan hukum-hukum syariat",
-      "opsiB": "Sebagai sarana penyucian jiwa dan pendekatan diri secara emosional kepada Sang Pencipta",
-      "opsiC": "Untuk menunjukkan bahwa seni musik adalah satu-satunya jalan menuju Tuhan",
-      "opsiD": "Karena masyarakat saat itu sudah sangat patuh pada hukum Taurat",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 5,
-      "pertanyaan": "Kitab Injil membawa ajaran untuk meluruskan penyimpangan yang terjadi pada masa itu. Salah satu misi utama Nabi Isa as. melalui Injil adalah...",
-      "opsiA": "Menghapuskan seluruh hukum yang ada di dalam kitab Taurat",
-      "opsiB": "Mengajarkan kasih sayang dan semangat spiritualitas tanpa perlu adanya tauhid",
-      "opsiC": "Membenarkan kitab sebelumnya serta membawa kabar gembira (basir) mengenai rasul terakhir",
-      "opsiD": "Memfokuskan ajaran hanya pada urusan duniawi dan politik",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 6,
-      "pertanyaan": "Al-Qur'an disebut sebagai kitab yang bersifat 'Muhaimin'. Maksud dari sifat Muhaimin dalam hubungannya dengan kitab-kitab terdahulu adalah...",
-      "opsiA": "Al-Qur'an menghapus seluruh sejarah keberadaan kitab-kitab sebelum Islam",
-      "opsiB": "Al-Qur'an menjadi penjaga dan tolok ukur untuk memverifikasi kebenaran ajaran kitab terdahulu",
-      "opsiC": "Al-Qur'an merupakan salinan identik dari kitab Taurat, Zabur, dan Injil",
-      "opsiD": "Al-Qur'an hanya berlaku bagi bangsa Arab saja sebagai penjaga tradisi",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 7,
-      "pertanyaan": "Dalam sejarah, kitab-kitab sebelum Al-Qur'an mengalami perubahan (tahrif) oleh tangan manusia. Mengapa Al-Qur'an dijamin keasliannya hingga akhir zaman sesuai Q.S. al-Hijr [15]: 9? Faktor utamanya adalah...",
-      "opsiA": "Karena bahasa Arab adalah bahasa yang paling mudah dipelajari",
-      "opsiB": "Karena umat Islam memiliki teknologi cetak yang sangat canggih",
-      "opsiC": "Karena adanya tradisi hafalan (hifz) yang kuat dan penjagaan langsung dari Allah Swt.",
-      "opsiD": "Karena Al-Qur'an tidak mengandung hukum yang berat bagi manusia",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 8,
-      "pertanyaan": "Zaid adalah seorang pelajar yang gemar membaca Al-Qur'an. Suatu hari ia melihat temannya menyebarkan berita bohong (hoaks). Jika Zaid mengamalkan perilaku iman kepada Al-Qur'an, tindakan yang paling tepat adalah...",
-      "opsiA": "Membiarkannya karena itu bukan urusannya",
-      "opsiB": "Ikut menyebarkan karena merasa berita tersebut menarik",
-      "opsiC": "Menasihati temannya dengan merujuk pada perintah tabayyun dalam Al-Qur'an",
-      "opsiD": "Menjauhi temannya tanpa memberikan penjelasan apa pun",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 9,
-      "pertanyaan": "Kelebihan Al-Qur'an dibandingkan kitab suci lainnya adalah sifatnya yang 'shalihun likulli zamanin wa makanin'. Pernyataan yang mendukung konsep ini dalam kehidupan modern adalah...",
-      "opsiA": "Al-Qur'an mengandung teori-teori sains modern yang baru terbukti berabad-abad kemudian",
-      "opsiB": "Al-Qur'an hanya membahas masalah ibadah mahdhah seperti salat dan puasa",
-      "opsiC": "Hukum-hukum dalam Al-Qur'an bersifat kaku dan tidak bisa diinterpretasikan",
-      "opsiD": "Al-Qur'an memaksa manusia untuk hidup seperti masyarakat gurun pasir",
-      "jawaban": "A"
-    },
-    {
-      "nomor": 10,
-      "pertanyaan": "Beriman kepada kitab Allah harus dibuktikan dengan perilaku. Di bawah ini yang merupakan cerminan perilaku beriman kepada kitab-kitab Allah secara komprehensif adalah...",
-      "opsiA": "Hanya membaca Al-Qur'an saat ada musibah agar hati tenang",
-      "opsiB": "Mempelajari tafsirnya, menghafalkannya, dan berusaha menerapkan nilai-nilainya dalam etika bermasyarakat",
-      "opsiC": "Mengoleksi berbagai jenis cetakan kitab suci untuk dipajang di lemari",
-      "opsiD": "Meyakini kebenaran Al-Qur'an namun tetap mengikuti ramalan bintang untuk menentukan nasib",
       "jawaban": "B"
     },
     {
