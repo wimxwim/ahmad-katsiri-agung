@@ -10,7 +10,6 @@
       "opsiB": "Kesenangan",
       "opsiC": "Penghabisan",
       "opsiD": "Kelahiran",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -20,7 +19,6 @@
       "opsiB": "Pasti datang dan tidak ada keraguan",
       "opsiC": "Hanya sebuah perumpamaan",
       "opsiD": "Hanya dialami oleh orang kafir",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -30,7 +28,6 @@
       "opsiB": "Sugra",
       "opsiC": "Sedang",
       "opsiD": "Akhir",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -40,7 +37,6 @@
       "opsiB": "Kecil",
       "opsiC": "Kubra",
       "opsiD": "Sebagian",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -50,7 +46,6 @@
       "opsiB": "Laut",
       "opsiC": "Kubur",
       "opsiD": "Masjid",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -60,7 +55,6 @@
       "opsiB": "Matahari terbit dari sebelah barat",
       "opsiC": "Banjir bandang",
       "opsiD": "Terjadinya gempa bumi",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -70,7 +64,6 @@
       "opsiB": "Alam Mahsyar",
       "opsiC": "Alam Ba‘si",
       "opsiD": "Alam Hisab",
-      "opsiE": "",
       "jawaban": "A"
     },
     {
@@ -80,7 +73,6 @@
       "opsiB": "Ba‘si",
       "opsiC": "Mahsyar",
       "opsiD": "Jaza",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -90,7 +82,6 @@
       "opsiB": "Padang Pasir",
       "opsiC": "Padang Mahsyar",
       "opsiD": "Padang Rumput",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -100,7 +91,6 @@
       "opsiB": "Ba‘si",
       "opsiC": "Mizan",
       "opsiD": "Jaza",
-      "opsiE": "",
       "jawaban": "A"
     },
     {
@@ -110,7 +100,6 @@
       "opsiB": "Ditimbang",
       "opsiC": "Disembunyikan",
       "opsiD": "Diabaikan",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -120,7 +109,6 @@
       "opsiB": "Yaumul Mahsyar",
       "opsiC": "Yaumul Jaza",
       "opsiD": "Yaumul Barzakh",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -130,7 +118,6 @@
       "opsiB": "Iman kepada malaikat",
       "opsiC": "Iman kepada hari akhir",
       "opsiD": "Iman kepada rasul",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -140,7 +127,6 @@
       "opsiB": "Matahari padam",
       "opsiC": "Terjadinya tsunami dan gempa bumi",
       "opsiD": "Rusaknya Ka'bah",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -150,7 +136,6 @@
       "opsiB": "Putus asa dalam hidup",
       "opsiC": "Semangat dalam beribadah",
       "opsiD": "Malas bekerja",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -160,7 +145,6 @@
       "opsiB": "Kiamat Kubra",
       "opsiC": "Kematian individu",
       "opsiD": "Bencana alam",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -170,7 +154,6 @@
       "opsiB": "Berbuat baik kepada sesama dan rajin beribadah",
       "opsiC": "Menghabiskan waktu untuk bermain",
       "opsiD": "Mengabaikan perintah orang tua",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -180,7 +163,6 @@
       "opsiB": "Tempat terjadinya",
       "opsiC": "Skala kerusakannya",
       "opsiD": "Pelakunya",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -190,7 +172,15 @@
       "opsiB": "Barzakh - Ba'si - Mahsyar",
       "opsiC": "Ba'si - Mahsyar - Barzakh",
       "opsiD": "Barzakh - Mahsyar - Ba'si",
-      "opsiE": "",
+      "jawaban": "B"
+    },
+    {
+      "nomor": 21,
+      "pertanyaan": "Kiamat sugra seringkali menjadi pengingat bagi manusia agar...",
+      "opsiA": "Takut berlebihan",
+      "opsiB": "Segera bertaubat",
+      "opsiC": "Membeli banyak barang",
+      "opsiD": "Berhenti sekolah",
       "jawaban": "B"
     },
     {
@@ -200,18 +190,7 @@
       "opsiB": "Kembali ke dunia",
       "opsiC": "Masuk surga",
       "opsiD": "Menunggu selamanya",
-      "opsiE": "",
       "jawaban": "C"
-    },
-    {
-      "nomor": 21,
-      "pertanyaan": "Kiamat sugra seringkali menjadi pengingat bagi manusia agar...",
-      "opsiA": "Takut berlebihan",
-      "opsiB": "Segera bertaubat",
-      "opsiC": "Membeli banyak barang",
-      "opsiD": "Berhenti sekolah",
-      "opsiE": "",
-      "jawaban": "B"
     },
     {
       "nomor": 22,
@@ -220,7 +199,6 @@
       "opsiB": "4",
       "opsiC": "5",
       "opsiD": "6",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -230,7 +208,6 @@
       "opsiB": "Karena yakin semua dosa akan dibalas di hari akhir",
       "opsiC": "Karena ingin dipuji guru",
       "opsiD": "Karena hari kiamat sangat lama",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -240,7 +217,6 @@
       "opsiB": "Hari Kebangkitan",
       "opsiC": "Hari Raya",
       "opsiD": "Hari Libur",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -250,7 +226,33 @@
       "opsiB": "Merasa senang",
       "opsiC": "Menjadikannya pelajaran untuk meningkatkan iman",
       "opsiD": "Menyalahkan orang lain",
-      "opsiE": "",
+      "jawaban": "C"
+    },
+    {
+      "nomor": 1,
+      "pertanyaan": "Seorang pemuda meyakini adanya hari akhir, namun ia tetap melakukan kecurangan dalam berbisnis dengan alasan 'mencari bekal untuk ibadah'. Dilihat dari hakikat iman kepada hari akhir, manakah analisis yang paling tepat terhadap perilaku tersebut?",
+      "opsiA": "Imannya sudah sempurna karena tujuannya adalah untuk ibadah",
+      "opsiB": "Terjadi kontradiksi karena iman kepada hari akhir seharusnya melahirkan sifat ihsan dan kejujuran",
+      "opsiC": "Perilaku tersebut wajar karena manusia tidak luput dari kesalahan di dunia",
+      "opsiD": "Iman kepada hari akhir tidak memiliki kaitan langsung dengan etika bisnis",
+      "jawaban": "B"
+    },
+    {
+      "nomor": 2,
+      "pertanyaan": "Perhatikan kutipan makna Q.S. al-Ḥajj [22]: 7 berikut: 'Dan sungguh, (hari) Kiamat itu pasti datang, tidak ada keraguan padanya; dan sungguh, Allah akan membangkitkan siapapun yang di dalam kubur.' Berdasarkan ayat tersebut, argumentasi yang paling logis untuk mematahkan keraguan kaum skeptis adalah...\n",
+      "opsiA": "Kiamat adalah fenomena alam biasa yang terjadi secara periodik",
+      "opsiB": "Allah yang mampu menciptakan manusia dari ketiadaan, tentu lebih mampu membangkitkannya kembali",
+      "opsiC": "Kebangkitan hanya dialami oleh ruh saja, bukan fisik",
+      "opsiD": "Manusia yang sudah menjadi tanah mustahil untuk disatukan kembali",
+      "jawaban": "B"
+    },
+    {
+      "nomor": 3,
+      "pertanyaan": "Kiamat sugra sering dianggap sebagai peringatan kecil. Manakah dari peristiwa berikut yang secara esensial masuk dalam kategori kiamat sugra bagi seorang individu?\n",
+      "opsiA": "Terjadinya tsunami yang meluluhlantakkan sebuah kota",
+      "opsiB": "Terjadinya gerhana matahari total di berbagai belahan dunia",
+      "opsiC": "Berpisahnya ruh dari jasad (kematian) seseorang",
+      "opsiD": "Hancurnya seluruh tata surya dan planet-planet",
       "jawaban": "C"
     }
   ]
