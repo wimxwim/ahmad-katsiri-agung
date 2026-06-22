@@ -4,78 +4,6 @@
   "bab": 2,
   "soal": [
     {
-      "nomor": 1,
-      "pertanyaan": "Secara bahasa, kata 'iman' memiliki arti...",
-      "opsiA": "Membaca",
-      "opsiB": "Percaya atau membenarkan",
-      "opsiC": "Melaksanakan",
-      "opsiD": "Menuliskan",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 2,
-      "pertanyaan": "Beriman kepada kitab-kitab Allah Swt. merupakan rukun iman yang ke-...",
-      "opsiA": "1",
-      "opsiB": "2",
-      "opsiC": "3",
-      "opsiD": "4",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 3,
-      "pertanyaan": "Berikut ini yang merupakan perbedaan antara kitab dan suhuf adalah...",
-      "opsiA": "Kitab lebih tipis daripada suhuf",
-      "opsiB": "Kitab wajib diimani, suhuf tidak",
-      "opsiC": "Kitab dibukukan, sedangkan suhuf berupa lembaran-lembaran",
-      "opsiD": "Kitab hanya untuk Nabi Muhammad, suhuf untuk nabi lain",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 4,
-      "pertanyaan": "Dalam Q.S. al-Baqarah [2] ayat 136, umat Islam diperintahkan untuk beriman kepada apa yang diturunkan kepada Nabi Ibrahim, Ismail, Ishaq, Yakub dan...",
-      "opsiA": "Anak cucunya (Al-Asbat)",
-      "opsiB": "Kaum Quraisy",
-      "opsiC": "Penduduk Madinah",
-      "opsiD": "Seluruh manusia",
-      "jawaban": "A"
-    },
-    {
-      "nomor": 5,
-      "pertanyaan": "Potongan ayat '...wa ma utiya Musa wa 'Isa...' dalam Surah al-Baqarah ayat 136 menjelaskan tentang...",
-      "opsiA": "Perintah shalat",
-      "opsiB": "Apa yang diberikan kepada Musa dan Isa",
-      "opsiC": "Larangan berbuat syirik",
-      "opsiD": "Kisah penciptaan bumi",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 6,
-      "pertanyaan": "Kitab Taurat diturunkan Allah Swt. kepada Nabi...",
-      "opsiA": "Daud a.s.",
-      "opsiB": "Isa a.s.",
-      "opsiC": "Musa a.s.",
-      "opsiD": "Ibrahim a.s.",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 7,
-      "pertanyaan": "Bahasa yang digunakan dalam kitab Taurat adalah bahasa...",
-      "opsiA": "Arab",
-      "opsiB": "Qibti",
-      "opsiC": "Suryani",
-      "opsiD": "Ibrani",
-      "jawaban": "D"
-    },
-    {
-      "nomor": 8,
-      "pertanyaan": "Kitab Zabur diturunkan kepada Nabi Daud a.s. pada abad ke-...",
-      "opsiA": "10 SM",
-      "opsiB": "12 SM",
-      "opsiC": "1 SM",
-      "opsiD": "7 M",
-      "jawaban": "A"
-    },
-    {
       "nomor": 9,
       "pertanyaan": "Isi utama dari kitab Zabur adalah...",
       "opsiA": "Hukum-hukum syariat",
@@ -308,6 +236,24 @@
       "opsiC": "Hukum-hukum dalam Al-Qur'an bersifat kaku dan tidak bisa diinterpretasikan",
       "opsiD": "Al-Qur'an memaksa manusia untuk hidup seperti masyarakat gurun pasir",
       "jawaban": "A"
+    },
+    {
+      "nomor": 10,
+      "pertanyaan": "Beriman kepada kitab Allah harus dibuktikan dengan perilaku. Di bawah ini yang merupakan cerminan perilaku beriman kepada kitab-kitab Allah secara komprehensif adalah...",
+      "opsiA": "Hanya membaca Al-Qur'an saat ada musibah agar hati tenang",
+      "opsiB": "Mempelajari tafsirnya, menghafalkannya, dan berusaha menerapkan nilai-nilainya dalam etika bermasyarakat",
+      "opsiC": "Mengoleksi berbagai jenis cetakan kitab suci untuk dipajang di lemari",
+      "opsiD": "Meyakini kebenaran Al-Qur'an namun tetap mengikuti ramalan bintang untuk menentukan nasib",
+      "jawaban": "B"
+    },
+    {
+      "nomor": 10,
+      "pertanyaan": "Beriman kepada kitab Allah harus dibuktikan dengan perilaku. Di bawah ini yang merupakan cerminan perilaku beriman kepada kitab-kitab Allah secara komprehensif adalah...\n",
+      "opsiA": "Hanya membaca Al-Qur'an saat ada musibah agar hati tenang",
+      "opsiB": "Mempelajari tafsirnya, menghafalkannya, dan berusaha menerapkan nilai-nilainya dalam etika bermasyarakat",
+      "opsiC": "Mengoleksi berbagai jenis cetakan kitab suci untuk dipajang di lemari",
+      "opsiD": "Meyakini kebenaran Al-Qur'an namun tetap mengikuti ramalan bintang untuk menentukan nasib",
+      "jawaban": "B"
     }
   ]
 }
