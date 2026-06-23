@@ -5,93 +5,48 @@
   "soal": [
     {
       "nomor": 1,
-      "pertanyaan": "Secara bahasa, istilah toleransi dalam tradisi Islam sering disebut dengan kata...",
-      "opsiA": "Tafakkur",
-      "opsiB": "Tasamuh",
-      "opsiC": "Tawadhu",
-      "opsiD": "Ta'awun",
+      "pertanyaan": "Perhatikan potongan Q.S. al-Kafirun/109: 6 berikut: 'Lakum dinukum wa liyadin' (Untukmu agamamu, dan untukku agamaku). Dalam konteks kehidupan berbangsa yang majemuk, implementasi yang paling tepat dari ayat tersebut dalam hal batasan toleransi adalah...",
+      "opsiA": "Mengikuti ritual ibadah umat agama lain sebagai bentuk solidaritas sosial",
+      "opsiB": "Membiarkan umat agama lain beribadah sesuai keyakinannya tanpa mencampuradukkan ajaran",
+      "opsiC": "Menganggap semua agama adalah sama dan menuju pada Tuhan yang satu dengan cara berbeda",
+      "opsiD": "Melarang umat agama lain beribadah jika lokasinya berdekatan dengan masjid",
       "jawaban": "B"
     },
     {
       "nomor": 2,
-      "pertanyaan": "Makna dasar dari sikap toleransi (tasamuh) adalah...",
-      "opsiA": "Memaksakan kehendak kepada orang lain",
-      "opsiB": "Membiarkan dan saling menghargai",
-      "opsiC": "Mengikuti semua ajaran agama lain",
-      "opsiD": "Menjauhi pergaulan dengan non-muslim",
+      "pertanyaan": "Seorang Muslim bertetangga dengan penganut agama lain yang sedang merayakan hari besarnya. Tindakan manakah yang menunjukkan sikap toleransi (tasamuh) yang sesuai dengan prinsip 'Ukhuwah Basyariyah' (Persaudaraan Kemanusiaan)?",
+      "opsiA": "Ikut menyanyikan lagu-lagu liturgi di dalam tempat ibadah mereka",
+      "opsiB": "Memberikan bantuan makanan atau bantuan keamanan tanpa ikut dalam ritual keagamaan",
+      "opsiC": "Menjauhi tetangga tersebut karena takut aqidahnya akan terpengaruh",
+      "opsiD": "Mengajak tetangga tersebut untuk masuk Islam agar terjalin ukhuwah islamiyah",
       "jawaban": "B"
     },
     {
       "nomor": 3,
-      "pertanyaan": "Dalam Surah al-Hujurat [49] ayat 13, Allah Swt. menegaskan bahwa manusia diciptakan berbeda-beda agar...",
-      "opsiA": "Saling bermusuhan",
-      "opsiB": "Saling mengunggulkan suku",
-      "opsiC": "Saling mengenal (li-ta'arafu)",
-      "opsiD": "Saling menjatuhkan",
+      "pertanyaan": "Dalam Q.S. al-Hujurat/49: 13 disebutkan: '...Sesungguhnya Kami menciptakan kamu dari seorang laki-laki dan seorang perempuan dan menjadikan kamu berbangsa-bangsa dan bersuku-suku supaya kamu saling kenal-mengenal...' Analisislah tujuan utama Allah menciptakan keragaman berdasarkan ayat tersebut dalam kaitannya dengan toleransi!",
+      "opsiA": "Agar setiap golongan merasa lebih unggul (fastabiqul khairat) dari golongan lain",
+      "opsiB": "Agar manusia saling bersaing untuk mendapatkan kekuasaan di muka bumi",
+      "opsiC": "Sebagai sarana untuk saling bersinergi dan mengenal kelebihan masing-masing melalui interaksi sosial",
+      "opsiD": "Untuk membedah mana suku yang paling mulia di hadapan manusia secara fisik",
       "jawaban": "C"
     },
     {
       "nomor": 4,
-      "pertanyaan": "Berdasarkan Surah al-Hujurat [49] ayat 13, ukuran kemuliaan seseorang di sisi Allah Swt. ditentukan oleh...",
-      "opsiA": "Kekayaannya",
-      "opsiB": "Garis keturunannya",
-      "opsiC": "Ketakwaannya",
-      "opsiD": "Jabatan sosialnya",
+      "pertanyaan": "Perbedaan pendapat dalam masalah furu'iyah (cabang agama) sering terjadi di antara sesama umat Islam (inter-internal). Sikap toleransi yang harus dikedepankan untuk menjaga 'Ukhuwah Islamiyah' adalah...",
+      "opsiA": "Memaksakan pendapat mazhab sendiri karena merasa paling benar sesuai sunnah",
+      "opsiB": "Memutuskan silaturahmi dengan kelompok yang berbeda cara shalatnya",
+      "opsiC": "Menghargai perbedaan pendapat selama masih bersumber pada Al-Qur'an dan Hadis",
+      "opsiD": "Membuat organisasi baru agar tidak tercampur dengan kelompok lain",
       "jawaban": "C"
     },
     {
       "nomor": 5,
-      "pertanyaan": "Potongan ayat 'Inna akramakum 'indallahi atqakum' mengandung pengertian...",
-      "opsiA": "Sesungguhnya yang paling mulia adalah yang paling kaya",
-      "opsiB": "Sesungguhnya yang paling mulia adalah yang paling takwa",
-      "opsiC": "Sesungguhnya Allah menciptakan laki-laki dan perempuan",
-      "opsiD": "Sesungguhnya manusia diciptakan berbangsa-bangsa",
+      "pertanyaan": "Piagam Madinah yang dibuat oleh Nabi Muhammad saw. merupakan dokumen politik pertama di dunia yang mengatur tentang toleransi. Poin utama yang bisa kita petik dari keberadaan Piagam Madinah untuk konteks Indonesia saat ini adalah...",
+      "opsiA": "Kewajiban menjadikan Islam sebagai satu-satunya hukum negara secara formal",
+      "opsiB": "Kesepakatan untuk hidup berdampingan secara damai dan membela negara secara bersama-sama",
+      "opsiC": "Larangan bagi penganut agama lain untuk tinggal di wilayah mayoritas muslim",
+      "opsiD": "Pemberian hak khusus bagi umat Islam dalam segala bidang kehidupan",
       "jawaban": "B"
-    },
-    {
-      "nomor": 6,
-      "pertanyaan": "Prinsip utama toleransi dalam hal akidah dan ibadah menurut Islam adalah...",
-      "opsiA": "Boleh mengikuti ibadah agama lain",
-      "opsiB": "Menghargai tanpa harus ikut serta dalam ritualnya",
-      "opsiC": "Menggabungkan dua ajaran agama",
-      "opsiD": "Memaksa orang lain masuk Islam",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 7,
-      "pertanyaan": "Batas toleransi antarumat beragama ditegaskan dalam Al-Qur'an melalui Surah...",
-      "opsiA": "Al-Ikhlas",
-      "opsiB": "Al-Kafirun",
-      "opsiC": "Al-Falaq",
-      "opsiD": "An-Nas",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 8,
-      "pertanyaan": "Perilaku toleransi kepada sesama muslim (ukhuwah islamiyah) dapat diwujudkan dengan cara...",
-      "opsiA": "Menghargai perbedaan mazhab atau ijtihad",
-      "opsiB": "Merasa kelompoknya paling benar",
-      "opsiC": "Mengkafirkan orang yang berbeda pendapat",
-      "opsiD": "Memutus silaturahmi karena beda pilihan",
-      "jawaban": "A"
-    },
-    {
-      "nomor": 9,
-      "pertanyaan": "Salah satu bentuk toleransi di lingkungan sekolah adalah...",
-      "opsiA": "Mengerjakan tugas teman yang malas",
-      "opsiB": "Memberi jawaban saat ujian berlangsung",
-      "opsiC": "Menghargai teman yang sedang menjalankan ibadah",
-      "opsiD": "Ikut campur urusan pribadi guru",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 10,
-      "pertanyaan": "Tujuan Allah Swt. menciptakan manusia dalam jenis kelamin laki-laki dan perempuan serta bersuku-suku adalah...",
-      "opsiA": "Menunjukkan kekuatan masing-masing",
-      "opsiB": "Agar terjadi persaingan hidup",
-      "opsiC": "Agar manusia saling mengenal dan bekerja sama",
-      "opsiD": "Untuk membeda-bedakan hak asasi",
-      "jawaban": "C"
     },
     {
       "nomor": 11,
@@ -109,6 +64,15 @@
       "opsiB": "Menumbuhkan rasa benci",
       "opsiC": "Mewujudkan perdamaian dan harmoni",
       "opsiD": "Menghilangkan identitas agama",
+      "jawaban": "C"
+    },
+    {
+      "nomor": 6,
+      "pertanyaan": "Toleransi dalam Islam memiliki batasan yang jelas. Manakah dari pernyataan berikut yang merupakan bentuk 'Over-Tolerance' (Toleransi yang kebablasan) yang dilarang dalam Islam?",
+      "opsiA": "Menghadiri rapat RT yang membahas pembangunan fasilitas umum di lingkungan non-muslim",
+      "opsiB": "Meminjamkan alat-alat memasak kepada tetangga non-muslim yang sedang ada acara keluarga",
+      "opsiC": "Mengucapkan niat ibadah agama lain sebagai bentuk penghargaan atas keyakinan mereka",
+      "opsiD": "Memberikan jalan bagi rombongan jenazah penganut agama lain yang akan lewat",
       "jawaban": "C"
     },
     {
@@ -130,6 +94,15 @@
       "jawaban": "A"
     },
     {
+      "nomor": 7,
+      "pertanyaan": "Cermati narasi berikut: 'Di sebuah sekolah, siswa muslim membantu mengatur parkir dan menjaga ketenangan saat siswa Kristen merayakan Natal. Sebaliknya, siswa Kristen membantu menyediakan takjil saat siswa Muslim berbuka puasa'. Hikmah terbesar dari perilaku tersebut adalah...",
+      "opsiA": "Menghilangkan identitas masing-masing agama sehingga menjadi agama baru",
+      "opsiB": "Terciptanya keharmonisan sosial yang memperkuat persatuan dan kesatuan bangsa",
+      "opsiC": "Mendapatkan pujian dari pemerintah sebagai sekolah percontohan",
+      "opsiD": "Menghindari hukuman dari guru karena tidak mengikuti aturan sekolah",
+      "jawaban": "B"
+    },
+    {
       "nomor": 15,
       "pertanyaan": "Islam melarang umatnya mencela tuhan atau sembahan agama lain. Hal ini bertujuan untuk...",
       "opsiA": "Menghilangkan akidah Islam",
@@ -148,6 +121,15 @@
       "jawaban": "B"
     },
     {
+      "nomor": 8,
+      "pertanyaan": "Secara bahasa, tasamuh (toleransi) berasal dari akar kata yang berarti 'samhan'. Jika dikaitkan dengan perilaku di media sosial, penerapan tasamuh yang paling sulit namun penting adalah...",
+      "opsiA": "Mengetik komentar negatif pada postingan yang berbeda pandangan politik",
+      "opsiB": "Membagikan berita (share) tanpa melakukan tabayyun (klarifikasi) terlebih dahulu",
+      "opsiC": "Menahan diri untuk tidak mencaci maki saat melihat perbedaan pendapat di kolom komentar",
+      "opsiD": "Melaporkan (report) semua akun yang tidak sejalan dengan pemikiran kita",
+      "jawaban": "C"
+    },
+    {
       "nomor": 17,
       "pertanyaan": "Manakah di bawah ini yang merupakan contoh toleransi dalam bidang muamalah (sosial)?",
       "opsiA": "Bekerja sama membangun jembatan desa dengan warga lintas agama",
@@ -163,6 +145,15 @@
       "opsiB": "Ketetapan atau hukum Allah Swt.",
       "opsiC": "Kesepakatan para ulama",
       "opsiD": "Budaya nenek moyang",
+      "jawaban": "B"
+    },
+    {
+      "nomor": 9,
+      "pertanyaan": "Islam adalah agama 'Rahmatan lil 'Alamin'. Konsekuensi dari pernyataan ini dalam hal hubungan antarumat beragama adalah...",
+      "opsiA": "Islam hanya membawa rahmat bagi orang yang sudah masuk Islam saja",
+      "opsiB": "Kehadiran Islam harus dirasakan manfaatnya sebagai pelindung dan pembawa kedamaian bagi seluruh alam",
+      "opsiC": "Orang di luar Islam tidak berhak mendapatkan kasih sayang dari orang muslim",
+      "opsiD": "Umat Islam harus menguasai dunia agar rahmat tersebut bisa dipaksakan kepada semua orang",
       "jawaban": "B"
     },
     {
@@ -227,87 +218,6 @@
       "opsiC": "Seluruh umat manusia",
       "opsiD": "Para Nabi saja",
       "jawaban": "C"
-    },
-    {
-      "nomor": 1,
-      "pertanyaan": "Perhatikan potongan Q.S. al-Kafirun/109: 6 berikut: 'Lakum dinukum wa liyadin' (Untukmu agamamu, dan untukku agamaku). Dalam konteks kehidupan berbangsa yang majemuk, implementasi yang paling tepat dari ayat tersebut dalam hal batasan toleransi adalah...",
-      "opsiA": "Mengikuti ritual ibadah umat agama lain sebagai bentuk solidaritas sosial",
-      "opsiB": "Membiarkan umat agama lain beribadah sesuai keyakinannya tanpa mencampuradukkan ajaran",
-      "opsiC": "Menganggap semua agama adalah sama dan menuju pada Tuhan yang satu dengan cara berbeda",
-      "opsiD": "Melarang umat agama lain beribadah jika lokasinya berdekatan dengan masjid",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 2,
-      "pertanyaan": "Seorang Muslim bertetangga dengan penganut agama lain yang sedang merayakan hari besarnya. Tindakan manakah yang menunjukkan sikap toleransi (tasamuh) yang sesuai dengan prinsip 'Ukhuwah Basyariyah' (Persaudaraan Kemanusiaan)?",
-      "opsiA": "Ikut menyanyikan lagu-lagu liturgi di dalam tempat ibadah mereka",
-      "opsiB": "Memberikan bantuan makanan atau bantuan keamanan tanpa ikut dalam ritual keagamaan",
-      "opsiC": "Menjauhi tetangga tersebut karena takut aqidahnya akan terpengaruh",
-      "opsiD": "Mengajak tetangga tersebut untuk masuk Islam agar terjalin ukhuwah islamiyah",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 3,
-      "pertanyaan": "Dalam Q.S. al-Hujurat/49: 13 disebutkan: '...Sesungguhnya Kami menciptakan kamu dari seorang laki-laki dan seorang perempuan dan menjadikan kamu berbangsa-bangsa dan bersuku-suku supaya kamu saling kenal-mengenal...' Analisislah tujuan utama Allah menciptakan keragaman berdasarkan ayat tersebut dalam kaitannya dengan toleransi!",
-      "opsiA": "Agar setiap golongan merasa lebih unggul (fastabiqul khairat) dari golongan lain",
-      "opsiB": "Agar manusia saling bersaing untuk mendapatkan kekuasaan di muka bumi",
-      "opsiC": "Sebagai sarana untuk saling bersinergi dan mengenal kelebihan masing-masing melalui interaksi sosial",
-      "opsiD": "Untuk membedah mana suku yang paling mulia di hadapan manusia secara fisik",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 4,
-      "pertanyaan": "Perbedaan pendapat dalam masalah furu'iyah (cabang agama) sering terjadi di antara sesama umat Islam (inter-internal). Sikap toleransi yang harus dikedepankan untuk menjaga 'Ukhuwah Islamiyah' adalah...",
-      "opsiA": "Memaksakan pendapat mazhab sendiri karena merasa paling benar sesuai sunnah",
-      "opsiB": "Memutuskan silaturahmi dengan kelompok yang berbeda cara shalatnya",
-      "opsiC": "Menghargai perbedaan pendapat selama masih bersumber pada Al-Qur'an dan Hadis",
-      "opsiD": "Membuat organisasi baru agar tidak tercampur dengan kelompok lain",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 5,
-      "pertanyaan": "Piagam Madinah yang dibuat oleh Nabi Muhammad saw. merupakan dokumen politik pertama di dunia yang mengatur tentang toleransi. Poin utama yang bisa kita petik dari keberadaan Piagam Madinah untuk konteks Indonesia saat ini adalah...",
-      "opsiA": "Kewajiban menjadikan Islam sebagai satu-satunya hukum negara secara formal",
-      "opsiB": "Kesepakatan untuk hidup berdampingan secara damai dan membela negara secara bersama-sama",
-      "opsiC": "Larangan bagi penganut agama lain untuk tinggal di wilayah mayoritas muslim",
-      "opsiD": "Pemberian hak khusus bagi umat Islam dalam segala bidang kehidupan",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 6,
-      "pertanyaan": "Toleransi dalam Islam memiliki batasan yang jelas. Manakah dari pernyataan berikut yang merupakan bentuk 'Over-Tolerance' (Toleransi yang kebablasan) yang dilarang dalam Islam?",
-      "opsiA": "Menghadiri rapat RT yang membahas pembangunan fasilitas umum di lingkungan non-muslim",
-      "opsiB": "Meminjamkan alat-alat memasak kepada tetangga non-muslim yang sedang ada acara keluarga",
-      "opsiC": "Mengucapkan niat ibadah agama lain sebagai bentuk penghargaan atas keyakinan mereka",
-      "opsiD": "Memberikan jalan bagi rombongan jenazah penganut agama lain yang akan lewat",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 7,
-      "pertanyaan": "Cermati narasi berikut: 'Di sebuah sekolah, siswa muslim membantu mengatur parkir dan menjaga ketenangan saat siswa Kristen merayakan Natal. Sebaliknya, siswa Kristen membantu menyediakan takjil saat siswa Muslim berbuka puasa'. Hikmah terbesar dari perilaku tersebut adalah...",
-      "opsiA": "Menghilangkan identitas masing-masing agama sehingga menjadi agama baru",
-      "opsiB": "Terciptanya keharmonisan sosial yang memperkuat persatuan dan kesatuan bangsa",
-      "opsiC": "Mendapatkan pujian dari pemerintah sebagai sekolah percontohan",
-      "opsiD": "Menghindari hukuman dari guru karena tidak mengikuti aturan sekolah",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 8,
-      "pertanyaan": "Secara bahasa, tasamuh (toleransi) berasal dari akar kata yang berarti 'samhan'. Jika dikaitkan dengan perilaku di media sosial, penerapan tasamuh yang paling sulit namun penting adalah...",
-      "opsiA": "Mengetik komentar negatif pada postingan yang berbeda pandangan politik",
-      "opsiB": "Membagikan berita (share) tanpa melakukan tabayyun (klarifikasi) terlebih dahulu",
-      "opsiC": "Menahan diri untuk tidak mencaci maki saat melihat perbedaan pendapat di kolom komentar",
-      "opsiD": "Melaporkan (report) semua akun yang tidak sejalan dengan pemikiran kita",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 9,
-      "pertanyaan": "Islam adalah agama 'Rahmatan lil 'Alamin'. Konsekuensi dari pernyataan ini dalam hal hubungan antarumat beragama adalah...",
-      "opsiA": "Islam hanya membawa rahmat bagi orang yang sudah masuk Islam saja",
-      "opsiB": "Kehadiran Islam harus dirasakan manfaatnya sebagai pelindung dan pembawa kedamaian bagi seluruh alam",
-      "opsiC": "Orang di luar Islam tidak berhak mendapatkan kasih sayang dari orang muslim",
-      "opsiD": "Umat Islam harus menguasai dunia agar rahmat tersebut bisa dipaksakan kepada semua orang",
-      "jawaban": "B"
     },
     {
       "nomor": 10,
