@@ -1,7 +1,7 @@
 {
   "title": "Membangun Toleransi",
   "kelas": "8",
-  "bab": 4,
+  "bab": 8,
   "soal": [
     {
       "nomor": 1,
@@ -10,7 +10,6 @@
       "opsiB": "Tasamuh",
       "opsiC": "Tawadhu",
       "opsiD": "Ta'awun",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -20,7 +19,6 @@
       "opsiB": "Membiarkan dan saling menghargai",
       "opsiC": "Mengikuti semua ajaran agama lain",
       "opsiD": "Menjauhi pergaulan dengan non-muslim",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -30,7 +28,6 @@
       "opsiB": "Saling mengunggulkan suku",
       "opsiC": "Saling mengenal (li-ta'arafu)",
       "opsiD": "Saling menjatuhkan",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -40,7 +37,6 @@
       "opsiB": "Garis keturunannya",
       "opsiC": "Ketakwaannya",
       "opsiD": "Jabatan sosialnya",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -50,7 +46,6 @@
       "opsiB": "Sesungguhnya yang paling mulia adalah yang paling takwa",
       "opsiC": "Sesungguhnya Allah menciptakan laki-laki dan perempuan",
       "opsiD": "Sesungguhnya manusia diciptakan berbangsa-bangsa",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -60,7 +55,6 @@
       "opsiB": "Menghargai tanpa harus ikut serta dalam ritualnya",
       "opsiC": "Menggabungkan dua ajaran agama",
       "opsiD": "Memaksa orang lain masuk Islam",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -70,7 +64,6 @@
       "opsiB": "Al-Kafirun",
       "opsiC": "Al-Falaq",
       "opsiD": "An-Nas",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -80,7 +73,6 @@
       "opsiB": "Merasa kelompoknya paling benar",
       "opsiC": "Mengkafirkan orang yang berbeda pendapat",
       "opsiD": "Memutus silaturahmi karena beda pilihan",
-      "opsiE": "",
       "jawaban": "A"
     },
     {
@@ -90,7 +82,6 @@
       "opsiB": "Memberi jawaban saat ujian berlangsung",
       "opsiC": "Menghargai teman yang sedang menjalankan ibadah",
       "opsiD": "Ikut campur urusan pribadi guru",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -100,7 +91,6 @@
       "opsiB": "Agar terjadi persaingan hidup",
       "opsiC": "Agar manusia saling mengenal dan bekerja sama",
       "opsiD": "Untuk membeda-bedakan hak asasi",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -110,7 +100,6 @@
       "opsiB": "Menghargai kegiatannya tanpa ikut beribadah",
       "opsiC": "Memprotes karena merasa terganggu",
       "opsiD": "Menutup diri dan tidak mau kenal",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -120,7 +109,6 @@
       "opsiB": "Menumbuhkan rasa benci",
       "opsiC": "Mewujudkan perdamaian dan harmoni",
       "opsiD": "Menghilangkan identitas agama",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -130,7 +118,6 @@
       "opsiB": "Masyarakat Indonesia sangat homogen",
       "opsiC": "Indonesia terdiri dari beragam suku dan agama",
       "opsiD": "Semua warga Indonesia memiliki hobi yang sama",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -140,7 +127,6 @@
       "opsiB": "Selalu merasa dirinya paling benar",
       "opsiC": "Mudah marah jika berbeda pendapat",
       "opsiD": "Suka menyindir keyakinan orang lain",
-      "opsiE": "",
       "jawaban": "A"
     },
     {
@@ -150,7 +136,6 @@
       "opsiB": "Mencegah mereka membalas mencela Allah Swt.",
       "opsiC": "Menunjukkan bahwa semua agama sama",
       "opsiD": "Merendahkan martabat umat Islam",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -160,7 +145,6 @@
       "opsiB": "Mendengarkan dan menghargai pendapatnya",
       "opsiC": "Meninggalkan forum diskusi",
       "opsiD": "Menertawakan pendapatnya",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -170,7 +154,6 @@
       "opsiB": "Mengikuti upacara keagamaan di pura",
       "opsiC": "Membenarkan semua keyakinan agama",
       "opsiD": "Salat di tempat ibadah agama lain",
-      "opsiE": "",
       "jawaban": "A"
     },
     {
@@ -180,7 +163,6 @@
       "opsiB": "Ketetapan atau hukum Allah Swt.",
       "opsiC": "Kesepakatan para ulama",
       "opsiD": "Budaya nenek moyang",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -190,7 +172,6 @@
       "opsiB": "Untukmu agamamu, dan untukku agamaku",
       "opsiC": "Mari kita gabungkan agama kita",
       "opsiD": "Sembahlah apa yang aku sembah",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -200,7 +181,6 @@
       "opsiB": "Guru di sekolah",
       "opsiC": "Diri sendiri",
       "opsiD": "Pemerintah",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -210,7 +190,6 @@
       "opsiB": "Mempererat tali persaudaraan",
       "opsiC": "Menimbulkan rasa curiga antarwarga",
       "opsiD": "Memudahkan pembangunan bangsa",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -220,7 +199,6 @@
       "opsiB": "Persatuan dan Kesatuan",
       "opsiC": "Dominasi mayoritas",
       "opsiD": "Penindasan minoritas",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -230,7 +208,6 @@
       "opsiB": "Diam saja karena bukan urusan kita",
       "opsiC": "Membela teman tersebut dan menasihati pengejek",
       "opsiD": "Melaporkan ke polisi secara langsung",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -240,7 +217,6 @@
       "opsiB": "Ukhuwah Islamiyah",
       "opsiC": "Ukhuwah Basyariyah",
       "opsiD": "Ukhuwah Insaniyah",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -250,8 +226,16 @@
       "opsiB": "Orang Arab saja",
       "opsiC": "Seluruh umat manusia",
       "opsiD": "Para Nabi saja",
-      "opsiE": "",
       "jawaban": "C"
+    },
+    {
+      "nomor": 1,
+      "pertanyaan": "Perhatikan potongan Q.S. al-Kafirun/109: 6 berikut: 'Lakum dinukum wa liyadin' (Untukmu agamamu, dan untukku agamaku). Dalam konteks kehidupan berbangsa yang majemuk, implementasi yang paling tepat dari ayat tersebut dalam hal batasan toleransi adalah...",
+      "opsiA": "Mengikuti ritual ibadah umat agama lain sebagai bentuk solidaritas sosial",
+      "opsiB": "Membiarkan umat agama lain beribadah sesuai keyakinannya tanpa mencampuradukkan ajaran",
+      "opsiC": "Menganggap semua agama adalah sama dan menuju pada Tuhan yang satu dengan cara berbeda",
+      "opsiD": "Melarang umat agama lain beribadah jika lokasinya berdekatan dengan masjid",
+      "jawaban": "B"
     }
   ]
 }
