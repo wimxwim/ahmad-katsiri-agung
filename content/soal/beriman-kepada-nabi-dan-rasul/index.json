@@ -5,6 +5,33 @@
   "soal": [
     {
       "nomor": 1,
+      "pertanyaan": "Keimanan kepada nabi dan rasul bukan sekadar pengakuan lisan, melainkan kesadaran mendalam bahwa Allah Swt. memilih manusia pilihan sebagai perantara hidayah. Jika seseorang mengakui adanya Allah tetapi menolak otoritas kenabian dengan alasan rasionalitas semata, maka dampak teologis yang paling mendasar adalah...",
+      "opsiA": "Keimanan kepada nabi dan rasul bukan sekadar pengakuan lisan, melainkan kesadaran mendalam bahwa Allah Swt. memilih manusia pilihan sebagai perantara hidayah. Jika seseorang mengakui adanya Allah tetapi menolak otoritas kenabian dengan alasan rasionalitas semata, maka dampak teologis yang paling mendasar adalah...",
+      "opsiB": "Menurunnya tingkat kedisiplinan dalam menjalankan ibadah ritual harian.",
+      "opsiC": "Hilangnya identitas diri sebagai seorang muslim di lingkungan masyarakat.",
+      "opsiD": "Bertambahnya beban pikiran dalam mencari kebenaran secara mandiri.",
+      "jawaban": "A"
+    },
+    {
+      "nomor": 2,
+      "pertanyaan": "Seorang Rasul memiliki tugas 'Tabsyir' dan 'Inzar'. Dalam konteks kehidupan modern, implementasi dari tugas 'Inzar' yang dilakukan rasul bagi seorang pelajar dalam menghadapi pengaruh negatif media sosial adalah...",
+      "opsiA": "Mengajak teman untuk selalu mengunggah konten yang menghibur dan viral.",
+      "opsiB": "Memberikan peringatan akan konsekuensi moral dan dosa dari penyebaran berita bohong (hoaks).",
+      "opsiC": "Membatasi diri sepenuhnya dari teknologi agar terhindar dari dosa.",
+      "opsiD": "Fokus pada pencapaian akademik tanpa memedulikan etika berkomunikasi di dunia maya.",
+      "jawaban": "B"
+    },
+    {
+      "nomor": 3,
+      "pertanyaan": "Perhatikan ilustrasi berikut: 'Seorang pemimpin perusahaan tetap menyampaikan laporan keuangan apa adanya kepada pemegang saham, meskipun perusahaan sedang mengalami penurunan laba yang signifikan demi menjaga kepercayaan.' Perilaku pemimpin tersebut mencerminkan peneladanan terhadap sifat wajib rasul, yaitu...",
+      "opsiA": "Fathanah",
+      "opsiB": "Tablig",
+      "opsiC": "Siddiq",
+      "opsiD": "Amanah",
+      "jawaban": "C"
+    },
+    {
+      "nomor": 1,
       "pertanyaan": "Secara bahasa, kata 'Rasul' memiliki arti...",
       "opsiA": "Orang yang suci",
       "opsiB": "Utusan atau penyampai pesan",
@@ -32,12 +59,12 @@
     },
     {
       "nomor": 4,
-      "pertanyaan": "Berdasarkan Surah Gāfir [40] ayat 78, manakah pernyataan yang benar mengenai para Rasul?",
-      "opsiA": "Semua Rasul diceritakan kisahnya di dalam Al-Qur'an",
-      "opsiB": "Tidak ada Rasul yang diceritakan di dalam Al-Qur'an",
-      "opsiC": "Ada Rasul yang diceritakan kisahnya dan ada yang tidak diceritakan",
-      "opsiD": "Jumlah Rasul hanya berjumlah 25 orang",
-      "jawaban": "C"
+      "pertanyaan": "Analisis dampak: Jika seorang rasul memiliki sifat mustahil 'Kitman' (menyembunyikan wahyu), maka konsekuensi logis terhadap agama yang dibawanya adalah...",
+      "opsiA": "Ajaran agama akan tetap sempurna karena Allah Swt. menjaga hati umatnya.",
+      "opsiB": "Terjadi ketimpangan informasi yang menyebabkan ajaran agama tidak tersampaikan secara utuh dan menyesatkan umat.",
+      "opsiC": "Rasul tersebut akan kehilangan mukjizatnya dalam menghadapi musuh-musuh dakwah.",
+      "opsiD": "Masyarakat akan tetap beriman karena rasul memiliki kecerdasan (fathanah) yang tinggi.",
+      "jawaban": "B"
     },
     {
       "nomor": 5,
@@ -47,6 +74,15 @@
       "opsiC": "99",
       "opsiD": "114",
       "jawaban": "B"
+    },
+    {
+      "nomor": 5,
+      "pertanyaan": "Nabi Nuh a.s. merupakan rasul Ululazmi yang berdakwah selama ratusan tahun namun hanya sedikit pengikutnya. Pelajaran paling fundamental (HOTS) yang dapat diambil dari keteguhan Nabi Nuh a.s. bagi pejuang kebenaran masa kini adalah...",
+      "opsiA": "Kesuksesan sebuah perjuangan diukur dari banyaknya jumlah pengikut yang didapatkan.",
+      "opsiB": "Kemampuan membangun infrastruktur yang canggih (bahtera) adalah kunci utama keberhasilan dakwah.",
+      "opsiC": "Fokus utama seorang pejuang adalah ketaatan pada perintah Allah Swt. dan persistensi, bukan sekadar hasil akhir.",
+      "opsiD": "Menjauhi masyarakat yang membangkang adalah jalan terbaik agar iman tetap terjaga.",
+      "jawaban": "C"
     },
     {
       "nomor": 6,
@@ -76,57 +112,21 @@
       "jawaban": "D"
     },
     {
-      "nomor": 9,
-      "pertanyaan": "Sifat wajib 'Amanah' bagi seorang rasul berarti...",
-      "opsiA": "Cerdas dalam berdakwah",
-      "opsiB": "Menyampaikan wahyu",
-      "opsiC": "Dapat dipercaya",
-      "opsiD": "Berani membela kebenaran",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 10,
-      "pertanyaan": "Seorang Rasul tidak mungkin memiliki sifat 'Kizib', yang artinya...",
-      "opsiA": "Khianat",
-      "opsiB": "Bohong atau dusta",
-      "opsiC": "Bodoh",
-      "opsiD": "Menyembunyikan",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 11,
-      "pertanyaan": "Lawan dari sifat wajib 'Tabligh' adalah sifat mustahil...",
-      "opsiA": "Baladah",
-      "opsiB": "Khianat",
-      "opsiC": "Kitman",
-      "opsiD": "Kazib",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 12,
-      "pertanyaan": "Sifat mustahil 'Baladah' pada rasul berarti...",
-      "opsiA": "Pintar",
-      "opsiB": "Berkhianat",
-      "opsiC": "Bodoh",
-      "opsiD": "Pelupa",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 13,
-      "pertanyaan": "Rasul memiliki kecerdasan yang luar biasa untuk menghadapi argumen kaum kafir. Sifat wajib ini disebut...",
-      "opsiA": "Siddiq",
-      "opsiB": "Tabligh",
-      "opsiC": "Fathanah",
-      "opsiD": "Amanah",
-      "jawaban": "C"
-    },
-    {
       "nomor": 14,
       "pertanyaan": "Gelar 'Ululazmi' diberikan kepada rasul yang memiliki...",
       "opsiA": "Kekayaan yang melimpah",
       "opsiB": "Ketabahan dan tekad yang kuat",
       "opsiC": "Pasukan yang banyak",
       "opsiD": "Umur yang sangat panjang",
+      "jawaban": "B"
+    },
+    {
+      "nomor": 6,
+      "pertanyaan": "Nabi Ibrahim a.s. menggunakan logika kritis saat mencari Tuhan dengan mengamati bintang, bulan, dan matahari. Hal ini menunjukkan bahwa iman kepada rasul menuntut kita untuk...",
+      "opsiA": "Mengabaikan ilmu pengetahuan karena wahyu sudah cukup bagi manusia.",
+      "opsiB": "Menggunakan akal sehat untuk memperkuat keyakinan dan menemukan kebenaran tauhid.",
+      "opsiC": "Hanya percaya pada hal-hal yang dapat dilihat oleh mata kepala sendiri.",
+      "opsiD": "Selalu berdebat dengan orang lain untuk membuktikan kekuatan argumentasi kita.",
       "jawaban": "B"
     },
     {
@@ -139,6 +139,15 @@
       "jawaban": "A"
     },
     {
+      "nomor": 7,
+      "pertanyaan": "Salah satu keistimewaan Nabi Musa a.s. adalah diberikan Mukjizat berupa tongkat yang menjadi ular dan membelah lautan untuk melawan tirani Firaun. Secara esensial, mukjizat ini membuktikan bahwa...",
+      "opsiA": "Sihir adalah kekuatan tertinggi yang harus dipelajari oleh setiap utusan Allah Swt.",
+      "opsiB": "Kekuatan fisik dan materi adalah syarat utama untuk mengalahkan musuh-musuh agama.",
+      "opsiC": "Kekuasaan mutlak berada di tangan Allah Swt. dan Dia mampu menundukkan hukum alam demi menolong rasul-Nya.",
+      "opsiD": "Nabi Musa a.s. adalah manusia setengah dewa yang memiliki kekuatan supranatural permanen.",
+      "jawaban": "C"
+    },
+    {
       "nomor": 16,
       "pertanyaan": "Nabi Nuh a.s. mendapatkan gelar Ululazmi karena kesabarannya dalam...",
       "opsiA": "Menghadapi raja Namrud",
@@ -148,22 +157,13 @@
       "jawaban": "B"
     },
     {
-      "nomor": 17,
-      "pertanyaan": "Mukjizat Nabi Ibrahim a.s. yang paling terkenal adalah...",
-      "opsiA": "Tongkat menjadi ular",
-      "opsiB": "Berbicara saat bayi",
-      "opsiC": "Tidak hangus terbakar api",
-      "opsiD": "Membelah bulan",
+      "nomor": 8,
+      "pertanyaan": "Berbeda dengan rasul-rasul sebelumnya yang dibekali mukjizat inderawi (fisik), Nabi Muhammad saw. diberikan mukjizat terbesar berupa Al-Qur'an (mukjizat aqli/rasional). Alasan logis mengapa Al-Qur'an menjadi mukjizat yang paling relevan hingga akhir zaman adalah...",
+      "opsiA": "Karena Al-Qur'an memiliki jumlah halaman yang sangat banyak dibandingkan kitab lainnya.",
+      "opsiB": "Karena keindahan sastranya tidak ada yang bisa menandingi pada zaman jahiliyah.",
+      "opsiC": "Karena kandungannya berisi ilmu pengetahuan dan petunjuk yang melampaui ruang dan waktu bagi akal manusia.",
+      "opsiD": "Karena Al-Qur'an hanya bisa dibaca oleh orang-orang yang berilmu tinggi saja.",
       "jawaban": "C"
-    },
-    {
-      "nomor": 18,
-      "pertanyaan": "Nabi Musa a.s. diberikan mukjizat berupa tongkat yang dapat berubah menjadi ular besar untuk menghadapi...",
-      "opsiA": "Raja Fir'aun dan para penyihirnya",
-      "opsiB": "Raja Namrud",
-      "opsiC": "Kaum Tsamud",
-      "opsiD": "Kaum 'Ad",
-      "jawaban": "A"
     },
     {
       "nomor": 19,
@@ -173,6 +173,15 @@
       "opsiC": "Tidak mempan dibakar api",
       "opsiD": "Membelah lautan dengan tongkat",
       "jawaban": "A"
+    },
+    {
+      "nomor": 9,
+      "pertanyaan": "Nabi Isa a.s. memiliki gelar Ululazmi karena kesabarannya dalam menghadapi penolakan kaum Bani Israil. Dalam kehidupan sekolah, perilaku yang mencerminkan upaya meneladani sifat Ululazmi saat kita dijauhi teman karena memegang teguh kejujuran adalah...",
+      "opsiA": "Berhenti bersikap jujur agar bisa diterima kembali dalam pergaulan teman-teman.",
+      "opsiB": "Membalas perilaku mereka dengan cara yang lebih kasar agar mereka merasa jera.",
+      "opsiC": "Tetap konsisten dalam kebenaran sambil mendoakan dan tetap berbuat baik kepada mereka.",
+      "opsiD": "Melaporkan semua kesalahan teman kepada guru agar mereka mendapatkan hukuman.",
+      "jawaban": "C"
     },
     {
       "nomor": 20,
@@ -193,15 +202,6 @@
       "jawaban": "B"
     },
     {
-      "nomor": 22,
-      "pertanyaan": "Contoh perilaku yang mencerminkan iman kepada rasul dalam kehidupan sehari-hari adalah...",
-      "opsiA": "Selalu berbohong demi kebaikan",
-      "opsiB": "Menghindari amanah jika terasa berat",
-      "opsiC": "Senantiasa jujur dalam perkataan dan perbuatan",
-      "opsiD": "Malas belajar karena sudah merasa pintar",
-      "jawaban": "C"
-    },
-    {
       "nomor": 23,
       "pertanyaan": "Meneladani sifat 'Fathanah' bagi seorang pelajar dapat dilakukan dengan cara...",
       "opsiA": "Rajin belajar dan menuntut ilmu",
@@ -218,96 +218,6 @@
       "opsiC": "Rasul bisa makan dan minum",
       "opsiD": "Malaikat tidak sibuk",
       "jawaban": "B"
-    },
-    {
-      "nomor": 25,
-      "pertanyaan": "Andi menemukan uang di kelas, lalu ia memberikannya kepada guru untuk dikembalikan kepada pemiliknya. Tindakan Andi mencerminkan sifat...",
-      "opsiA": "Siddiq",
-      "opsiB": "Amanah",
-      "opsiC": "Tabligh",
-      "opsiD": "Fathanah",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 1,
-      "pertanyaan": "Keimanan kepada nabi dan rasul bukan sekadar pengakuan lisan, melainkan kesadaran mendalam bahwa Allah Swt. memilih manusia pilihan sebagai perantara hidayah. Jika seseorang mengakui adanya Allah tetapi menolak otoritas kenabian dengan alasan rasionalitas semata, maka dampak teologis yang paling mendasar adalah...",
-      "opsiA": "Keimanan kepada nabi dan rasul bukan sekadar pengakuan lisan, melainkan kesadaran mendalam bahwa Allah Swt. memilih manusia pilihan sebagai perantara hidayah. Jika seseorang mengakui adanya Allah tetapi menolak otoritas kenabian dengan alasan rasionalitas semata, maka dampak teologis yang paling mendasar adalah...",
-      "opsiB": "Menurunnya tingkat kedisiplinan dalam menjalankan ibadah ritual harian.",
-      "opsiC": "Hilangnya identitas diri sebagai seorang muslim di lingkungan masyarakat.",
-      "opsiD": "Bertambahnya beban pikiran dalam mencari kebenaran secara mandiri.",
-      "jawaban": "A"
-    },
-    {
-      "nomor": 2,
-      "pertanyaan": "Seorang Rasul memiliki tugas 'Tabsyir' dan 'Inzar'. Dalam konteks kehidupan modern, implementasi dari tugas 'Inzar' yang dilakukan rasul bagi seorang pelajar dalam menghadapi pengaruh negatif media sosial adalah...",
-      "opsiA": "Mengajak teman untuk selalu mengunggah konten yang menghibur dan viral.",
-      "opsiB": "Memberikan peringatan akan konsekuensi moral dan dosa dari penyebaran berita bohong (hoaks).",
-      "opsiC": "Membatasi diri sepenuhnya dari teknologi agar terhindar dari dosa.",
-      "opsiD": "Fokus pada pencapaian akademik tanpa memedulikan etika berkomunikasi di dunia maya.",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 3,
-      "pertanyaan": "Perhatikan ilustrasi berikut: 'Seorang pemimpin perusahaan tetap menyampaikan laporan keuangan apa adanya kepada pemegang saham, meskipun perusahaan sedang mengalami penurunan laba yang signifikan demi menjaga kepercayaan.' Perilaku pemimpin tersebut mencerminkan peneladanan terhadap sifat wajib rasul, yaitu...",
-      "opsiA": "Fathanah",
-      "opsiB": "Tablig",
-      "opsiC": "Siddiq",
-      "opsiD": "Amanah",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 4,
-      "pertanyaan": "Analisis dampak: Jika seorang rasul memiliki sifat mustahil 'Kitman' (menyembunyikan wahyu), maka konsekuensi logis terhadap agama yang dibawanya adalah...",
-      "opsiA": "Ajaran agama akan tetap sempurna karena Allah Swt. menjaga hati umatnya.",
-      "opsiB": "Terjadi ketimpangan informasi yang menyebabkan ajaran agama tidak tersampaikan secara utuh dan menyesatkan umat.",
-      "opsiC": "Rasul tersebut akan kehilangan mukjizatnya dalam menghadapi musuh-musuh dakwah.",
-      "opsiD": "Masyarakat akan tetap beriman karena rasul memiliki kecerdasan (fathanah) yang tinggi.",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 5,
-      "pertanyaan": "Nabi Nuh a.s. merupakan rasul Ululazmi yang berdakwah selama ratusan tahun namun hanya sedikit pengikutnya. Pelajaran paling fundamental (HOTS) yang dapat diambil dari keteguhan Nabi Nuh a.s. bagi pejuang kebenaran masa kini adalah...",
-      "opsiA": "Kesuksesan sebuah perjuangan diukur dari banyaknya jumlah pengikut yang didapatkan.",
-      "opsiB": "Kemampuan membangun infrastruktur yang canggih (bahtera) adalah kunci utama keberhasilan dakwah.",
-      "opsiC": "Fokus utama seorang pejuang adalah ketaatan pada perintah Allah Swt. dan persistensi, bukan sekadar hasil akhir.",
-      "opsiD": "Menjauhi masyarakat yang membangkang adalah jalan terbaik agar iman tetap terjaga.",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 6,
-      "pertanyaan": "Nabi Ibrahim a.s. menggunakan logika kritis saat mencari Tuhan dengan mengamati bintang, bulan, dan matahari. Hal ini menunjukkan bahwa iman kepada rasul menuntut kita untuk...",
-      "opsiA": "Mengabaikan ilmu pengetahuan karena wahyu sudah cukup bagi manusia.",
-      "opsiB": "Menggunakan akal sehat untuk memperkuat keyakinan dan menemukan kebenaran tauhid.",
-      "opsiC": "Hanya percaya pada hal-hal yang dapat dilihat oleh mata kepala sendiri.",
-      "opsiD": "Selalu berdebat dengan orang lain untuk membuktikan kekuatan argumentasi kita.",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 7,
-      "pertanyaan": "Salah satu keistimewaan Nabi Musa a.s. adalah diberikan Mukjizat berupa tongkat yang menjadi ular dan membelah lautan untuk melawan tirani Firaun. Secara esensial, mukjizat ini membuktikan bahwa...",
-      "opsiA": "Sihir adalah kekuatan tertinggi yang harus dipelajari oleh setiap utusan Allah Swt.",
-      "opsiB": "Kekuatan fisik dan materi adalah syarat utama untuk mengalahkan musuh-musuh agama.",
-      "opsiC": "Kekuasaan mutlak berada di tangan Allah Swt. dan Dia mampu menundukkan hukum alam demi menolong rasul-Nya.",
-      "opsiD": "Nabi Musa a.s. adalah manusia setengah dewa yang memiliki kekuatan supranatural permanen.",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 8,
-      "pertanyaan": "Berbeda dengan rasul-rasul sebelumnya yang dibekali mukjizat inderawi (fisik), Nabi Muhammad saw. diberikan mukjizat terbesar berupa Al-Qur'an (mukjizat aqli/rasional). Alasan logis mengapa Al-Qur'an menjadi mukjizat yang paling relevan hingga akhir zaman adalah...",
-      "opsiA": "Karena Al-Qur'an memiliki jumlah halaman yang sangat banyak dibandingkan kitab lainnya.",
-      "opsiB": "Karena keindahan sastranya tidak ada yang bisa menandingi pada zaman jahiliyah.",
-      "opsiC": "Karena kandungannya berisi ilmu pengetahuan dan petunjuk yang melampaui ruang dan waktu bagi akal manusia.",
-      "opsiD": "Karena Al-Qur'an hanya bisa dibaca oleh orang-orang yang berilmu tinggi saja.",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 9,
-      "pertanyaan": "Nabi Isa a.s. memiliki gelar Ululazmi karena kesabarannya dalam menghadapi penolakan kaum Bani Israil. Dalam kehidupan sekolah, perilaku yang mencerminkan upaya meneladani sifat Ululazmi saat kita dijauhi teman karena memegang teguh kejujuran adalah...",
-      "opsiA": "Berhenti bersikap jujur agar bisa diterima kembali dalam pergaulan teman-teman.",
-      "opsiB": "Membalas perilaku mereka dengan cara yang lebih kasar agar mereka merasa jera.",
-      "opsiC": "Tetap konsisten dalam kebenaran sambil mendoakan dan tetap berbuat baik kepada mereka.",
-      "opsiD": "Melaporkan semua kesalahan teman kepada guru agar mereka mendapatkan hukuman.",
-      "jawaban": "C"
     },
     {
       "nomor": 10,
