@@ -1,7 +1,7 @@
 {
   "title": "Beriman kepada Nabi dan Rasul",
   "kelas": "8",
-  "bab": 3,
+  "bab": 7,
   "soal": [
     {
       "nomor": 1,
@@ -10,7 +10,6 @@
       "opsiB": "Utusan atau penyampai pesan",
       "opsiC": "Orang yang memiliki kelebihan",
       "opsiD": "Pemimpin umat",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -20,7 +19,6 @@
       "opsiB": "Iman kepada Malaikat",
       "opsiC": "Iman kepada Rasul",
       "opsiD": "Iman kepada Kitab",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -30,7 +28,6 @@
       "opsiB": "Nabi menerima wahyu untuk dirinya sendiri, sedangkan Rasul wajib",
       "opsiC": "Nabi memiliki mukjizat, sedangkan Rasul tidak",
       "opsiD": "Nabi jumlahnya sedikit, sedangkan Rasul jumlahnya banyak",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -40,7 +37,6 @@
       "opsiB": "Tidak ada Rasul yang diceritakan di dalam Al-Qur'an",
       "opsiC": "Ada Rasul yang diceritakan kisahnya dan ada yang tidak diceritakan",
       "opsiD": "Jumlah Rasul hanya berjumlah 25 orang",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -50,7 +46,6 @@
       "opsiB": "25",
       "opsiC": "99",
       "opsiD": "114",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -60,7 +55,6 @@
       "opsiB": "Pembawa kabar gembira tentang surga",
       "opsiC": "Pemimpin peperangan",
       "opsiD": "Penulis kitab suci",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -70,7 +64,6 @@
       "opsiB": "Memberi hadiah bagi orang kaya",
       "opsiC": "Mengajarkan cara bercocok tanam",
       "opsiD": "Menyembuhkan orang sakit",
-      "opsiE": "",
       "jawaban": "A"
     },
     {
@@ -80,7 +73,6 @@
       "opsiB": "Tabligh",
       "opsiC": "Fathanah",
       "opsiD": "Siddiq",
-      "opsiE": "",
       "jawaban": "D"
     },
     {
@@ -90,7 +82,6 @@
       "opsiB": "Menyampaikan wahyu",
       "opsiC": "Dapat dipercaya",
       "opsiD": "Berani membela kebenaran",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -100,7 +91,6 @@
       "opsiB": "Bohong atau dusta",
       "opsiC": "Bodoh",
       "opsiD": "Menyembunyikan",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -110,7 +100,6 @@
       "opsiB": "Khianat",
       "opsiC": "Kitman",
       "opsiD": "Kazib",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -120,7 +109,6 @@
       "opsiB": "Berkhianat",
       "opsiC": "Bodoh",
       "opsiD": "Pelupa",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -130,7 +118,6 @@
       "opsiB": "Tabligh",
       "opsiC": "Fathanah",
       "opsiD": "Amanah",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -140,7 +127,6 @@
       "opsiB": "Ketabahan dan tekad yang kuat",
       "opsiC": "Pasukan yang banyak",
       "opsiD": "Umur yang sangat panjang",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -150,7 +136,6 @@
       "opsiB": "Adam a.s., Idris a.s., Nuh a.s., Hud a.s., Saleh a.s.",
       "opsiC": "Ibrahim a.s., Ismail a.s., Ishaq a.s., Ya'qub a.s., Yusuf a.s.",
       "opsiD": "Musa a.s., Harun a.s., Daud a.s., Sulaiman a.s., Yahya a.s.",
-      "opsiE": "",
       "jawaban": "A"
     },
     {
@@ -160,7 +145,6 @@
       "opsiB": "Berdakwah selama ratusan tahun meski banyak yang menentang",
       "opsiC": "Membelah lautan Merah",
       "opsiD": "Menyembuhkan orang buta",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -170,7 +154,6 @@
       "opsiB": "Berbicara saat bayi",
       "opsiC": "Tidak hangus terbakar api",
       "opsiD": "Membelah bulan",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -180,7 +163,6 @@
       "opsiB": "Raja Namrud",
       "opsiC": "Kaum Tsamud",
       "opsiD": "Kaum 'Ad",
-      "opsiE": "",
       "jawaban": "A"
     },
     {
@@ -190,7 +172,6 @@
       "opsiB": "Memiliki kapal yang sangat besar",
       "opsiC": "Tidak mempan dibakar api",
       "opsiD": "Membelah lautan dengan tongkat",
-      "opsiE": "",
       "jawaban": "A"
     },
     {
@@ -200,7 +181,6 @@
       "opsiB": "Keluarnya air dari celah jari",
       "opsiC": "Al-Qur'an",
       "opsiD": "Membelah bulan",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -210,7 +190,6 @@
       "opsiB": "Nabi Ibrahim a.s.",
       "opsiC": "Nabi Musa a.s.",
       "opsiD": "Nabi Isa a.s.",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -220,7 +199,6 @@
       "opsiB": "Menghindari amanah jika terasa berat",
       "opsiC": "Senantiasa jujur dalam perkataan dan perbuatan",
       "opsiD": "Malas belajar karena sudah merasa pintar",
-      "opsiE": "",
       "jawaban": "C"
     },
     {
@@ -230,7 +208,6 @@
       "opsiB": "Menyembunyikan jawaban saat ujian",
       "opsiC": "Pasrah pada nasib",
       "opsiD": "Menyontek teman yang pintar",
-      "opsiE": "",
       "jawaban": "A"
     },
     {
@@ -240,7 +217,6 @@
       "opsiB": "Mudah untuk diteladani oleh manusia",
       "opsiC": "Rasul bisa makan dan minum",
       "opsiD": "Malaikat tidak sibuk",
-      "opsiE": "",
       "jawaban": "B"
     },
     {
@@ -250,8 +226,16 @@
       "opsiB": "Amanah",
       "opsiC": "Tabligh",
       "opsiD": "Fathanah",
-      "opsiE": "",
       "jawaban": "B"
+    },
+    {
+      "nomor": 1,
+      "pertanyaan": "Keimanan kepada nabi dan rasul bukan sekadar pengakuan lisan, melainkan kesadaran mendalam bahwa Allah Swt. memilih manusia pilihan sebagai perantara hidayah. Jika seseorang mengakui adanya Allah tetapi menolak otoritas kenabian dengan alasan rasionalitas semata, maka dampak teologis yang paling mendasar adalah...",
+      "opsiA": "Keimanan kepada nabi dan rasul bukan sekadar pengakuan lisan, melainkan kesadaran mendalam bahwa Allah Swt. memilih manusia pilihan sebagai perantara hidayah. Jika seseorang mengakui adanya Allah tetapi menolak otoritas kenabian dengan alasan rasionalitas semata, maka dampak teologis yang paling mendasar adalah...",
+      "opsiB": "Menurunnya tingkat kedisiplinan dalam menjalankan ibadah ritual harian.",
+      "opsiC": "Hilangnya identitas diri sebagai seorang muslim di lingkungan masyarakat.",
+      "opsiD": "Bertambahnya beban pikiran dalam mencari kebenaran secara mandiri.",
+      "jawaban": "A"
     }
   ]
 }
