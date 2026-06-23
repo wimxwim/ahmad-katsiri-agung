@@ -5,93 +5,39 @@
   "soal": [
     {
       "nomor": 1,
-      "pertanyaan": "Secara bahasa, kata 'Qada' memiliki arti...",
-      "opsiA": "Ketetapan atau hukum",
-      "opsiB": "Ukuran atau batasan",
-      "opsiC": "Usaha manusia",
-      "opsiD": "Penyerahan diri",
-      "jawaban": "A"
-    },
-    {
-      "nomor": 2,
-      "pertanyaan": "Sedangkan kata 'Qadar' secara bahasa berarti...",
-      "opsiA": "Kehendak bebas",
-      "opsiB": "Ukuran atau kepastian",
-      "opsiC": "Keputusan hakim",
-      "opsiD": "Perintah harian",
+      "pertanyaan": "Secara terminologi, terdapat perbedaan tipis namun mendasar antara Qada dan Qadar. Manakah pernyataan di bawah ini yang paling tepat menggambarkan analisis hubungan keduanya dalam kehidupan manusia?",
+      "opsiA": "Qada adalah perwujudan dari rencana Allah, sedangkan Qadar adalah ketetapan Allah sejak zaman azali.",
+      "opsiB": "Qada merupakan rencana atau ketetapan Allah sejak zaman azali, sedangkan Qadar adalah perwujudan atau realisasi dari ketetapan tersebut.",
+      "opsiC": "Qada berkaitan dengan usaha manusia (ikhtiar), sedangkan Qadar berkaitan dengan hasil akhir yang tidak bisa diubah.",
+      "opsiD": "Qada adalah ketetapan yang masih bisa diubah dengan doa, sedangkan Qadar adalah ketetapan yang mutlak.",
       "jawaban": "B"
     },
     {
+      "nomor": 2,
+      "pertanyaan": "Perhatikan fenomena berikut: (1) Kematian seseorang, (2) Jenis kelamin bayi yang lahir, (3) Terjadinya kiamat, (4) Kesuksesan ekonomi. Manakah yang termasuk ke dalam kategori takdir mubram?",
+      "opsiA": "(1), (2), dan (3)",
+      "opsiB": "(1), (3), dan (4)",
+      "opsiC": "(2), (3), dan (4)",
+      "opsiD": "(1) dan (4) saja",
+      "jawaban": "A"
+    },
+    {
       "nomor": 3,
-      "pertanyaan": "Beriman kepada Qada dan Qadar merupakan rukun iman yang ke-...",
-      "opsiA": "Empat",
-      "opsiB": "Lima",
-      "opsiC": "Enam",
-      "opsiD": "Tiga",
+      "pertanyaan": "Dalam QS. Al-A'raf: 34 disebutkan bahwa: 'Tiap-tiap umat mempunyai batas waktu; maka apabila telah datang waktunya, mereka tidak dapat mengundurkannya barang sesaat pun dan tidak dapat (pula) memajukannya'. Ayat ini merupakan dalil naqli yang menjelaskan tentang...",
+      "opsiA": "Takdir mualak yang dapat diubah dengan doa",
+      "opsiB": "Kewajiban manusia untuk berikhtiar",
+      "opsiC": "Takdir mubram yang bersifat paten dan tidak dapat ditawar",
+      "opsiD": "Konsep tawakal dalam menghadapi musibah",
       "jawaban": "C"
     },
     {
       "nomor": 4,
-      "pertanyaan": "Surah at-Taubah [9] ayat 51 menegaskan bahwa tidak akan menimpa kita kecuali apa yang telah...",
-      "opsiA": "Kita usahakan sendiri",
-      "opsiB": "Ditetapkan Allah untuk kita",
-      "opsiC": "Diramalkan oleh manusia",
-      "opsiD": "Menjadi keinginan musuh",
+      "pertanyaan": "Seseorang yang menderita sakit parah kemudian berobat dengan sungguh-sungguh dan berdoa hingga akhirnya sembuh total. Peristiwa ini merupakan contoh dari takdir mualak. Analisis yang benar mengenai hal ini adalah...",
+      "opsiA": "Kesembuhan adalah kebetulan semata tanpa ada campur tangan Tuhan.",
+      "opsiB": "Allah Swt. menetapkan kesembuhan tersebut melalui perantara ikhtiar dan doa hamba-Nya.",
+      "opsiC": "Takdir Allah bisa dikalahkan oleh keinginan manusia yang kuat.",
+      "opsiD": "Manusia memiliki kendali penuh atas hidup dan matinya sendiri.",
       "jawaban": "B"
-    },
-    {
-      "nomor": 5,
-      "pertanyaan": "Berdasarkan Surah at-Taubah [9] ayat 51, kepada siapakah hendaknya orang-orang mukmin bertawakal?",
-      "opsiA": "Kepada diri sendiri",
-      "opsiB": "Kepada sesama manusia",
-      "opsiC": "Kepada Allah SWT",
-      "opsiD": "Kepada keberuntungan",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 6,
-      "pertanyaan": "Kandungan utama dari Surah at-Taubah [9] ayat 51 mengajarkan kita untuk memiliki sikap...",
-      "opsiA": "Putus asa",
-      "opsiB": "Optimis dan berserah diri",
-      "opsiC": "Sombong atas keberhasilan",
-      "opsiD": "Takut menghadapi masa depan",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 7,
-      "pertanyaan": "Ketentuan Allah SWT yang sudah pasti dan tidak dapat diubah oleh usaha manusia disebut...",
-      "opsiA": "Takdir Mualak",
-      "opsiB": "Takdir Mubram",
-      "opsiC": "Takdir Ikhtiar",
-      "opsiD": "Takdir Nasib",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 8,
-      "pertanyaan": "Manakah di bawah ini yang merupakan contoh dari takdir mubram?",
-      "opsiA": "Kepintaran seseorang",
-      "opsiB": "Jenis kelamin saat lahir",
-      "opsiC": "Kekayaan harta benda",
-      "opsiD": "Kesehatan tubuh",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 9,
-      "pertanyaan": "Kematian seseorang adalah rahasia Allah yang tidak bisa dimajukan atau dimundurkan. Hal ini termasuk...",
-      "opsiA": "Takdir Mualak",
-      "opsiB": "Ikhtiar manusia",
-      "opsiC": "Takdir Mubram",
-      "opsiD": "Tawakal",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 10,
-      "pertanyaan": "Perhatikan pernyataan berikut: (1) Hari kiamat, (2) Juara kelas, (3) Matahari terbit dari timur, (4) Menjadi kaya. Yang termasuk takdir mubram adalah...",
-      "opsiA": "(1) dan (2)",
-      "opsiB": "(2) dan (4)",
-      "opsiC": "(1) dan (3)",
-      "opsiD": "(3) dan (4)",
-      "jawaban": "C"
     },
     {
       "nomor": 11,
@@ -112,6 +58,15 @@
       "jawaban": "B"
     },
     {
+      "nomor": 5,
+      "pertanyaan": "Perhatikan kutipan ayat berikut: '...Sesungguhnya Allah tidak mengubah keadaan sesuatu kaum sehingga mereka mengubah keadaan yang ada pada diri mereka sendiri...' (QS. Ar-Ra'd: 11). Kesimpulan kognitif yang paling tepat dari ayat tersebut adalah...",
+      "opsiA": "Nasib manusia sepenuhnya ditentukan oleh lingkungan sosialnya.",
+      "opsiB": "Allah memberikan ruang bagi manusia untuk menentukan nasibnya melalui perubahan sikap dan usaha.",
+      "opsiC": "Perubahan nasib hanya bisa terjadi jika manusia memiliki modal materi yang cukup.",
+      "opsiD": "Manusia tidak perlu berdoa karena usaha adalah segalanya.",
+      "jawaban": "B"
+    },
+    {
       "nomor": 13,
       "pertanyaan": "Ketentuan Allah SWT yang dapat berubah melalui usaha (ikhtiar) dan doa manusia disebut...",
       "opsiA": "Takdir Mubram",
@@ -119,6 +74,15 @@
       "opsiC": "Takdir Mutlak",
       "opsiD": "Takdir Pasti",
       "jawaban": "B"
+    },
+    {
+      "nomor": 6,
+      "pertanyaan": "Seorang petani telah membajak sawah, memberi pupuk terbaik, dan mengairi lahannya dengan teratur. Namun, tiba-tiba terjadi hama belalang yang menghabiskan seluruh tanamannya. Sikap yang mencerminkan kaitan antara ikhtiar dan tawakal yang benar adalah...",
+      "opsiA": "Marah dan menyalahkan takdir karena merasa usahanya sia-sia.",
+      "opsiB": "Berhenti bertani selamanya karena takut akan mengalami kegagalan lagi.",
+      "opsiC": "Menerima dengan lapang dada (sabar) sambil mengevaluasi teknik pertaniannya untuk musim depan.",
+      "opsiD": "Menganggap bahwa ikhtiar tidak penting karena hasil akhir hanya ditentukan Allah.",
+      "jawaban": "C"
     },
     {
       "nomor": 14,
@@ -130,6 +94,15 @@
       "jawaban": "B"
     },
     {
+      "nomor": 7,
+      "pertanyaan": "Zaid adalah siswa yang sangat cerdas, namun ia jarang belajar karena merasa sudah ditakdirkan lulus. Sebaliknya, Umar adalah siswa yang biasa saja namun belajar sangat keras hingga akhirnya lulus dengan nilai terbaik. Dari sudut pandang iman kepada Qada dan Qadar, tindakan Zaid salah karena...",
+      "opsiA": "Mengabaikan konsep takdir mubram.",
+      "opsiB": "Terlalu percaya diri dengan kemampuan otaknya.",
+      "opsiC": "Salah memahami konsep takdir mualak dengan meninggalkan ikhtiar.",
+      "opsiD": "Tidak mengikuti jejak teman-temannya yang lain.",
+      "jawaban": "C"
+    },
+    {
       "nomor": 15,
       "pertanyaan": "Agar seseorang yang sakit bisa sembuh, ia harus berobat dan berdoa. Hal ini menunjukkan berlakunya...",
       "opsiA": "Takdir Mubram",
@@ -139,12 +112,30 @@
       "jawaban": "C"
     },
     {
+      "nomor": 8,
+      "pertanyaan": "Apa perbedaan esensial dalam cara menyikapi takdir mubram dan takdir mualak dalam kehidupan sehari-hari?",
+      "opsiA": "Takdir mubram disikapi dengan ikhtiar, takdir mualak disikapi dengan pasrah.",
+      "opsiB": "Takdir mubram disikapi dengan rida dan sabar, takdir mualak disikapi dengan optimisme dan kerja keras.",
+      "opsiC": "Keduanya harus disikapi dengan cara yang sama yaitu mengabaikannya.",
+      "opsiD": "Takdir mubram membutuhkan kecerdasan, takdir mualak membutuhkan kekuatan fisik.",
+      "jawaban": "B"
+    },
+    {
       "nomor": 16,
       "pertanyaan": "Perbedaan mendasar antara takdir mubram dan takdir mualak terletak pada...",
       "opsiA": "Keterlibatan usaha manusia",
       "opsiB": "Waktu terjadinya",
       "opsiC": "Siapa yang menciptakan",
       "opsiD": "Kitab suci yang menjelaskannya",
+      "jawaban": "A"
+    },
+    {
+      "nomor": 9,
+      "pertanyaan": "Manakah perilaku di bawah ini yang menunjukkan implementasi iman kepada Qada dan Qadar yang paling produktif?",
+      "opsiA": "Selalu berhati-hati dalam bertindak namun tetap tenang karena percaya perlindungan Allah.",
+      "opsiB": "Bekerja tanpa henti hingga lupa waktu ibadah demi mengejar kekayaan.",
+      "opsiC": "Menyerahkan segala urusan kepada Allah tanpa melakukan tindakan apapun.",
+      "opsiD": "Menjadi sombong ketika berhasil karena merasa itu adalah hasil keringat sendiri.",
       "jawaban": "A"
     },
     {
@@ -227,87 +218,6 @@
       "opsiC": "Bersabar dan mengevaluasi diri untuk mencoba lagi",
       "opsiD": "Mencari-cari kesalahan orang lain",
       "jawaban": "C"
-    },
-    {
-      "nomor": 1,
-      "pertanyaan": "Secara terminologi, terdapat perbedaan tipis namun mendasar antara Qada dan Qadar. Manakah pernyataan di bawah ini yang paling tepat menggambarkan analisis hubungan keduanya dalam kehidupan manusia?",
-      "opsiA": "Qada adalah perwujudan dari rencana Allah, sedangkan Qadar adalah ketetapan Allah sejak zaman azali.",
-      "opsiB": "Qada merupakan rencana atau ketetapan Allah sejak zaman azali, sedangkan Qadar adalah perwujudan atau realisasi dari ketetapan tersebut.",
-      "opsiC": "Qada berkaitan dengan usaha manusia (ikhtiar), sedangkan Qadar berkaitan dengan hasil akhir yang tidak bisa diubah.",
-      "opsiD": "Qada adalah ketetapan yang masih bisa diubah dengan doa, sedangkan Qadar adalah ketetapan yang mutlak.",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 2,
-      "pertanyaan": "Perhatikan fenomena berikut: (1) Kematian seseorang, (2) Jenis kelamin bayi yang lahir, (3) Terjadinya kiamat, (4) Kesuksesan ekonomi. Manakah yang termasuk ke dalam kategori takdir mubram?",
-      "opsiA": "(1), (2), dan (3)",
-      "opsiB": "(1), (3), dan (4)",
-      "opsiC": "(2), (3), dan (4)",
-      "opsiD": "(1) dan (4) saja",
-      "jawaban": "A"
-    },
-    {
-      "nomor": 3,
-      "pertanyaan": "Dalam QS. Al-A'raf: 34 disebutkan bahwa: 'Tiap-tiap umat mempunyai batas waktu; maka apabila telah datang waktunya, mereka tidak dapat mengundurkannya barang sesaat pun dan tidak dapat (pula) memajukannya'. Ayat ini merupakan dalil naqli yang menjelaskan tentang...",
-      "opsiA": "Takdir mualak yang dapat diubah dengan doa",
-      "opsiB": "Kewajiban manusia untuk berikhtiar",
-      "opsiC": "Takdir mubram yang bersifat paten dan tidak dapat ditawar",
-      "opsiD": "Konsep tawakal dalam menghadapi musibah",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 4,
-      "pertanyaan": "Seseorang yang menderita sakit parah kemudian berobat dengan sungguh-sungguh dan berdoa hingga akhirnya sembuh total. Peristiwa ini merupakan contoh dari takdir mualak. Analisis yang benar mengenai hal ini adalah...",
-      "opsiA": "Kesembuhan adalah kebetulan semata tanpa ada campur tangan Tuhan.",
-      "opsiB": "Allah Swt. menetapkan kesembuhan tersebut melalui perantara ikhtiar dan doa hamba-Nya.",
-      "opsiC": "Takdir Allah bisa dikalahkan oleh keinginan manusia yang kuat.",
-      "opsiD": "Manusia memiliki kendali penuh atas hidup dan matinya sendiri.",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 5,
-      "pertanyaan": "Perhatikan kutipan ayat berikut: '...Sesungguhnya Allah tidak mengubah keadaan sesuatu kaum sehingga mereka mengubah keadaan yang ada pada diri mereka sendiri...' (QS. Ar-Ra'd: 11). Kesimpulan kognitif yang paling tepat dari ayat tersebut adalah...",
-      "opsiA": "Nasib manusia sepenuhnya ditentukan oleh lingkungan sosialnya.",
-      "opsiB": "Allah memberikan ruang bagi manusia untuk menentukan nasibnya melalui perubahan sikap dan usaha.",
-      "opsiC": "Perubahan nasib hanya bisa terjadi jika manusia memiliki modal materi yang cukup.",
-      "opsiD": "Manusia tidak perlu berdoa karena usaha adalah segalanya.",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 6,
-      "pertanyaan": "Seorang petani telah membajak sawah, memberi pupuk terbaik, dan mengairi lahannya dengan teratur. Namun, tiba-tiba terjadi hama belalang yang menghabiskan seluruh tanamannya. Sikap yang mencerminkan kaitan antara ikhtiar dan tawakal yang benar adalah...",
-      "opsiA": "Marah dan menyalahkan takdir karena merasa usahanya sia-sia.",
-      "opsiB": "Berhenti bertani selamanya karena takut akan mengalami kegagalan lagi.",
-      "opsiC": "Menerima dengan lapang dada (sabar) sambil mengevaluasi teknik pertaniannya untuk musim depan.",
-      "opsiD": "Menganggap bahwa ikhtiar tidak penting karena hasil akhir hanya ditentukan Allah.",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 7,
-      "pertanyaan": "Zaid adalah siswa yang sangat cerdas, namun ia jarang belajar karena merasa sudah ditakdirkan lulus. Sebaliknya, Umar adalah siswa yang biasa saja namun belajar sangat keras hingga akhirnya lulus dengan nilai terbaik. Dari sudut pandang iman kepada Qada dan Qadar, tindakan Zaid salah karena...",
-      "opsiA": "Mengabaikan konsep takdir mubram.",
-      "opsiB": "Terlalu percaya diri dengan kemampuan otaknya.",
-      "opsiC": "Salah memahami konsep takdir mualak dengan meninggalkan ikhtiar.",
-      "opsiD": "Tidak mengikuti jejak teman-temannya yang lain.",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 8,
-      "pertanyaan": "Apa perbedaan esensial dalam cara menyikapi takdir mubram dan takdir mualak dalam kehidupan sehari-hari?",
-      "opsiA": "Takdir mubram disikapi dengan ikhtiar, takdir mualak disikapi dengan pasrah.",
-      "opsiB": "Takdir mubram disikapi dengan rida dan sabar, takdir mualak disikapi dengan optimisme dan kerja keras.",
-      "opsiC": "Keduanya harus disikapi dengan cara yang sama yaitu mengabaikannya.",
-      "opsiD": "Takdir mubram membutuhkan kecerdasan, takdir mualak membutuhkan kekuatan fisik.",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 9,
-      "pertanyaan": "Manakah perilaku di bawah ini yang menunjukkan implementasi iman kepada Qada dan Qadar yang paling produktif?",
-      "opsiA": "Selalu berhati-hati dalam bertindak namun tetap tenang karena percaya perlindungan Allah.",
-      "opsiB": "Bekerja tanpa henti hingga lupa waktu ibadah demi mengejar kekayaan.",
-      "opsiC": "Menyerahkan segala urusan kepada Allah tanpa melakukan tindakan apapun.",
-      "opsiD": "Menjadi sombong ketika berhasil karena merasa itu adalah hasil keringat sendiri.",
-      "jawaban": "A"
     },
     {
       "nomor": 10,
