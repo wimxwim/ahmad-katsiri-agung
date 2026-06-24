@@ -5,93 +5,48 @@
   "soal": [
     {
       "nomor": 1,
-      "pertanyaan": "Surah dalam Al-Qur'an yang menjelaskan tentang posisi umat Islam sebagai 'Ummatan Wasathan' atau umat yang moderat adalah Surah...",
-      "opsiA": "al-Baqarah [2] ayat 143",
-      "opsiB": "Ali 'Imran [3] ayat 110",
-      "opsiC": "al-Ma'idah [5] ayat 48",
-      "opsiD": "al-Hujurat [49] ayat 13",
-      "jawaban": "A"
+      "pertanyaan": "Dalam Q.S. al-Baqarah [2]: 143, Allah Swt. menyebut umat Islam sebagai 'Ummatan Wasathan'. Secara etimologis dan kontekstual, manakah pernyataan berikut yang paling tepat menggambarkan makna tersebut?",
+      "opsiA": "Umat yang paling unggul karena memiliki kekuasaan politik yang luas di seluruh dunia.",
+      "opsiB": "Umat pilihan yang berada di tengah-tengah, bersikap adil, dan seimbang dalam segala urusan.",
+      "opsiC": "Umat yang mengabaikan urusan duniawi dan hanya fokus pada persiapan kehidupan akhirat saja.",
+      "opsiD": "Umat yang bebas menentukan hukum agama sesuai dengan perkembangan zaman tanpa batasan.",
+      "jawaban": "B"
     },
     {
       "nomor": 2,
-      "pertanyaan": "Dalam Surah al-Baqarah [2] ayat 143, terdapat istilah 'Ummatan Wasathan'. Secara bahasa, kata 'Wasathan' berarti...",
-      "opsiA": "Umat yang paling kuat",
-      "opsiB": "Umat yang berada di tengah-tengah",
-      "opsiC": "Umat yang paling akhir",
-      "opsiD": "Umat yang menguasai dunia",
+      "pertanyaan": "Dalam Q.S. al-Baqarah [2]: 143, Allah Swt. menyebut umat Islam sebagai 'Ummatan Wasathan'. Salah satu tujuan utama dari penyematan gelar tersebut adalah agar umat Islam menjadi...",
+      "opsiA": "Penguasa seluruh peradaban dunia secara politik",
+      "opsiB": "Saksi (Syuhada) atas perbuatan manusia di hari kiamat",
+      "opsiC": "Kelompok yang eksklusif dan memisahkan diri",
+      "opsiD": "Umat yang hanya fokus pada urusan akhirat saja",
       "jawaban": "B"
     },
     {
       "nomor": 3,
-      "pertanyaan": "Apabila ada nun sukun (ن) bertemu dengan huruf 'ba' (ب), maka hukum bacaannya disebut...",
-      "opsiA": "Idzhar Halqi",
-      "opsiB": "Idgham Bighunnah",
-      "opsiC": "Iqlab",
-      "opsiD": "Ikhfa Haqiqi",
+      "pertanyaan": "Andi adalah seorang siswa yang sangat rajin beribadah. Namun, ia sering menganggap teman yang berbeda paham dengannya sebagai orang yang kurang beriman. Sikap Andi ini bertentangan dengan prinsip moderasi beragama, khususnya dalam hal...",
+      "opsiA": "Tawazun (Keseimbangan)",
+      "opsiB": "I'tidal (Tegak Lurus)",
+      "opsiC": "Tasamuh (Toleransi)",
+      "opsiD": "Syura (Musyawarah)",
       "jawaban": "C"
     },
     {
       "nomor": 4,
-      "pertanyaan": "Berikut ini yang merupakan contoh hukum bacaan Mim Sukun (م) bertemu dengan huruf 'mim' (م) adalah...",
-      "opsiA": "Idzhar Syafawi",
-      "opsiB": "Ikhfa Syafawi",
-      "opsiC": "Idgham Mimi",
-      "opsiD": "Idgham Bilaghunnah",
-      "jawaban": "C"
+      "pertanyaan": "Perhatikan kutipan hadis berikut: 'Hendaklah kalian bersikap moderat (sedang-sedang saja), niscaya kalian akan sampai ke tujuan'. Analisis manakah yang paling tepat menggambarkan pesan hadis tersebut dalam konteks kehidupan modern?",
+      "opsiA": "Beragama tidak perlu serius karena yang penting adalah niat baik",
+      "opsiB": "Sikap ekstrem dalam beragama justru akan menjauhkan seseorang dari esensi agama",
+      "opsiC": "Keberhasilan hidup hanya bisa dicapai jika kita meninggalkan urusan agama",
+      "opsiD": "Beribadah terus-menerus tanpa henti adalah satu-satunya jalan menuju surga",
+      "jawaban": "B"
     },
     {
       "nomor": 5,
-      "pertanyaan": "Cara membaca hukum Idzhar Syafawi adalah dengan suara mim mati yang dibaca...",
-      "opsiA": "Samar-samar",
-      "opsiB": "Jelas dan terang",
-      "opsiC": "Memantul kuat",
-      "opsiD": "Melebur ke huruf berikutnya",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 6,
-      "pertanyaan": "Sikap moderasi beragama dalam kehidupan sehari-hari ditunjukkan dengan cara...",
-      "opsiA": "Memaksakan keyakinan kepada orang lain",
-      "opsiB": "Merasa paling benar sendiri",
-      "opsiC": "Menghargai perbedaan pendapat dan keyakinan",
-      "opsiD": "Tidak mau bergaul dengan penganut agama lain",
+      "pertanyaan": "Di sebuah lingkungan sekolah yang beragam, terdapat usulan untuk mengadakan kegiatan keagamaan bersama yang menghormati semua keyakinan. Jika kamu menerapkan prinsip moderasi beragama, bagaimana caramu mengevaluasi usulan tersebut?",
+      "opsiA": "Menolak karena mencampuradukkan akidah adalah dilarang",
+      "opsiB": "Menerima sepenuhnya termasuk ikut ritual ibadah agama lain",
+      "opsiC": "Mendukung selama kegiatan tersebut bersifat sosial dan mempererat kerukunan tanpa mencampur ritual",
+      "opsiD": "Tidak peduli karena urusan agama adalah urusan masing-masing individu",
       "jawaban": "C"
-    },
-    {
-      "nomor": 7,
-      "pertanyaan": "Dalam potongan ayat 'wa kadzalika ja'alnakum ummatan wasathan', kata 'ja'alnakum' memiliki arti...",
-      "opsiA": "Kami telah menjadikan kamu",
-      "opsiB": "Kami telah mengutus kamu",
-      "opsiC": "Kami telah memberi kamu",
-      "opsiD": "Kami telah melihat kamu",
-      "jawaban": "A"
-    },
-    {
-      "nomor": 8,
-      "pertanyaan": "Tujuan Allah Swt. menjadikan umat Islam sebagai umat yang moderat menurut QS. al-Baqarah [2]: 143 adalah agar menjadi...",
-      "opsiA": "Penguasa di muka bumi",
-      "opsiB": "Saksi (syuhada) atas perbuatan manusia",
-      "opsiC": "Umat yang paling kaya",
-      "opsiD": "Musuh bagi umat lainnya",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 9,
-      "pertanyaan": "Hukum bacaan nun sukun atau tanwin dibagi menjadi 4. Jika tanwin bertemu huruf 'alif', maka hukumnya adalah...",
-      "opsiA": "Ikhfa",
-      "opsiB": "Idgham",
-      "opsiC": "Iqlab",
-      "opsiD": "Idzhar",
-      "jawaban": "D"
-    },
-    {
-      "nomor": 10,
-      "pertanyaan": "Hadis Nabi Muhammad saw. menyebutkan bahwa agama Islam itu bersifat 'Samhah'. Arti dari kata 'Samhah' adalah...",
-      "opsiA": "Keras dan kaku",
-      "opsiB": "Mudah dan toleran",
-      "opsiC": "Tersembunyi",
-      "opsiD": "Sangat sulit",
-      "jawaban": "B"
     },
     {
       "nomor": 11,
@@ -103,12 +58,30 @@
       "jawaban": "A"
     },
     {
+      "nomor": 6,
+      "pertanyaan": "Konsep 'Tawazun' dalam moderasi beragama sering disalahpahami. Penerapan Tawazun yang paling tepat dalam kehidupan sehari-hari seorang pelajar adalah...",
+      "opsiA": "Belajar sepanjang malam hingga tidak melaksanakan salat subuh",
+      "opsiB": "Membagi waktu secara adil antara belajar, beribadah, dan membantu orang tua",
+      "opsiC": "Hanya fokus pada kegiatan ekstrakurikuler karena hobi adalah prioritas",
+      "opsiD": "Melaksanakan salat sepanjang hari di sekolah sehingga melalaikan tugas kelas",
+      "jawaban": "B"
+    },
+    {
       "nomor": 12,
       "pertanyaan": "Moderasi beragama bukan berarti merubah ajaran agama, melainkan...",
       "opsiA": "Mengikuti semua kemauan orang lain",
       "opsiB": "Cara pandang dan sikap dalam beragama secara adil",
       "opsiC": "Mencampuradukkan ajaran antar agama",
       "opsiD": "Mengurangi jumlah ibadah wajib",
+      "jawaban": "B"
+    },
+    {
+      "nomor": 7,
+      "pertanyaan": "Mengapa sikap berlebihan (Ghuluw) dalam beragama dilarang dalam Islam menurut kandungan hadis nabi? Analisislah dampak negatifnya terhadap harmoni sosial...",
+      "opsiA": "Karena membuat seseorang menjadi terlalu pintar",
+      "opsiB": "Karena dapat memicu konflik dan perpecahan akibat merasa paling benar",
+      "opsiC": "Karena berlebihan akan menghabiskan banyak biaya untuk sedekah",
+      "opsiD": "Karena Allah menyukai orang yang malas dalam beribadah",
       "jawaban": "B"
     },
     {
@@ -121,12 +94,30 @@
       "jawaban": "A"
     },
     {
+      "nomor": 8,
+      "pertanyaan": "Dalam Q.S. al-Baqarah [2]: 143, posisi umat Islam di tengah-tengah diibaratkan seperti 'wasith' dalam pertandingan. Jika diimplementasikan dalam kehidupan berbangsa di Indonesia, maka peran umat Islam adalah...",
+      "opsiA": "Menjadi penengah dan pemersatu di tengah keberagaman suku dan agama",
+      "opsiB": "Menjadi pengawas yang menghukum siapapun yang berbeda pendapat",
+      "opsiC": "Menjadi penonton yang tidak peduli dengan masalah negara",
+      "opsiD": "Menjadi pihak yang harus selalu dimenangkan dalam setiap perdebatan",
+      "jawaban": "A"
+    },
+    {
       "nomor": 14,
       "pertanyaan": "Ketika ada nun sukun bertemu dengan huruf 'Lam' (ل) atau 'Ra' (ر), maka dibaca tanpa dengung. Hukum ini disebut...",
       "opsiA": "Idgham Bighunnah",
       "opsiB": "Idgham Bilaghunnah",
       "opsiC": "Ikhfa Syafawi",
       "opsiD": "Idzhar Halqi",
+      "jawaban": "B"
+    },
+    {
+      "nomor": 9,
+      "pertanyaan": "Seorang konten kreator sering mengunggah video yang menjelek-jelekkan tradisi lokal karena dianggap tidak sesuai dengan pemahamannya. Bagaimana tindakan ini jika dinilai dari sudut pandang moderasi beragama?",
+      "opsiA": "Sangat baik karena ia berani menegakkan kebenaran di media sosial",
+      "opsiB": "Kurang tepat karena moderasi mengedepankan cara dakwah yang bijak dan menghargai budaya",
+      "opsiC": "Biasa saja karena setiap orang bebas berekspresi di internet",
+      "opsiD": "Perlu didukung agar budaya lokal segera hilang digantikan budaya baru",
       "jawaban": "B"
     },
     {
@@ -227,87 +218,6 @@
       "opsiC": "Kerukunan dan kedamaian",
       "opsiD": "Persaingan antar agama",
       "jawaban": "C"
-    },
-    {
-      "nomor": 1,
-      "pertanyaan": "Dalam Q.S. al-Baqarah [2]: 143, Allah Swt. menyebut umat Islam sebagai 'Ummatan Wasathan'. Secara etimologis dan kontekstual, manakah pernyataan berikut yang paling tepat menggambarkan makna tersebut?",
-      "opsiA": "Umat yang paling unggul karena memiliki kekuasaan politik yang luas di seluruh dunia.",
-      "opsiB": "Umat pilihan yang berada di tengah-tengah, bersikap adil, dan seimbang dalam segala urusan.",
-      "opsiC": "Umat yang mengabaikan urusan duniawi dan hanya fokus pada persiapan kehidupan akhirat saja.",
-      "opsiD": "Umat yang bebas menentukan hukum agama sesuai dengan perkembangan zaman tanpa batasan.",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 2,
-      "pertanyaan": "Dalam Q.S. al-Baqarah [2]: 143, Allah Swt. menyebut umat Islam sebagai 'Ummatan Wasathan'. Salah satu tujuan utama dari penyematan gelar tersebut adalah agar umat Islam menjadi...",
-      "opsiA": "Penguasa seluruh peradaban dunia secara politik",
-      "opsiB": "Saksi (Syuhada) atas perbuatan manusia di hari kiamat",
-      "opsiC": "Kelompok yang eksklusif dan memisahkan diri",
-      "opsiD": "Umat yang hanya fokus pada urusan akhirat saja",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 3,
-      "pertanyaan": "Andi adalah seorang siswa yang sangat rajin beribadah. Namun, ia sering menganggap teman yang berbeda paham dengannya sebagai orang yang kurang beriman. Sikap Andi ini bertentangan dengan prinsip moderasi beragama, khususnya dalam hal...",
-      "opsiA": "Tawazun (Keseimbangan)",
-      "opsiB": "I'tidal (Tegak Lurus)",
-      "opsiC": "Tasamuh (Toleransi)",
-      "opsiD": "Syura (Musyawarah)",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 4,
-      "pertanyaan": "Perhatikan kutipan hadis berikut: 'Hendaklah kalian bersikap moderat (sedang-sedang saja), niscaya kalian akan sampai ke tujuan'. Analisis manakah yang paling tepat menggambarkan pesan hadis tersebut dalam konteks kehidupan modern?",
-      "opsiA": "Beragama tidak perlu serius karena yang penting adalah niat baik",
-      "opsiB": "Sikap ekstrem dalam beragama justru akan menjauhkan seseorang dari esensi agama",
-      "opsiC": "Keberhasilan hidup hanya bisa dicapai jika kita meninggalkan urusan agama",
-      "opsiD": "Beribadah terus-menerus tanpa henti adalah satu-satunya jalan menuju surga",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 5,
-      "pertanyaan": "Di sebuah lingkungan sekolah yang beragam, terdapat usulan untuk mengadakan kegiatan keagamaan bersama yang menghormati semua keyakinan. Jika kamu menerapkan prinsip moderasi beragama, bagaimana caramu mengevaluasi usulan tersebut?",
-      "opsiA": "Menolak karena mencampuradukkan akidah adalah dilarang",
-      "opsiB": "Menerima sepenuhnya termasuk ikut ritual ibadah agama lain",
-      "opsiC": "Mendukung selama kegiatan tersebut bersifat sosial dan mempererat kerukunan tanpa mencampur ritual",
-      "opsiD": "Tidak peduli karena urusan agama adalah urusan masing-masing individu",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 6,
-      "pertanyaan": "Konsep 'Tawazun' dalam moderasi beragama sering disalahpahami. Penerapan Tawazun yang paling tepat dalam kehidupan sehari-hari seorang pelajar adalah...",
-      "opsiA": "Belajar sepanjang malam hingga tidak melaksanakan salat subuh",
-      "opsiB": "Membagi waktu secara adil antara belajar, beribadah, dan membantu orang tua",
-      "opsiC": "Hanya fokus pada kegiatan ekstrakurikuler karena hobi adalah prioritas",
-      "opsiD": "Melaksanakan salat sepanjang hari di sekolah sehingga melalaikan tugas kelas",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 7,
-      "pertanyaan": "Mengapa sikap berlebihan (Ghuluw) dalam beragama dilarang dalam Islam menurut kandungan hadis nabi? Analisislah dampak negatifnya terhadap harmoni sosial...",
-      "opsiA": "Karena membuat seseorang menjadi terlalu pintar",
-      "opsiB": "Karena dapat memicu konflik dan perpecahan akibat merasa paling benar",
-      "opsiC": "Karena berlebihan akan menghabiskan banyak biaya untuk sedekah",
-      "opsiD": "Karena Allah menyukai orang yang malas dalam beribadah",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 8,
-      "pertanyaan": "Dalam Q.S. al-Baqarah [2]: 143, posisi umat Islam di tengah-tengah diibaratkan seperti 'wasith' dalam pertandingan. Jika diimplementasikan dalam kehidupan berbangsa di Indonesia, maka peran umat Islam adalah...",
-      "opsiA": "Menjadi penengah dan pemersatu di tengah keberagaman suku dan agama",
-      "opsiB": "Menjadi pengawas yang menghukum siapapun yang berbeda pendapat",
-      "opsiC": "Menjadi penonton yang tidak peduli dengan masalah negara",
-      "opsiD": "Menjadi pihak yang harus selalu dimenangkan dalam setiap perdebatan",
-      "jawaban": "A"
-    },
-    {
-      "nomor": 9,
-      "pertanyaan": "Seorang konten kreator sering mengunggah video yang menjelek-jelekkan tradisi lokal karena dianggap tidak sesuai dengan pemahamannya. Bagaimana tindakan ini jika dinilai dari sudut pandang moderasi beragama?",
-      "opsiA": "Sangat baik karena ia berani menegakkan kebenaran di media sosial",
-      "opsiB": "Kurang tepat karena moderasi mengedepankan cara dakwah yang bijak dan menghargai budaya",
-      "opsiC": "Biasa saja karena setiap orang bebas berekspresi di internet",
-      "opsiD": "Perlu didukung agar budaya lokal segera hilang digantikan budaya baru",
-      "jawaban": "B"
     },
     {
       "nomor": 10,
