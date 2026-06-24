@@ -5,93 +5,48 @@
   "soal": [
     {
       "nomor": 1,
-      "pertanyaan": "Secara bahasa, kata 'tabayun' berasal dari kata 'tabayyana' yang berarti...",
-      "opsiA": "Bermusyawarah",
-      "opsiB": "Jelas, terang, dan tampak",
-      "opsiC": "Berdebat",
-      "opsiD": "Menyembunyikan",
-      "jawaban": "B"
+      "pertanyaan": "Di sebuah grup WhatsApp kelas, beredar kabar bahwa salah satu teman membolos sekolah karena pergi ke warnet. Sebagai siswa yang memahami konsep tabayun, tindakan kritis yang paling tepat dilakukan pertama kali adalah...",
+      "opsiA": "Langsung membagikan informasi tersebut ke grup lain agar teman tersebut jera.",
+      "opsiB": "Menghapus pesan tersebut agar tidak ada teman lain yang membacanya.",
+      "opsiC": "Menanyakan kebenaran informasi tersebut langsung kepada teman yang bersangkutan secara pribadi.",
+      "opsiD": "Mempercayai informasi tersebut karena dikirim oleh teman akrab.",
+      "jawaban": "C"
     },
     {
       "nomor": 2,
-      "pertanyaan": "Menurut Quraish Shihab, tabayun berarti...",
-      "opsiA": "Berprasangka baik kepada sesama",
-      "opsiB": "Telitilah dan bersungguh-sungguh",
-      "opsiC": "Menerima semua informasi",
-      "opsiD": "Menolak pendapat orang lain",
-      "jawaban": "B"
+      "pertanyaan": "Perhatikan kutipan makna ayat berikut: 'Wahai orang-orang yang beriman! Jika seseorang yang fasik datang kepadamu membawa suatu berita, maka telitilah kebenarannya...' (QS. Al-Hujurat: 6). Alasan utama mengapa kita harus meneliti berita dari orang fasik dalam konteks kehidupan digital saat ini adalah...",
+      "opsiA": "Agar kita tidak menimpakan suatu bahaya kepada suatu kaum tanpa mengetahui keadaannya.",
+      "opsiB": "Karena orang fasik adalah orang yang selalu berkata jujur dalam setiap keadaan.",
+      "opsiC": "Untuk memastikan bahwa kita menjadi orang pertama yang menyebarkan berita benar.",
+      "opsiD": "Agar kita mendapatkan pujian dari orang lain sebagai orang yang teliti.",
+      "jawaban": "A"
     },
     {
       "nomor": 3,
-      "pertanyaan": "Tabayun adalah sikap tidak tergesa-gesa dalam menilai sesuatu dengan didahului upaya...",
-      "opsiA": "Menyebarkan informasi ke siapa pun",
-      "opsiB": "Mencari informasi yang benar",
-      "opsiC": "Langusng percaya pada berita viral",
-      "opsiD": "Menghakimi orang yang berbeda pendapat",
+      "pertanyaan": "Tabayun secara bahasa memiliki arti mencari kejelasan tentang sesuatu hingga jelas benar keadaannya. Dalam penerapannya di media sosial, manakah perilaku berikut yang menunjukkan penerapan tabayun yang paling tepat?",
+      "opsiA": "Membaca judul berita yang sensasional dan langsung berkomentar negatif.",
+      "opsiB": "Melakukan cross-check informasi dengan mencari sumber berita dari media resmi yang kredibel.",
+      "opsiC": "Menyebarkan berita yang belum jelas kebenarannya dengan embel-embel 'copas dari grup sebelah'.",
+      "opsiD": "Mengabaikan semua informasi yang masuk baik yang benar maupun yang salah.",
       "jawaban": "B"
     },
     {
       "nomor": 4,
-      "pertanyaan": "Allah Swt. berfirman dalam Q.S. Al-Hujurat [49]: 6: 'In jaakum fasiqu binabai'in fatabayyanu'. Arti dari kata 'fatabayyanu' adalah...",
-      "opsiA": "Maka sebarkanlah",
-      "opsiB": "Maka telitilah kebenarannya",
-      "opsiC": "Maka diamlah",
-      "opsiD": "Maka catatlah",
+      "pertanyaan": "Gibah sering kali diibaratkan dalam Al-Qur'an seperti memakan daging saudaranya sendiri yang sudah mati. Secara psikologis dan sosial, mengapa gibah dianggap sangat merusak hubungan antarmanusia?",
+      "opsiA": "Karena gibah hanya memberikan informasi yang benar tentang keburukan orang lain.",
+      "opsiB": "Karena gibah dapat menghancurkan martabat dan nama baik seseorang tanpa orang tersebut bisa membela diri.",
+      "opsiC": "Karena gibah membantu orang lain untuk mengetahui kelemahan musuh-musuhnya.",
+      "opsiD": "Karena gibah adalah bentuk kejujuran yang harus disampaikan meskipun menyakitkan.",
       "jawaban": "B"
     },
     {
       "nomor": 5,
-      "pertanyaan": "Dalam Q.S. Al-Hujurat [49]: 6, siapa yang disebutkan datang membawa berita?",
-      "opsiA": "Orang alim",
-      "opsiB": "Orang fasik",
-      "opsiC": "Malaikat",
-      "opsiD": "Nabi",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 6,
-      "pertanyaan": "Larangan untuk tidak tabayun dalam Q.S. Al-Hujurat [49]: 6 dapat mengakibatkan...",
-      "opsiA": "Mendapat pahala",
-      "opsiB": "Menyesal karena mencelakakan suatu kaum karena kebodohan",
-      "opsiC": "Dihormati masyarakat",
-      "opsiD": "Mendapat hadiah dari orang lain",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 7,
-      "pertanyaan": "Dua langkah utama dalam bertabayun adalah...",
-      "opsiA": "Membaca dan bertanya",
-      "opsiB": "Berdebat dan mengkritik",
-      "opsiC": "Diam dan menyendiri",
-      "opsiD": "Menulis dan menyebarkan",
-      "jawaban": "A"
-    },
-    {
-      "nomor": 8,
-      "pertanyaan": "Salah satu ciri tabayun yang baik adalah...",
-      "opsiA": "Informasi hanya dari satu sumber",
-      "opsiB": "Memastikan sumber informasi benar dan terpercaya",
-      "opsiC": "Langsung percaya pada informasi yang viral",
-      "opsiD": "Menolak informasi dari siapa pun",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 9,
-      "pertanyaan": "Ketika menerima informasi yang belum jelas kebenarannya, sikap yang tepat adalah...",
-      "opsiA": "Langsung membagikan ke grup WhatsApp",
-      "opsiB": "Melakukan verifikasi atau tabayun terlebih dahulu",
-      "opsiC": "Mengomentari dengan kasar",
-      "opsiD": "Mengabaikan tanpa peduli",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 10,
-      "pertanyaan": "Secara etimologi, kata 'ghibah' berarti...",
-      "opsiA": "Hadir atau datang",
-      "opsiB": "Ghaib atau tidak hadir",
-      "opsiC": "Berbicara",
-      "opsiD": "Mendengarkan",
-      "jawaban": "B"
+      "pertanyaan": "Seorang siswa mendengar teman-temannya sedang membicarakan aib salah satu guru di kantin. Jika siswa tersebut ingin menjauhi perilaku gibah tanpa menyakiti perasaan teman-temannya, strategi komunikasi yang paling efektif adalah...",
+      "opsiA": "Memarahi teman-temannya dengan suara keras agar mereka merasa malu.",
+      "opsiB": "Ikut mendengarkan tetapi tidak memberikan komentar apapun agar tidak berdosa.",
+      "opsiC": "Mengalihkan topik pembicaraan ke hal lain yang lebih bermanfaat secara halus.",
+      "opsiD": "Melaporkan kejadian tersebut kepada guru yang sedang dibicarakan.",
+      "jawaban": "C"
     },
     {
       "nomor": 11,
@@ -112,6 +67,24 @@
       "jawaban": "D"
     },
     {
+      "nomor": 6,
+      "pertanyaan": "Ada perbedaan mendasar antara kritik dan gibah. Manakah pernyataan berikut yang paling tepat menggambarkan perbedaan tersebut?",
+      "opsiA": "Kritik dilakukan di depan orangnya untuk perbaikan, sedangkan gibah dilakukan di belakang orangnya dan merusak.",
+      "opsiB": "Kritik dan gibah adalah hal yang sama karena keduanya membahas kekurangan orang lain.",
+      "opsiC": "Kritik dilakukan agar orang lain tahu kesalahannya, sedangkan gibah dilakukan agar kita terlihat lebih baik.",
+      "opsiD": "Kritik bersifat subjektif, sedangkan gibah bersifat objektif berdasarkan fakta.",
+      "jawaban": "A"
+    },
+    {
+      "nomor": 7,
+      "pertanyaan": "Salah satu hikmah membiasakan perilaku tabayun dalam kehidupan bermasyarakat adalah menjaga kerukunan. Apabila tabayun tidak dilakukan dalam masyarakat yang majemuk, dampak paling buruk yang mungkin terjadi adalah...",
+      "opsiA": "Terjadinya kesalahpahaman kecil yang mudah dimaafkan.",
+      "opsiB": "Meningkatnya jumlah pengguna media sosial di lingkungan tersebut.",
+      "opsiC": "Munculnya fitnah dan konflik horizontal yang dapat memecah belah persatuan.",
+      "opsiD": "Masyarakat menjadi lebih waspada terhadap berita-berita asing.",
+      "jawaban": "C"
+    },
+    {
       "nomor": 13,
       "pertanyaan": "Allah Swt. melarang ghibah dalam Q.S. Al-Hujurat [49]: 12 dengan perumpamaan yang sangat keras, yaitu seperti...",
       "opsiA": "Memakan bangkai hewan",
@@ -130,6 +103,15 @@
       "jawaban": "B"
     },
     {
+      "nomor": 8,
+      "pertanyaan": "Dalam sebuah hadis, Rasulullah SAW menjelaskan bahwa gibah adalah menceritakan sesuatu yang ada pada diri saudaramu yang ia tidak sukai. Jika yang diceritakan itu tidak benar (salah), maka perbuatan tersebut disebut...",
+      "opsiA": "Namimah (adu domba).",
+      "opsiB": "Buhtan (fitnah/dusta).",
+      "opsiC": "Hasad (dengki).",
+      "opsiD": "Riyā' (pamer).",
+      "jawaban": "B"
+    },
+    {
       "nomor": 15,
       "pertanyaan": "Ghibah dapat menyebabkan masalah psikologis seperti...",
       "opsiA": "Rasa percaya diri meningkat",
@@ -137,6 +119,15 @@
       "opsiC": "Semakin bijaksana",
       "opsiD": "Lebih disukai banyak orang",
       "jawaban": "B"
+    },
+    {
+      "nomor": 9,
+      "pertanyaan": "Seseorang yang terbiasa menjauhi gibah akan mendapatkan hikmah berupa ketenangan hati. Hal ini terjadi karena...",
+      "opsiA": "Ia tidak perlu merasa takut rahasianya akan dibongkar oleh orang lain.",
+      "opsiB": "Ia merasa lebih suci dan lebih mulia dibandingkan orang-orang di sekitarnya.",
+      "opsiC": "Fokus hidupnya dialihkan untuk memperbaiki diri sendiri daripada mengurusi urusan orang lain.",
+      "opsiD": "Orang-orang akan memberikan hadiah kepadanya sebagai imbalan atas sikap diamnya.",
+      "jawaban": "C"
     },
     {
       "nomor": 16,
@@ -227,87 +218,6 @@
       "opsiC": "Jangan pernah menerima informasi dari orang fasik",
       "opsiD": "Hanya diam dan tidak peduli dengan lingkungan sekitar",
       "jawaban": "B"
-    },
-    {
-      "nomor": 1,
-      "pertanyaan": "Di sebuah grup WhatsApp kelas, beredar kabar bahwa salah satu teman membolos sekolah karena pergi ke warnet. Sebagai siswa yang memahami konsep tabayun, tindakan kritis yang paling tepat dilakukan pertama kali adalah...",
-      "opsiA": "Langsung membagikan informasi tersebut ke grup lain agar teman tersebut jera.",
-      "opsiB": "Menghapus pesan tersebut agar tidak ada teman lain yang membacanya.",
-      "opsiC": "Menanyakan kebenaran informasi tersebut langsung kepada teman yang bersangkutan secara pribadi.",
-      "opsiD": "Mempercayai informasi tersebut karena dikirim oleh teman akrab.",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 2,
-      "pertanyaan": "Perhatikan kutipan makna ayat berikut: 'Wahai orang-orang yang beriman! Jika seseorang yang fasik datang kepadamu membawa suatu berita, maka telitilah kebenarannya...' (QS. Al-Hujurat: 6). Alasan utama mengapa kita harus meneliti berita dari orang fasik dalam konteks kehidupan digital saat ini adalah...",
-      "opsiA": "Agar kita tidak menimpakan suatu bahaya kepada suatu kaum tanpa mengetahui keadaannya.",
-      "opsiB": "Karena orang fasik adalah orang yang selalu berkata jujur dalam setiap keadaan.",
-      "opsiC": "Untuk memastikan bahwa kita menjadi orang pertama yang menyebarkan berita benar.",
-      "opsiD": "Agar kita mendapatkan pujian dari orang lain sebagai orang yang teliti.",
-      "jawaban": "A"
-    },
-    {
-      "nomor": 3,
-      "pertanyaan": "Tabayun secara bahasa memiliki arti mencari kejelasan tentang sesuatu hingga jelas benar keadaannya. Dalam penerapannya di media sosial, manakah perilaku berikut yang menunjukkan penerapan tabayun yang paling tepat?",
-      "opsiA": "Membaca judul berita yang sensasional dan langsung berkomentar negatif.",
-      "opsiB": "Melakukan cross-check informasi dengan mencari sumber berita dari media resmi yang kredibel.",
-      "opsiC": "Menyebarkan berita yang belum jelas kebenarannya dengan embel-embel 'copas dari grup sebelah'.",
-      "opsiD": "Mengabaikan semua informasi yang masuk baik yang benar maupun yang salah.",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 4,
-      "pertanyaan": "Gibah sering kali diibaratkan dalam Al-Qur'an seperti memakan daging saudaranya sendiri yang sudah mati. Secara psikologis dan sosial, mengapa gibah dianggap sangat merusak hubungan antarmanusia?",
-      "opsiA": "Karena gibah hanya memberikan informasi yang benar tentang keburukan orang lain.",
-      "opsiB": "Karena gibah dapat menghancurkan martabat dan nama baik seseorang tanpa orang tersebut bisa membela diri.",
-      "opsiC": "Karena gibah membantu orang lain untuk mengetahui kelemahan musuh-musuhnya.",
-      "opsiD": "Karena gibah adalah bentuk kejujuran yang harus disampaikan meskipun menyakitkan.",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 5,
-      "pertanyaan": "Seorang siswa mendengar teman-temannya sedang membicarakan aib salah satu guru di kantin. Jika siswa tersebut ingin menjauhi perilaku gibah tanpa menyakiti perasaan teman-temannya, strategi komunikasi yang paling efektif adalah...",
-      "opsiA": "Memarahi teman-temannya dengan suara keras agar mereka merasa malu.",
-      "opsiB": "Ikut mendengarkan tetapi tidak memberikan komentar apapun agar tidak berdosa.",
-      "opsiC": "Mengalihkan topik pembicaraan ke hal lain yang lebih bermanfaat secara halus.",
-      "opsiD": "Melaporkan kejadian tersebut kepada guru yang sedang dibicarakan.",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 6,
-      "pertanyaan": "Ada perbedaan mendasar antara kritik dan gibah. Manakah pernyataan berikut yang paling tepat menggambarkan perbedaan tersebut?",
-      "opsiA": "Kritik dilakukan di depan orangnya untuk perbaikan, sedangkan gibah dilakukan di belakang orangnya dan merusak.",
-      "opsiB": "Kritik dan gibah adalah hal yang sama karena keduanya membahas kekurangan orang lain.",
-      "opsiC": "Kritik dilakukan agar orang lain tahu kesalahannya, sedangkan gibah dilakukan agar kita terlihat lebih baik.",
-      "opsiD": "Kritik bersifat subjektif, sedangkan gibah bersifat objektif berdasarkan fakta.",
-      "jawaban": "A"
-    },
-    {
-      "nomor": 7,
-      "pertanyaan": "Salah satu hikmah membiasakan perilaku tabayun dalam kehidupan bermasyarakat adalah menjaga kerukunan. Apabila tabayun tidak dilakukan dalam masyarakat yang majemuk, dampak paling buruk yang mungkin terjadi adalah...",
-      "opsiA": "Terjadinya kesalahpahaman kecil yang mudah dimaafkan.",
-      "opsiB": "Meningkatnya jumlah pengguna media sosial di lingkungan tersebut.",
-      "opsiC": "Munculnya fitnah dan konflik horizontal yang dapat memecah belah persatuan.",
-      "opsiD": "Masyarakat menjadi lebih waspada terhadap berita-berita asing.",
-      "jawaban": "C"
-    },
-    {
-      "nomor": 8,
-      "pertanyaan": "Dalam sebuah hadis, Rasulullah SAW menjelaskan bahwa gibah adalah menceritakan sesuatu yang ada pada diri saudaramu yang ia tidak sukai. Jika yang diceritakan itu tidak benar (salah), maka perbuatan tersebut disebut...",
-      "opsiA": "Namimah (adu domba).",
-      "opsiB": "Buhtan (fitnah/dusta).",
-      "opsiC": "Hasad (dengki).",
-      "opsiD": "Riyā' (pamer).",
-      "jawaban": "B"
-    },
-    {
-      "nomor": 9,
-      "pertanyaan": "Seseorang yang terbiasa menjauhi gibah akan mendapatkan hikmah berupa ketenangan hati. Hal ini terjadi karena...",
-      "opsiA": "Ia tidak perlu merasa takut rahasianya akan dibongkar oleh orang lain.",
-      "opsiB": "Ia merasa lebih suci dan lebih mulia dibandingkan orang-orang di sekitarnya.",
-      "opsiC": "Fokus hidupnya dialihkan untuk memperbaiki diri sendiri daripada mengurusi urusan orang lain.",
-      "opsiD": "Orang-orang akan memberikan hadiah kepadanya sebagai imbalan atas sikap diamnya.",
-      "jawaban": "C"
     },
     {
       "nomor": 10,
