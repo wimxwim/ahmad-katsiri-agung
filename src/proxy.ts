@@ -18,6 +18,7 @@ const PUBLIC_ROUTES = [
   "/refleksi",
   "/masuk",
   "/masuk-guru",
+  "/quran",
   "/keystatic",
   "/session",
 ];
@@ -44,8 +45,8 @@ export async function proxy(request: NextRequest) {
     `img-src 'self' data: blob: https:`,
     `font-src 'self' https://fonts.gstatic.com data:`,
     `frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com`,
-    `media-src 'self' https://*.youtube.com https://*.googlevideo.com`,
-    `connect-src 'self' https://*.vercel.app https://*.vercel-insights.com https://*.googleapis.com https://*.google-analytics.com https://*.youtube.com https://*.googlevideo.com https://api.github.com https://*.githubusercontent.com`,
+    `media-src 'self' https://cdn.equran.id https://*.youtube.com https://*.googlevideo.com`,
+    `connect-src 'self' https://equran.id https://*.vercel.app https://*.vercel-insights.com https://*.googleapis.com https://*.google-analytics.com https://*.youtube.com https://*.googlevideo.com https://api.github.com https://*.githubusercontent.com`,
     `object-src 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,
