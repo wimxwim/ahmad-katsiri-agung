@@ -789,6 +789,11 @@ Yang ke-4 dan ke-5 gak otomatis — harus di-klik manual di dashboard.
 | **Cleanup orphaned files** | ✅ Selesai | — | `public/ppt/` 5 file deleted, `public/images/games/*.png` 8 file deleted, `PROTA KELAS 9.pdf` duplikat deleted |
 | **`membiasakan-tabayyun` PDF soal** | 🔲 Belum | — | Satu-satunya bab tanpa `soalUrl` — nunggu file dari Bang Agung |
 | **URL typo fix (Canva games)** | ✅ Selesai | — | `mungkarr` → `mungkar`, `islamm` → `islam` di `game/page.tsx` dan `materi.ts` |
+| **Login page (`/masuk`)** | ✅ Selesai | 3-4 jam | Full auth system: JWT session, FormMurid/FormGuru, API, SessionProvider. Belum di-link dari Navbar/BottomTab. |
+| **Navbar login link** | ✅ Selesai | 15 menit | Tambah tombol "Masuk" di Navbar (desktop) dan BottomTab (mobile). Hanya muncul untuk non-login. |
+| **Quiz timer** | ✅ Selesai | 1-2 jam | Countdown timer + auto-submit di QuizEngine.tsx. 72 detik/soal, min 25 menit. |
+| **Foto Bang Agung tidak muncul** | ✅ Selesai | 5 menit | Ganti ?v=2 → ?v=3 untuk cache-busting. |
+| **Game timer label** | ✅ Selesai | 15 menit | Tambah badge "⏱ ±10 menit" di setiap card game. |
 
 ### Stitch Materials (Referensi untuk Halaman Baru)
 

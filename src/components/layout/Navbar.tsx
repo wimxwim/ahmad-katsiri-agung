@@ -67,6 +67,16 @@ export function Navbar() {
                 </Link>
               </li>
             ))}
+            {!session && (
+              <li>
+                <Link
+                  href="/masuk"
+                  className="relative px-4 py-2 text-sm rounded-full bg-primary text-on-primary font-semibold hover:brightness-110 transition-all duration-200"
+                >
+                  Masuk
+                </Link>
+              </li>
+            )}
           </ul>
           {session && (
             <LogoutButton role={session.role} />

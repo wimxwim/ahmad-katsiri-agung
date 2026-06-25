@@ -51,9 +51,16 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
   const submittedRef = useRef(false);
   const autoLoginRef = useRef(false);
   const [submitError, setSubmitError] = useState("");
+  const [timeLeft, setTimeLeft] = useState(0);
+  const timerExpiredRef = useRef(false);
+  const selectedRef = useRef(selected);
+  const soalRef = useRef<{ nomor: number } | null>(null);
 
   const session = useSession();
 
+  useEffect(() => {
+    selectedRef.current = selected;
+  });
   useEffect(() => {
     if (session && session.role === "murid" && quizState === "login" && !autoLoginRef.current) {
       autoLoginRef.current = true;
@@ -69,7 +76,34 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
     }
   }, [session, quizState]);
 
+  useEffect(() => {
+    if (quizState !== "playing") {
+      timerExpiredRef.current = false;
+      return;
+    }
+
+    if (timeLeft <= 0) {
+      if (!timerExpiredRef.current) {
+        timerExpiredRef.current = true;
+        const s = selectedRef.current;
+        const q = soalRef.current;
+        if (s && q) {
+          setJawaban((prev) => ({ ...prev, [q.nomor]: s }));
+        }
+        setQuizState("result");
+      }
+      return;
+    }
+
+    const id = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(id);
+  }, [quizState, timeLeft]);
+
   const soal = shuffledSoal[currentIndex];
+  soalRef.current = soal ?? null;
   const totalSoal = shuffledSoal.length;
 
   const handleLogin = useCallback(
@@ -134,6 +168,10 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
     setShowFeedback(false);
     setShowReview(false);
     setQuizState("playing");
+    const durPerSoal = 72;
+    const minDur = 1500;
+    setTimeLeft(Math.max(bab.soal.length * durPerSoal, minDur));
+    timerExpiredRef.current = false;
   }, [bab.soal]);
 
   const handleSelect = (option: string) => {
@@ -469,8 +507,8 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
           <span className="text-sm font-medium text-on-surface-variant">
             Soal {currentIndex + 1} dari {totalSoal}
           </span>
-          <span className="text-sm font-medium text-primary">
-            {Math.round(progress)}%
+          <span className={`text-sm font-medium tabular-nums ${timeLeft < 60 ? 'text-red-500' : 'text-primary'}`}>
+            {timeLeft > 0 ? `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}` : '—'}
           </span>
         </div>
         <div className="w-full bg-primary/10 rounded-full h-2 overflow-hidden">

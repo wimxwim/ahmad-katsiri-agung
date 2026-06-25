@@ -53,6 +53,9 @@ export function BottomTabBar() {
     : TABS_FALLBACK;
 
   const displayedTabs = [...tabs];
+  if (!session) {
+    displayedTabs.push({ href: "/masuk", label: "Masuk", icon: LogOut });
+  }
   if (session?.role === "guru") {
     displayedTabs.push({ href: "/pendidik", label: "Pendidik", icon: ClipboardList });
   }

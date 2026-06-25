@@ -11,7 +11,7 @@ export default function TentangPage() {
 
   const filosofi = about?.filosofi ?? "AKAL Center percaya bahwa pembelajaran Aqidah Akhlaq harus relevan dengan kehidupan digital siswa. Kami menerapkan model Deep Learning — sadar, bermakna, dan menyenangkan — untuk membentuk karakter Islami generasi muda.";
   const pendiriNama = about?.pendiriNama ?? "Ahmad Katsiri Aggung, S.Pd.";
-  const pendiriFoto = about?.pendiriFoto ?? "/images/tentang/ahmad-katsiri.jpg?v=2";
+  const pendiriFoto = about?.pendiriFoto ?? "/images/tentang/ahmad-katsiri.jpg?v=3";
   const visi = about?.visi ?? "Menjadi platform pembelajaran PAI nomor satu di Indonesia yang membuat setiap siswa jatuh cinta pada pelajaran agama Islam.";
   const misiList = about?.misi ?? [];
 

@@ -144,9 +144,14 @@ export default function GamePage() {
             }}
             className="group block bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
           >
-            <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider mb-4">
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+            <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider">
               {game.badge}
             </span>
+            <span className="inline-block px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-semibold tracking-wide border border-amber-200/50">
+              ⏱ ±10 menit
+            </span>
+          </div>
 
             <div className="aspect-[16/9] rounded-2xl bg-primary/5 border border-white/40 mb-6 overflow-hidden relative">
               {game.image ? (
