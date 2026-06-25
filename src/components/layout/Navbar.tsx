@@ -44,7 +44,7 @@ export function Navbar() {
           href="/"
           className="flex items-center gap-2 font-heading font-bold text-primary text-lg tracking-tight"
         >
-          <img src="/logo.svg" alt="Logo PAI" className="w-7 h-7 object-contain" />
+          <img src="/logo.webp" alt="Logo PAI" className="w-7 h-7 object-contain" />
           <span className="truncate md:max-w-none">AKAL Center</span>
         </Link>
 

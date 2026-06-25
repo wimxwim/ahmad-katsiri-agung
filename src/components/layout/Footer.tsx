@@ -32,7 +32,7 @@ export function Footer({ navigation: nav }: { navigation?: CmsNavigation | null 
               href="/"
               className="flex items-center gap-2 font-heading font-bold text-primary text-xl tracking-tight"
             >
-              <img src="/logo.svg" alt="Logo PAI" className="w-8 h-8 object-contain" />
+              <img src="/logo.webp" alt="Logo PAI" className="w-8 h-8 object-contain" />
               <span>AKAL Center</span>
             </Link>
             <p className="mt-3 text-sm text-on-surface-variant leading-relaxed max-w-xs">
