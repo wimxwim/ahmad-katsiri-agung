@@ -28,6 +28,11 @@ const STATIC_PAGES = [
   { path: "/pendidik", priority: 0.7, changeFreq: "monthly" as const },
   { path: "/tentang", priority: 0.6, changeFreq: "monthly" as const },
   { path: "/peserta-didik", priority: 0.5, changeFreq: "monthly" as const },
+  { path: "/hafalan", priority: 0.7, changeFreq: "monthly" as const },
+  { path: "/refleksi", priority: 0.6, changeFreq: "monthly" as const },
+  { path: "/diskusi", priority: 0.6, changeFreq: "monthly" as const },
+  { path: "/quran", priority: 0.6, changeFreq: "monthly" as const },
+  { path: "/dalil/al-isra-34", priority: 0.6, changeFreq: "monthly" as const },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

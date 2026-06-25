@@ -66,7 +66,7 @@ const GAMES_FALLBACK = [
   {
     title: "Game Beriman kepada Hari Akhir",
     desc: "Game interaktif tentang iman kepada hari akhir untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/aplikasi-tanpa-judul",
+    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-hari-akhir",
     badge: "EKSTERNAL",
     image: "/images/games/game-beriman-kepada-hari-akhir.webp",
   },

@@ -1,3 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /keystatic/
+Disallow: /admin/
+Disallow: /session
+Disallow: /masuk
+Disallow: /masuk-guru
 Sitemap: https://akalcenter.my.id/sitemap.xml

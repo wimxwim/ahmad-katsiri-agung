@@ -1,11 +1,19 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { FormMasuk } from "./FormMasuk";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Masuk",
+  robots: {
+    index: false,
+    follow: false,
+  },
+  alternates: {
+    canonical: "https://akalcenter.my.id/masuk",
+  },
 };
 
 export default async function MasukPage() {
