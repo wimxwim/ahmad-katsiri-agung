@@ -71,6 +71,10 @@ export async function proxy(request: NextRequest) {
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("Reporting-Endpoints", 'csp-endpoint="/api/csp-report"');
 
+  // ── Skip session check untuk static assets ─────────────────────
+  const isStaticFile = /\.(svg|webp|png|jpg|jpeg|gif|ico|woff2?|ttf|eot|pdf)$/i.test(pathname);
+  if (isStaticFile) return response;
+
   // ── Session Guard (hanya /pendidik yang butuh login guru) ──────
   const isPublic = PUBLIC_ROUTES.some((route) => {
     if (route === "/") return pathname === "/";
