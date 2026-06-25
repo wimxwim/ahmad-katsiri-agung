@@ -14,6 +14,7 @@ const NAV_ITEMS_FALLBACK = [
   { href: "/game", label: "Game" },
   { href: "/hafalan", label: "Hafalan" },
   { href: "/diskusi", label: "Diskusi" },
+  { href: "/quran", label: "Qur'an" },
 ];
 
 const TEACHER_LABELS = new Set(["Pendidik"]);

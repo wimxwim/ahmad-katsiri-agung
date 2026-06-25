@@ -11,6 +11,7 @@ import {
   Brain,
   MessageSquare,
   LogOut,
+  Book,
   type LucideIcon,
 } from "lucide-react";
 import { useCmsData } from "../providers/CmsProvider";
@@ -24,6 +25,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Info,
   Brain,
   MessageSquare,
+  Book,
 };
 
 const TABS_FALLBACK = [
@@ -33,6 +35,7 @@ const TABS_FALLBACK = [
   { href: "/refleksi", label: "Refleksi", icon: Brain },
   { href: "/diskusi", label: "Diskusi", icon: MessageSquare },
   { href: "/game", label: "Game", icon: Gamepad2 },
+  { href: "/quran", label: "Qur'an", icon: Book },
   { href: "/tentang", label: "Tentang", icon: Info },
 ];
 
