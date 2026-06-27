@@ -69,25 +69,25 @@ export function BottomTabBar() {
     <>
       <AnimatePresence>
         {sheetOpen && (
-          <motion.div
-            key="sheet-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
-            onClick={closeSheet}
-          >
             <motion.div
-              key="sheet-panel"
-              ref={sheetRef}
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="absolute bottom-0 inset-x-0 bg-white rounded-t-[32px] shadow-glass-xl pb-[calc(1rem+env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
+              key="sheet-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="fixed inset-0 z-50 bg-black/40"
+              onClick={closeSheet}
             >
+              <motion.div
+                key="sheet-panel"
+                ref={sheetRef}
+                initial={{ transform: "translateY(100%)" }}
+                animate={{ transform: "translateY(0%)" }}
+                exit={{ transform: "translateY(100%)" }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
+                className="absolute bottom-0 inset-x-0 bg-white rounded-t-[32px] shadow-glass-xl pb-[calc(1rem+env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto will-change-transform"
+                onClick={(e) => e.stopPropagation()}
+              >
               <div className="flex justify-center pt-3 pb-1">
                 <div className="w-10 h-1 rounded-full bg-gray-300" />
               </div>
