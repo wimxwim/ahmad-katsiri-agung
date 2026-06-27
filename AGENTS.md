@@ -776,35 +776,49 @@ Yang ke-4 dan ke-5 gak otomatis — harus di-klik manual di dashboard.
 
 ## Belum Selesai / Bisa Dilanjutkan
 
-| Item | Status | Effort Estimasi | Keterangan |
-|------|--------|-----------------|------------|
-| PROTA Kelas 8 | 🔲 Belum | — | Minta file PDF ke Bang Agung |
-| `untuk-pendidik/` — Pusat Komando | 🔲 Belum | 1-2 jam | Stitch HTML sudah ada di Downloads |
-| `analisis-dalil/` — QS Al-Isra:34 | 🔲 Belum | 1 jam | 3 varian mobile di stitch Downloads |
-| `/peserta-didik` | 🔲 Placeholder | 30-60 menit | Tanya klien mau isi apa |
-| Video 2 bab belum | 🔲 Belum | 10 menit | `beriman-kepada-nabi-dan-rasul` (8/3), `adab-dalam-islam` (9/1) — tunggu link YouTube |
-| Buku PAI PDF Kls 7/8/9 | 🔲 Belum | 15 menit | Link di materi ajar |
-| Google Classroom link | 🔲 Belum | 15 menit | Feasible, tunggu URL Classroom dari Bang Agung |
-| Naskah soal 6 bab | ✅ 5/6 Selesai | — | ✅ Melestarikan Alam, Toleransi, Moderasi, Semangat Ilmu, Khalifah — ditambahkan ke `soal.ts` (25 PG each). 🔲 Tabayyun — belum ada file |
-| **Cleanup orphaned files** | ✅ Selesai | — | `public/ppt/` 5 file deleted, `public/images/games/*.png` 8 file deleted, `PROTA KELAS 9.pdf` duplikat deleted |
-| **`membiasakan-tabayyun` PDF soal** | 🔲 Belum | — | Satu-satunya bab tanpa `soalUrl` — nunggu file dari Bang Agung |
-| **URL typo fix (Canva games)** | ✅ Selesai | — | `mungkarr` → `mungkar`, `islamm` → `islam` di `game/page.tsx` dan `materi.ts` |
-| **Login page (`/masuk`)** | ✅ Selesai | 3-4 jam | Full auth system: JWT session, FormMurid/FormGuru, API, SessionProvider. Belum di-link dari Navbar/BottomTab. |
-| **Navbar login link** | ✅ Selesai | 15 menit | Tambah tombol "Masuk" di Navbar (desktop) dan BottomTab (mobile). Hanya muncul untuk non-login. |
-| **Quiz timer** | ✅ Selesai | 1-2 jam | Countdown timer + auto-submit di QuizEngine.tsx. 72 detik/soal, min 25 menit. |
-| **Foto Bang Agung tidak muncul** | ✅ Selesai | 5 menit | Ganti ?v=2 → ?v=3 untuk cache-busting. |
-| **Game timer label** | ✅ Selesai | 15 menit | Tambah badge "⏱ ±10 menit" di setiap card game. |
+> ⚠️ **Tabel ini sudah diverifikasi ulang per 27 Juni 2026** — langsung cek file system, bukan cuma dari ingatan AI.
 
-### Stitch Materials (Referensi untuk Halaman Baru)
+### 🔴 Masih Nunggu Kiriman Bang Agung
+
+| Item | Status | Detail |
+|------|--------|--------|
+| PROTA Kelas 8 (`prota-8.pdf`) | 🔲 Belum | File tidak ada di `public/pdf/perangkat/` — minta ke Bang Agung |
+| Soal Tabayyun (`soalUrl` + PDF) | 🔲 Belum | Satu-satunya bab tanpa field `soalUrl` — nunggu file dari Bang Agung |
+| Video `beriman-kepada-nabi-dan-rasul` (8/3) | 🔲 Belum | Belum ada `videoUrl` di `materi.ts` — tunggu link YouTube |
+| Video `adab-dalam-islam` (9/1) | 🔲 Belum | Belum ada `videoUrl` di `materi.ts` — tunggu link YouTube |
+| Buku PAI PDF Kls 7/8/9 | 🔲 Belum | Tidak ada field `bukuUrl` di interface `BabMateri` — nunggu link dari Bang Agung |
+| Google Classroom link | 🔲 Belum | Feasible, tunggu URL Classroom dari Bang Agung |
+
+### 🟡 Bisa Dikerjakan (Tidak Tergantung Klien)
+
+| Item | Status | Estimasi | Detail |
+|------|--------|----------|--------|
+| `/peserta-didik` | 🔲 Placeholder | 30-60 menit | Masih "Segera Hadir" — tanya klien mau isi apa |
+| `untuk-pendidik/` — Pusat Komando | 🔲 Belum | 1-2 jam | Stitch HTML siap di Downloads |
+| CMS Navbar overflow filter | 🔴 Bug | 30 menit | CMS override bisa return 8+ item → desktop overload. Perlu update `keystatic.config.ts` |
+
+### ✅ Sudah Selesai (Sebelumnya tercatat "Belum", sudah diverifikasi)
+
+| Item | Sebelum | Sekarang | Bukti |
+|------|---------|----------|-------|
+| Analisis Dalil QS Al-Isra:34 | 🔲 Belum | ✅ **Selesai** | Halaman penuh di `/dalil/al-isra-34/` — audio player, word-by-word, tafsir, jurnal refleksi |
+| Halaman Video Gallery | — | ✅ **Selesai** | Route `/video` — filter kelas + embed YouTube per bab |
+| PPT Slide Deck | ⏳ 5/9 | ✅ **14/14** | Semua slide deck dalam format PDF di `public/pdf/*-ppt.pdf` (14 file), folder `public/ppt/` sudah dihapus |
+| Login page + Navbar link | ✅ Selesai | ✅ **Selesai** | `/masuk` + `/masuk-guru`, JWT session, Navbar & BottomTab link |
+| Quiz timer | ✅ Selesai | ✅ **Selesai** | Countdown 72 detik/soal, auto-submit |
+| Cleanup orphaned files | ✅ Selesai | ✅ **Selesai** | File PPT, PNG, duplikat dihapus |
+| Game timer label | ✅ Selesai | ✅ **Selesai** | Badge "⏱ ±10 menit" di setiap card |
+
+### Stitch Materials (Referensi Halaman yang Belum Dibuat)
 
 Lokasi: `/home/ngome/Downloads/stitch_aggung_learning_platform/`
 
-| Folder | Isi | Untuk Halaman |
-|--------|-----|--------------|
-| `modul-ajar/` | 14 PDF (sudah diproses ke materi.ts) | ✅ Selesai |
-| `ppt/` | 9 slide deck PDF | ⏳ Sebagian (5/9 diintegrasi) |
-| `untuk_pendidik_.../` | HTML resource grid "Pusat Komando" | `untuk-pendidik/` |
-| `analisis_dalil_.../` | 3 varian mobile QS Al-Isra:34 | `analisis-dalil/` |
+| Folder | Isi | Status |
+|--------|-----|--------|
+| `modul-ajar/` | 14 PDF | ✅ Sudah diproses ke `materi.ts` |
+| `ppt/` | 9 slide deck PDF | ✅ Digantikan 14 file `-ppt.pdf` di `public/pdf/` |
+| `untuk_pendidik_.../` | HTML resource grid "Pusat Komando" | 🔲 Belum — untuk halaman `untuk-pendidik/` |
+| `analisis_dalil_.../` | 3 varian mobile QS Al-Isra:34 | ✅ Halaman `/dalil/al-isra-34/` sudah jadi, tidak perlu stitch |
 
 ---
 
@@ -2066,4 +2080,55 @@ Skill `diskusi` (Triple-Layer Intelligence Engine) digunakan untuk analisis sist
 - Desktop nav juga lebih ringan (7 vs 9 item)
 - Bottom sheet bisa di-expand kapan saja dengan item baru tanpa bikin tab bar overload
 - Game sebagai featured tab mendorong engagement siswa
+
+### Sesi 26 (27 Juni 2026) — Favicon Fix & HTML Browser Cache
+
+**Effort: ~1,5 jam**
+
+**Latar Belakang:**
+Dua masalah dilaporkan: (1) Favicon di tab browser blank (putih), (2) New-tab load lambat karena tidak ada browser cache.
+
+| # | Masalah | Akar | Fix |
+|---|---------|------|-----|
+| 1 | **Favicon blank** | `icon.svg` pake `<image href="/logo.webp">` — SVG wrapper yang ref file eksternal. Browser tab butuh self-contained SVG. | Embed WebP sebagai `data:image/webp;base64,…` langsung di SVG. 8.5 KB, self-contained. |
+| 2 | **New-tab load lambat** | Worker cuma set `max-age=120` (2 menit) untuk HTML. Setiap new tab fetch ulang dari origin. | Naikkan ke `public, max-age=86400` (1 hari) untuk semua HTML. Browser cache penuh. |
+
+**Fix Detail:**
+
+**Fix #1 — Favicon:**
+- `src/app/icon.svg` — dari `<image href="/logo.webp">` → embedded `data:image/webp;base64,…`
+- File lain (favicon.ico, icon.png, apple-icon.png, opengraph-image.png) tidak diubah.
+- Deploy Vercel + purge Cloudflare cache.
+
+**Fix #2 — Worker Cache-Control:**
+- `workers/akal-center/index.ts` — HTML browser cache 120s → 86400s
+- Tambah deteksi `isHtmlPage` untuk kontrol lebih granular
+- Strip Next.js RSC Vary headers dari HTML → `Vary: Accept-Encoding` (bantu edge caching)
+- HTML cuma di-cache kalau `request.method === 'GET'` (HEAD request skip)
+- Bersihin semua debug headers (X-Debug-Version, X-Debug-TTL, X-Debug-CF)
+- Git commit `36dda78`, Worker deploy v2cc8e983
+
+**Root Cause Diagnosis — Worker Cache-Control "Tidak Muncul":**
+Awalnya kelihatan Cache-Control gak di-set sama Worker. Ternyata **`curl -I` (HEAD request)** gak masuk ke cabang `request.method === 'GET'`, jatuh ke `else` (`no-cache`). Di browser beneran (GET) selalu jalan.
+
+**Cloudflare Edge Cache — Masih DYNAMIC:**
+Cache Rule Cloudflare udah di-set `override_origin` + `Edge TTL 1 day` (via browser session `kt-cf`, rule ID `16536ee30a374929bdbace45f5cec744`). Tapi `cf-cache-status: DYNAMIC` tetap muncul. Kemungkinan: Worker responses inherently dynamic — Cloudflare edge gak cache response dari Worker.
+
+Browser cache (`max-age=86400`) udah cukup solve keluhan user. Edge cache butuh riset lanjutan (mungkin pindah dari Worker proxy ke Cloudflare Pages).
+
+**Verifikasi:**
+- ✅ Favicon muncul di tab browser (Chrome, Firefox, HP)
+- ✅ Homepage: `cache-control: public, max-age=86400`
+- ✅ Materi page: `cache-control: public, max-age=86400`, `vary: Accept-Encoding`
+- ✅ API: `cache-control: no-cache`
+- ✅ Static assets (favicon.ico, dll): `cache-control: public, max-age=604800`
+- ✅ `_next/static/`: `cache-control: public, max-age=31536000, immutable`
+- ✅ Security headers: `Strict-Transport-Security`, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options: DENY`
+- ✅ `X-Worker: akal-center` header aktif
+- ✅ Vercel deploy + git commit (`36dda78`) + push
+
+**Jebakan:**
+- `curl -I` mengirim HEAD request → tidak masuk `request.method === 'GET'`. Selalu test caching pake GET (`curl -sD -` tanpa `-I`).
+- Cloudflare Cache Rule + Worker = DYNAMIC. Worker responses dianggap dynamic oleh edge. `cf` property di `new Response()` init juga tidak efektif.
+- Browser cache `max-age` sudah cukup untuk solve masalah "new tab slow" — edge cache adalah optimasi lanjutan.
 
