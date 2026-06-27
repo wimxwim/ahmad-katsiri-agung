@@ -43,7 +43,7 @@ export function BottomTabBar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [sheetOpen, closeSheet]);
 
-  if (pathname.startsWith("/masuk")) return null;
+  if (pathname.startsWith("/masuk") || pathname.startsWith("/login")) return null;
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -132,7 +132,7 @@ export function BottomTabBar() {
 
                   {!session ? (
                     <Link
-                      href="/masuk"
+                      href="/login"
                       onClick={closeSheet}
                       className="flex flex-col items-start gap-2 p-4 rounded-2xl border border-border-precision bg-white hover:bg-primary/5 hover:border-primary/20 transition-all duration-200"
                     >

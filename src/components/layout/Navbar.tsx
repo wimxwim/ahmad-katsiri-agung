@@ -22,7 +22,7 @@ export function Navbar() {
   const { navigation } = useCmsData();
   const session = useSession();
 
-  if (pathname.startsWith("/masuk")) return null;
+  if (pathname.startsWith("/masuk") || pathname.startsWith("/login")) return null;
 
   const navItems = (navigation?.navbarItems ?? NAV_ITEMS_FALLBACK)
     .filter((item) => {
@@ -69,7 +69,7 @@ export function Navbar() {
             {!session && (
               <li>
                 <Link
-                  href="/masuk"
+                  href="/login"
                   className="relative px-4 py-2 text-sm rounded-full bg-primary text-on-primary font-semibold hover:brightness-110 transition-all duration-200"
                 >
                   Masuk
@@ -88,7 +88,7 @@ export function Navbar() {
 
 function LogoutButton({ role }: { role: string }) {
   const pathname = usePathname();
-  if (pathname.startsWith("/masuk")) return null;
+  if (pathname.startsWith("/masuk") || pathname.startsWith("/login")) return null;
   return (
     <button
       onClick={async () => {
