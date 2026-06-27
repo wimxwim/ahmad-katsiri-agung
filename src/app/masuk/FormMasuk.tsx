@@ -17,6 +17,8 @@ export function FormMasuk() {
     const form = e.currentTarget;
     const formData = new FormData(form);
     formData.set("_mode", mode);
+    const redirectParam = new URLSearchParams(window.location.search).get("redirect");
+    if (redirectParam) formData.set("redirect", redirectParam);
     try {
       const res = await fetch("/api/masuk", {
         method: "POST",

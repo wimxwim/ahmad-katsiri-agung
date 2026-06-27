@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       }
 
       const { nama, kelas, noAbsen, nis, sekolah } = parsed.data;
+      const redirectTo = formData.get("redirect") as string || "/";
 
       const token = await signSession({
         role: "murid",
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
         sekolah: sekolah || undefined,
       });
 
-      const response = NextResponse.json({ success: true, redirect: "/" });
+      const response = NextResponse.json({ success: true, redirect: redirectTo });
       response.cookies.set(SESSION_COOKIE_NAME, token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
 
       const { nama, password } = parsed.data;
       const guruPassword = process.env.GURU_PASSWORD;
+      const redirectTo = formData.get("redirect") as string || "/";
 
       if (!guruPassword) {
         return NextResponse.json(
@@ -72,7 +74,7 @@ export async function POST(request: NextRequest) {
         nama,
       });
 
-      const response = NextResponse.json({ success: true, redirect: "/" });
+      const response = NextResponse.json({ success: true, redirect: redirectTo });
       response.cookies.set(SESSION_COOKIE_NAME, token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
