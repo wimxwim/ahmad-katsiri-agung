@@ -134,7 +134,9 @@ export default {
     } else if (isPdf || isAsset) {
       response.headers.set('Cache-Control', 'public, max-age=604800');
     } else if (!url.pathname.startsWith('/api/')) {
-      response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
+      // Static HTML: cache 2 min at edge, serve stale up to 5 min while revalidating
+      // CSP is now stable in next.config.ts (static header), so edge caching is safe
+      response.headers.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
     }
 
     // Security headers (defense-in-depth; don't override origin's CSP)
