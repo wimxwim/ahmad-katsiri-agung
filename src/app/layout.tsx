@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { headers, cookies } from "next/headers";
 import { Bricolage_Grotesque, Inter, Amiri, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers/Providers";
 import { Navbar } from "@/components/layout/Navbar";
@@ -21,8 +20,6 @@ import {
 } from "@/lib/cms";
 import { CMS_ENABLED } from "@/lib/cms-config";
 import type { CmsMateriListItem, CmsMateriFull } from "@/components/providers/CmsProvider";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -210,47 +207,12 @@ export default async function RootLayout({
 }>) {
   const cmsData = await loadCmsData();
 
-  const headersList = await headers();
-  const nonce = headersList.get("x-nonce") ?? "";
-
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  let sessionData: { role: string; nama: string; kelas?: string; noAbsen?: string; nis?: string; sekolah?: string } | null = null;
-  if (sessionCookie?.value) {
-    const verified = await verifySession(sessionCookie.value);
-    if (verified) {
-      sessionData = {
-        role: verified.role,
-        nama: verified.nama,
-        kelas: verified.kelas,
-        noAbsen: verified.noAbsen,
-        nis: verified.nis,
-        sekolah: verified.sekolah,
-      };
-    }
-  }
-
   return (
       <html
         lang="id"
         className={`${bricolageGrotesque.variable} ${inter.variable} ${amiri.variable} ${jetbrainsMono.variable} h-full antialiased`}
-        nonce={nonce}
       >
       <body className="min-h-full flex flex-col font-body">
-        <script
-          nonce={nonce}
-          dangerouslySetInnerHTML={{
-            __html: `window.__NEXT_SCRIPT_NONCE='${nonce}'`,
-          }}
-        />
-        {sessionData && (
-          <script
-            nonce={nonce}
-            dangerouslySetInnerHTML={{
-              __html: `window.__SESSION=${JSON.stringify(sessionData)}`,
-            }}
-          />
-        )}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />

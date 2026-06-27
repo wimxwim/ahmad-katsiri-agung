@@ -13,6 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
+import { useSession } from "@/components/providers/SessionProvider";
 import { EASE_CURVE } from "@/lib/constants";
 
 export default function PendidikPage() {
@@ -348,15 +349,15 @@ function RekapSection() {
   const [locked, setLocked] = useState(true);
   const [apiKey, setApiKey] = useState("");
   const [keyError, setKeyError] = useState("");
+  const session = useSession();
 
   useEffect(() => {
-    const guru = (window as any).__SESSION?.role === "guru";
-    if (guru) {
+    if (session?.role === "guru") {
       fetchRekap();
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [session]);
 
   async function fetchRekap(key?: string) {
     setLoading(true);

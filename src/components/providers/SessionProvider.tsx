@@ -17,18 +17,14 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<ClientSession | null>(null);
 
   useEffect(() => {
-    const raw = (window as unknown as Record<string, unknown>).__SESSION;
-    if (raw && typeof raw === "object" && "role" in raw && "nama" in raw) {
-      const r = raw as Record<string, unknown>;
-      setSession({
-        role: r.role as string,
-        nama: r.nama as string,
-        kelas: r.kelas as string | undefined,
-        noAbsen: r.noAbsen as string | undefined,
-        nis: r.nis as string | undefined,
-        sekolah: r.sekolah as string | undefined,
+    fetch("/api/sesi")
+      .then((r) => r.json())
+      .then((data) => {
+        setSession(data.session ?? null);
+      })
+      .catch(() => {
+        setSession(null);
       });
-    }
   }, []);
 
   return (
