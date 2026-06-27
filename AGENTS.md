@@ -1983,8 +1983,87 @@ Logo 2.3 MB untuk ikon 28×28 pixel — absurd. Setelah di-webp jadi 6 KB.
 **4. Content-visibility bukan satu-satunya penyebab konten tidak kelihatan:**
 User lapor konten hilang — asumsi rendering issue, tapi ternyata file size ekstrim (2.3 MB logo gak sempat load).
 
-**Belum Selesai:**
+**Belum Selesai (Sesi 24):**
 - Cloudflare cache untuk gambar lama masih max-age 604800 — perlu purge manual atau tunggu 1 minggu
 - Game "Beriman kepada Hari Akhir" masih pakai URL Canva placeholder 
 - PROTA Kelas 8 + Soal Tabayyun belum ada
+
+### Sesi 25 (27 Juni 2026) — Redesign Navigasi Mobile & Desktop
+
+**Effort: ~45 menit**
+
+**Latar Belakang:**
+User (pemilik agensi) mengeluh navigasi mobile di akalcenter.my.id "banyak banget fitur di bawah nya" — BottomTabBar saat itu punya 8-9 item (termasuk Video, Hafalan, Diskusi, Qur'an, Refleksi). Desktop Navbar juga overload dengan 9 item + conditional.
+
+**Metodologi:**
+Skill `diskusi` (Triple-Layer Intelligence Engine) digunakan untuk analisis sistematis:
+- **Fase 0:** Konfirmasi scope — spesifik navigasi mobile
+- **Siklus 1 (LOW):** Riset best practice navigasi mobile 2026 — Apple HIG (max 5 tabs), Material Design (max 5 bottom nav), tren 2026 floating bar + bottom sheet
+- **Siklus 2 (HIGH):** Matriks masalah — 3 akar masalah: (1) overload visual, (2) ambiguity label (Video/Hafalan/Diskusi/Qur'an/Refleksi campur aduk), (3) touch target <44px
+- **Siklus 3 (EXPERT):** Sintesis kreatif — 3 pendekatan dievaluasi: (A) "Kompas Digital" (carousel), (B) "Navigasi Seperti Masjid 2026" (5 tabs + bottom sheet), (C) "Kartu Sakti" (swipeable card)
+- **Keputusan Final:** **Jalur B — "Navigasi Seperti Masjid 2026"** — bottom tab 5 items + bottom sheet, floating pill style, center featured tab (Game)
+
+**Perubahan Implementasi:**
+
+| # | File | Perubahan |
+|---|------|----------|
+| 1 | `BottomTabBar.tsx` | **Rewrite total.** Dari 8-9 CMS-driven tabs → 5 core tabs (Beranda/Materi/Kuis/Game/Lainnya). Game jadi center featured tab (icon beda warna, elevated). "Lainnya" buka bottom sheet. Floating pill style. Navbar legit: `md:hidden`. |
+| 2 | `BottomTabBar.tsx` | **Bottom sheet built-in** — Grid 2 kolom: Qur'an, Refleksi, Diskusi, Tentang, + Masuk (kalau belum login) atau Keluar (kalau sudah login). Sheet pakai `motion` spring animation, backdrop blur. |
+| 3 | `Navbar.tsx` | **Streamline.** Dari 9 fallback items → 7 items (Beranda, Pendidik, Materi, Kuis, Game, Qur'an, Tentang). Hapus Video, Hafalan, Diskusi dari navbar (masih ada di halaman via card masing-masing). |
+| 4 | `AGENTS.md` | Dokumentasi Sesi 25 ini. |
+
+**Alasan perubahan per item (dari riset):**
+
+| Item | Sebelum | Sesudah | Alasan |
+|------|---------|---------|--------|
+| Video | Navbar + BottomTab | Hanya di halaman `/materi` | Konsumsi video pasif — tidak perlu akses cepat. Halaman diakses dari detail materi. |
+| Hafalan | Navbar + BottomTab | Hanya di halaman `/materi` | Fitur review — akses cukup dari menu belajar. Bottom sheet "Qur'an" mencakup. |
+| Diskusi | Navbar + BottomTab | Bottom sheet "Lainnya" | Diskusi butuh akses tapi tidak setiap hari. Bottom sheet cukup. |
+| Refleksi | BottomTab | Bottom sheet "Lainnya" | Sama: penting tapi tidak perlu selalu di tab utama. |
+| Game | Navbar + BottomTab | Featured center tab | Gamifikasi = engagement driver untuk siswa SMP. Dibedakan visual. |
+| Qur'an | BottomTab | Bottom sheet + Navbar desktop | Desktop perlu akses; mobile cukup dari bottom sheet. |
+
+**Arsitektur Navigasi Baru (Mobile):**
+```
+┌─────────────────────────────────────────────┐
+│  Beranda  │  Materi  │  [🎮] Game  │  Kuis  │  Lainnya  │
+│    🏠    │   📖    │   GAMEPAD   │  📋   │    🔲     │
+└─────────────────────────────────────────────┘
+                   │
+                   ▼ Bottom Sheet ──────────────┐
+                  ┌──────┬──────┐                │
+                  │Qur'an│Refleksi│              │
+                  ├──────┼──────┤                │
+                  │Diskusi│Tentang│              │
+                  ├──────┼──────┤                │
+                  │Masuk/Keluar  │               │
+                  └──────┴──────┘                │
+                  └──────────────────────────────┘
+```
+
+**Verifikasi:**
+- ✅ `npx next build` sukses (zero errors)
+- ✅ Navbar items telah streamline: 7 items dari 9
+- ✅ BottomTabBar baru punya 5 tabs + bottom sheet
+- ✅ Mobile: BottomTabBar muncul, Desktop: Navbar muncul (existing `hidden md:flex` logic)
+- ✅ Bottom sheet: motion spring animation, backdrop blur, keyboard Escape to close
+- ✅ Layout padding bottom `5rem` tetap cocok untuk tab bar height 4rem + safe area
+
+**Teknis Detail:**
+- Bottom sheet z-50 (di atas tab bar z-40)
+- Tab bar pakai `bg-white/90 backdrop-blur-2xl` + border tipis + shadow atas
+- Game tab featured: `bg-primary` rounded-2xl, elevated with shadow, `scale-110` saat active
+- Bottom sheet: 2-column grid, icon + label + description per card
+- Responsive: `md:hidden` di tab bar, `hidden md:flex` di nav desktop
+- Minimum touch target 44px untuk semua item
+
+**Jebakan:**
+- CMS override `navigation?.navbarItems` bisa kembalikan 8+ item — harus di-filter manual. Sekarang `NAV_ITEMS_FALLBACK` jadi 7, tapi kalau CMS override masih panjang, tampilan desktop bisa overload lagi. **Belum di-fix** — perlu update `keystatic.config.ts` atau CMS content.
+- `Grid3x3` icon dari lucide untuk "Lainnya" — alternatif: `MoreHorizontal` atau `LayoutGrid`
+
+**Dampak:**
+- Mobile UX jauh lebih bersih (5 tab + sheet vs 8-9 tab)
+- Desktop nav juga lebih ringan (7 vs 9 item)
+- Bottom sheet bisa di-expand kapan saja dengan item baru tanpa bikin tab bar overload
+- Game sebagai featured tab mendorong engagement siswa
 

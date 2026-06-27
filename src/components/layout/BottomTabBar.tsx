@@ -1,67 +1,49 @@
 "use client";
 
+import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "motion/react";
 import {
   Home,
   BookOpen,
   ClipboardList,
   Gamepad2,
-  Info,
+  Grid3x3,
+  Book,
   Brain,
   MessageSquare,
+  Info,
   LogOut,
-  Book,
+  X,
   type LucideIcon,
 } from "lucide-react";
-import { useCmsData } from "../providers/CmsProvider";
 import { useSession } from "../providers/SessionProvider";
 
-const ICON_MAP: Record<string, LucideIcon> = {
-  Home,
-  BookOpen,
-  ClipboardList,
-  Gamepad2,
-  Info,
-  Brain,
-  MessageSquare,
-  Book,
-};
-
-const TABS_FALLBACK = [
-  { href: "/", label: "Beranda", icon: Home },
-  { href: "/materi", label: "Materi", icon: BookOpen },
-  { href: "/evaluasi", label: "Kuis", icon: ClipboardList },
-  { href: "/refleksi", label: "Refleksi", icon: Brain },
-  { href: "/diskusi", label: "Diskusi", icon: MessageSquare },
-  { href: "/game", label: "Game", icon: Gamepad2 },
-  { href: "/quran", label: "Qur'an", icon: Book },
-  { href: "/tentang", label: "Tentang", icon: Info },
+const SHEET_ITEMS: { href: string; label: string; icon: LucideIcon; desc: string }[] = [
+  { href: "/quran", label: "Qur'an", icon: Book, desc: "Baca dan dengarkan Al-Qur'an" },
+  { href: "/refleksi", label: "Refleksi", icon: Brain, desc: "Tulis muhasabah harian" },
+  { href: "/diskusi", label: "Diskusi", icon: MessageSquare, desc: "Ruang tanya jawab" },
+  { href: "/tentang", label: "Tentang", icon: Info, desc: "Tentang AKAL Center" },
 ];
 
 export function BottomTabBar() {
   const pathname = usePathname();
-  const { navigation } = useCmsData();
   const session = useSession();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const sheetRef = useRef<HTMLDivElement>(null);
+
+  const closeSheet = useCallback(() => setSheetOpen(false), []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeSheet();
+    };
+    if (sheetOpen) document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [sheetOpen, closeSheet]);
 
   if (pathname.startsWith("/masuk")) return null;
-
-  const cmsTabs = navigation?.bottomTabs;
-  const tabs = cmsTabs
-    ? cmsTabs.map((t) => ({
-        href: t.href,
-        label: t.label,
-        icon: ICON_MAP[t.icon] ?? Home,
-      }))
-    : TABS_FALLBACK;
-
-  const displayedTabs = [...tabs];
-  if (!session) {
-    displayedTabs.push({ href: "/masuk", label: "Masuk", icon: LogOut });
-  }
-  if (session?.role === "guru") {
-    displayedTabs.push({ href: "/pendidik", label: "Pendidik", icon: ClipboardList });
-  }
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -76,51 +58,177 @@ export function BottomTabBar() {
     if (data.redirect) window.location.href = data.redirect;
   };
 
+  const navTabs = [
+    { href: "/", label: "Beranda", icon: Home },
+    { href: "/materi", label: "Materi", icon: BookOpen },
+    { href: "/evaluasi", label: "Kuis", icon: ClipboardList },
+    { href: "/game", label: "Game", icon: Gamepad2, featured: true },
+  ];
+
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-2xl border-t border-border-precision shadow-[0_-4px_30px_rgba(0,0,0,0.06)]">
-      <div className="flex items-center justify-around h-16" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
-        {displayedTabs.map((tab) => {
-          const active = isActive(tab.href);
-          const Icon = tab.icon;
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={`relative flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 min-h-[44px] h-full transition-colors duration-200 ${
-                active
-                  ? "text-primary"
-                  : "text-on-surface-variant/60 hover:text-on-surface-variant"
-              }`}
-            >
-              {active && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary" />
-              )}
-              <Icon
-                className="w-5 h-5"
-                aria-hidden="true"
-                fill={active ? "currentColor" : "none"}
-              />
-              <span className={`text-[10px] font-semibold leading-none ${
-                active ? "opacity-100" : "opacity-70"
-              }`}>
-                {tab.label}
-              </span>
-            </Link>
-          );
-        })}
-        {session && (
-          <button
-            onClick={handleLogout}
-            className="relative flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 min-h-[44px] h-full text-on-surface-variant/60 hover:text-red-500 transition-colors duration-200"
-            title="Keluar"
+    <>
+      <AnimatePresence>
+        {sheetOpen && (
+          <motion.div
+            key="sheet-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+            onClick={closeSheet}
           >
-            <LogOut className="w-5 h-5" aria-hidden="true" />
-            <span className="text-[10px] font-semibold leading-none opacity-70">
-              Keluar
-            </span>
-          </button>
+            <motion.div
+              key="sheet-panel"
+              ref={sheetRef}
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="absolute bottom-0 inset-x-0 bg-white rounded-t-[32px] shadow-glass-xl pb-[calc(1rem+env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 rounded-full bg-gray-300" />
+              </div>
+
+              <div className="flex items-center justify-between px-6 pb-2">
+                <h3 className="font-heading font-bold text-lg text-primary">Menu Lainnya</h3>
+                <button
+                  onClick={closeSheet}
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-colors"
+                  aria-label="Tutup menu"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="px-6 pb-6">
+                <div className="grid grid-cols-2 gap-3">
+                  {SHEET_ITEMS.map((item) => {
+                    const Icon = item.icon;
+                    const active = isActive(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={closeSheet}
+                        className={`flex flex-col items-start gap-2 p-4 rounded-2xl border transition-all duration-200 ${
+                          active
+                            ? "bg-primary/5 border-primary/20 text-primary"
+                            : "bg-white border-border-precision text-on-surface hover:bg-primary/5 hover:border-primary/20"
+                        }`}
+                      >
+                        <div className={`p-2 rounded-xl ${active ? "bg-primary/10" : "bg-primary/5"}`}>
+                          <Icon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <span className="font-semibold text-sm">{item.label}</span>
+                          <p className="text-xs text-on-surface-variant/70 leading-tight mt-0.5">{item.desc}</p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+
+                  {!session ? (
+                    <Link
+                      href="/masuk"
+                      onClick={closeSheet}
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl border border-border-precision bg-white hover:bg-primary/5 hover:border-primary/20 transition-all duration-200"
+                    >
+                      <div className="p-2 rounded-xl bg-primary/5">
+                        <LogOut className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                        <span className="font-semibold text-sm">Masuk</span>
+                        <p className="text-xs text-on-surface-variant/70 leading-tight mt-0.5">Login siswa atau guru</p>
+                      </div>
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={() => { closeSheet(); handleLogout(); }}
+                      className="flex flex-col items-start gap-2 p-4 rounded-2xl border border-border-precision bg-white hover:bg-red-50 hover:border-red-200 transition-all duration-200 text-left"
+                    >
+                      <div className="p-2 rounded-xl bg-red-50">
+                        <LogOut className="w-5 h-5 text-red-500" />
+                      </div>
+                      <div>
+                        <span className="font-semibold text-sm">Keluar</span>
+                        <p className="text-xs text-on-surface-variant/70 leading-tight mt-0.5">
+                          {session.nama} &mdash; {session.role === "guru" ? "Guru" : "Siswa"}
+                        </p>
+                      </div>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
-      </div>
-    </nav>
+      </AnimatePresence>
+
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/90 backdrop-blur-2xl border-t border-border-precision shadow-[0_-4px_30px_rgba(0,0,0,0.06)]">
+        <div className="flex items-center justify-around h-16" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+          {navTabs.map((tab) => {
+            const active = tab.href !== null && isActive(tab.href);
+            const Icon = tab.icon;
+
+            if (tab.featured) {
+              return (
+                <Link
+                  key={tab.label}
+                  href="/game"
+                  className="relative flex flex-col items-center justify-center min-w-0 flex-1 min-h-[44px]"
+                >
+                  <div
+                    className={`w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-200 ${
+                      isActive("/game")
+                        ? "bg-primary text-on-primary shadow-primary/30 scale-110"
+                        : "bg-primary/90 text-on-primary shadow-primary/20"
+                    }`}
+                  >
+                    <Gamepad2 className="w-5 h-5" />
+                  </div>
+                  <span
+                    className={`text-[10px] font-semibold leading-none mt-1 ${
+                      isActive("/game") ? "text-primary" : "text-on-surface-variant/60"
+                    }`}
+                  >
+                    Game
+                  </span>
+                </Link>
+              );
+            }
+
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={`relative flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 min-h-[44px] transition-colors duration-200 ${
+                  active ? "text-primary" : "text-on-surface-variant/60 hover:text-on-surface-variant"
+                }`}
+              >
+                {active && (
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary" />
+                )}
+                <Icon className="w-5 h-5" aria-hidden="true" fill={active ? "currentColor" : "none"} />
+                <span className={`text-[10px] font-semibold leading-none ${active ? "opacity-100" : "opacity-70"}`}>
+                  {tab.label}
+                </span>
+              </Link>
+            );
+          })}
+
+          <button
+            onClick={() => setSheetOpen(true)}
+            className="relative flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 min-h-[44px] text-on-surface-variant/60 hover:text-on-surface-variant transition-colors duration-200"
+            aria-label="Menu lainnya"
+          >
+            <Grid3x3 className="w-5 h-5" aria-hidden="true" />
+            <span className="text-[10px] font-semibold leading-none opacity-70">Lainnya</span>
+          </button>
+        </div>
+      </nav>
+    </>
   );
 }

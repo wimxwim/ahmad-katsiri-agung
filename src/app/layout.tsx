@@ -56,6 +56,9 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://akalcenter.my.id"),
+  alternates: {
+    canonical: "https://akalcenter.my.id",
+  },
   title: {
     template: "%s | AKAL Center",
     default: "AKAL Center — Deep Learning Akidah Akhlak",
