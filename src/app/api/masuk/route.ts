@@ -3,6 +3,10 @@ import { LoginMuridSchema, LoginGuruSchema } from "@/lib/validation";
 import { signSession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME, SESSION_DURATION_SECONDS } from "@/lib/session";
 
+function isValidRedirect(url: string): boolean {
+  return url.startsWith("/") && !url.includes("://") && !url.startsWith("//");
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -19,7 +23,8 @@ export async function POST(request: NextRequest) {
       }
 
       const { nama, kelas, noAbsen, nis, sekolah } = parsed.data;
-      const redirectTo = formData.get("redirect") as string || "/";
+      const rawRedirect = formData.get("redirect") as string || "/";
+      const redirectTo = isValidRedirect(rawRedirect) ? rawRedirect : "/";
 
       const token = await signSession({
         role: "murid",
@@ -53,7 +58,8 @@ export async function POST(request: NextRequest) {
 
       const { nama, password } = parsed.data;
       const guruPassword = process.env.GURU_PASSWORD;
-      const redirectTo = formData.get("redirect") as string || "/";
+      const rawRedirect = formData.get("redirect") as string || "/";
+      const redirectTo = isValidRedirect(rawRedirect) ? rawRedirect : "/";
 
       if (!guruPassword) {
         return NextResponse.json(

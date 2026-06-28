@@ -7,6 +7,7 @@ const secret = process.env.JWT_SECRET;
 const getSecret = () => new TextEncoder().encode(secret || "");
 
 const publicPaths = [
+  "/keystatic",
   "/login",
   "/masuk",
   "/masuk-guru",
@@ -34,13 +35,14 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  const fullPath = pathname + request.nextUrl.search;
   const url = new URL("/login", request.url);
-  url.searchParams.set("redirect", pathname);
+  url.searchParams.set("redirect", fullPath);
   return NextResponse.redirect(url);
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon\\.ico|icon\\.svg|icon\\.png|apple-icon\\.png|opengraph-image\\.png|sitemap\\.xml|robots\\.txt|logo\\.webp).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|icon\\.svg|icon\\.png|apple-icon\\.png|opengraph-image\\.png|sitemap\\.xml|robots\\.txt|logo\\.webp|manifest\\.json).*)",
   ],
 };

@@ -10,14 +10,23 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
 
   if (sessionCookie?.value) {
     const session = await verifySession(sessionCookie.value);
     if (session) {
-      redirect("/");
+      const params = await searchParams;
+      const redirectTo =
+        typeof params.redirect === "string" && params.redirect.startsWith("/")
+          ? params.redirect
+          : "/";
+      redirect(redirectTo);
     }
   }
 
