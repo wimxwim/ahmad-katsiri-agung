@@ -120,10 +120,10 @@ export default {
       }
     }
 
-    // Create a mutable copy. If it was a redirect, the earlier code already cloned it.
-    if (!(response.status >= 300 && response.status < 400)) {
-      response = new Response(response.body, response);
-    }
+    // After the redirect-fix block above, response is still immutable
+    // if the redirect Location was relative (no ORIGIN to replace).
+    // Clone unconditionally so header mutations below work.
+    response = new Response(response.body, response);
 
     // Cache-Control
     if (url.pathname.startsWith('/_next/static/')) {
