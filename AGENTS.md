@@ -2230,3 +2230,141 @@ Vercel return 307 → Location: /login?redirect=%2F (relative)
 4. **`wrangler tail` untuk debug Worker** — sangat berguna. Format `--format=json` kasih full context (request, response, exception stack).
 5. **Cek `cf-cache-status: DYNAMIC`** — setelah fix, HTML page masih DYNAMIC di Cloudflare edge. Worker response dianggap inherently dynamic. Browser cache (`max-age=86400`) cukup untuk solve use case.
 
+---
+
+#### Bagian C — Cache-Control Conflict: Auth Gate vs Browser Cache 🔴 CRITICAL
+
+**Gejala:**
+- User buka `akalcenter.my.id` → tidak langsung redirect ke `/login`
+- Harus refresh (F5/Ctrl+F5) dulu baru kena redirect
+- Setelah login, kunjungan berikutnya masih dikirim ke `/login` lagi (redirect loop)
+
+**Latar Belakang:**
+Sesi 26 (Favicon Fix & HTML Browser Cache) menaikkan `Cache-Control` untuk HTML dari `max-age=120` jadi `public, max-age=86400` (24 jam). Tujuannya: new-tab load lebih cepat. Saat itu belum ada auth gate, jadi semua halaman publik — caching aman.
+
+Sesi 27 (Bagian A) deploy proxy.ts auth gate. Ternyata **tidak kompatibel** dengan HTML caching.
+
+**Root Cause:**
+1 baris di `workers/akal-center/index.ts:133-135`:
+
+```javascript
+// SEBELUM (Sesi 26) — semua HTML di-cache 24 jam:
+response.headers.set('Cache-Control', 'public, max-age=86400');
+```
+
+Worker tidak membedakan antara response 200 OK (halaman) dan 307 redirect. Keduanya dianggap `isHtmlPage`, keduanya dapat `max-age=86400`.
+
+**Mekanisme Bug — Dua Masalah Sekaligus:**
+
+```
+MASALAH #1 — OLD PAGE CACHE (pre-auth-gate)
+  User kunjungi website SEBELUM proxy.ts di-deploy:
+    ├─ Server return 200 OK (halaman penuh)
+    ├─ Worker set Cache-Control: public, max-age=86400
+    └─ Browser cache halaman 24 jam ✅ (aman dulu)
+  
+  Setelah proxy.ts deploy, user yang SAMA kunjungi lagi:
+    ├─ Browser: "saya punya cache valid 24 jam" → serve dari cache
+    ├─ Request TIDAK dikirim ke server
+    ├─ proxy.ts: TIDAK DIJALANKAN
+    └─ User: lihat halaman lama (tanpa redirect) ❌
+
+MASALAH #2 — 307 REDIRECT JUGA DI-CACHE
+  User baru (first visit setelah proxy.ts):
+    ├─ Browser: GET /
+    ├─ proxy.ts: cek cookie → tidak ada → 307 redirect ke /login?redirect=%2F
+    ├─ Worker: set Cache-Control: public, max-age=86400 ← 307 di-cache!
+    └─ Browser: cache 307 redirect 24 jam
+
+  User login, lalu kunjungi / lagi:
+    ├─ Browser: "saya punya cache 307 valid" → follow redirect ke /login
+    ├─ Request TIDAK dikirim ke server
+    ├─ proxy.ts: TIDAK DIJALANKAN — gak sempat cek cookie valid!
+    └─ User: "kok disuruh login lagi? padahal udah login!" ❌
+```
+
+**Validasi Riset Web (Stack Overflow, RFC 9111, Cloudflare docs):**
+| Temuan | Sumber |
+|--------|--------|
+| 307 **tidak di-cache secara default** oleh browser | RFC 9111, SO |
+| Tapi kalau `Cache-Control` mengizinkan (`public, max-age=N`), browser **AKAN** cache 307 | Fetch Spec, Chromium behavior |
+| Browser yang follow cached redirect **tidak mengirim request apapun** ke server | Chrome DevTools docs |
+| `public` directive berarti bisa di-cache oleh **shared cache** (CDN, proxy bersama) | Cloudflare docs |
+| `no-cache` = cache boleh disimpan, tapi **WAJIB revalidasi** setiap kali sebelum dipakai | RFC 9111 |
+
+**Dampak & Risiko:**
+| Risiko | Level | Detail |
+|--------|-------|--------|
+| Auth gate tidak berfungsi sama sekali | 🔴 CRITICAL | Browser skip request → proxy.ts gak pernah jalan |
+| Redirect loop setelah login | 🔴 CRITICAL | 307 redirect cached → user selalu dikirim ke `/login` walau sudah login |
+| Login page di-cache 24 jam | 🟡 MEDIUM | Perubahan login page tidak terlihat sampai cache expire |
+| Cache `public` = shared | 🟡 MEDIUM | Bisa di-cache oleh CDN/proxy bersama → user lain lihat response orang lain (walau 307, tetap tidak seharusnya) |
+| User bingung & lapor website error | 🟡 MEDIUM | "Website saya error, harus refresh dulu baru bisa" |
+
+**Fix — 1 baris di `workers/akal-center/index.ts:133-135`:**
+
+```javascript
+// SESUDAH — HTML harus revalidasi setiap kali karena ada auth gate:
+response.headers.set('Cache-Control', 'private, no-cache, must-revalidate');
+```
+
+| Directive | Arti |
+|-----------|------|
+| `private` | Hanya di-cache di browser user, bukan CDN/proxy bersama |
+| `no-cache` | Boleh disimpan, tapi WAJIB tanya server setiap kali mau dipakai |
+| `must-revalidate` | JANGAN SAJIKAN cache basi — kalau gagal hubungi server, tampilkan error |
+
+**Side Effect Assessment:**
+| Sebelum (max-age=86400) | Sesudah (no-cache) |
+|-------------------------|-------------------|
+| 0 request untuk repeat visit (instant) | 1 request ke Vercel tiap visit |
+| Auth gate: ❌ Bypass total | Auth gate: ✅ Jalan sempurna |
+| Bandwidth: 0 (cache) | Bandwidth: ~50-120 KB per page (kecil) |
+| Server load: 0 | Server load: +1 request per visit (JWT verify ringan) |
+
+**Yang TIDAK berubah:**
+- `_next/static/*` → tetap `max-age=31536000, immutable`
+- PDF, gambar (ico/png/jpg/webp/woff2) → tetap `max-age=604800` (1 minggu)
+- API (`/api/*`) → tetap `no-cache`
+
+**Verifikasi Setelah Fix:**
+```bash
+# 307 redirect — no-cache ✅
+curl -sI https://akalcenter.my.id/ | grep cache-control
+→ cache-control: private, no-cache, must-revalidate
+
+# Login page — no-cache ✅
+curl -sI https://akalcenter.my.id/login | grep cache-control
+→ cache-control: private, no-cache, must-revalidate
+
+# Materi — redirect no-cache ✅
+curl -sI https://akalcenter.my.id/materi | grep cache-control
+→ cache-control: private, no-cache, must-revalidate
+
+# Static asset — tetap immutable ✅
+curl -sI https://akalcenter.my.id/_next/static/chunks/app/layout-xxx.js | grep cache-control
+→ cache-control: public, max-age=31536000, immutable
+
+# API — tetap no-cache ✅
+curl -sI https://akalcenter.my.id/api/doa | grep cache-control
+→ cache-control: no-cache
+```
+
+**Deploy:**
+- Worker deploy version: `cae07f1b-1104-4ad1-8de1-5538c409f6f2`
+- Git commit: `df12687`
+- Branch: `main`
+
+**Catatan untuk pengguna lama:**
+Browser yang sudah cache halaman dengan `max-age=86400` TIDAK otomatis terpengaruh. Mereka perlu:
+1. Hard refresh (Ctrl+F5 / Cmd+Shift+R) — sekali saja
+2. Atau tutup browser & buka ulang — Chrome kadang invalidate cache saat restart
+3. Setelah itu, semua kunjungan baru dapat header `no-cache` dan auth gate jalan normal
+
+**Lesson Learned (tambah ke jebakan global):**
+5. **`Cache-Control` harus diaudit SETELAH setiap perubahan keamanan/auth.** `max-age=N` yang dulu aman bisa jadi celah setelah ada auth gate. Jangan asumsi cache lama masih aman.
+6. **307 redirect juga bisa di-cache browser** kalau `Cache-Control` mengizinkan. Selalu set `no-cache` untuk redirect yang bergantung pada auth state.
+7. **Ketika menambah auth gate, kurasi ulang semua header cache.** Yang tadinya "optimasi performa" bisa jadi "lubang keamanan".
+
+---
+
