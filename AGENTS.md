@@ -1077,18 +1077,22 @@ selanjutnya. Update file ini jika ada perubahan.
 
 ---
 
-## Env Var Terbaru
+## Env Var
 
-| Env Var | Nilai (per 20 Juni 2026) | Catatan |
-|---------|--------------------------|---------|
-| `ADMIN_API_KEY` | `akal-admin-2026` | Untuk akses rekap nilai di `/pendidik` |
-| `JWT_SECRET` | `akal-jwt-secret-2026-32chars!` | Untuk sign/verify token kuis siswa |
-| `KEYSTATIC_GITHUB_CLIENT_ID` | `Iv23liAhXMj8s8L7I0Y1` | GitHub App OAuth client ID untuk CMS |
-| `KEYSTATIC_GITHUB_CLIENT_SECRET` | (tersimpan aman di Vercel) | Client secret GitHub App akal-center-cms |
-| `KEYSTATIC_SECRET` | (tersimpan aman di Vercel) | Encryption key untuk Keystatic CMS |
-| `NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND` | `github` | Mode production: github (bukan local) |
-| `NEXT_PUBLIC_USE_CMS` | `true` | Mengaktifkan override data dari CMS |
-| Lainnya | (sama seperti sebelumnya) | GOOGLE_SHEETS_*, TELEGRAM_* tidak berubah |
+> **⚠️ PERINGATAN KEAMANAN:** JANGAN pernah tulis nilai asli env var di file publik.
+> Semua secret disimpan di Vercel Environment Variables (Production, Sensitive).
+> Lihat `~/agensi/playbook/docs/29_standar_keamanan_kode.md` untuk SOP.
+
+| Env Var | Status |
+|---------|--------|
+| `ADMIN_API_KEY` | Di Vercel (Production) — **sudah di-rotate** pasca audit |
+| `JWT_SECRET` | Di Vercel (Production) — **sudah di-rotate** pasca audit |
+| `KEYSTATIC_GITHUB_CLIENT_ID` | `Iv23liAhXMj8s8L7I0Y1` (public identifier, aman) |
+| `KEYSTATIC_GITHUB_CLIENT_SECRET` | Di Vercel (Preview + Production) |
+| `KEYSTATIC_SECRET` | Di Vercel (Preview + Production) |
+| `NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND` | `github` |
+| `NEXT_PUBLIC_USE_CMS` | `true` |
+| GOOGLE_SHEETS_*, TELEGRAM_* | Di Vercel (Production, Sensitive) |
 
 ---
 
