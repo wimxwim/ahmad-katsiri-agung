@@ -2132,3 +2132,101 @@ Browser cache (`max-age=86400`) udah cukup solve keluhan user. Edge cache butuh 
 - Cloudflare Cache Rule + Worker = DYNAMIC. Worker responses dianggap dynamic oleh edge. `cf` property di `new Response()` init juga tidak efektif.
 - Browser cache `max-age` sudah cukup untuk solve masalah "new tab slow" — edge cache adalah optimasi lanjutan.
 
+### Sesi 27 (28 Juni 2026) — Login Gate & Debug Worker Error 1101
+
+**Effort: ~2 jam**
+
+**Latar Belakang:**
+Klien minta semua konten di-lock: pengunjung harus login dulu sebelum bisa akses halaman mana pun. Dua masalah muncul: (1) tidak ada auth gate di edge, (2) setelah deploy, Cloudflare Worker error 1101 bikin website mati total.
+
+---
+
+#### Bagian A — Auth Gate (middleware → proxy)
+
+**Deskripsi:**
+Next.js 16 mendeprekasi `middleware.ts` — ganti dengan `proxy.ts`. File ini berjalan di Vercel Edge Runtime, intercept tiap request sebelum mencapai handler.
+
+**File baru:**
+| File | Fungsi |
+|------|--------|
+| `src/proxy.ts` | Auth gate edge — cek cookie `akal_sesi`, redirect ke `/login?redirect=...` kalau gak valid |
+| `src/app/login/page.tsx` | Login page — reuse `FormMasuk` dari `/masuk`, server check session, redirect ke `/` kalau sudah login |
+
+**File diubah:**
+| File | Perubahan |
+|------|-----------|
+| `src/components/layout/Navbar.tsx` | Tambah `pathname.startsWith("/login")` ke hide logic (2 occurrences). Link Masuk → `/login` |
+| `src/components/layout/BottomTabBar.tsx` | Sama: hide di `/login`. Link Masuk di sheet → `/login` |
+| `src/app/masuk/FormMasuk.tsx` | Baca `?redirect=` dari `window.location.search`, kirim ke `/api/masuk` sebagai form field |
+| `src/app/api/masuk/route.ts` | Pakai `redirect` dari formData (bukan hardcoded `/`) — untuk murid & guru |
+
+**Arsitektur proxy.ts (auth flow):**
+```
+User → akalcenter.my.id/materi
+  → Vercel Edge (proxy.ts)
+    → Cek cookie akal_sesi
+      → Valid → NextResponse.next() → render halaman
+      → Invalid/None → redirect 307 ke /login?redirect=/materi
+```
+
+**Public paths (whitelist, tanpa auth):**
+- `/login`, `/masuk`, `/masuk-guru` — halaman login
+- `/api/*` — API endpoints (masih pakai auth internal masing-masing: JWT verify, rate limit, API key)
+- `/_next/*`, `/images/*`, `/pdf/*` — static assets
+
+**Teknis Detail:**
+- Cookie: `akal_sesi` (httpOnly, sameSite=lax, 8 jam expiry)
+- JWT verify pakai `jose.jwtVerify` (Edge-compatible)
+- `config.matcher` exclude `_next/static`, `_next/image`, favicon, icon, font files
+- Masuk-guru page (`/masuk-guru`) tetap sebagai halaman statis (di-allow proxy, tidak di-protect middleware) karena auth-nya sudah di handle oleh page sendiri
+
+---
+
+#### Bagian B — Worker Crash Error 1101 🔴 CRITICAL
+
+**Kronologi:**
+1. Deploy proxy.ts ke Vercel → build sukses, deploy sukses
+2. User lapor website mati: Cloudflare error 1101 "Worker threw exception"
+3. Diagnosis pake `wrangler tail` → lihat exception:
+   ```
+   TypeError: Can't modify immutable headers. at index.js:109:30
+   ```
+4. Root cause: proxy.ts return 307 redirect (`Location: /login?redirect=%2F` — **relative URL**).
+   Worker punya logika: kalau 3xx + Location mengandung domain Vercel → clone response + replace Location.
+   Karena Location **relatif** (tidak mengandung domain Vercel), response TIDAK di-clone.
+   Setelah itu, block header mutation (`Cache-Control`, `Security-Headers`, `X-Worker`) jalan di response **immutable** dari `fetch()` → TypeError.
+
+**Mekanisme bug:**
+```
+Vercel return 307 → Location: /login?redirect=%2F (relative)
+  ↓ Worker line 108-121: cek 3xx
+  ↓ Location tidak mengandung ORIGIN → skip clone
+  ↓ Worker line 124-126: !(3xx) → false → skip clone lagi
+  ↓ Worker line 129-150: headers.set() on IMMUTABLE Response → TypeError 💥
+```
+
+**Fix `workers/akal-center/index.ts`:**
+- Sebelumnya: clone response cuma untuk non-3xx (line 124 `if (!(status >= 300 && status < 400))`)
+- Sesudah: clone **unconditionally** — `response = new Response(response.body, response)` selalu jalan
+- Efek: response selalu mutable sebelum header mutation. Kalau redirect sudah di-clone duluan (line 115), clone ulang tidak masalah karena ReadableStream cuma di-refer, tidak di-consume.
+
+**Verifikasi:**
+- ✅ `akalcenter.my.id/` → 307 redirect to `/login?redirect=%2F`
+- ✅ `akalcenter.my.id/materi` → 307 redirect to `/login?redirect=%2Fmateri`
+- ✅ `akalcenter.my.id/login?redirect=%2F` → 200 OK (login page)
+- ✅ `X-Worker: akal-center` header aktif
+- ✅ `wrangler tail` — no exceptions
+- ✅ `curl -sIL` — follow redirect chain sampai 200
+
+**Deploy:**
+- Vercel deploy (2x): `git commit 3745b8e` + `39424b8`
+- Worker deploy: `wrangler deploy` version `eb549103-cb02-4d82-a0a2-2cc730e6b43c`
+- Git push main: `a6976cf`
+
+**Jebakan (lesson learned):**
+1. **Next.js 16 `proxy.ts` bukan `middleware.ts`** — `middleware` convention deprecated, harus rename export function jadi `proxy` atau default export. Build warning → error kalau function name `middleware` di file `proxy.ts`.
+2. **Worker `fetch()` response immutable** — di Cloudflare Workers, response dari `fetch()` tidak bisa diubah headers-nya langsung. Selalu clone pake `new Response(response.body, response)` sebelum mutasi header.
+3. **Redirect Vercel pake relative URL** — setelah deploy proxy.ts, Vercel return 307 dengan Location relatif (`/login?...`). Worker yang handle absolute URL (domain Vercel) gak detect ini, dan skip clone.
+4. **`wrangler tail` untuk debug Worker** — sangat berguna. Format `--format=json` kasih full context (request, response, exception stack).
+5. **Cek `cf-cache-status: DYNAMIC`** — setelah fix, HTML page masih DYNAMIC di Cloudflare edge. Worker response dianggap inherently dynamic. Browser cache (`max-age=86400`) cukup untuk solve use case.
+

@@ -131,8 +131,7 @@ export default {
     } else if (url.pathname.startsWith('/pdf/') || /\.(ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot)$/i.test(url.pathname)) {
       response.headers.set('Cache-Control', 'public, max-age=604800');
     } else if (isHtmlPage && request.method === 'GET') {
-      response.headers.delete('Cache-Control');
-      response.headers.set('Cache-Control', 'public, max-age=86400');
+      response.headers.set('Cache-Control', 'private, no-cache, must-revalidate');
     } else {
       response.headers.set('Cache-Control', 'no-cache');
     }
