@@ -9,7 +9,6 @@
     {
       "kelas": "8",
       "label": "PROTA",
-      "file": null,
       "tersedia": false
     },
     {
@@ -52,6 +51,16 @@
       "kelas": "9",
       "label": "ATP",
       "file": "/pdf/perangkat/atp-9.pdf",
+      "tersedia": true
+    },
+    {
+      "kelas": "7",
+      "tersedia": true
+    },
+    {
+      "kelas": "7",
+      "label": "ATP TERBARU",
+      "file": "Documents",
       "tersedia": true
     }
   ]
