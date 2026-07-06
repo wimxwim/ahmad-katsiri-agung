@@ -1,0 +1,65 @@
+{
+  "title": "Beriman kepada Nabi dan Rasul",
+  "kelas": "8",
+  "bab": 3,
+  "babLabel": "AKIDAH",
+  "ringkasan": "Meneladani kisah para nabi dan rasul dalam menyampaikan risalah.",
+  "subTopik": 12,
+  "waktuBaca": "7 MIN BACA",
+  "icon": "\ud83c\udf1f",
+  "videoUrl": "",
+  "soalUrl": "/pdf/beriman-kepada-nabi-dan-rasul-soal.pdf",
+  "gameUrl": "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-nabi-dan-rasul",
+  "pendahuluan": "Iman kepada nabi dan rasul adalah rukun iman keempat. Allah mengutus para nabi dan rasul untuk menyampaikan petunjuk-Nya kepada umat manusia. Wajib beriman kepada 25 nabi yang disebut dalam Al-Qur'an, dan meneladani sifat-sifat mulia mereka.",
+  "konten": [
+    {
+      "judul": "Pengertian Iman kepada Rasul",
+      "isi": "Iman kepada rasul berarti mempercayai dengan sepenuh hati atas kedatangan rasul dari Nabi Adam a.s. hingga Nabi Muhammad SAW. Wajib beriman kepada 25 rasul yang disebut dalam Al-Qur'an. Menurut Imam Baidhawi, rasul diutus Allah dengan syariat baru, sedangkan nabi diutus untuk menjalankan syariat rasul sebelumnya."
+    },
+    {
+      "judul": "Sifat Wajib dan Mustahil Rasul",
+      "isi": "Sifat wajib: (1) Ash-Shiddiq (benar/jujur). (2) Al-Amanah (dapat dipercaya). (3) At-Tabligh (menyampaikan wahyu). (4) Al-Fathanah (cerdik/bijaksana). Sifat mustahil: (1) Al-Kidzbu (dusta). (2) Al-Khianah (khianat). (3) Al-Kitman (menyembunyikan). (4) Al-Baladah (bodoh)."
+    },
+    {
+      "judul": "Rasul Ulul Azmi",
+      "isi": "Ulul Azmi adalah rasul pilihan dengan keteguhan dan kesabaran luar biasa. Lima rasul Ulul Azmi: (1) Nabi Nuh a.s. \u2014 berdakwah hampir seribu tahun, mukjizat kapal besar selamat dari banjir. (2) Nabi Ibrahim a.s. \u2014 menghancurkan berhala, api menjadi dingin. (3) Nabi Musa a.s. \u2014 tongkat menjadi ular, membelah lautan. (4) Nabi Isa a.s. \u2014 berbicara saat bayi, menghidupkan orang mati. (5) Nabi Muhammad SAW \u2014 membelah bulan, Al-Qur'an sebagai mukjizat terbesar."
+    },
+    {
+      "judul": "Perilaku yang Mencerminkan Iman",
+      "isi": "Tiga belas perilaku: (1) Jujur. (2) Berkata baik dan benar. (3) Melaksanakan amanah. (4) Berjuang menegakkan kebenaran. (5) Gemar menuntut ilmu. (6) Membaca shalawat. (7) Tidak mengingkari janji. (8) Menaati risalah. (9) Meneladani perilaku mulia. (10) Ibadah sunnah. (11) Taat beribadah. (12) Membaca sejarah Nabi. (13) Membaca Al-Qur'an."
+    }
+  ],
+  "dalil": {
+    "surah": "QS. An-Nisa [4]: 136",
+    "arab": "\u06d6\u064a\u0670\u0627\u064e\u0649\u0651\u064f\u0647\u064e\u0627 \u0671\u0644\u0651\u064e\u0630\u0650\u064a\u0646\u064e \u0621\u064e\u0627\u0645\u064e\u0646\u064f\u0648\u0627\u0652 \u0621\u064e\u0627\u0645\u0650\u0646\u064f\u0648\u0627\u0652 \u0628\u0650\u0671\u0644\u0644\u0651\u064e\u0647\u0650 \u0648\u064e\u0631\u064f\u0633\u064f\u0644\u0650\u0647\u0650",
+    "arti": "Wahai orang-orang yang beriman, tetaplah beriman kepada Allah dan Rasul-Nya."
+  },
+  "dimensi": [
+    {
+      "nomor": 1,
+      "judul": "Meyakini Kenabian dan Kerasulan",
+      "deskripsi": "Percaya bahwa Allah mengutus nabi dan rasul sebagai pembawa petunjuk bagi umat manusia sepanjang masa."
+    },
+    {
+      "nomor": 2,
+      "judul": "Meneladani Sifat Mulia Para Rasul",
+      "deskripsi": "Menerapkan sifat siddiq, amanah, tabligh, dan fathanah dalam kehidupan sehari-hari."
+    },
+    {
+      "nomor": 3,
+      "judul": "Mencintai dan Mengikuti Risalah Nabi",
+      "deskripsi": "Membaca shalawat, menaati sunnah, dan menjadikan Nabi Muhammad SAW sebagai teladan utama (uswah hasanah)."
+    }
+  ],
+  "poinPenting": [
+    "25 nabi dan rasul wajib diketahui, 5 di antaranya Ulul Azmi.",
+    "Sifat wajib: Siddiq, Amanah, Tabligh, Fathanah.",
+    "Nabi Muhammad SAW adalah penutup para nabi (khatamul anbiya)."
+  ],
+  "prevSlug": "beriman-kepada-kitab-allah",
+  "prevTitle": "Beriman kepada Kitab Allah",
+  "nextSlug": "membangun-toleransi",
+  "nextTitle": "Membangun Toleransi",
+  "pdfUrl": "/pdf/beriman-kepada-nabi-dan-rasul.pdf",
+  "pptUrl": "/pdf/beriman-kepada-nabi-dan-rasul-ppt.pdf"
+}

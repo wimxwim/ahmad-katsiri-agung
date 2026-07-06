@@ -1,0 +1,69 @@
+{
+  "title": "Beriman kepada Kitab Allah",
+  "kelas": "8",
+  "bab": 2,
+  "babLabel": "AKIDAH",
+  "ringkasan": "Meyakini kitab-kitab Allah sebagai pedoman hidup umat manusia.",
+  "subTopik": 6,
+  "waktuBaca": "5 MIN BACA",
+  "icon": "\ud83d\udcd6",
+  "videoUrl": "https://www.youtube.com/embed/bC-i_9hisSw",
+  "soalUrl": "/pdf/beriman-kepada-kitab-allah-soal.pdf",
+  "gameUrl": "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-kitab-allah",
+  "pendahuluan": "Iman kepada kitab-kitab Allah adalah rukun iman ketiga. Allah menurunkan kitab-kitab kepada para nabi sebagai petunjuk bagi umat manusia. Empat kitab utama yang wajib diimani: Taurat, Zabur, Injil, dan Al-Qur'an.",
+  "konten": [
+    {
+      "judul": "Pengertian Iman kepada Kitab Allah",
+      "isi": "Iman kepada kitab-kitab Allah mencakup empat perkara: (1) Mengimani turunnya kitab dari sisi Allah. (2) Mengimani nama-nama kitab yang diketahui. (3) Membenarkan berita-beritanya yang benar. (4) Mengamalkan hukum-hukumnya yang tidak dihapus."
+    },
+    {
+      "judul": "Kitab Taurat",
+      "isi": "Taurat diturunkan kepada Nabi Musa a.s. untuk Bani Israil pada abad 12 SM dalam bahasa Ibrani. Sepuluh firman Allah (10 Hukum) dalam Taurat: tidak ada Tuhan lain, jangan menyembah patung, jangan menyebut nama Allah sia-sia, ingat hari Sabat, hormati orang tua, jangan membunuh, berzina, mencuri, saksi palsu, dan mengingini hak orang lain."
+    },
+    {
+      "judul": "Kitab Zabur dan Injil",
+      "isi": "Zabur diturunkan kepada Nabi Daud a.s. pada abad 10 SM, berisi mazmur dan nyanyian pujian kepada Tuhan. Injil diturunkan kepada Nabi Isa a.s. pada abad 1 M di Yerusalem, berisi perintah memahasucikan Allah, melarang syirik, serta keterangan akan datangnya Nabi Muhammad."
+    },
+    {
+      "judul": "Kitab Al-Qur'an",
+      "isi": "Al-Qur'an diturunkan kepada Nabi Muhammad SAW selama 23 tahun. Kandungan pokok menurut Mahmud Syaltut: akidah, akhlak, dorongan hikmah alami, kisah umat terdahulu, janji baik dan ancaman buruk, serta hukum ibadah dan muamalah. Terbagi dalam dua periode: Makiyyah (akidah) dan Madaniyyah (syariat)."
+    },
+    {
+      "judul": "Keistimewaan Al-Qur'an",
+      "isi": "Sepuluh keistimewaan Al-Qur'an: (1) Isi tidak berubah sepanjang masa. (2) Terjaga dari kontradiksi. (3) Mudah dihafalkan. (4) Bahasa tidak dapat ditiru. (5) Membaca mendatangkan pahala. (6) Memberi ketenangan batin. (7) Kisah nyata dan terperinci. (8) Mendatangkan syafaat. (9) Hakim semua kitab sebelumnya. (10) Kitab peradaban."
+    }
+  ],
+  "dalil": {
+    "surah": "QS. Al-Baqarah [2]: 136",
+    "arab": "\u06d6\u0642\u064f\u0648\u0644\u064f\u0648\u0627\u0652 \u0621\u064e\u0627\u0645\u064e\u0646\u0651\u064e\u0627 \u0628\u0650\u0671\u0644\u0644\u0651\u064e\u0647\u0650 \u0648\u064e\u0645\u064e\u0627 \u0623\u064f\u0646\u0632\u0650\u0644\u064e \u0625\u0650\u0644\u064e\u064a\u0652\u0646\u064e\u0627",
+    "arti": "Katakanlah: 'Kami beriman kepada Allah dan kepada apa yang diturunkan kepada kami.'"
+  },
+  "dimensi": [
+    {
+      "nomor": 1,
+      "judul": "Mengimani Keempat Kitab Allah",
+      "deskripsi": "Taurat, Zabur, Injil, dan Al-Qur'an adalah kitab suci yang wajib diimani sebagai petunjuk dari Allah."
+    },
+    {
+      "nomor": 2,
+      "judul": "Mempelajari dan Mengamalkan Isi Al-Qur'an",
+      "deskripsi": "Al-Qur'an sebagai kitab penyempurna harus dibaca, dipelajari, dan diamalkan dalam kehidupan sehari-hari."
+    },
+    {
+      "nomor": 3,
+      "judul": "Menjaga Kesucian dan Membela Kitab Suci",
+      "deskripsi": "Menghormati, menjaga kesucian, dan membela Al-Qur'an dari segala bentuk pelecehan adalah wujud iman kepada kitab Allah."
+    }
+  ],
+  "poinPenting": [
+    "Empat kitab: Taurat (Musa), Zabur (Daud), Injil (Isa), Al-Qur'an (Muhammad).",
+    "Al-Qur'an adalah kitab penyempurna yang terjamin keasliannya.",
+    "Beriman kepada kitab Allah berarti mengimani, mempelajari, dan mengamalkan petunjuknya."
+  ],
+  "prevSlug": "amanah-dan-jujur",
+  "prevTitle": "Amanah dan Jujur",
+  "nextSlug": "beriman-kepada-nabi-dan-rasul",
+  "nextTitle": "Beriman kepada Nabi & Rasul",
+  "pdfUrl": "/pdf/beriman-kepada-kitab-allah.pdf",
+  "pptUrl": "/pdf/beriman-kepada-kitab-allah-ppt.pdf"
+}

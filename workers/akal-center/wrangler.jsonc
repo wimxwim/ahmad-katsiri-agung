@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "akal-center",
+  "main": "index.ts",
+  "compatibility_date": "2026-06-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "akalcenter.my.id/*", "zone_id": "bc8a1f05acc22a9bd2b95ef2edfb9b0f" },
+    { "pattern": "www.akalcenter.my.id/*", "zone_id": "bc8a1f05acc22a9bd2b95ef2edfb9b0f" }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1
+  }
+}

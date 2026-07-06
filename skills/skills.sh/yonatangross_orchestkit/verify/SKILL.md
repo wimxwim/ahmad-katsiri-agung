@@ -1,0 +1,451 @@
+---
+name: verify
+license: MIT
+compatibility: "Claude Code 2.1.183+. Requires memory MCP server."
+description: "Comprehensive verification using parallel test agents for unit tests, integration tests, E2E validation, security scanning, and type checking. Runs coverage analysis, detects regressions, and validates against project conventions. Reports pass/fail with detailed findings and coverage deltas. Use when verifying implementations, validating changes after /ork:implement, or running pre-merge quality gates."
+argument-hint: "[feature-or-scope]"
+context: fork
+version: 4.4.0
+author: OrchestKit
+tags: [verification, testing, quality, validation, parallel-agents, grading]
+user-invocable: true
+allowed-tools: [AskUserQuestion, Bash, Read, Write, Edit, Grep, Glob, Agent, TaskCreate, TaskUpdate, TaskList, TaskStop, mcp__memory__search_nodes, mcp__agentation__agentation_get_all_pending, mcp__agentation__agentation_acknowledge, mcp__agentation__agentation_resolve, mcp__agentation__agentation_watch_annotations, ToolSearch, CronCreate, CronDelete, Monitor, PushNotification]
+skills: [code-review-playbook, testing-unit, testing-e2e, testing-llm, testing-integration, testing-perf, memory, quality-gates, chain-patterns, browser-tools]
+complexity: high
+persuasion-type: discipline
+effort: high
+model: sonnet
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      command: "${CLAUDE_PLUGIN_ROOT}/hooks/bin/run-hook.mjs skill/test-framework-detector"
+      once: true
+    - matcher: "Agent"
+      command: "${CLAUDE_PLUGIN_ROOT}/hooks/bin/run-hook.mjs skill/verify-scoring-rubric-loader"
+      once: true
+metadata:
+  category: workflow-automation
+  mcp-server: memory
+triggers:
+  keywords: [verify, verifiy, validate, verification, "ready for merge", "check everything", "security scan", "give me a score", "full verification", "grade my"]
+  examples:
+    - "verify the authentication implementation"
+    - "is this feature ready for merge? check everything"
+    - "run tests, security scan, and give me a score"
+  anti-triggers: [implement, build, fix, cover, "generate tests", commit]
+---
+
+# Verify Feature
+
+Comprehensive verification using parallel specialized agents with nuanced grading (0-10 scale) and improvement suggestions.
+
+## Quick Start
+
+```bash
+/ork:verify authentication flow
+/ork:verify --model=opus user profile feature
+/ork:verify --scope=backend database migrations
+```
+
+## Argument Resolution
+
+```python
+SCOPE = "$ARGUMENTS"       # Full argument string, e.g., "authentication flow"
+SCOPE_TOKEN = "$ARGUMENTS[0]"  # First token for flag detection (e.g., "--scope=backend")
+# $ARGUMENTS[0], $ARGUMENTS[1] etc. for indexed access (CC 2.1.59)
+
+# Model override detection (CC 2.1.72)
+MODEL_OVERRIDE = None
+for token in "$ARGUMENTS".split():
+    if token.startswith("--model="):
+        MODEL_OVERRIDE = token.split("=", 1)[1]  # "opus", "sonnet", "haiku"
+        SCOPE = SCOPE.replace(token, "").strip()
+
+# Streak gate detection (#2540) — consecutive-pass mode
+STREAK_TARGET = None
+for token in "$ARGUMENTS".split():
+    if token.startswith("--streak="):
+        STREAK_TARGET = int(token.split("=", 1)[1])  # N consecutive READY verdicts required (N >= 2)
+        SCOPE = SCOPE.replace(token, "").strip()
+# When set, apply the Streak Gate (see below). Full protocol: references/streak-gate.md
+```
+
+Pass `MODEL_OVERRIDE` to all Agent() calls via `model=MODEL_OVERRIDE` when set. Accepts symbolic names (`opus`, `sonnet`, `haiku`) or full IDs (`claude-opus-4-8`) per CC 2.1.74.
+
+> **Opus 4.8**: Agents use native adaptive thinking (no MCP sequential-thinking needed); defaults to `high` effort (CC 2.1.154+). Extended 128K output supports comprehensive verification reports.
+
+---
+
+## STEP 0: Effort-Aware Verification Scaling (CC 2.1.76)
+
+Scale verification depth based on `/effort` level:
+
+| Effort Level | Phases Run | Agents | Output |
+|-------------|------------|--------|--------|
+| **low** | Run tests only → pass/fail | 0 agents | Quick check |
+| **medium** | Tests + code quality + security | 3 agents | Score + top issues |
+| **high** (default) | All 8 phases + visual capture | 6-7 agents | Full report + grades |
+| **xhigh** (Opus 4.8, CC 2.1.111+) | All 8 phases + additional cross-file pattern sweep + self-verification pass | 6-7 agents | Full report with uncertainty annotations |
+
+> **Override:** Explicit user selection (e.g., "Full verification") overrides `/effort` downscaling.
+
+## STEP 0a: Verify User Intent with AskUserQuestion
+
+**BEFORE creating tasks**, clarify verification scope:
+
+```python
+AskUserQuestion(
+  questions=[{
+    "question": "What scope for this verification?",
+    "header": "Scope",
+    "options": [
+      # multiSelect questions do not render previews (single-select only) — kept text-only
+      {"label": "Full verification (Recommended)", "description": "All tests + security + code quality + visual + grades"},
+      {"label": "Tests only", "description": "Run unit + integration + e2e tests"},
+      {"label": "Security & code quality", "description": "Security audit (OWASP/CVE/secrets) + lint/types/complexity"},
+      {"label": "Quick check", "description": "Just run tests, skip detailed analysis"}
+    ],
+    "multiSelect": true
+  }]
+)
+```
+
+**Based on answer, adjust workflow:**
+- **Full verification**: All 10 phases (8 + 2.5 + 8.5), 7 parallel agents including visual capture
+- **Tests only**: Skip phases 2 (security), 5 (UI/UX analysis)
+- **Security & code quality**: Run security-auditor + code-quality-reviewer agents
+- **Quick check**: Run tests only, skip grading and suggestions
+
+---
+
+## STEP 0b: Select Orchestration Mode
+
+Load details: `Read("${CLAUDE_SKILL_DIR}/references/orchestration-mode.md")` for env var check logic, Agent Teams vs Task Tool comparison, and mode selection rules.
+
+Choose **Agent Teams** (mesh -- verifiers share findings) or **Task tool** (star -- all report to lead) based on the orchestration mode reference.
+
+---
+
+### MCP Probe + Resume
+
+```python
+# memory is alwaysLoad in .mcp.json (CC 2.1.121+, #1541) — probe below kept as fallback for older CC:
+ToolSearch(query="select:mcp__memory__search_nodes")
+Write(".claude/chain/capabilities.json", { memory, timestamp })
+
+Read(".claude/chain/state.json")  # resume if exists
+```
+
+### Handoff File
+
+After verification completes, write results:
+
+```python
+Write(".claude/chain/verify-results.json", JSON.stringify({
+  "phase": "verify", "skill": "verify",
+  "timestamp": now(), "status": "completed",
+  "outputs": {
+    "tests_passed": N, "tests_failed": N,
+    "coverage": "87%", "security_scan": "clean"
+  }
+}))
+```
+
+### Regression Monitor (CC 2.1.71)
+
+Optionally schedule post-verification monitoring:
+
+```python
+# Guard: Skip cron in headless/CI (CLAUDE_CODE_DISABLE_CRON)
+# if env CLAUDE_CODE_DISABLE_CRON is set, run a single check instead
+CronCreate(
+  schedule="0 8 * * *",
+  prompt="Daily regression check: npm test.
+    If 7 consecutive passes → CronDelete.
+    If failures → alert with details."
+)
+```
+
+---
+
+## Task Management (CC 2.1.16)
+
+```python
+# 1. Create main verification task
+TaskCreate(
+  subject="Verify [feature-name] implementation",
+  description="Comprehensive verification with nuanced grading",
+  activeForm="Verifying [feature-name] implementation"
+)
+
+# 2. Create subtasks for 8-phase process
+TaskCreate(subject="Run code quality checks", activeForm="Running quality checks")    # id=2
+TaskCreate(subject="Execute security audit", activeForm="Running security audit")     # id=3
+TaskCreate(subject="Verify test coverage", activeForm="Verifying test coverage")      # id=4
+TaskCreate(subject="Validate API", activeForm="Validating API")                       # id=5
+TaskCreate(subject="Check UI/UX", activeForm="Checking UI/UX")                       # id=6
+TaskCreate(subject="Calculate grades", activeForm="Calculating grades")               # id=7
+TaskCreate(subject="Generate suggestions", activeForm="Generating suggestions")       # id=8
+TaskCreate(subject="Compile report", activeForm="Compiling report")                   # id=9
+
+# 3. Set dependencies — phases 2-6 run in parallel, 7-9 are sequential
+TaskUpdate(taskId="7", addBlockedBy=["2", "3", "4", "5", "6"])  # Grading needs all checks
+TaskUpdate(taskId="8", addBlockedBy=["7"])  # Suggestions need grades
+TaskUpdate(taskId="9", addBlockedBy=["8"])  # Report needs suggestions
+
+# 4. Before starting each task, verify it's unblocked
+task = TaskGet(taskId="2")  # Verify blockedBy is empty
+
+# 5. Update status as you progress
+TaskUpdate(taskId="2", status="in_progress")  # When starting
+TaskUpdate(taskId="2", status="completed")    # When done — repeat for each subtask
+```
+
+---
+
+## 8-Phase Workflow
+
+Load details: `Read("${CLAUDE_SKILL_DIR}/references/verification-phases.md")` for complete phase details, agent spawn definitions, Agent Teams alternative, and team teardown.
+
+| Phase | Activities | Output |
+|-------|------------|--------|
+| **1. Context Gathering** | Git diff, commit history | Changes summary |
+| **2. Parallel Agent Dispatch** | 6 agents evaluate | 0-10 scores |
+| **2.5 Visual Capture** | Screenshot routes, AI vision eval | Gallery + visual score |
+| **3. Test Execution** | Backend + frontend tests | Coverage data |
+| **4. Nuanced Grading** | Composite score calculation | Grade (A-F) |
+| **5. Improvement Suggestions** | Effort vs impact analysis | Prioritized list |
+| **6. Alternative Comparison** | Compare approaches (optional) | Recommendation |
+| **7. Metrics Tracking** | Trend analysis | Historical data |
+| **8. Report Compilation** | Evidence artifacts + gallery.html | Final report |
+| **8.5 Agentation Loop** | User annotates, ui-feedback fixes | Before/after diffs |
+
+### Phase 2 Agents (Quick Reference)
+
+| Agent | Focus | Output |
+|-------|-------|--------|
+| code-quality-reviewer | Lint, types, patterns | Quality 0-10 |
+| security-auditor | OWASP, secrets, CVEs | Security 0-10 |
+| test-generator | Coverage, test quality | Coverage 0-10 |
+| backend-system-architect | API design, async | API 0-10 |
+| frontend-ui-developer | React 19, Zod, a11y | UI 0-10 |
+| python-performance-engineer | Latency, resources, scaling | Performance 0-10 |
+
+Launch ALL agents in ONE message with `run_in_background=True` and `max_turns=25`.
+
+### Progressive Output (CC 2.1.76+)
+
+Output each agent's score **as soon as it completes** — don't wait for all 6-7 agents.
+
+> **Focus mode (CC 2.1.101):** In focus mode, include the full composite score, all dimension scores, and the verdict in your final message — the user didn't see the incremental outputs.
+
+```
+Security:     8.2/10 — No critical vulnerabilities found
+Code Quality: 7.5/10 — 3 complexity hotspots identified
+[...remaining agents still running...]
+```
+
+This gives users real-time visibility into multi-agent verification. If any dimension scores below the `security_minimum` threshold (default 5.0), flag it as a **blocker immediately** — the user can terminate early without waiting for remaining agents.
+
+### Monitor + Partial Results (CC 2.1.98)
+
+Use `Monitor` for streaming test execution output from background scripts:
+
+```python
+# Stream test output in real-time instead of waiting for completion
+Bash(command="npm test 2>&1", run_in_background=true)
+Monitor(pid=test_task_id)  # Each line → notification
+```
+
+Full pattern reference (when to use vs. `TaskOutput`, until-condition gates, anti-patterns): `Read("${CLAUDE_PLUGIN_ROOT}/skills/chain-patterns/references/monitor-patterns.md")`.
+
+**Partial results (CC 2.1.98):** If a verification agent fails mid-analysis, synthesize partial scores rather than re-spawning:
+
+```python
+for agent_result in verification_results:
+    if "[PARTIAL RESULT]" in agent_result.output:
+        # Extract whatever scores the agent produced before crashing
+        partial_score = parse_score(agent_result.output)  # May be incomplete
+        scores[agent_result.dimension] = {
+            "score": partial_score, "partial": True,
+            "note": "Agent crashed — score based on partial analysis"
+        }
+        # A 4-dimension score is better than no score. Do NOT re-spawn.
+```
+
+### Phase 2.5: Visual Capture (NEW — runs in parallel with Phase 2)
+
+Load details: `Read("${CLAUDE_SKILL_DIR}/references/visual-capture.md")` for auto-detection, route discovery, screenshot capture, and AI vision evaluation.
+
+**Summary**: Auto-detects project framework, starts dev server, discovers routes, uses agent-browser to screenshot each route, evaluates with Claude vision, generates self-contained `gallery.html` with base64-embedded images.
+
+**Output**: `verification-output/{timestamp}/gallery.html` — open in browser to see all screenshots with AI evaluations, scores, and annotation diffs.
+
+**Graceful degradation**: If no frontend detected or server won't start, skips visual capture with a warning — never blocks verification.
+
+### Phase 8.5: Agentation Visual Feedback (opt-in)
+
+Load details: `Read("${CLAUDE_SKILL_DIR}/references/visual-capture.md")` (Phase 8.5 section) for agentation loop workflow.
+
+**Trigger**: Only when agentation MCP is configured. Offers user the choice to annotate the live UI. `ui-feedback` agent processes annotations, re-screenshots show before/after.
+
+---
+
+## Grading & Scoring
+
+Load `Read("${CLAUDE_PLUGIN_ROOT}/skills/quality-gates/references/unified-scoring-framework.md")` for dimensions, weights, grade thresholds, and improvement prioritization. Load `Read("${CLAUDE_SKILL_DIR}/references/quality-model.md")` for verify-specific extensions (Visual dimension). Load `Read("${CLAUDE_SKILL_DIR}/references/grading-rubric.md")` for per-agent scoring criteria.
+
+### Dimension-Level Blockers (ork-rubric/1.0)
+
+Composite is necessary but not sufficient — a strong composite can average away a critical dimension. In Phase 4 (Nuanced Grading), read per-dimension thresholds from `${CLAUDE_SKILL_DIR}/rubric.json` (schema: `${CLAUDE_PLUGIN_ROOT}/skills/shared/rubric.schema.json`): security `min_blocker` 4.0, compliance `min_pass` 6.0.
+
+- **ANY dimension below its `min_blocker` → verdict is BLOCKED regardless of composite.** Report it explicitly: `Security 3.2/10 (CRITICAL BLOCKER — below min_blocker 4.0)`.
+- A dimension below its `min_pass` (but at/above `min_blocker`) caps the verdict at IMPROVEMENTS RECOMMENDED — it cannot grade READY FOR MERGE.
+- Blocked verdicts list every tripped dimension first, each with the fix needed to clear it.
+- A project `.claude/policies/verification-policy.json` (see Policy-as-Code) may tighten these thresholds, never loosen them below the rubric defaults.
+
+Threshold bands and reporting format: `references/grading-rubric.md` ("Dimension-Level Blockers" section).
+
+---
+
+## Streak Gate (consecutive-pass mode)
+
+A single green is not proof — flaky and order-dependent suites pass once and fail the next run. With `--streak=N`, verify declares **READY FOR MERGE only after N consecutive passing runs**, resetting the count to 0 on any non-ready verdict. The count persists across independent runs in `.claude/chain/verify-streak.json`, keyed by scope.
+
+- `--streak=N` (N ≥ 2; 3 is the sensible default). Absent ⇒ today's single pass/fail behavior, unchanged. Target may also come from `.claude/policies/verification-policy.json` (`"streak_target"`); the flag wins.
+- The gate sits **above** the verdict — it never loosens a blocker, it only withholds "done" until the streak is met. Each run re-executes the *actual* tests (no cached passes — that independence is the whole point).
+- Reset rule: **any** non-`READY FOR MERGE` verdict (tripped blocker, failing test, or IMPROVEMENTS RECOMMENDED) zeroes the count. No partial credit.
+- The verdict surfaces the count: `STREAK 2/3 — one more green to merge`, or `streak reset to 0/3 (security 3.2 < 4.0)`.
+- This is the native mechanism the `prd-to-goal` quality-streak recipe (#2539) leans on. Pair it with a `/goal` loop, but **`rm` the ledger first** — `/goal` reads `until` before the turn's verify, so a stale `met:true` exits with zero runs (see streak-gate.md "Stale-ledger guard").
+
+Full protocol — ledger schema, run loop, `/goal` wiring, and `/ork:cover` reuse: `Read("${CLAUDE_SKILL_DIR}/references/streak-gate.md")`.
+
+---
+
+## Evidence & Test Execution
+
+Load details: `Read("${CLAUDE_SKILL_DIR}/rules/evidence-collection.md")` for git commands, test execution patterns, metrics tracking, and post-verification feedback.
+
+---
+
+## Policy-as-Code
+
+Load details: `Read("${CLAUDE_SKILL_DIR}/references/policy-as-code.md")` for configuration.
+
+Define verification rules in `.claude/policies/verification-policy.json`:
+
+```json
+{
+  "thresholds": {
+    "composite_minimum": 6.0,
+    "security_minimum": 7.0,
+    "coverage_minimum": 70
+  },
+  "blocking_rules": [
+    {"dimension": "security", "below": 5.0, "action": "block"}
+  ]
+}
+```
+
+---
+
+## Report Format
+
+Load details: `Read("${CLAUDE_SKILL_DIR}/references/report-template.md")` for full format. Summary:
+
+```markdown
+# Feature Verification Report
+
+**Composite Score: [N.N]/10** (Grade: [LETTER])
+
+## Verdict
+**[READY FOR MERGE | IMPROVEMENTS RECOMMENDED | BLOCKED]**
+
+[--streak=N mode only: **STREAK [current]/[target]** — READY FOR MERGE requires the full target; any non-ready run resets to 0.]
+```
+
+> **Push notifications (CC 2.1.110+):** Verify runs for >5 min are common on complex changes. When the final verdict is ready, call `PushNotification` to alert the user — they likely walked away from the terminal. Requires Remote Control with "Push when Claude decides" config; fails silently for users without it.
+>
+> ```python
+> PushNotification(
+>   message=f"ork:verify complete — {verdict} · {score}/10 · {blockers_count} blockers",
+>   status="proactive"
+> )
+> ```
+
+---
+
+## References
+
+Load on demand with `Read("${CLAUDE_SKILL_DIR}/references/<file>")`:
+
+| File | Content |
+|------|---------|
+| `verification-phases.md` | 8-phase workflow, agent spawn definitions, Agent Teams mode |
+| `visual-capture.md` | Phase 2.5 + 8.5: screenshot capture, AI vision, gallery generation, agentation loop |
+| `quality-model.md` | Scoring dimensions and weights (8 unified) |
+| `grading-rubric.md` | Per-agent scoring criteria |
+| `report-template.md` | Full report format with visual evidence section |
+| `alternative-comparison.md` | Approach comparison template |
+| `orchestration-mode.md` | Agent Teams vs Task Tool |
+| `policy-as-code.md` | Verification policy configuration |
+| `verification-checklist.md` | Pre-flight checklist |
+| `streak-gate.md` | `--streak=N` consecutive-pass gate: ledger schema, reset rule, `/goal` wiring, cover reuse |
+
+## Rules
+
+Load on demand with `Read("${CLAUDE_SKILL_DIR}/rules/<file>")`:
+
+| File | Content |
+|------|---------|
+| `scoring-rubric.md` | Composite scoring, grades, verdicts |
+| `evidence-collection.md` | Evidence gathering and test patterns |
+
+### Verification Gate (Cross-Cutting)
+
+Load `Read("${CLAUDE_PLUGIN_ROOT}/skills/shared/rules/verification-gate.md")` — the minimum 5-step gate that applies to ALL completion claims across all skills. This is non-negotiable: NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE.
+
+### Anti-Sycophancy Protocol
+
+Load `Read("${CLAUDE_PLUGIN_ROOT}/skills/shared/rules/anti-sycophancy.md")` — all verification agents report findings directly without performative agreement. "Should be fine" is not evidence. "Tests pass (exit 0, 47/47)" is.
+
+### Agent Status Protocol
+
+All verification agents MUST report using the standardized protocol: `Read("${CLAUDE_PLUGIN_ROOT}/agents/shared/status-protocol.md")`. Never report DONE if concerns exist. Never silently produce work you're unsure about.
+
+---
+
+## Agent Coordination
+
+### SendMessage (Cross-Agent Findings)
+
+When a security agent finds a critical issue, share it with other verification agents:
+
+```python
+SendMessage(to="test-generator", message="Security: SQL injection in user_service.py:88 — add parameterized query test")
+SendMessage(to="code-quality-reviewer", message="Security finding at user_service.py:88 — flag in review")
+```
+
+### Skill Chain
+
+After verification, chain to commit if all gates pass:
+
+```python
+TaskCreate(subject="Commit verified changes", activeForm="Committing")
+TaskUpdate(taskId=commit_id, addBlockedBy=[verify_task_id])
+# Then: /ork:commit
+```
+
+> **Session recovery (CC 2.1.108+):** After idle periods or interruptions, use `/recap` to restore conversational context alongside checkpoint-resume state. Enabled by default since CC 2.1.110 (even with telemetry disabled).
+
+## Related Skills
+
+- `ork:implement` - Full implementation with verification
+- `ork:review-pr` - PR-specific verification
+- `testing-unit` / `testing-integration` / `testing-e2e` - Test execution patterns
+- `ork:quality-gates` - Quality gate patterns
+- `browser-tools` - Browser automation for visual capture
+
+---
+
+**Version:** 4.4.0 (June 2026) — Added `--streak=N` consecutive-pass gate (#2540)
