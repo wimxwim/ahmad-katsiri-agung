@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { LoginMuridSchema, LoginGuruSchema } from "@/lib/validation";
 import { signSession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME, SESSION_DURATION_SECONDS } from "@/lib/session";
+import { sanitizeText } from "@/lib/sanitize";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 function isValidRedirect(url: string): boolean {
   return url.startsWith("/") && !url.includes("://") && !url.startsWith("//");
@@ -9,6 +11,15 @@ function isValidRedirect(url: string): boolean {
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = ipFromRequest(request);
+    const rl = checkRateLimit(`masuk:${ip}`, 5, 15000);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: `Terlalu banyak percobaan. Coba lagi dalam ${rl.retryAfter} detik.` },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfter) } },
+      );
+    }
+
     const formData = await request.formData();
     const mode = formData.get("_mode") as string;
 
@@ -23,16 +34,20 @@ export async function POST(request: NextRequest) {
       }
 
       const { nama, kelas, noAbsen, nis, sekolah } = parsed.data;
+      const cleanNama = sanitizeText(nama, 100);
+      const cleanKelas = sanitizeText(kelas, 10);
+      const cleanNoAbsen = sanitizeText(noAbsen, 5);
+      const cleanSekolah = sekolah ? sanitizeText(sekolah, 100) : undefined;
       const rawRedirect = formData.get("redirect") as string || "/";
       const redirectTo = isValidRedirect(rawRedirect) ? rawRedirect : "/";
 
       const token = await signSession({
         role: "murid",
-        nama,
-        kelas,
-        noAbsen,
+        nama: cleanNama,
+        kelas: cleanKelas,
+        noAbsen: cleanNoAbsen,
         nis: nis || undefined,
-        sekolah: sekolah || undefined,
+        sekolah: cleanSekolah,
       });
 
       const response = NextResponse.json({ success: true, redirect: redirectTo });
@@ -57,6 +72,7 @@ export async function POST(request: NextRequest) {
       }
 
       const { nama, password } = parsed.data;
+      const cleanNama = sanitizeText(nama, 100);
       const guruPassword = process.env.GURU_PASSWORD;
       const rawRedirect = formData.get("redirect") as string || "/";
       const redirectTo = isValidRedirect(rawRedirect) ? rawRedirect : "/";
@@ -77,7 +93,7 @@ export async function POST(request: NextRequest) {
 
       const token = await signSession({
         role: "guru",
-        nama,
+        nama: cleanNama,
       });
 
       const response = NextResponse.json({ success: true, redirect: redirectTo });

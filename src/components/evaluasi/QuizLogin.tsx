@@ -146,7 +146,7 @@ export function QuizLogin({ onLogin }: QuizLoginProps) {
             value={nama}
             onChange={(e) => setNama(e.target.value)}
             placeholder="Nama lengkap sesuai absen"
-            className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 mb-5 transition-all"
+            className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 mb-5 transition-all"
           />
 
           <label className="block text-sm font-semibold text-on-surface mb-2">
@@ -157,7 +157,7 @@ export function QuizLogin({ onLogin }: QuizLoginProps) {
             value={tanggalLahir}
             onChange={(e) => setTanggalLahir(e.target.value)}
             placeholder="Contoh: 12 Maret 2012"
-            className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 mb-6 transition-all"
+            className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 mb-6 transition-all"
           />
 
           {error && (
@@ -219,7 +219,7 @@ export function QuizLogin({ onLogin }: QuizLoginProps) {
           onChange={(e) => setNama(e.target.value)}
           placeholder="Nama panggilan"
           maxLength={50}
-          className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 mb-5 transition-all"
+          className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 mb-5 transition-all"
         />
 
         <button

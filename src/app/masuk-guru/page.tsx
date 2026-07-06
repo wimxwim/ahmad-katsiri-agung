@@ -94,7 +94,7 @@ export default function MasukGuruPage() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full rounded-xl border border-border-precision bg-white/80 pl-10 pr-3.5 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full rounded-xl border border-border-precision bg-white/80 pl-10 pr-3.5 py-2.5 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary/30"
                   placeholder="Masukkan username"
                   autoComplete="username"
                 />
@@ -112,7 +112,7 @@ export default function MasukGuruPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-xl border border-border-precision bg-white/80 pl-10 pr-10 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full rounded-xl border border-border-precision bg-white/80 pl-10 pr-10 py-2.5 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary/30"
                   placeholder="Masukkan password"
                   autoComplete="current-password"
                 />

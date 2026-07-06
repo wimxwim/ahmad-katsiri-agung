@@ -4,9 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCmsData } from "../providers/CmsProvider";
 import { useSession } from "../providers/SessionProvider";
+import { handleLogout } from "@/lib/logout";
 
 const NAV_ITEMS_FALLBACK = [
   { href: "/", label: "Beranda" },
+  { href: "/kursus", label: "Kursus" },
   { href: "/pendidik", label: "Pendidik" },
   { href: "/materi", label: "Materi" },
   { href: "/evaluasi", label: "Kuis" },
@@ -92,13 +94,7 @@ function LogoutButton({ role }: { role: string }) {
   if (pathname.startsWith("/masuk") || pathname.startsWith("/login")) return null;
   return (
     <button
-      onClick={async () => {
-        const fd = new FormData();
-        fd.set("_mode", "logout");
-        const res = await fetch("/api/masuk", { method: "POST", body: fd });
-        const data = await res.json();
-        if (data.redirect) window.location.href = data.redirect;
-      }}
+      onClick={handleLogout}
       className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-red-500 transition-colors px-2 py-1 cursor-pointer"
       title={`${role === "guru" ? "Guru" : "Murid"} — Keluar`}
     >

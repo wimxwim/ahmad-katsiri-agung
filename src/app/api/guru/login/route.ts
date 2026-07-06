@@ -1,15 +1,39 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { cookies } from "next/headers";
 import { readRows } from "@/lib/google-sheets";
 import { signSession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { sanitizeText } from "@/lib/sanitize";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
-export async function POST(request: Request) {
+const GuruLoginSchema = z.object({
+  username: z.string().min(1).max(100),
+  password: z.string().min(1).max(128),
+});
+
+export async function POST(request: NextRequest) {
   try {
+    const ip = ipFromRequest(request);
+    const rl = checkRateLimit(`guru-login:${ip}`, 5, 15000);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: `Terlalu banyak percobaan. Coba lagi dalam ${rl.retryAfter} detik.` },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfter) } },
+      );
+    }
+
     const body = await request.json();
-    const username = sanitizeText(body.username ?? "").trim();
-    const password = sanitizeText(body.password ?? "").trim();
+    const parsed = GuruLoginSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message || "Data tidak valid" },
+        { status: 400 },
+      );
+    }
+
+    const username = sanitizeText(parsed.data.username).trim();
+    const password = sanitizeText(parsed.data.password).trim();
 
     if (!username || !password) {
       return NextResponse.json({ error: "Username dan password wajib diisi" }, { status: 400 });

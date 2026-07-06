@@ -42,7 +42,10 @@ export default function QuranPage() {
         setSurahs(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setLoading(false);
+        console.error("Gagal memuat daftar surah");
+      });
   }, []);
 
   async function openSurah(nomor: number) {
@@ -171,10 +174,9 @@ export default function QuranPage() {
                   </button>
                 </div>
 
-                <p
-                  className="text-sm text-on-surface-variant leading-relaxed mb-8 text-center max-w-3xl mx-auto"
-                  dangerouslySetInnerHTML={{ __html: selected.deskripsi }}
-                />
+                <p className="text-sm text-on-surface-variant leading-relaxed mb-8 text-center max-w-3xl mx-auto">
+                  {selected.deskripsi.replace(/<[^>]*>/g, "")}
+                </p>
 
                 <div className="border-t border-border-precision pt-8">
                   {selected.ayat.map((ayat) => (
@@ -217,7 +219,7 @@ export default function QuranPage() {
                   placeholder="Cari surah..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-full bg-glass backdrop-blur-2xl border border-border-precision text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-shadow"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-full bg-glass backdrop-blur-2xl border border-border-precision text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition-shadow"
                 />
               </div>
 

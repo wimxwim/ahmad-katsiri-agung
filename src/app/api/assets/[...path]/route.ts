@@ -38,6 +38,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
+  try {
   const { path: pathSegments } = await params;
   const ip =
     req.headers.get("cf-connecting-ip") ||
@@ -132,4 +133,7 @@ export async function GET(
   }
 
   return NextResponse.json({ error: "Not found" }, { status: 404 });
+  } catch {
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

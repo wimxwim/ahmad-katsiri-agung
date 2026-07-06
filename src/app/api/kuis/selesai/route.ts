@@ -5,6 +5,7 @@ import { KuisSelesaiSchema } from "@/lib/validation";
 import { verifyQuizToken, verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { sanitizeText } from "@/lib/sanitize";
 
 function extractBearerToken(req: NextRequest): string | null {
   const auth = req.headers.get("authorization");
@@ -42,6 +43,16 @@ export async function POST(req: NextRequest) {
     }
 
     const { namaSiswa, kelas, noAbsen, status, judulBab, skor, totalSoal, jawabanSalah } = parsed.data;
+    const cleanNamaSiswa = sanitizeText(namaSiswa, 100);
+    const cleanKelas = sanitizeText(kelas, 20);
+    const cleanNoAbsen = noAbsen ? sanitizeText(noAbsen, 10) : "";
+    const cleanJudulBab = sanitizeText(judulBab, 200);
+    const cleanJawabanSalah = jawabanSalah.map((j) => ({
+      nomor: j.nomor,
+      pertanyaan: sanitizeText(j.pertanyaan, 500),
+      jawabanSiswa: sanitizeText(j.jawabanSiswa, 200),
+      kunciJawaban: sanitizeText(j.kunciJawaban, 200),
+    }));
     const token = extractBearerToken(req);
 
     if (status === "resmi") {
@@ -50,7 +61,7 @@ export async function POST(req: NextRequest) {
         if (!payload) {
           return NextResponse.json({ error: "Token tidak valid atau kedaluwarsa" }, { status: 401 });
         }
-        if (payload.nama !== namaSiswa || payload.kelas !== kelas) {
+        if (payload.nama !== cleanNamaSiswa || payload.kelas !== cleanKelas) {
           return NextResponse.json({ error: "Data tidak cocok dengan token" }, { status: 403 });
         }
       } else {
@@ -63,7 +74,7 @@ export async function POST(req: NextRequest) {
         if (!session) {
           return NextResponse.json({ error: "Sesi tidak valid" }, { status: 401 });
         }
-        if (session.nama !== namaSiswa || (session.kelas && session.kelas !== kelas)) {
+        if (session.nama !== cleanNamaSiswa || (session.kelas && session.kelas !== cleanKelas)) {
           return NextResponse.json({ error: "Data tidak cocok dengan sesi" }, { status: 403 });
         }
       }
@@ -77,7 +88,7 @@ export async function POST(req: NextRequest) {
     });
     const isoNow = new Date().toISOString();
 
-    const detailSalah = jawabanSalah
+    const detailSalah = cleanJawabanSalah
       .map(
         (j) =>
           `Soal ${j.nomor}: ${escapeMarkdown(j.pertanyaan)}\n    Jawaban: ${escapeMarkdown(j.jawabanSiswa)}\n    Kunci:   ${escapeMarkdown(j.kunciJawaban)}`
@@ -88,10 +99,10 @@ export async function POST(req: NextRequest) {
     const icon = status === "resmi" ? "🟢" : "⚪";
     const lulus = persentase >= 70 ? "🌟" : "📚";
 
-    const safeNama = escapeMarkdown(namaSiswa);
-    const safeKelas = escapeMarkdown(kelas);
-    const safeJudul = escapeMarkdown(judulBab);
-    const safeNoAbsen = noAbsen ? escapeMarkdown(noAbsen) : "";
+    const safeNama = escapeMarkdown(cleanNamaSiswa);
+    const safeKelas = escapeMarkdown(cleanKelas);
+    const safeJudul = escapeMarkdown(cleanJudulBab);
+    const safeNoAbsen = cleanNoAbsen ? escapeMarkdown(cleanNoAbsen) : "";
 
     const message = [
       `${icon} *LAPORAN KUIS BARU — ${labelStatus}*`,
@@ -103,7 +114,7 @@ export async function POST(req: NextRequest) {
       `📊 *HASIL EVALUASI:*`,
       `• Skor Akhir: ${skor} / ${totalSoal}`,
       `• Persentase: ${persentase}% ${lulus}`,
-      ...(jawabanSalah.length > 0
+      ...(cleanJawabanSalah.length > 0
         ? [`\n❌ *Detail Jawaban Salah:*\n\n${detailSalah}`]
         : ["\n✅ *Semua jawaban benar!*"]),
       ``,
@@ -117,11 +128,11 @@ export async function POST(req: NextRequest) {
       await appendRow("RekapNilai!A:J", [
         [
           isoNow,
-          namaSiswa,
-          kelas,
-          noAbsen || "-",
+          cleanNamaSiswa,
+          cleanKelas,
+          cleanNoAbsen || "-",
           status === "resmi" ? "Siswa Resmi" : "Latihan",
-          judulBab,
+          cleanJudulBab,
           String(skor),
           String(totalSoal),
           String(persentase),
@@ -130,6 +141,10 @@ export async function POST(req: NextRequest) {
       ]);
     } catch (e) {
       console.error("Gagal menyimpan ke RekapNilai:", e);
+      return NextResponse.json(
+        { error: "Gagal menyimpan hasil kuis. Silakan coba lagi." },
+        { status: 500 },
+      );
     }
 
     await sendTelegram(message);

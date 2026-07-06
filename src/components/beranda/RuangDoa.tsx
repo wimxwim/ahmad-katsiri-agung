@@ -24,7 +24,7 @@ export function RuangDoa() {
     fetch("/api/doa")
       .then((r) => r.json())
       .then((data) => setDoaList(data.doa || []))
-      .catch(() => {});
+      .catch(() => setError("Gagal memuat doa"));
   }, []);
 
   async function handleSubmit(e: FormEvent) {
@@ -99,7 +99,7 @@ export function RuangDoa() {
             onChange={(e) => setNama(e.target.value)}
             placeholder="Nama kamu (boleh dikosongkan)"
             maxLength={60}
-            className="w-full bg-white/50 border border-primary/10 rounded-2xl px-5 py-4 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 mb-4 transition-shadow"
+            className="w-full bg-white/50 border border-primary/10 rounded-2xl px-5 py-4 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 mb-4 transition-shadow"
           />
           <textarea
             value={isi}
@@ -107,7 +107,7 @@ export function RuangDoa() {
             placeholder="Tulis doa atau ucapanmu... 🤲"
             maxLength={400}
             rows={4}
-            className="w-full bg-white/50 border border-primary/10 rounded-2xl px-5 py-4 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none mb-3 transition-shadow"
+            className="w-full bg-white/50 border border-primary/10 rounded-2xl px-5 py-4 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 resize-none mb-3 transition-shadow"
           />
           <div className="flex items-center justify-between">
             <span className="text-xs text-on-surface-variant">{isi.length}/400</span>

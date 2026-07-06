@@ -152,7 +152,7 @@ export default function PendidikPage() {
             </Link>
             <Link
               href="/tentang"
-              className="inline-flex items-center gap-2 border border-white/30 text-white px-8 py-4 rounded-full font-semibold hover:bg-white/10 backdrop-blur-sm active:scale-[0.98] transition-all duration-300"
+              className="inline-flex items-center gap-2 border border-white/30 text-white px-8 py-4 rounded-full font-semibold hover:bg-white/10 backdrop-blur-xs active:scale-[0.98] transition-all duration-300"
             >
               Lihat Dokumentasi
             </Link>
@@ -422,7 +422,7 @@ function RekapSection() {
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="Kunci akses admin"
-                className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 mb-2 transition-all"
+                className="w-full bg-white/50 border border-primary/10 rounded-xl px-4 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 mb-2 transition-all"
               />
               {keyError && <p className="text-xs text-red-500 mb-2 text-center">{keyError}</p>}
               <button

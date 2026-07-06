@@ -10,8 +10,17 @@ const BALASAN_RANGE = "DiskusiBalasan!A:F";
 
 type RouteContext = { params: Promise<{ slug: string }> };
 
-export async function GET(_req: NextRequest, context: RouteContext) {
+export async function GET(req: NextRequest, context: RouteContext) {
   try {
+    const ip = ipFromRequest(req);
+    const rl = checkRateLimit(`diskusi-detail:${ip}`, 20, 15000);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Terlalu banyak permintaan" },
+        { status: 429, headers: { "Retry-After": String(rl.retryAfter) } },
+      );
+    }
+
     const { slug } = await context.params;
 
     const rows = await readRows(DISKUSI_RANGE);

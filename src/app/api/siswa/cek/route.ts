@@ -3,6 +3,7 @@ import { readRows } from "@/lib/google-sheets";
 import { SiswaCekSchema } from "@/lib/validation";
 import { signQuizToken } from "@/lib/auth";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { sanitizeText } from "@/lib/sanitize";
 
 const SHEET_RANGE = "DaftarSiswa!A:D";
 
@@ -28,6 +29,8 @@ export async function POST(req: NextRequest) {
     }
 
     const { nama, tanggalLahir } = parsed.data;
+    const cleanNama = sanitizeText(nama, 100);
+    const cleanTanggalLahir = sanitizeText(tanggalLahir, 30);
     const rows = await readRows(SHEET_RANGE);
 
     let matchedNama = "";
@@ -35,8 +38,8 @@ export async function POST(req: NextRequest) {
     for (const row of rows.slice(1)) {
       const [_, rowNama, rowKelas, rowTtl] = row;
       if (
-        rowNama?.toLowerCase().trim() === nama.toLowerCase().trim() &&
-        rowTtl?.toLowerCase().trim() === tanggalLahir.toLowerCase().trim()
+        rowNama?.toLowerCase().trim() === cleanNama.toLowerCase().trim() &&
+        rowTtl?.toLowerCase().trim() === cleanTanggalLahir.toLowerCase().trim()
       ) {
         matchedNama = rowNama;
         matchedKelas = rowKelas;

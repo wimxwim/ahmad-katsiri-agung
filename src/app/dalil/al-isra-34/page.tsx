@@ -167,7 +167,7 @@ export default function AnalisisDalilPage() {
                   value={refleksi}
                   onChange={(e) => setRefleksi(e.target.value)}
                   placeholder="Tuliskan komitmen atau refleksi singkatmu..."
-                  className="w-full bg-surface/50 border border-border-precision rounded-2xl p-4 text-sm text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none min-h-[120px] placeholder:text-on-surface-variant/50"
+                  className="w-full bg-surface/50 border border-border-precision rounded-2xl p-4 text-sm text-on-surface focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-hidden resize-none min-h-[120px] placeholder:text-on-surface-variant/50"
                 />
               </div>
               <button className="w-full py-4 rounded-xl bg-primary text-on-primary font-semibold text-sm shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2">
@@ -187,7 +187,7 @@ export default function AnalisisDalilPage() {
         >
           <Link
             href="/materi/amanah-dan-jujur"
-            className="inline-flex items-center gap-3 px-8 py-5 bg-white border border-border-precision rounded-full shadow-sm hover:shadow-md transition-all active:scale-95 group"
+            className="inline-flex items-center gap-3 px-8 py-5 bg-white border border-border-precision rounded-full shadow-xs hover:shadow-md transition-all active:scale-95 group"
           >
             <span className="text-sm font-semibold text-primary">Lanjut Belajar Materi Amanah & Jujur</span>
             <ArrowRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />

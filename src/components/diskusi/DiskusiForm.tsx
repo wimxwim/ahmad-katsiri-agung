@@ -68,14 +68,14 @@ export function DiskusiForm() {
           <div>
             <label htmlFor="dis-nama" className="block text-sm font-medium text-on-surface mb-1">Nama (opsional)</label>
             <input id="dis-nama" name="nama" maxLength={60} placeholder="Nama panggilan..."
-              className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+              className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
             />
           </div>
 
           <div>
             <label htmlFor="dis-kategori" className="block text-sm font-medium text-on-surface mb-1">Kategori</label>
             <select id="dis-kategori" name="kategori" required
-              className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+              className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
             >
               {KATEGORI.map((k) => (
                 <option key={k.value} value={k.value}>{k.label}</option>
@@ -86,14 +86,14 @@ export function DiskusiForm() {
           <div>
             <label htmlFor="dis-judul" className="block text-sm font-medium text-on-surface mb-1">Judul</label>
             <input id="dis-judul" name="judul" required maxLength={150} placeholder="Judul diskusi..."
-              className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+              className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
             />
           </div>
 
           <div>
             <label htmlFor="dis-isi" className="block text-sm font-medium text-on-surface mb-1">Isi Diskusi</label>
             <textarea id="dis-isi" name="isi" required rows={4} maxLength={1000} placeholder="Tulis pertanyaan atau pengalamanmu..."
-              className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
             />
           </div>
 

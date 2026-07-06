@@ -1,10 +1,12 @@
 import type { JWTPayload } from "jose";
 
-export type SesiRole = "murid" | "guru";
+export type SesiRole = "murid" | "guru" | "owner" | "admin_sekolah" | "orang_tua";
 
 export interface SesiPayload extends JWTPayload {
+  userId?: string;
   role: SesiRole;
   nama: string;
+  email?: string;
   kelas?: string;
   noAbsen?: string;
   nis?: string;

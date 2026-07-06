@@ -24,7 +24,9 @@ export function MateriDetailClient({ materi }: { materi: BabMateri }) {
       const progress = raw ? JSON.parse(raw) : {};
       progress[materi.slug] = { title: materi.title, kelas: materi.kelas, readAt: Date.now() };
       localStorage.setItem("aggung_progress", JSON.stringify(progress));
-    } catch {}
+    } catch {
+      console.error("Gagal menyimpan progress ke localStorage");
+    }
   }, [materi.slug, materi.title, materi.kelas]);
 
   return (

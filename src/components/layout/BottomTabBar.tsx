@@ -14,13 +14,16 @@ import {
   Brain,
   MessageSquare,
   Info,
+  Library,
   LogOut,
   X,
   type LucideIcon,
 } from "lucide-react";
 import { useSession } from "../providers/SessionProvider";
+import { handleLogout } from "@/lib/logout";
 
 const SHEET_ITEMS: { href: string; label: string; icon: LucideIcon; desc: string }[] = [
+  { href: "/kursus", label: "Kursus", icon: Library, desc: "Jelajahi katalog kursus" },
   { href: "/quran", label: "Qur'an", icon: Book, desc: "Baca dan dengarkan Al-Qur'an" },
   { href: "/refleksi", label: "Refleksi", icon: Brain, desc: "Tulis muhasabah harian" },
   { href: "/diskusi", label: "Diskusi", icon: MessageSquare, desc: "Ruang tanya jawab" },
@@ -48,14 +51,6 @@ export function BottomTabBar() {
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
-  };
-
-  const handleLogout = async () => {
-    const fd = new FormData();
-    fd.set("_mode", "logout");
-    const res = await fetch("/api/masuk", { method: "POST", body: fd });
-    const data = await res.json();
-    if (data.redirect) window.location.href = data.redirect;
   };
 
   const navTabs = [

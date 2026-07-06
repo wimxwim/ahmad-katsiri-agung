@@ -3,11 +3,12 @@ import type { CmsNavigation } from "@/lib/cms";
 
 const FOOTER_LINKS_FALLBACK = [
   { href: "/", label: "Beranda" },
+  { href: "/kursus", label: "Katalog Kursus" },
   { href: "/materi", label: "Materi" },
   { href: "/hafalan", label: "Hafalan Dalil" },
-  { href: "/dalil/al-isra-34", label: "Analisis Dalil" },
   { href: "/video", label: "Video" },
   { href: "/evaluasi", label: "Kuis" },
+  { href: "/diskusi", label: "Diskusi" },
   { href: "/game", label: "Game Edukasi" },
   { href: "/tentang", label: "Tentang Kami" },
 ];
@@ -17,9 +18,16 @@ const CONTACT_FALLBACK = {
   igHandle: "@ahmadkatsiria",
   tiktokHandle: "@sir.ahmd",
   youtubeChannel: "Ahmad Katsiri Agung",
+  pendiriNama: "Ahmad Katsiri Aggung, S.Pd.",
 };
 
-export function Footer({ navigation: nav }: { navigation?: CmsNavigation | null }) {
+export function Footer({
+  navigation: nav,
+  pendiriNama: pendiriNamaProp,
+}: {
+  navigation?: CmsNavigation | null;
+  pendiriNama?: string;
+}) {
   const footerLinks = nav?.footerLinks ?? FOOTER_LINKS_FALLBACK;
   const contact = nav ?? CONTACT_FALLBACK;
 
@@ -64,7 +72,7 @@ export function Footer({ navigation: nav }: { navigation?: CmsNavigation | null 
               Kontak
             </h4>
             <ul className="space-y-3 text-sm text-on-surface-variant">
-              <li>Ahmad Katsiri Aggung, S.Pd.</li>
+              <li>{pendiriNamaProp || CONTACT_FALLBACK.pendiriNama}</li>
               <li>
                 <a
                   href={`https://wa.me/${contact.waNumber}`}

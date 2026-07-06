@@ -39,7 +39,9 @@ export default function MateriPage() {
         }
         setProgress(map);
       }
-    } catch {}
+    } catch {
+      console.error("Gagal membaca progress dari localStorage");
+    }
   }, []);
 
   const totalRead = Object.keys(progress).length;

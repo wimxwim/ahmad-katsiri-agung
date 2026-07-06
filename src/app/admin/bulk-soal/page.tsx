@@ -181,7 +181,7 @@ export default function BulkSoalPage() {
             <select
               value={selectedBab}
               onChange={(e) => { setSelectedBab(e.target.value); setResult(null); }}
-              className="w-full sm:w-80 rounded-xl border border-border-precision bg-white/80 px-3.5 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none"
+              className="w-full sm:w-80 rounded-xl border border-border-precision bg-white/80 px-3.5 py-2.5 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary/30 appearance-none"
             >
               {BAB_LIST.map((bab) => (
                 <option key={bab.slug} value={bab.slug}>
@@ -222,7 +222,7 @@ export default function BulkSoalPage() {
               value={text}
               onChange={(e) => { setText(e.target.value); setResult(null); }}
               rows={12}
-              className="w-full rounded-xl border border-border-precision bg-white/80 px-3.5 py-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y font-mono"
+              className="w-full rounded-xl border border-border-precision bg-white/80 px-3.5 py-3 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary/30 resize-y font-mono"
               placeholder={`Tempel soal di sini...\n\nContoh:\n1. Pertanyaan?\nA. Opsi A\nB. Opsi B\nC. Opsi C\nD. Opsi D\nJawaban: A`}
             />
           </div>

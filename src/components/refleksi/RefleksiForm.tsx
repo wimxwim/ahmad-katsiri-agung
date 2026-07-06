@@ -75,7 +75,7 @@ export function RefleksiForm() {
             onChange={(e) => setNama(e.target.value)}
             placeholder="Nama panggilan..."
             maxLength={60}
-            className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+            className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
           />
         </div>
 
@@ -93,7 +93,7 @@ export function RefleksiForm() {
             rows={3}
             placeholder="Misal: Belajar tentang tabayyun dalam Q.S. Al-Hujurat..."
             maxLength={500}
-            className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
           />
         </div>
 
@@ -111,7 +111,7 @@ export function RefleksiForm() {
             rows={3}
             placeholder="Misal: Membantu teman yang kesulitan memahami materi..."
             maxLength={500}
-            className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
           />
         </div>
 
@@ -129,7 +129,7 @@ export function RefleksiForm() {
             rows={3}
             placeholder="Misal: Lebih fokus saat belajar dan tidak bermain HP..."
             maxLength={500}
-            className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-border-precision bg-white/50 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none"
           />
         </div>
 
