@@ -4,19 +4,15 @@ import { sendTelegram, escapeMarkdown } from "@/lib/telegram";
 import { RefleksiSchema } from "@/lib/validation";
 import { sanitizeText } from "@/lib/sanitize";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { apiError, apiRateLimit, apiSuccess } from "@/lib/api-response";
 
 const SHEET_RANGE = "RefleksiDiri!A:F";
 
 export async function GET(req: NextRequest) {
   try {
     const ip = ipFromRequest(req);
-    const limit = checkRateLimit(`refleksi-get:${ip}`, 30, 60_000);
-    if (!limit.allowed) {
-      return NextResponse.json(
-        { error: "Terlalu banyak permintaan." },
-        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
-      );
-    }
+    const limit = await checkRateLimit(`refleksi-get:${ip}`, 30, 60_000);
+    if (!limit.allowed) return apiRateLimit(limit.retryAfter);
 
     const { searchParams } = req.nextUrl;
     const filterNama = searchParams.get("nama")?.toLowerCase().trim();
@@ -41,32 +37,24 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ refleksi: list });
   } catch (e) {
     console.error("GET /api/refleksi gagal:", e);
-    return NextResponse.json(
-      { error: "Gagal mengambil data refleksi" },
-      { status: 500 }
-    );
+    return apiError("Gagal mengambil data refleksi", 500);
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const ip = ipFromRequest(req);
-    const limit = checkRateLimit(`refleksi:${ip}`, 5, 10_000);
-    if (!limit.allowed) {
-      return NextResponse.json(
-        { error: `Terlalu banyak permintaan. Coba lagi ${limit.retryAfter} detik.` },
-        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
-      );
-    }
+    const limit = await checkRateLimit(`refleksi:${ip}`, 5, 10_000);
+    if (!limit.allowed) return apiRateLimit(limit.retryAfter);
 
     const text = await req.text();
     if (text.length > 10_000) {
-      return NextResponse.json({ error: "Payload terlalu besar" }, { status: 413 });
+      return apiError("Payload terlalu besar", 413);
     }
     const raw = JSON.parse(text);
     const parsed = RefleksiSchema.safeParse(raw);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
+      return apiError("Data tidak valid", 400);
     }
 
     const { nama, pelajaran, akhlakBaik, perluDiperbaiki } = parsed.data;
@@ -90,11 +78,8 @@ export async function POST(req: NextRequest) {
       `📝 *REFLEKSI DIRI BARU MASUK!*\n\n👤 *Nama:* ${escapeMarkdown(cleanNama)}\n📖 *Dipelajari:* ${escapeMarkdown(cleanPelajaran)}\n💚 *Akhlak Baik:* ${escapeMarkdown(cleanAkhlakBaik)}\n🔄 *Perlu Diperbaiki:* ${escapeMarkdown(cleanPerluDiperbaiki)}`
     );
 
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json(
-      { error: "Gagal mengirim refleksi" },
-      { status: 500 }
-    );
+    return apiSuccess();
+  } catch (e) { console.error("POST /api/refleksi error:", e);
+    return apiError("Gagal mengirim refleksi", 500);
   }
 }

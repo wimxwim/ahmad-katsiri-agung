@@ -56,6 +56,10 @@ export function BalasForm({ slug }: { slug: string }) {
         <p className="text-red-600 text-sm">Gagal mengirim balasan</p>
       )}
 
+      <p className="text-xs text-on-surface-variant/60 leading-relaxed">
+        Balasan ditampilkan publik. Jangan bagikan data pribadi.
+      </p>
+
       <button type="submit" disabled={state === "loading"}
         className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-primary text-on-primary text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
       >

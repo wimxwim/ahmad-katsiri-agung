@@ -4,6 +4,14 @@ import type { BabSoal, SoalItem } from "../data/soal";
 /**
  * CMS Reader — reads content from Keystatic JSON files in `content/` directory.
  *
+ * ⚠️ CMS_LEGACY_READONLY ⚠️
+ * Per TODO V2 Multi-Guru (Gelombang 3), Keystatic sudah dibekukan.
+ * Fungsi-fungsi di file ini READ-ONLY untuk backward compatibility.
+ * Konten legacy tetap tampil selama transisi, tapi:
+ *   - Jangan panggil dari fitur baru
+ *   - Jangan tulis ke content/*
+ *   - Konten baru pakai Drizzle + ImageKit
+ *
  * Safe to use alongside existing hardcoded data.
  * Returns null if CMS data is not available (falls back to hardcoded).
  *
@@ -15,6 +23,8 @@ import type { BabSoal, SoalItem } from "../data/soal";
  *   content/navigation/index.json     →  Navigation singleton
  *   content/site-config/index.json    →  SiteConfig singleton
  *   content/about/index.json          →  About singleton
+ *
+ * @see /prd/TODO-V2-MULTI-GURU.md Gelombang 3
  */
 
 // ── Types ──
@@ -164,7 +174,8 @@ export async function getMateriFromCms(): Promise<Record<string, BabMateri> | nu
     }
 
     return Object.keys(result).length > 0 ? result : null;
-  } catch {
+  } catch (error) {
+    console.error("[CMS] getMateriFromCms failed:", error);
     return null;
   }
 }
@@ -217,7 +228,8 @@ export async function getSoalFromCms(): Promise<Record<string, BabSoal> | null> 
     }
 
     return Object.keys(result).length > 0 ? result : null;
-  } catch {
+  } catch (error) {
+    console.error("[CMS] getSoalFromCms failed:", error);
     return null;
   }
 }
@@ -241,7 +253,7 @@ export async function getSoalMetaFromCms(): Promise<{ slug: string; title: strin
       const jsonPath = path.join(base, slug, "index.json");
       if (!fs.existsSync(jsonPath)) continue;
 
-      const raw = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+      const raw: { title: string; kelas: string; soal?: unknown[] } = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
       result.push({
         slug,
         title: raw.title,
@@ -251,7 +263,8 @@ export async function getSoalMetaFromCms(): Promise<{ slug: string; title: strin
     }
 
     return result.length > 0 ? result : null;
-  } catch {
+  } catch (error) {
+    console.error("[CMS] getSoalMetaFromCms failed:", error);
     return null;
   }
 }
@@ -267,7 +280,8 @@ export async function getAboutFromCms(): Promise<CmsAbout | null> {
     if (!fs.existsSync(jsonPath)) return null;
 
     return JSON.parse(fs.readFileSync(jsonPath, "utf-8")) as CmsAbout;
-  } catch {
+  } catch (error) {
+    console.error("[CMS] getAboutFromCms failed:", error);
     return null;
   }
 }
@@ -286,7 +300,8 @@ export async function getPendidikPageFromCms(): Promise<{
     if (!fs.existsSync(jsonPath)) return null;
 
     return JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-  } catch {
+  } catch (error) {
+    console.error("[CMS] getPendidikPageFromCms failed:", error);
     return null;
   }
 }
@@ -304,7 +319,8 @@ export async function getPerangkatAjarFromCms(): Promise<{
     if (!fs.existsSync(jsonPath)) return null;
 
     return JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-  } catch {
+  } catch (error) {
+    console.error("[CMS] getPerangkatAjarFromCms failed:", error);
     return null;
   }
 }
@@ -320,7 +336,8 @@ export async function getNavigationFromCms(): Promise<CmsNavigation | null> {
     if (!fs.existsSync(jsonPath)) return null;
 
     return JSON.parse(fs.readFileSync(jsonPath, "utf-8")) as CmsNavigation;
-  } catch {
+  } catch (error) {
+    console.error("[CMS] getNavigationFromCms failed:", error);
     return null;
   }
 }
@@ -336,7 +353,8 @@ export async function getSiteConfigFromCms(): Promise<CmsSiteConfig | null> {
     if (!fs.existsSync(jsonPath)) return null;
 
     return JSON.parse(fs.readFileSync(jsonPath, "utf-8")) as CmsSiteConfig;
-  } catch {
+  } catch (error) {
+    console.error("[CMS] getSiteConfigFromCms failed:", error);
     return null;
   }
 }
@@ -365,7 +383,8 @@ export async function getGamesFromCms(): Promise<CmsGame[] | null> {
     }
 
     return result.length > 0 ? result : null;
-  } catch {
+  } catch (error) {
+    console.error("[CMS] getGamesFromCms failed:", error);
     return null;
   }
 }
@@ -394,7 +413,8 @@ export async function getHaditsFromCms(): Promise<CmsHadits[] | null> {
     }
 
     return result.length > 0 ? result : null;
-  } catch {
+  } catch (error) {
+    console.error("[CMS] getHaditsFromCms failed:", error);
     return null;
   }
 }

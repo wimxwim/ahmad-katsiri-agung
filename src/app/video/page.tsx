@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Play, Clock, BookOpen, ArrowRight } from "lucide-react";
+import { Play, Clock, BookOpen, ArrowRight, AlertTriangle, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useCmsData } from "@/components/providers/CmsProvider";
 import { ALL_MATERI as ALL_MATERI_HARD } from "@/data/materi";
@@ -12,6 +12,27 @@ const BAB_LIST_HARD = Object.values(ALL_MATERI_HARD).sort(
   (a, b) => a.kelas - b.kelas || a.bab - b.bab
 );
 
+function VideoSkeleton() {
+  return (
+    <div className="space-y-12">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[40px] overflow-hidden animate-pulse">
+          <div className="grid grid-cols-1 lg:grid-cols-5">
+            <div className="lg:col-span-2 p-5 sm:p-8 lg:p-10">
+              <div className="h-6 w-28 bg-primary/10 rounded-full mb-3" />
+              <div className="h-8 w-3/4 bg-primary/10 rounded-lg mb-3" />
+              <div className="h-4 w-full bg-primary/5 rounded mb-2" />
+              <div className="h-4 w-2/3 bg-primary/5 rounded mb-6" />
+              <div className="h-10 w-36 bg-primary/10 rounded-full" />
+            </div>
+            <div className="lg:col-span-3 aspect-video bg-primary/5" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const KELAS = [7, 8, 9] as const;
 
 export default function VideoPage() {
@@ -19,8 +40,29 @@ export default function VideoPage() {
   const BAB_LIST = materiDetail
     ? Object.values(materiDetail).sort((a, b) => a.kelas - b.kelas || a.bab - b.bab)
     : BAB_LIST_HARD;
+  const [pageState, setPageState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    setPageState("ready");
+  }, []);
+
+  const handleRetry = () => {
+    setPageState("ready");
+  };
+
   const [filterKelas, setFilterKelas] = useState<number | null>(null);
   const [playing, setPlaying] = useState<string | null>(null);
+
+  function getYoutubeThumb(videoUrl: string): string | null {
+    const patterns = [
+      /(?:embed\/|watch\?v=|\/v\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    ];
+    for (const p of patterns) {
+      const match = videoUrl.match(p);
+      if (match?.[1]) return `https://img.youtube.com/vi/${match[1]}/maxresdefault.jpg`;
+    }
+    return null;
+  }
 
   const filtered = filterKelas
     ? BAB_LIST.filter((m) => m.kelas === filterKelas)
@@ -79,8 +121,34 @@ export default function VideoPage() {
         </div>
       </div>
 
-      <div className="space-y-12">
-        {filtered.map((bab, idx) => {
+      {pageState === "loading" ? (
+        <VideoSkeleton />
+      ) : pageState === "error" ? (
+        <div className="text-center py-16">
+          <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center mx-auto mb-6">
+            <AlertTriangle className="w-10 h-10 text-red-500" />
+          </div>
+          <h2 className="font-heading text-xl text-on-surface mb-3">Gagal Memuat Video</h2>
+          <p className="text-on-surface-variant mb-6">Terjadi kesalahan saat memuat data video.</p>
+          <button
+            onClick={handleRetry}
+            className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 cursor-pointer"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Coba Lagi
+          </button>
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+            <Play className="w-10 h-10 text-primary" />
+          </div>
+          <h2 className="font-heading text-xl text-on-surface mb-3">Belum ada video</h2>
+          <p className="text-on-surface-variant">Video pembelajaran untuk filter ini belum tersedia.</p>
+        </div>
+      ) : (
+        <div className="space-y-12">
+          {filtered.map((bab, idx) => {
           const isPlaying = playing === bab.slug;
 
           return (
@@ -170,9 +238,17 @@ export default function VideoPage() {
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          className="aspect-video bg-gradient-to-br from-primary/10 via-surface to-primary/5 flex items-center justify-center"
+                          className="aspect-video bg-gradient-to-br from-primary/10 via-surface to-primary/5 flex items-center justify-center relative overflow-hidden"
                         >
-                          <div className="text-center">
+                          {bab.videoUrl && getYoutubeThumb(bab.videoUrl) ? (
+                            <img
+                              src={getYoutubeThumb(bab.videoUrl)!}
+                              alt={bab.title}
+                              className="absolute inset-0 w-full h-full object-cover opacity-30"
+                              loading="lazy"
+                            />
+                          ) : null}
+                          <div className="text-center relative z-10">
                             <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                               {bab.videoUrl ? (
                                 <Play className="w-10 h-10 text-primary/60" />
@@ -195,7 +271,8 @@ export default function VideoPage() {
             </motion.div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

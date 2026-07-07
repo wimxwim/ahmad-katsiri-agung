@@ -99,7 +99,7 @@ export function DualCTACards() {
             </ul>
 
             <Link
-              href="/peserta-didik"
+              href="/masuk"
               className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:brightness-110 active:scale-[0.98] transition-transform duration-300"
             >
               GABUNG SEKARANG

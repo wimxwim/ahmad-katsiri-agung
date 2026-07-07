@@ -4,28 +4,34 @@ import { readRows } from "@/lib/google-sheets";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 
 export const runtime = "nodejs";
 
 const ADMIN_KEY = process.env.ADMIN_API_KEY || "";
 
+function isOriginAllowed(origin: string): boolean {
+  if (!origin) return false;
+  try {
+    const { hostname } = new URL(origin);
+    const allowed = ["akalcenter.my.id", "ahmad-katsiri-agung.vercel.app", "localhost"];
+    return allowed.some((h) => hostname === h);
+  } catch (e) {
+    console.error("isOriginAllowed error:", e);
+    return false;
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
-    const origin = req.headers.get("origin") || req.headers.get("referer") || "";
-    const allowedOrigins = ["https://akalcenter.my.id", "https://ahmad-katsiri-agung.vercel.app", "http://localhost:3000"];
-    const originOk = allowedOrigins.some((o) => origin.startsWith(o));
-    if (!originOk) {
-      return NextResponse.json({ error: "Akses ditolak" }, { status: 403 });
+    const origin = req.headers.get("origin") || "";
+    if (origin && !isOriginAllowed(origin)) {
+      return apiError("Akses ditolak", 403);
     }
 
     const ip = ipFromRequest(req);
-    const limit = checkRateLimit(`rekap:${ip}`, 20, 60_000);
-    if (!limit.allowed) {
-      return NextResponse.json(
-        { error: `Terlalu banyak permintaan` },
-        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
-      );
-    }
+    const limit = await checkRateLimit(`rekap:${ip}`, 20, 60_000);
+    if (!limit.allowed) return apiRateLimit(limit.retryAfter);
 
     // Auth: x-api-key (legacy) atau session guru
     const apiKey = req.headers.get("x-api-key");
@@ -42,7 +48,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (!isKeyValid && !isGuruSession) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return apiError("Unauthorized", 401);
     }
 
     const rekapNilai = await readRows("RekapNilai!A:J");
@@ -64,9 +70,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ rekap });
   } catch (e) {
     console.error("rekap error:", e);
-    return NextResponse.json(
-      { error: "Gagal memuat data dari server" },
-      { status: 500 }
-    );
+    return apiError("Gagal memuat data dari server", 500);
   }
 }

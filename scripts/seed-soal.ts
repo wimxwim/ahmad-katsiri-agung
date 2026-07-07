@@ -1,7 +1,7 @@
 import { Pool } from "pg";
 import "dotenv/config";
 
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://akal:akaldev@localhost:5433/akal_center";
+const DATABASE_URL = process.env.DATABASE_URL;
 
 const SOAL_DATA = [
   { judul: "Iman Kepada Malaikat", slug: "beriman-kepada-malaikat", kelas: "7", totalSoal: 10 },

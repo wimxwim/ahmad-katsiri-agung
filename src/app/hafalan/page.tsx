@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { ChevronLeft, ChevronRight, RotateCcw, BookOpen, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, BookOpen, Sparkles, AlertTriangle, RefreshCw } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
 import { ALL_MATERI as ALL_MATERI_HARD } from "@/data/materi";
 import { EASE_CURVE } from "@/lib/constants";
@@ -18,8 +18,36 @@ const DALIL_LIST_HARD = Object.values(ALL_MATERI_HARD)
     arti: b.dalil!.arti,
   }));
 
+function HafalanSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="w-full max-w-[640px] mx-auto">
+        <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[40px] p-5 sm:p-8 md:p-12 shadow-glass-lg">
+          <div className="text-center">
+            <div className="h-6 w-28 bg-primary/10 rounded-full mx-auto mb-6" />
+            <div className="h-4 w-40 bg-primary/5 rounded mx-auto mb-3" />
+            <div className="h-24 w-3/4 bg-primary/5 rounded mx-auto mb-8" />
+            <div className="h-4 w-32 bg-primary/5 rounded mx-auto" />
+          </div>
+        </div>
+        <div className="flex items-center justify-center gap-4 mt-10">
+          <div className="w-12 h-12 rounded-full bg-primary/5" />
+          <div className="h-4 w-20 bg-primary/5 rounded" />
+          <div className="w-12 h-12 rounded-full bg-primary/5" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function HafalanPage() {
   const { materiDetail } = useCmsData();
+  const [pageState, setPageState] = useState<"loading" | "ready" | "error">("loading");
+
+  useEffect(() => {
+    setPageState("ready");
+  }, []);
+
   const DALIL_LIST = materiDetail
     ? Object.values(materiDetail)
         .filter((b) => b.dalil)
@@ -35,6 +63,70 @@ export default function HafalanPage() {
   const [current, setCurrent] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [hafal, setHafal] = useState<Set<string>>(new Set());
+
+  const handleRetry = () => {
+    setPageState("ready");
+  };
+
+  if (pageState === "loading") {
+    return (
+      <div className="max-w-[640px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 pb-24 sm:pb-32">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: EASE_CURVE }}
+          className="text-center mb-10"
+        >
+          <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+            <BookOpen className="w-8 h-8 text-primary" aria-hidden="true" />
+          </div>
+          <h1 className="font-heading text-3xl sm:text-5xl tracking-tighter text-on-surface leading-none mb-4">
+            Hafalan Dalil
+          </h1>
+          <p className="text-sm sm:text-base text-on-surface-variant max-w-md mx-auto">
+            Geser atau tap kartu untuk membalik. Hafalkan dalil dari setiap bab
+            pelajaran.
+          </p>
+        </motion.div>
+        <HafalanSkeleton />
+      </div>
+    );
+  }
+
+  if (pageState === "error") {
+    return (
+      <div className="max-w-[640px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 pb-24 sm:pb-32 text-center">
+        <div className="w-16 h-16 rounded-3xl bg-red-50 flex items-center justify-center mx-auto mb-6">
+          <AlertTriangle className="w-8 h-8 text-red-500" />
+        </div>
+        <h2 className="font-heading text-xl text-on-surface mb-3">Gagal Memuat Hafalan</h2>
+        <p className="text-on-surface-variant mb-6">Terjadi kesalahan saat memuat data hafalan.</p>
+        <button
+          onClick={handleRetry}
+          className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 cursor-pointer"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Coba Lagi
+        </button>
+      </div>
+    );
+  }
+
+  if (DALIL_LIST.length === 0) {
+    return (
+      <div className="max-w-[640px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 pb-24 sm:pb-32 text-center">
+        <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+          <BookOpen className="w-8 h-8 text-primary" />
+        </div>
+        <h1 className="font-heading text-3xl sm:text-5xl tracking-tighter text-on-surface leading-none mb-4">
+          Hafalan Dalil
+        </h1>
+        <p className="text-sm sm:text-base text-on-surface-variant max-w-md mx-auto mb-6">
+          Belum ada dalil yang tersedia. Dalil akan segera ditambahkan.
+        </p>
+      </div>
+    );
+  }
 
   const item = DALIL_LIST[current];
 

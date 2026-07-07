@@ -1,70 +1,177 @@
-# AGENTS.md — AKAL Center (Untuk Kimi K2.7 Code)
+# AGENTS.md — AKAL Center (Single Source of Truth untuk AI Coding Agent)
 
-<!-- 
-  KONTEKS UNTUK KIMI K2.7 CODE:
-  File ini adalah single-source-of-truth untuk AI yang akan mengerjakan coding.
-  Tulis dengan struktur XML — Kimi merespon paling baik ke format ini.
-  Gunakan instruksi eksplisit step-by-step — jangan asumsikan Kimi tahu konteks.
-  Kimi K2.7 = always-thinking model. Reasoning_content selalu aktif. JANGAN dimatikan.
-  Kimi K2.7 context = 262K token. File ini + referensi harus muat dalam itu.
+<!--
+  FILE INI SUDAH DI-UPGRADE untuk kondisi project terbaru.
+  Fokus baru: platform multi-guru berbasis Vercel + Supabase + ImageKit,
+  bukan lagi website single-guru lama.
 -->
 
 ## IDENTITAS PROJECT
 
 <project>
   <name>AKAL Center</name>
-  <tagline>Deep Learning Akidah Akhlak</tagline>
-  <description>Platform e-learning PAI SMP/MTs — Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning</description>
+  <tagline>Platform Guru-Siswa + AI Document Generator</tagline>
+  <description>
+    Platform pembelajaran yang sedang dirombak total dari website PAI single-guru
+    menjadi platform multi-guru dengan alur yang lebih jelas untuk guru, siswa,
+    dan sekolah. Prioritas utama saat ini adalah: auth yang rapi, landing page baru,
+    dashboard guru/siswa baru, upload dokumen, dan AI generator dari PDF/DOCX ke
+    materi, quiz, dan soal.
+  </description>
   <domain>https://akalcenter.my.id</domain>
   <repo>https://github.com/wimxwim/ahmad-katsiri-agung</repo>
-  <status>LIVE — 27 sesi pengerjaan selesai</status>
+  <status>REBUILD ACTIVE — live lama boleh diganti</status>
   <klien>Ahmad Katsiri Agung, S.Pd. (WA: 0851-5879-5502)</klien>
 </project>
 
-## STACK TEKNIS (JANGAN DIGANTI)
+## KEPUTUSAN STRATEGIS YANG SUDAH TERKUNCI
+
+<locked-decisions>
+  <decision id="D-001">ORM final = Drizzle</decision>
+  <decision id="D-002">Fase sekarang = Vercel + Supabase + ImageKit</decision>
+  <decision id="D-003">VPS ditunda sampai user, siswa, dan guru sudah banyak</decision>
+  <decision id="D-004">Keystatic dibekukan untuk FITUR BARU</decision>
+  <decision id="D-005">Konten lama Keystatic tetap dibaca sebagai legacy/read-only selama transisi</decision>
+  <decision id="D-006">Payment online ditunda; sementara CTA ke WhatsApp manual</decision>
+  <decision id="D-007">AI prioritas utama = generator PDF/DOCX → materi + quiz + soal</decision>
+  <decision id="D-008">Hasil AI wajib draft dulu, tidak boleh auto-publish</decision>
+  <decision id="D-009">Auth harus memisahkan intent guru vs siswa secara tegas</decision>
+  <decision id="D-010">Live lama tidak wajib dipertahankan UX-nya; boleh dirombak total</decision>
+</locked-decisions>
+
+## STACK TEKNIS RESMI SAAT INI
 
 <stack>
   <framework>Next.js 16.2.7 (App Router)</framework>
-  <language>TypeScript ^5 (strict mode)</language>
-  <css>Tailwind CSS v4 (custom oklch @theme)</css>
-  <animation>motion/react ^12.40.0 (ease curve [0.16, 1, 0.3, 1] as const)</animation>
+  <language>TypeScript strict</language>
+  <css>Tailwind CSS v4</css>
+  <animation>motion/react</animation>
   <icons>lucide-react</icons>
-  <fonts>Bricolage Grotesque (heading), Inter (body), Amiri (Quran), JetBrains Mono</fonts>
-  <hosting>Vercel Hobby (gratis)</hosting>
-  <cdn>Cloudflare Worker reverse proxy</cdn>
-  <cms>Keystatic (git-based, OAuth GitHub)</cms>
-  <sheets>googleapis ^173.0.0</sheets>
-  <analytics>@vercel/analytics, @vercel/speed-insights, GoogleAnalytics</analytics>
-  <auth>jose (JWT HS256)</auth>
-  <validation>zod v4</validation>
-  <utils>clsx, tailwind-merge</utils>
+  <fonts>Bricolage Grotesque, Inter, Amiri, JetBrains Mono</fonts>
+  <hosting>Vercel (fase sekarang)</hosting>
+  <database>Supabase Postgres (Singapore)</database>
+  <orm>Drizzle ORM</orm>
+  <storage>ImageKit untuk PDF, foto, dan media</storage>
+  <auth>JWT app-level + Google OAuth/Supabase integration</auth>
+  <validation>zod</validation>
+  <legacy-cms>Keystatic (dibekukan untuk fitur baru)</legacy-cms>
+  <legacy-data>Google Sheets (bridge/transisi, jangan dihapus gegabah)</legacy-data>
+  <notifications>Telegram legacy + email/Resend nanti</notifications>
   <package-manager>npm</package-manager>
 </stack>
+
+## STATUS IMPLEMENTASI TERBARU
+
+<implementation-status>
+  <done>
+    <item>Landing page publik sudah mulai dirombak ke narasi platform baru</item>
+    <item>Intent login guru vs siswa sudah mulai dipisahkan di backend dan frontend</item>
+    <item>/masuk-guru sekarang diarahkan ke /masuk?portal=guru</item>
+    <item>/daftar sudah dibuat sebagai entry onboarding baru</item>
+    <item>Build sudah lolos kembali setelah heap Node build dinaikkan</item>
+  </done>
+  <in-progress>
+    <item>Rombak total auth flow, dashboard baru, dan workspace multi-guru</item>
+    <item>Freeze Keystatic untuk fitur baru dan migrasi bertahap ke DB-driven content</item>
+    <item>Storage abstraction ke ImageKit</item>
+    <item>AI document pipeline</item>
+  </in-progress>
+  <not-done>
+    <item>Google OAuth end-to-end final</item>
+    <item>Register guru final</item>
+    <item>Dashboard owner/admin sekolah/orang tua</item>
+    <item>AI generator dokumen hidup</item>
+    <item>Cutover penuh dari legacy Google Sheets</item>
+  </not-done>
+</implementation-status>
+
+## PRIORITAS PENGERJAAN (URUTAN WAJIB)
+
+<priority-order>
+  <p0>
+    <item>Auth architecture final (guru/siswa tidak boleh campur)</item>
+    <item>Landing page publik baru</item>
+    <item>Register/login flow baru</item>
+    <item>Role-based redirect & route protection</item>
+    <item>Freeze Keystatic untuk fitur baru</item>
+  </p0>
+  <p1>
+    <item>Workspace guru multi-tenant</item>
+    <item>Dashboard siswa baru</item>
+    <item>ImageKit upload pipeline</item>
+    <item>Bridge konten lama -> konten baru</item>
+  </p1>
+  <p2>
+    <item>AI document generator</item>
+    <item>Analitik dasar guru</item>
+    <item>Remedial recommendation awal</item>
+  </p2>
+  <p3>
+    <item>Payment online</item>
+    <item>VPS migration</item>
+    <item>Teacher Readiness Index untuk semua guru</item>
+  </p3>
+</priority-order>
 
 ## ATURAN CODING WAJIB
 
 <rules>
-  <rule priority="CRITICAL">JANGAN hapus vercel.json — file ini critical untuk framework detection</rule>
-  <rule priority="CRITICAL">JANGAN tambah komentar di kode (kecuali untuk fix bug)</rule>
-  <rule priority="CRITICAL">JANGAN ganti warna/font/design system yang sudah ada</rule>
-  <rule priority="CRITICAL">JANGAN ubah animasi pattern (ease curve, stagger, duration)</rule>
-  <rule priority="HIGH">Semua animasi pakai whileInView + viewport={{ once: true }}</rule>
-  <rule priority="HIGH">Layout mobile-first: px-3 sm:px-5 lg:px-8</rule>
-  <rule priority="HIGH">Teks font: heading = font-bricolage, body = font-inter, arab = font-amiri</rule>
-  <rule priority="HIGH">JANGAN import library baru tanpa ijin eksplisit</rule>
-  <rule priority="HIGH">Gunakan library yang sudah ada di package.json</rule>
-  <rule priority="MEDIUM">Naming convention ikuti file yang sudah ada di project</rule>
-  <rule priority="MEDIUM">Semua type/interface harus explicit, jangan pakai any</rule>
-  <rule priority="MEDIUM">Gunakan cn() dari src/lib/utils.ts untuk conditional className</rule>
+  <rule priority="CRITICAL">JANGAN hapus vercel.json</rule>
+  <rule priority="CRITICAL">JANGAN tambah komentar di kode kecuali untuk fix bug yang benar-benar perlu</rule>
+  <rule priority="CRITICAL">JANGAN ganti design system dasar yang sudah ada</rule>
+  <rule priority="CRITICAL">JANGAN ubah ease curve animasi dari [0.16, 1, 0.3, 1] as const</rule>
+  <rule priority="CRITICAL">JANGAN tambah library baru tanpa alasan kuat dan tanpa cek package.json dulu</rule>
+  <rule priority="HIGH">Semua type/interface explicit, jangan pakai any</rule>
+  <rule priority="HIGH">Gunakan cn() dari src/lib/utils.ts untuk className kondisional</rule>
+  <rule priority="HIGH">Semua desain tetap mobile-first: px-3 sm:px-5 lg:px-8</rule>
+  <rule priority="HIGH">Semua route auth harus memisahkan intent guru vs siswa dengan jelas</rule>
+  <rule priority="HIGH">JANGAN izinkan akun siswa masuk dari portal guru tanpa error eksplisit</rule>
+  <rule priority="HIGH">JANGAN izinkan akun guru masuk dari portal siswa tanpa error eksplisit</rule>
+  <rule priority="HIGH">JANGAN buat fitur baru lewat Keystatic/content/*</rule>
+  <rule priority="HIGH">Semua fitur baru yang melibatkan materi/quiz/soal harus DB-driven</rule>
+  <rule priority="HIGH">Semua hasil AI harus status draft sampai di-approve guru</rule>
+  <rule priority="HIGH">Semua file upload dianggap untrusted content</rule>
+  <rule priority="HIGH">JANGAN eksekusi file upload, JANGAN treat file upload sebagai trusted input</rule>
+  <rule priority="HIGH">JANGAN kirim secret ke client-side code</rule>
+  <rule priority="HIGH">JANGAN return raw AI output tanpa validasi/sanitasi</rule>
+  <rule priority="HIGH">JANGAN puas dengan solusi "asal build hijau" kalau arsitektur atau API yang dipilih jelas bukan pilihan terbaik</rule>
+  <rule priority="HIGH">Jika sebuah error sudah dicoba perbaiki 3x dan masih gagal, BERHENTI patching lokal — baca ulang source code, docs library resmi, dan evaluasi ulang pendekatan terbaik</rule>
+  <rule priority="HIGH">Jika ada lebih dari satu pendekatan yang sama-sama bisa jalan, pilih yang paling future-proof, paling konsisten dengan arsitektur project, dan paling sedikit utang teknis</rule>
+  <rule priority="HIGH">JANGAN impor path internal package secara rapuh hanya karena cepat lolos build; utamakan public API library</rule>
+  <rule priority="HIGH">Setiap fitur baru yang kompleks wajib diuji bukan hanya build, tapi juga kesesuaian desain, alur UX, dan integrasi data</rule>
+  <rule priority="MEDIUM">Ikuti naming convention file tetangga kecuali memang sedang membuat arsitektur baru yang lebih rapi</rule>
+  <rule priority="MEDIUM">Refactor besar boleh dilakukan jika memang menghapus alur legacy yang kacau, asalkan build tetap hijau</rule>
 </rules>
 
-## DESIGN SYSTEM (PAKAI YANG SUDAH ADA)
+## PROTOKOL SAAT MENEMUKAN ERROR BERULANG
+
+<error-recovery-protocol>
+  <step>1. Baca pesan error kata per kata dan identifikasi file, symbol, dan library yang terlibat.</step>
+  <step>2. Cek apakah masalahnya berasal dari asumsi agent, API library yang berubah, atau schema project yang belum sinkron.</step>
+  <step>3. Jika 1-2 patch pertama gagal, JANGAN lanjut tebak-tebakan — buka file sumber yang relevan dan baca export/typing/library docs resmi.</step>
+  <step>4. Jika sudah 3x gagal, wajib ganti mode dari "patch" ke "root-cause analysis".</step>
+  <step>5. Kalau docs resmi tersedia, utamakan docs resmi 2026. Jangan ambil solusi internal-path, workaround rapuh, atau hack sementara kalau ada API publik yang benar.</step>
+  <step>6. Setelah fix, verifikasi dengan build dan cek apakah solusi itu benar-benar cocok dengan desain sistem jangka menengah.</step>
+</error-recovery-protocol>
+
+## STANDAR KUALITAS SOLUSI
+
+<solution-quality-bar>
+  <rule>Solusi terbaik = bukan yang paling cepat lolos build, tetapi yang paling benar secara arsitektur.</rule>
+  <rule>Kalau library menyediakan API publik yang jelas, gunakan itu. Hindari mengimpor file internal package path dalam `node_modules` kecuali tidak ada opsi lain dan alasannya didokumentasikan.</rule>
+  <rule>Kalau schema project belum mendukung fitur, perbaiki schema dengan benar dulu — jangan paksa route/controller menebak field yang belum ada.</rule>
+  <rule>Kalau UI sudah berhasil tampil tapi alurnya masih membingungkan user, anggap tugas belum selesai.</rule>
+  <rule>Untuk frontend, nilai keberhasilan bukan cuma compile, tapi juga hierarchy visual, intent UX, dan mobile-first quality.</rule>
+  <rule>Untuk backend, nilai keberhasilan bukan cuma request 200, tapi juga role guard, data ownership, dan failure state yang aman.</rule>
+</solution-quality-bar>
+
+## DESIGN SYSTEM (TETAP DIPAKAI)
 
 <design>
   <colors>
-    <primary>#005231 (hijau gelap premium)</primary>
-    <tertiary>#5a4200 (gold accent)</tertiary>
-    <surface>#f2fcf7 (putih kehijauan)</surface>
+    <primary>#005231</primary>
+    <tertiary>#5a4200</tertiary>
+    <surface>#f2fcf7</surface>
     <glass>rgba(255,255,255,0.6) + backdrop-blur-2xl</glass>
     <border>rgba(27,107,69,0.15)</border>
     <shimmer>linear-gradient(90deg, #eec055, #ffdf9b, #eec055, #ffdf9b)</shimmer>
@@ -73,178 +180,122 @@
   <shadow>shadow-glass, shadow-glass-lg, shadow-glass-xl</shadow>
 </design>
 
-## STRUKTUR FOLDER (HANYA FILE PENTING)
+## STRUKTUR BARU YANG HARUS JADI ACUAN
 
-<structure>
-  <folder name="src/app">
-    <file>layout.tsx</file>
-    <file>globals.css</file>
-    <file>page.tsx (Beranda)</file>
-    <folder name="materi">
-      <file>page.tsx (daftar bab)</file>
-      <folder name="[slug]"><file>page.tsx (detail bab)</file></folder>
-    </folder>
-    <file>pendidik/page.tsx</file>
-    <file>game/page.tsx</file>
-    <file>evaluasi/page.tsx</file>
-    <file>video/page.tsx</file>
-    <file>hafalan/page.tsx</file>
-    <file>tentang/page.tsx</file>
-    <file>peserta-didik/page.tsx (placeholder)</file>
-    <file>login/page.tsx</file>
-    <file>masuk/page.tsx</file>
-    <file>masuk-guru/page.tsx</file>
-    <file>proxy.ts (auth gate)</file>
-    <folder name="api">
-      <folder name="doa"><file>route.ts</file></folder>
-      <folder name="siswa/cek"><file>route.ts</file></folder>
-      <folder name="kuis/selesai"><file>route.ts</file></folder>
-      <folder name="kuis/rekap"><file>route.ts</file></folder>
-      <folder name="masuk"><file>route.ts</file></folder>
-      <folder name="keystatic/[...params]"><file>route.ts</file></folder>
-    </folder>
-    <folder name="keystatic"><file>layout.tsx</file></folder>
-  </folder>
-  <folder name="src/components">
-    <folder name="beranda"><file>HeroSection.tsx</file><file>FeatureGrid.tsx</file><file>DualCTACards.tsx</file><file>AyatBlock.tsx</file><file>RuangDoa.tsx</file></folder>
-    <folder name="layout"><file>Navbar.tsx</file><file>BottomTabBar.tsx</file><file>Footer.tsx</file><file>FloatingWA.tsx</file></folder>
-    <folder name="materi"><file>MateriDetailClient.tsx</file></folder>
-    <folder name="evaluasi"><file>QuizEngine.tsx</file><file>QuizLogin.tsx</file></folder>
-    <folder name="providers"><file>Providers.tsx</file></folder>
-  </folder>
-  <folder name="src/data">
-    <file>materi.ts (14 bab, 484 baris)</file>
-    <file>soal.ts (8 bank soal)</file>
-    <file>hafalan.ts (9 dalil)</file>
-    <file>dalil.ts (analisis QS Al-Isra:34)</file>
-  </folder>
-  <folder name="src/lib">
-    <file>utils.ts (cn utility)</file>
-    <file>google-sheets.ts</file>
-    <file>telegram.ts</file>
-    <file>auth.ts (JWT sign/verify)</file>
-    <file>rate-limit.ts</file>
-    <file>sanitize.ts</file>
-    <file>validation.ts (Zod schemas)</file>
-  </folder>
-  <folder name="workers/akal-centre">
-    <file>index.ts (Cloudflare Worker proxy)</file>
-    <file>wrangler.jsonc</file>
-  </folder>
-</structure>
+<target-structure>
+  <public>
+    <route>/</route>
+    <route>/masuk</route>
+    <route>/daftar</route>
+    <route>/fitur</route>
+    <route>/harga</route>
+    <route>/tentang</route>
+  </public>
+  <dashboards>
+    <route>/guru</route>
+    <route>/guru/kursus</route>
+    <route>/guru/siswa</route>
+    <route>/guru/analytics</route>
+    <route>/guru/uploads</route>
+    <route>/siswa</route>
+    <route>/siswa/materi</route>
+    <route>/siswa/quiz</route>
+    <route>/siswa/cbt</route>
+    <route>/owner</route>
+    <route>/admin-sekolah</route>
+    <route>/orang-tua</route>
+  </dashboards>
+  <note>
+    Folder dashboard lama boleh dipakai sebagai referensi, tapi jangan dianggap arsitektur final.
+  </note>
+</target-structure>
 
-## PRD REFERENSI (BACA SEBELUM MULAI KERJA)
+## LEGACY YANG MASIH BOLEH HIDUP SEMENTARA
 
-<prd>
-  <file path="prd/01-ringkasan-eksekutif.md">Visi, status terkini, ADR, model bisnis</file>
-  <file path="prd/02-audit-kondisi-saat-ini.md">Deep dive repo existing</file>
-  <file path="prd/03-arsitektur-target.md">Arsitektur VPS multi-tenant</file>
-  <file path="prd/04-matriks-fitur-per-role.md">Fitur Guru/Siswa/Admin/Ortu</file>
-  <file path="prd/05-spesifikasi-mesin-analitik.md">Rumus IRT, BKT, Elo, Risk Score, TRI</file>
-  <file path="prd/06-model-data.md">Schema database</file>
-  <file path="prd/07-rencana-migrasi.md">Langkah konkret</file>
-  <file path="prd/08-riset-2026-rekomendasi.md">Update stack 2026</file>
-</prd>
+<legacy>
+  <item>src/lib/google-sheets.ts</item>
+  <item>src/app/api/siswa/cek/route.ts</item>
+  <item>src/app/api/kuis/selesai/route.ts</item>
+  <item>src/app/api/kuis/rekap/route.ts</item>
+  <item>src/lib/cms.ts</item>
+  <item>src/lib/cms-data.ts</item>
+  <item>src/app/api/assets/[...path]/route.ts</item>
+  <rule>Legacy ini tidak boleh dijadikan dasar fitur baru. Hanya bridge selama transisi.</rule>
+</legacy>
 
-## SKILLS YANG TERSEDIA (GUNAKAN SESUAI KEBUTUHAN)
+## AUTH PRINCIPLES
 
-<skills>
-  <relevant>
-    <skill name="ui-ux-pro-max" desc="67 styles, 96 palettes, 57 fonts, 13 stacks. GUNAKAN untuk desain UI komponen baru."/>
-    <skill name="vercel-react-best-practices" desc="React/Next.js performance dari Vercel Engineering. GUNAKAN saat menulis/review kode React."/>
-    <skill name="design-taste-frontend" desc="Senior UI/UX Engineer. GUNAKAN untuk audit visual komponen baru."/>
-    <skill name="cloudflare" desc="Cloudflare Workers, Pages, KV, D1. GUNAKAN saat ubah Worker atau DNS."/>
-    <skill name="seo-audit" desc="Technical SEO audit. GUNAKAN saat tambah halaman baru."/>
-    <skill name="local-seo-indonesia" desc="SEO lokal Indonesia. GUNAKAN untuk optimasi Google Indonesia."/>
-    <skill name="schema" desc="JSON-LD structured data. GUNAKAN untuk SEO schema markup."/>
-    <skill name="analytics" desc="GA4 tracking. GUNAKAN untuk setup event tracking."/>
-    <skill name="midtrans-payment" desc="Midtrans payment gateway. GUNAKAN untuk fitur pembayaran."/>
-    <skill name="xendit-payment" desc="Xendit payment gateway. GUNAKAN jika klien pilih Xendit."/>
-    <skill name="whatsapp-widget" desc="WA floating button. SUDAH ADA di FloatingWA.tsx."/>
-    <skill name="domain-management" desc="Domain .id/.my.id. GUNAKAN saat setup domain baru."/>
-    <skill name="ssl-setup" desc="SSL via Cloudflare. GUNAKAN untuk konfigurasi SSL."/>
-    <skill name="uptime-monitoring" desc="BetterUptime/Upptime. GUNAKAN untuk setup monitoring."/>
-    <skill name="backup-automation" desc="Backup database otomatis. GUNAKAN saat setup VPS."/>
-    <skill name="google-analytics-setup" desc="GA4 setup. SUDAH TERPASANG di layout.tsx."/>
-    <skill name="search-console-setup" desc="Google Search Console. GUNAKAN untuk setup GSC."/>
-    <skill name="pwa-checklist" desc="PWA audit. GUNAKAN untuk PWA readiness."/>
-    <skill name="core-web-vitals" desc="CWV optimization. GUNAKAN untuk audit performa."/>
-    <skill name="pdf" desc="PDF generation. GUNAKAN untuk fitur sertifikat."/>
-    <skill name="diskusi" desc="Triple-Layer Intelligence Engine. GUNAKAN untuk analisis project mendalam."/>
-    <skill name="debug" desc="Root Cause Analysis Engine. GUNAKAN saat ada bug/error."/>
-    <skill name="scanweb" desc="Website scanner. GUNAKAN untuk audit halaman existing."/>
-    <skill name="client-handoff" desc="Dokumentasi serah terima. GUNAKAN saat handover ke klien."/>
-    <skill name="privacy-policy" desc="Kebijakan Privasi Indonesia. GUNAKAN untuk UU PDP compliance."/>
-    <skill name="sekolah-website" desc="Template website sekolah. GUNAKAN sebagai referensi struktur."/>
-    <skill name="web-perf" desc="Web performance audit. GUNAKAN untuk optimasi Core Web Vitals."/>
-  </relevant>
-  <skip>
-    <skill name="hunt-* (semua hunting skill)">TIDAK RELEVAN — ini untuk security testing, bukan development</skill>
-    <skill name="bug-bounty">TIDAK RELEVAN</skill>
-    <skill name="pentest-*">TIDAK RELEVAN</skill>
-    <skill name="crypto-*">TIDAK RELEVAN</skill>
-    <skill name="blockchain-*">TIDAK RELEVAN</skill>
-  </skip>
-</skills>
+<auth-principles>
+  <principle>Auth flow harus tunggal, tegas, dan deterministik</principle>
+  <principle>/masuk dan /daftar adalah entry utama publik</principle>
+  <principle>/masuk-guru hanya alias/redirect, bukan flow auth berbeda</principle>
+  <principle>Role sumber kebenaran berasal dari DB/session, bukan dari URL halaman semata</principle>
+  <principle>Intent dari portal dipakai untuk validasi UX dan guard pesan error</principle>
+  <principle>Jika role tidak cocok dengan portal, tampilkan error eksplisit</principle>
+</auth-principles>
 
-## KONVENSI ANIMASI (IKUTI PERSIS PATTERN INI)
+## AI PRINCIPLES
 
-<animation-rules>
-  <hero>Hero/heading: initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }}</hero>
-  <grid>Stagger grid: variants + staggerChildren: 0.08 per item</grid>
-  <sidebar>Sidebar kiri: x: -30, sidebar kanan: x: 30</sidebar>
-  <ease>Ease curve: [0.16, 1, 0.3, 1] — WAJIB pakai as const</ease>
-  <duration>0.5–0.7 detik, delay stagger 0.08–0.15</duration>
-  <viewport>Semua scroll reveal pakai whileInView + viewport={{ once: true }} + initial/animate</viewport>
-  <mobile>@media (max-width: 640px): backdrop-blur dikurangi (8px → 2px)</mobile>
-</animation-rules>
+<ai-principles>
+  <principle>Prioritas AI saat ini BUKAN chatbot, tetapi document-to-learning pipeline</principle>
+  <principle>Input utama: PDF dan DOCX</principle>
+  <principle>Output utama: materi + quiz + soal</principle>
+  <principle>Semua output harus draft dulu</principle>
+  <principle>Guru wajib review sebelum publish</principle>
+  <principle>File upload dianggap tidak tepercaya</principle>
+  <principle>Ekstrak teks dulu bila memungkinkan; jangan oper file mentah ke subsistem lain tanpa validasi</principle>
+</ai-principles>
 
-## CSS PATTERN WAJIB
+## PRD & DOKUMEN YANG WAJIB DIBACA SEBELUM FITUR BESAR
 
-<css-patterns>
-  <glass>className="bg-glass" = bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px]"</glass>
-  <shimmer>className="shimmer-text" = gradien emas berkilau</shimmer>
-  <safe>className="pb-safe" = padding-bottom: env(safe-area-inset-bottom)</safe>
-  <mobile-blur>@media (max-width: 640px) { .bg-glass { backdrop-filter: blur(2px); } }</mobile-blur>
-</css-patterns>
+<required-reading>
+  <file path="prd/01-ringkasan-eksekutif.md">visi dan arah bisnis</file>
+  <file path="prd/02-audit-kondisi-saat-ini.md">kondisi codebase nyata</file>
+  <file path="prd/03-arsitektur-target.md">arah arsitektur besar</file>
+  <file path="prd/06-model-data.md">schema dan model</file>
+  <file path="prd/07-rencana-migrasi.md">langkah transisi</file>
+  <file path="prd/08-riset-2026-rekomendasi.md">stack terbaru</file>
+  <file path="prd/TODO-V2-MULTI-GURU.md">todo implementasi aktif</file>
+</required-reading>
 
-## YANG BELUM SELESAI (QUICK WINS)
+## TUGAS YANG SUDAH SELESAI / JANGAN DIULANG
 
-<todo>
-  <task prio="RENDAH">PROTA Kelas 8 PDF — nunggu Bang Agung</task>
-  <task prio="RENDAH">Soal Tabayyun PDF — nunggu Bang Agung</task>
-  <task prio="RENDAH">2 video YouTube (Nabi & Rasul, Adab Islam) — nunggu link</task>
-  <task prio="RENDAH">/peserta-didik — halaman masih placeholder</task>
-  <task prio="SEDANG">CMS Navbar overflow (>8 item dari CMS) — perlu filter di keystatic.config.ts</task>
-  <task prio="SEDANG">Bang Agung belum punya akun GitHub untuk CMS — nunggu klien</task>
-</todo>
+<done-tasks>
+  <item>Fondasi pemisahan intent login guru vs siswa sudah mulai ditanam</item>
+  <item>/daftar sudah dibuat</item>
+  <item>Landing page publik sudah mulai diarahkan ke platform baru</item>
+  <item>Build OOM sudah diperbaiki lewat NODE_OPTIONS di script build</item>
+  <item>User sudah mengonfirmasi TODO 1-3 sudah dikerjakan</item>
+</done-tasks>
 
-## CARA DEPLOY
+## TUGAS KRITIKAL BERIKUTNYA
 
-<deploy>
-  <step>1. Build dulu: npx next build (PASTIKAN zero errors)</step>
-  <step>2. Commit: git add -A && git commit -m "pesan"</step>
-  <step>3. Push: git push origin main</step>
-  <step>4. Deploy Vercel: npx vercel --prod --yes</step>
-  <step>5. Deploy Worker: cd workers/akal-centre && npx wrangler deploy</step>
-  <note>git config user.name harus wimxwim</note>
-  <note>JANGAN hapus vercel.json</note>
-</deploy>
+<next-critical>
+  <task priority="P0">Finalisasi auth architecture</task>
+  <task priority="P0">Register guru + siswa yang benar</task>
+  <task priority="P0">Route dashboard baru (/guru, /siswa, dst)</task>
+  <task priority="P0">Freeze Keystatic untuk fitur baru</task>
+  <task priority="P1">Implementasi ImageKit adapter nyata</task>
+  <task priority="P1">AI document upload + extraction + draft generation</task>
+</next-critical>
 
-## INSTRUKSI UNTUK KIMI K2.7 CODE
+## BUILD / VERIFICATION RULE
 
-Kamu adalah Senior Frontend Engineer yang mengerjakan platform AKAL Center.
-Tugasmu: membaca file ini, memahami konteks, lalu mengeksekusi instruksi coding
-secara presisi. JANGAN mengubah design system. JANGAN menambah library baru.
-IKUTI pattern yang sudah ada di kode. Setiap perubahan harus konsisten dengan
-file tetangga.
+<verification>
+  <rule>Setelah perubahan berarti, jalankan `npm run build`</rule>
+  <rule>JANGAN klaim selesai kalau build masih merah</rule>
+  <rule>Kalau build gagal, selesaikan error kritikal dulu sebelum lanjut UI kosmetik</rule>
+  <rule>Jika ada perubahan auth/routing, uji alur guru vs siswa secara eksplisit</rule>
+</verification>
 
-Saat mengerjakan fitur baru:
-1. BACA dulu komponen yang mirip di folder tetangga
-2. PAKAI warna/font/animation pattern yang sama
-3. TEST dengan npx next build sebelum menyatakan selesai
-4. LAPORAN singkat: file apa yang diubah, kenapa, next step apa
+## CARA BERPIKIR AGENT
 
-Untuk pertanyaan arsitektur — BACA PRD di folder prd/.
-Untuk debugging — GUNAKAN skill debug.
-Untuk analisis mendalam — GUNAKAN skill diskusi.
+<execution-style>
+  <item>Jangan berpikir seperti sedang menambah halaman kecil ke website lama</item>
+  <item>Berpikir seperti sedang membentuk platform baru di atas fondasi lama</item>
+  <item>Prioritaskan hal yang menghilangkan kekacauan pipeline dan auth dulu</item>
+  <item>Yang ringan dan kosmetik boleh dikerjakan belakangan oleh agent lain</item>
+  <item>Kalau harus memilih, pilih perbaikan yang memperjelas arsitektur dan peran user</item>
+  <item>Jangan kerja seperti "asal bisa lanjut" — kerja seperti tech lead yang memilih keputusan paling benar, paling tahan lama, dan paling sulit disalahpahami oleh agent berikutnya</item>
+  <item>Kalau menemukan pendekatan yang technically works tapi terasa rapuh, anggap itu sinyal untuk cari solusi yang lebih baik sebelum lanjut</item>
+</execution-style>

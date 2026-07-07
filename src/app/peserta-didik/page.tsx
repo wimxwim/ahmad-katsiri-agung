@@ -87,10 +87,25 @@ export default function PesertaDidikPage() {
           Portal Peserta Didik
         </h1>
 
-        <p className="text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed max-w-xl mx-auto">
+        <p className="text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed max-w-xl mx-auto mb-4">
           Mulai petualangan belajar Akidah Akhlak. Akses materi, kuis, video,
           dan game dalam satu tempat yang terstruktur.
         </p>
+
+        <p className="text-sm text-on-surface-variant/70 mb-8">
+          Belum punya akun?{" "}
+          <Link href="/masuk" className="text-primary font-medium hover:underline">
+            Daftar di sini
+          </Link>
+        </p>
+
+        <Link
+          href="/masuk"
+          className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:brightness-110 active:scale-[0.98] transition-transform duration-300"
+        >
+          Masuk / Daftar Akun Siswa
+          <ArrowRight className="w-5 h-5" aria-hidden="true" />
+        </Link>
       </motion.div>
 
       <motion.div

@@ -16,16 +16,36 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function MasukPage() {
+export default async function MasukPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const portal = params.portal === "guru" ? "guru" : "siswa";
+  const tab = params.tab === "daftar" ? "daftar" : "masuk";
+  const redirectTo =
+    typeof params.redirect === "string" && params.redirect.startsWith("/")
+      ? params.redirect
+      : undefined;
+  const errorCode = typeof params.error === "string" ? params.error : undefined;
+
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
 
   if (sessionCookie?.value) {
     const session = await verifySession(sessionCookie.value);
     if (session) {
-      redirect("/");
+      redirect(redirectTo || "/");
     }
   }
 
-  return <FormMasuk />;
+  return (
+    <FormMasuk
+      redirectTo={redirectTo}
+      initialPortal={portal}
+      initialTab={tab}
+      errorCode={errorCode}
+    />
+  );
 }

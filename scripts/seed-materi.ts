@@ -1,7 +1,7 @@
 import { Pool } from "pg";
 import "dotenv/config";
 
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://akal:akaldev@localhost:5433/akal_center";
+const DATABASE_URL = process.env.DATABASE_URL;
 
 const MATERI_DATA = [
   { slug: "beriman-kepada-malaikat", judul: "Beriman Kepada Malaikat", kelas: "7", bab: 1, label: "AKIDAH", ringkasan: "Memahami iman kepada malaikat Allah SWT dan tugas-tugasnya", subTopik: 4, waktuBaca: "15 menit" },

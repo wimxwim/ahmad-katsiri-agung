@@ -1,3 +1,32 @@
+/**
+ * ⚠️ LEGACY ONLY — GOOGLE SHEETS BRIDGE ⚠️
+ *
+ * Per TODO V2 Multi-Guru (Gelombang 9), file ini adalah bridge sementara
+ * dari era website single-guru PAI ke platform multi-guru baru.
+ *
+ * STATUS:
+ *   - READ/WRITE masih aktif untuk endpoint legacy yang belum dimigrasi
+ *   - JANGAN dipakai untuk fitur baru apapun
+ *   - Semua data baru wajib masuk Supabase via Drizzle ORM
+ *
+ * ENDPOINT YANG MASIH PAKAI FILE INI:
+ *   - /api/siswa/cek     (verifikasi siswa lama dari sheet DaftarSiswa)
+ *   - /api/kuis/selesai  (simpan nilai ke sheet RekapNilai)
+ *   - /api/kuis/rekap    (baca rekap nilai dari sheet RekapNilai)
+ *   - /api/refleksi      (sheet RefleksiDiri)
+ *   - /api/diskusi       (sheet Diskusi + DiskusiBalasan)
+ *   - /api/doa           (sheet DoaUcapan)
+ *
+ * RENCANA CUTOWER:
+ *   1. Flow baru (auth DB, quiz DB, analytics DB) harus stabil dulu
+ *   2. Parallel write diaktifkan per fitur saat flow baru siap
+ *   3. Setelah verifikasi data konsisten, matikan write ke Sheets
+ *   4. Terakhir, matikan read dari Sheets
+ *
+ * @see /prd/TODO-V2-MULTI-GURU.md Gelombang 9
+ * @see /prd/LEGACY-MIGRATION-MAP.md untuk peta field Sheets → Supabase
+ */
+
 import { google } from "googleapis";
 
 const SHEET_ID = process.env.GOOGLE_SHEET_ID;

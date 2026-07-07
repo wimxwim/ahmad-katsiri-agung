@@ -56,8 +56,8 @@ export default function QuranPage() {
       const data: SurahDetail = await res.json();
       setSelected(data);
       detailRef.current?.scrollIntoView({ behavior: "smooth" });
-    } catch {
-      // silent
+    } catch (error) {
+      console.error("[quran] openSurah failed:", error);
     } finally {
       setDetailLoading(false);
     }

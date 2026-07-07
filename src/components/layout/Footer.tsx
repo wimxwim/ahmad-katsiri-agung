@@ -18,7 +18,7 @@ const CONTACT_FALLBACK = {
   igHandle: "@ahmadkatsiria",
   tiktokHandle: "@sir.ahmd",
   youtubeChannel: "Ahmad Katsiri Agung",
-  pendiriNama: "Ahmad Katsiri Aggung, S.Pd.",
+  pendiriNama: "Ahmad Katsiri Agung, S.Pd.",
 };
 
 export function Footer({

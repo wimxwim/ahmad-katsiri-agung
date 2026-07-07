@@ -95,7 +95,7 @@ export default function EvaluasiPage() {
         </h1>
 
         <p className="text-sm sm:text-base lg:text-lg text-on-surface-variant max-w-xl mx-auto">
-          Portal kuis untuk siswa Pak Aggung dan umum. Kerjakan soal pilihan
+          Portal kuis untuk siswa Pak Agung dan umum. Kerjakan soal pilihan
           ganda, catat nilai, dan pantau progres belajar.
         </p>
       </motion.div>
@@ -122,7 +122,7 @@ export default function EvaluasiPage() {
               <li className="flex items-start gap-2">
                 <span className="text-primary mt-0.5 shrink-0">2.</span>
                 <span>
-                  <strong className="text-on-surface">Masuk sebagai siswa Pak Aggung</strong> pakai Nama + Tanggal Lahir
+                  <strong className="text-on-surface">Masuk sebagai siswa Pak Agung</strong> pakai Nama + Tanggal Lahir
                   (nilai otomatis tercatat) atau <strong className="text-on-surface">Coba Latihan</strong> tanpa data diri
                 </span>
               </li>

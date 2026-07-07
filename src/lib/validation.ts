@@ -60,7 +60,7 @@ export const BalasanSchema = z.object({
 
 export const SiswaCekSchema = z.object({
   nama: z.string().min(1, "Nama harus diisi"),
-  tanggalLahir: z.string().min(1, "Tanggal lahir harus diisi"),
+  tanggalLahir: z.string().min(1, "Tanggal lahir harus diisi").regex(/^\d{1,2}[/-]\d{1,2}[/-]\d{4}$/, "Format: DD/MM/YYYY atau DD-MM-YYYY"),
 });
 
 const JawabanSalahSchema = z.object({

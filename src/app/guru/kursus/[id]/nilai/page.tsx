@@ -1,0 +1,111 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { GradebookTable } from "@/components/dashboard/GradebookTable";
+
+export default function KursusNilaiPage() {
+  const params = useParams();
+  const [siswaData, setSiswaData] = useState<{ siswaId: string; nama: string; skorRataRata: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [kursusNama, setKursusNama] = useState("");
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [kursusRes, nilaiRes] = await Promise.all([
+          fetch(`/api/v1/kursus/${params.id}`, { credentials: "include" }),
+          fetch(`/api/v1/kursus/${params.id}/nilai`, { credentials: "include" }),
+        ]);
+        if (kursusRes.status === 404) {
+          setKursusNama("");
+          return;
+        }
+        const kd = await kursusRes.json();
+        setKursusNama(kd.data?.judul || "");
+
+        const nd = await nilaiRes.json().catch(() => ({ data: [] }));
+        const logEntries = (nd.data || []) as { siswaId: string; nama: string; isBenar: boolean }[];
+        const aggregated = new Map<string, { nama: string; benar: number; total: number }>();
+        for (const entry of logEntries) {
+          const key = entry.siswaId;
+          const existing = aggregated.get(key) || { nama: entry.nama, benar: 0, total: 0 };
+          if (entry.isBenar) existing.benar++;
+          existing.total++;
+          aggregated.set(key, existing);
+        }
+        const list: { siswaId: string; nama: string; skorRataRata: number }[] = [];
+        for (const [siswaId, v] of aggregated) {
+          const pct = v.total > 0 ? Math.round((v.benar / v.total) * 100) : 0;
+          list.push({ siswaId, nama: v.nama, skorRataRata: pct });
+        }
+        list.sort((a, b) => a.nama.localeCompare(b.nama));
+        setSiswaData(list);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Gagal memuat nilai");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="bg-glass rounded-2xl p-4 h-12 animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-red-600 mb-2">{error}</p>
+        <button onClick={() => window.location.reload()} className="text-sm text-primary hover:underline">Coba lagi</button>
+      </div>
+    );
+  }
+
+  if (!kursusNama) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-on-surface-variant">Kursus tidak ditemukan</p>
+        <Link href="/guru/kursus" className="text-primary text-sm mt-2 inline-block hover:underline">
+          Kembali ke daftar kursus
+        </Link>
+      </div>
+    );
+  }
+
+  const gradebookSiswa = siswaData.map((s) => ({
+    nama: s.nama,
+    kelas: "-",
+    nis: null,
+    skorRataRata: s.skorRataRata,
+  }));
+
+  return (
+    <div>
+      <Link
+        href={`/guru/kursus/${params.id}`}
+        className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary transition-colors mb-6"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Kembali
+      </Link>
+
+      <h1 className="font-heading font-bold text-2xl text-on-surface mb-2">Nilai — {kursusNama}</h1>
+      <p className="text-on-surface-variant text-sm mb-8">{siswaData.length} siswa tercatat</p>
+
+      <div className="bg-white rounded-2xl border border-border-precision overflow-hidden">
+        <GradebookTable siswa={gradebookSiswa} quizzes={["Kuis"]} siswaQuizMap={new Map()} />
+      </div>
+    </div>
+  );
+}

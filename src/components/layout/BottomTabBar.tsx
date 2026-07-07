@@ -16,11 +16,13 @@ import {
   Info,
   Library,
   LogOut,
+  GraduationCap,
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useSession } from "../providers/SessionProvider";
+import { useSession } from "@/components/providers/SessionProvider";
 import { handleLogout } from "@/lib/logout";
+import { EASE_CURVE } from "@/lib/constants";
 
 const SHEET_ITEMS: { href: string; label: string; icon: LucideIcon; desc: string }[] = [
   { href: "/kursus", label: "Kursus", icon: Library, desc: "Jelajahi katalog kursus" },
@@ -46,7 +48,7 @@ export function BottomTabBar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [sheetOpen, closeSheet]);
 
-  if (pathname.startsWith("/masuk") || pathname.startsWith("/login")) return null;
+  if (pathname.startsWith("/masuk")) return null;
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -57,6 +59,7 @@ export function BottomTabBar() {
     { href: "/", label: "Beranda", icon: Home },
     { href: "/materi", label: "Materi", icon: BookOpen },
     { href: "/evaluasi", label: "Kuis", icon: ClipboardList },
+    ...(session ? [{ href: session.role === "guru" ? "/guru/beranda" : session.role === "owner" ? "/owner" : session.role === "admin_sekolah" ? "/admin-sekolah" : session.role === "orang_tua" ? "/orang-tua" : "/siswa/beranda", label: "Dashboard", icon: GraduationCap, sessionOnly: true }] : []),
     { href: "/game", label: "Game", icon: Gamepad2, featured: true },
   ];
 
@@ -79,7 +82,7 @@ export function BottomTabBar() {
                 initial={{ transform: "translateY(100%)" }}
                 animate={{ transform: "translateY(0%)" }}
                 exit={{ transform: "translateY(100%)" }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
+                transition={{ duration: 0.25, ease: EASE_CURVE }}
                 className="absolute bottom-0 inset-x-0 bg-white rounded-t-[32px] shadow-glass-xl pb-[calc(1rem+env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto will-change-transform"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -127,7 +130,7 @@ export function BottomTabBar() {
 
                   {!session ? (
                     <Link
-                      href="/login"
+                      href="/masuk"
                       onClick={closeSheet}
                       className="flex flex-col items-start gap-2 p-4 rounded-2xl border border-border-precision bg-white hover:bg-primary/5 hover:border-primary/20 transition-all duration-200"
                     >
@@ -141,7 +144,7 @@ export function BottomTabBar() {
                     </Link>
                   ) : (
                     <button
-                      onClick={() => { closeSheet(); handleLogout(); }}
+                      onClick={() => { closeSheet(); handleLogout().then((r) => (window.location.href = r)); }}
                       className="flex flex-col items-start gap-2 p-4 rounded-2xl border border-border-precision bg-white hover:bg-red-50 hover:border-red-200 transition-all duration-200 text-left"
                     >
                       <div className="p-2 rounded-xl bg-red-50">

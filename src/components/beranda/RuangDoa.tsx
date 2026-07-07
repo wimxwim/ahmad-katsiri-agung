@@ -17,14 +17,17 @@ export function RuangDoa() {
   const [nama, setNama] = useState("");
   const [isi, setIsi] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    setFetching(true);
     fetch("/api/doa")
       .then((r) => r.json())
-      .then((data) => setDoaList(data.doa || []))
-      .catch(() => setError("Gagal memuat doa"));
+      .then((data) => { setDoaList(data.doa || []); setError(""); })
+      .catch(() => setError("Gagal memuat doa"))
+      .finally(() => setFetching(false));
   }, []);
 
   async function handleSubmit(e: FormEvent) {
@@ -124,7 +127,15 @@ export function RuangDoa() {
         </form>
 
         <div className="space-y-4">
-          {doaList.map((item, i) => (
+          {fetching && (
+            <p className="text-center text-sm text-on-surface-variant py-10">
+              Memuat doa...
+            </p>
+          )}
+          {!fetching && error && doaList.length === 0 && (
+            <p className="text-center text-sm text-red-500 py-10">{error}</p>
+          )}
+          {!fetching && doaList.map((item, i) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
@@ -142,7 +153,7 @@ export function RuangDoa() {
             </motion.div>
           ))}
 
-          {doaList.length === 0 && (
+          {!fetching && !error && doaList.length === 0 && (
             <p className="text-center text-sm text-on-surface-variant py-10">
               Belum ada doa. Jadilah yang pertama! 🤲
             </p>

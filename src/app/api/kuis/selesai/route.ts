@@ -1,4 +1,35 @@
-import { NextRequest, NextResponse } from "next/server";
+/**
+ * ⚠️ LEGACY ONLY — SUBMIT HASIL KUIS LAMA ⚠️
+ *
+ * Endpoint ini masih menulis ke Google Sheets (RekapNilai) dan Telegram.
+ * Akan dimatikan setelah quiz engine DB-driven stabil.
+ *
+ * FRONTEND YANG MASIH PAKAI:
+ *   - src/components/evaluasi/QuizEngine.tsx (submit kuis legacy)
+ *
+ * RENCANA:
+ *   - Migrasi ke /api/v1/siswa/quiz/[id]/submit yang tulis ke quiz_attempt
+ *   - Setelah quiz engine baru hidup, endpoint ini bisa dihapus
+ *
+ * @see /prd/TODO-V2-MULTI-GURU.md Gelombang 9
+ */
+
+/**
+ * ⚠️ LEGACY ONLY — SUBMIT HASIL KUIS LAMA ⚠️
+ *
+ * Endpoint ini masih menulis ke Google Sheets (RekapNilai) dan Telegram.
+ * Akan dimatikan setelah quiz engine baru (DB-driven) stabil.
+ *
+ * FRONTEND YANG MASIH PAKAI:
+ *   - src/components/evaluasi/QuizEngine.tsx (submit hasil kuis legacy)
+ *
+ * PENGGANTI BARU:
+ *   - /api/v1/siswa/quiz/[id]/submit (DB-driven, Supabase)
+ *
+ * @see /prd/TODO-V2-MULTI-GURU.md Gelombang 9
+ */
+
+import { NextRequest } from "next/server";
 import { appendRow } from "@/lib/google-sheets";
 import { sendTelegram, escapeMarkdown } from "@/lib/telegram";
 import { KuisSelesaiSchema } from "@/lib/validation";
@@ -6,6 +37,7 @@ import { verifyQuizToken, verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
+import { apiError, apiRateLimit, apiSuccess } from "@/lib/api-response";
 
 function extractBearerToken(req: NextRequest): string | null {
   const auth = req.headers.get("authorization");
@@ -13,33 +45,37 @@ function extractBearerToken(req: NextRequest): string | null {
   return auth.slice(7).trim();
 }
 
+function isOriginAllowed(origin: string): boolean {
+  if (!origin) return false;
+  try {
+    const { hostname } = new URL(origin);
+    const allowed = ["akalcenter.my.id", "ahmad-katsiri-agung.vercel.app", "localhost"];
+    return allowed.some((h) => hostname === h);
+  } catch (e) { console.error("kuis selesai error:", e);
+    return false;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Session binding: verify Origin matches our domain
-    const origin = req.headers.get("origin") || req.headers.get("referer") || "";
-    const allowedOrigins = ["https://akalcenter.my.id", "https://ahmad-katsiri-agung.vercel.app", "http://localhost:3000"];
-    const originOk = allowedOrigins.some((o) => origin.startsWith(o));
-    if (!originOk) {
-      return NextResponse.json({ error: "Akses ditolak" }, { status: 403 });
+    const origin = req.headers.get("origin") || "";
+    if (origin && !isOriginAllowed(origin)) {
+      return apiError("Akses ditolak", 403);
     }
 
     const ip = ipFromRequest(req);
-    const limit = checkRateLimit(`kuis-selesai:${ip}`, 10, 30_000);
-    if (!limit.allowed) {
-      return NextResponse.json(
-        { error: `Terlalu banyak permintaan. Coba lagi ${limit.retryAfter} detik.` },
-        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
-      );
-    }
+    const limit = await checkRateLimit(`kuis-selesai:${ip}`, 10, 30_000);
+    if (!limit.allowed) return apiRateLimit(limit.retryAfter);
 
     const text = await req.text();
     if (text.length > 50_000) {
-      return NextResponse.json({ error: "Payload terlalu besar" }, { status: 413 });
+      return apiError("Payload terlalu besar", 413);
     }
     const raw = JSON.parse(text);
     const parsed = KuisSelesaiSchema.safeParse(raw);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
+      return apiError("Data tidak valid", 400);
     }
 
     const { namaSiswa, kelas, noAbsen, status, judulBab, skor, totalSoal, jawabanSalah } = parsed.data;
@@ -59,23 +95,23 @@ export async function POST(req: NextRequest) {
       if (token) {
         const payload = await verifyQuizToken(token);
         if (!payload) {
-          return NextResponse.json({ error: "Token tidak valid atau kedaluwarsa" }, { status: 401 });
+          return apiError("Token tidak valid atau kedaluwarsa", 401);
         }
         if (payload.nama !== cleanNamaSiswa || payload.kelas !== cleanKelas) {
-          return NextResponse.json({ error: "Data tidak cocok dengan token" }, { status: 403 });
+          return apiError("Data tidak cocok dengan token", 403);
         }
       } else {
         // Fallback: verify via session cookie (login from /masuk)
         const sessionCookie = req.cookies.get(SESSION_COOKIE_NAME);
         if (!sessionCookie?.value) {
-          return NextResponse.json({ error: "Sesi tidak ditemukan" }, { status: 401 });
+          return apiError("Sesi tidak ditemukan", 401);
         }
         const session = await verifySession(sessionCookie.value);
         if (!session) {
-          return NextResponse.json({ error: "Sesi tidak valid" }, { status: 401 });
+          return apiError("Sesi tidak valid", 401);
         }
         if (session.nama !== cleanNamaSiswa || (session.kelas && session.kelas !== cleanKelas)) {
-          return NextResponse.json({ error: "Data tidak cocok dengan sesi" }, { status: 403 });
+          return apiError("Data tidak cocok dengan sesi", 403);
         }
       }
     }
@@ -141,15 +177,12 @@ export async function POST(req: NextRequest) {
       ]);
     } catch (e) {
       console.error("Gagal menyimpan ke RekapNilai:", e);
-      return NextResponse.json(
-        { error: "Gagal menyimpan hasil kuis. Silakan coba lagi." },
-        { status: 500 },
-      );
+      return apiError("Gagal menyimpan hasil kuis. Silakan coba lagi.", 500);
     }
 
     await sendTelegram(message);
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Gagal menyimpan hasil kuis" }, { status: 500 });
+    return apiSuccess();
+  } catch (e) { console.error("kuis selesai error:", e);
+    return apiError("Gagal menyimpan hasil kuis", 500);
   }
 }

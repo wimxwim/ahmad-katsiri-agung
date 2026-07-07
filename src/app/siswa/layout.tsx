@@ -1,0 +1,22 @@
+import { cookies } from "next/headers";
+import { verifySession } from "@/lib/auth";
+import { SESSION_COOKIE_NAME, ROLE_HOME_PATHS, type SesiRole } from "@/lib/session";
+import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import { SiswaLayoutClient } from "./SiswaLayoutClient";
+
+export const metadata: Metadata = {
+  title: "Ruang Siswa — AKAL Center",
+  robots: { index: false, follow: false },
+};
+
+const ALLOWED: SesiRole[] = ["murid", "orang_tua"];
+
+export default async function SiswaLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
+  const session = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+  if (!session) redirect("/masuk?portal=siswa&redirect=/siswa/beranda");
+  if (!ALLOWED.includes(session.role)) redirect(ROLE_HOME_PATHS[session.role] || "/");
+  return <SiswaLayoutClient>{children}</SiswaLayoutClient>;
+}

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Quote } from "lucide-react";
-import { useCmsData } from "../providers/CmsProvider";
+import { useCmsData } from "@/components/providers/CmsProvider";
 import { EASE_CURVE } from "@/lib/constants";
 
 const HADITS_FALLBACK = [

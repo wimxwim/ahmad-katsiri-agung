@@ -1,39 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
-import { sanitizeText } from "@/lib/sanitize";
+import { verifySession } from "@/lib/auth";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { db } from "@/lib/db";
+import { siswaKursus } from "@/lib/db/schema";
+import { and, eq } from "drizzle-orm";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 
 const EnrollSchema = z.object({
   kursusId: z.string().min(1),
-  siswaId: z.string().min(1),
 });
 
 export async function POST(request: NextRequest) {
   try {
-    const ip = ipFromRequest(request);
-    const rl = checkRateLimit(`enroll:${ip}`, 5, 30000);
-    if (!rl.allowed) {
-      return NextResponse.json({ error: "Terlalu banyak permintaan" }, { status: 429 });
+    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
+    if (!sessionCookie?.value) {
+      return apiError("Silakan login terlebih dahulu", 401);
     }
+    const session = await verifySession(sessionCookie.value);
+    if (!session || session.role !== "murid") {
+      return apiError("Hanya siswa yang dapat mendaftar kursus", 403);
+    }
+
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`enroll:${ip}`, 5, 30000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const body = await request.json();
     const parsed = EnrollSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.issues[0]?.message || "Data tidak valid" },
-        { status: 400 },
-      );
+      return apiError("VALIDATION_ERROR", "Data tidak valid", parsed.error.flatten(), 400);
     }
 
-    return NextResponse.json({
-      success: true,
-      enrolled: true,
-      kursusId: sanitizeText(parsed.data.kursusId, 50),
-      siswaId: sanitizeText(parsed.data.siswaId, 50),
-      enrolledAt: new Date().toISOString(),
-    });
+    const existing = await db
+      .select({ id: siswaKursus.id })
+      .from(siswaKursus)
+      .where(and(eq(siswaKursus.siswaId, session.userId!), eq(siswaKursus.kursusId, parsed.data.kursusId)))
+      .limit(1);
+
+    if (existing.length > 0) {
+      return NextResponse.json({ success: true, enrolled: true, alreadyEnrolled: true });
+    }
+
+    const [enrollment] = await db
+      .insert(siswaKursus)
+      .values({ siswaId: session.userId!, kursusId: parsed.data.kursusId, status: "AKTIF" })
+      .returning();
+
+    return NextResponse.json({ success: true, enrolled: true, data: enrollment });
   } catch (e) {
     console.error("Enroll error:", e);
-    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 });
+    return apiError("Terjadi kesalahan server", 500);
   }
 }

@@ -13,6 +13,7 @@ type FormState = {
 export function RefleksiForm() {
   const [state, setState] = useState<FormState>({ status: "idle", message: "" });
   const [nama, setNama] = useState("");
+  const [consent, setConsent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -41,6 +42,7 @@ export function RefleksiForm() {
 
       setState({ status: "success", message: "Refleksi berhasil dikirim!" });
       form.reset();
+      setConsent(false);
       setTimeout(() => setState({ status: "idle", message: "" }), 3000);
     } catch {
       setState({ status: "error", message: "Gagal terhubung ke server" });
@@ -148,9 +150,24 @@ export function RefleksiForm() {
           <p className="text-red-600 text-sm">{state.message}</p>
         )}
 
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            className="mt-0.5 w-4 h-4 rounded border-border-precision text-primary focus:ring-primary/30"
+          />
+          <span className="text-xs text-on-surface-variant leading-relaxed">
+            Saya setuju refleksi ini dibagikan kepada guru untuk keperluan pembelajaran.{" "}
+            <a href="/kebijakan-privasi" target="_blank" className="text-primary hover:underline">
+              Kebijakan Privasi
+            </a>
+          </span>
+        </label>
+
         <button
           type="submit"
-          disabled={state.status === "loading"}
+          disabled={state.status === "loading" || !consent}
           className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-primary text-on-primary text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {state.status === "loading" ? (

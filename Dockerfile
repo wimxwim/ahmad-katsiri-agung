@@ -30,7 +30,8 @@ COPY scripts/prod-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 ENV LD_PRELOAD=/usr/lib/libjemalloc.so.2
-ENV NODE_OPTIONS="--max-old-space-size=1536"
+ENV NODE_OPTIONS="--max-old-space-size=1536 --max-semi-space-size=16 --optimize-for-size --expose-gc"
+ENV MALLOC_ARENA_MAX=2
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 

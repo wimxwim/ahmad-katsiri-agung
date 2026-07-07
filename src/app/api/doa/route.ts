@@ -4,19 +4,15 @@ import { sendTelegram, escapeMarkdown } from "@/lib/telegram";
 import { DoaSchema } from "@/lib/validation";
 import { sanitizeText } from "@/lib/sanitize";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { apiError, apiRateLimit, apiSuccess } from "@/lib/api-response";
 
 const SHEET_RANGE = "DoaUcapan!A:D";
 
 export async function GET(req: NextRequest) {
   try {
     const ip = ipFromRequest(req);
-    const limit = checkRateLimit(`doa-get:${ip}`, 30, 60_000);
-    if (!limit.allowed) {
-      return NextResponse.json(
-        { error: `Terlalu banyak permintaan.` },
-        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
-      );
-    }
+    const limit = await checkRateLimit(`doa-get:${ip}`, 30, 60_000);
+    if (!limit.allowed) return apiRateLimit(limit.retryAfter);
 
     const rows = await readRows(SHEET_RANGE);
     const doaList = rows
@@ -31,29 +27,24 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ doa: doaList });
   } catch (e) {
     console.error("GET /api/doa gagal:", e);
-    return NextResponse.json({ error: "Gagal mengambil data doa" }, { status: 500 });
+    return apiError("Gagal mengambil data doa", 500);
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const ip = ipFromRequest(req);
-    const limit = checkRateLimit(`doa:${ip}`, 5, 10_000);
-    if (!limit.allowed) {
-      return NextResponse.json(
-        { error: `Terlalu banyak permintaan. Coba lagi ${limit.retryAfter} detik.` },
-        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
-      );
-    }
+    const limit = await checkRateLimit(`doa:${ip}`, 5, 10_000);
+    if (!limit.allowed) return apiRateLimit(limit.retryAfter);
 
     const text = await req.text();
     if (text.length > 10_000) {
-      return NextResponse.json({ error: "Payload terlalu besar" }, { status: 413 });
+      return apiError("Payload terlalu besar", 413);
     }
     const raw = JSON.parse(text);
     const parsed = DoaSchema.safeParse(raw);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
+      return apiError("Data tidak valid", 400);
     }
 
     const { nama, isi } = parsed.data;
@@ -73,8 +64,8 @@ export async function POST(req: NextRequest) {
       `🤲 *DOA & UCAPAN BARU MASUK!*\n\n👤 *Pengirim:* ${escapeMarkdown(cleanNama)}\n💬 ${escapeMarkdown(cleanIsi)}`
     );
 
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Gagal mengirim doa" }, { status: 500 });
+    return apiSuccess();
+  } catch (e) { console.error("POST /api/doa error:", e);
+    return apiError("Gagal mengirim doa", 500);
   }
 }

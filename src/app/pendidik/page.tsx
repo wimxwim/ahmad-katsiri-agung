@@ -144,7 +144,7 @@ export default function PendidikPage() {
           </p>
           <div className="flex flex-col md:flex-row gap-5 justify-center">
             <Link
-              href="/masuk-guru"
+              href="/masuk?portal=guru"
               className="inline-flex items-center gap-2 bg-primary-fixed-dim text-on-primary-fixed px-8 py-4 rounded-full font-semibold hover:scale-105 active:scale-[0.98] shadow-xl transition-transform duration-300"
             >
               Daftar Sekarang
@@ -407,7 +407,7 @@ function RekapSection() {
         <div className="max-w-sm mx-auto bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl p-6 shadow-glass text-center space-y-4">
           <p className="text-sm text-on-surface-variant">Login sebagai pendidik untuk mengakses data ini.</p>
           <Link
-            href="/masuk-guru"
+            href="/masuk?portal=guru"
             className="inline-flex items-center justify-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-xl font-semibold hover:brightness-110 transition-all"
           >
             Masuk sebagai Pendidik

@@ -4,21 +4,91 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
-import { mockKursus } from "@/data/mock";
-import { ArrowLeft, BookOpen, Users, FileText, CheckCircle, ArrowRight, GraduationCap } from "lucide-react";
-import { useState } from "react";
+import { ArrowLeft, BookOpen, CheckCircle, ArrowRight, GraduationCap, FileText, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+
+interface KursusItem {
+  id: string;
+  judul: string;
+  slug: string;
+  deskripsi: string | null;
+  isPublic: boolean;
+  createdAt: string;
+}
 
 export default function KursusDetailPage() {
   const params = useParams();
+  const [kursus, setKursus] = useState<KursusItem | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [enrolling, setEnrolling] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const kursus = mockKursus.find((k) => k.id === params.slug);
+
+  useEffect(() => {
+    async function fetchKursus() {
+      try {
+        const res = await fetch(`/api/v1/kursus?slug=${params.slug}`);
+        if (!res.ok) throw new Error("Gagal memuat data");
+        const { data } = await res.json();
+        setKursus((data && data[0]) || null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Gagal memuat data");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchKursus();
+  }, [params.slug]);
 
   async function handleEnroll() {
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setEnrolled(true);
-    setLoading(false);
+    if (!kursus) return;
+    setEnrolling(true);
+    try {
+      const res = await fetch("/api/v1/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ kursusId: kursus.id }),
+      });
+      if (res.status === 401) {
+        const returnUrl = encodeURIComponent(`/kursus/${params.slug}`);
+        window.location.href = `/masuk?redirect=${returnUrl}`;
+        return;
+      }
+      if (!res.ok) throw new Error("Gagal mendaftar");
+      setEnrolled(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal mendaftar");
+    } finally {
+      setEnrolling(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-24 sm:pt-28 pb-16">
+        <div className="animate-pulse space-y-8">
+          <div className="h-4 w-32 bg-primary/5 rounded" />
+          <div className="grid gap-8 lg:grid-cols-3">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="h-16 w-16 rounded-2xl bg-primary/5" />
+              <div className="h-8 w-64 bg-primary/5 rounded" />
+              <div className="h-20 bg-primary/5 rounded-2xl" />
+            </div>
+            <div className="h-64 bg-primary/5 rounded-2xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && !kursus) {
+    return (
+      <div className="max-w-[1280px] mx-auto px-6 pt-32 pb-20 text-center">
+        <p className="text-red-600 mb-2">{error}</p>
+        <button onClick={() => window.location.reload()} className="text-sm text-primary hover:underline">Coba lagi</button>
+      </div>
+    );
   }
 
   if (!kursus) {
@@ -50,18 +120,17 @@ export default function KursusDetailPage() {
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-8">
             <div className="flex items-start gap-5">
-              <div
-                className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0"
-                style={{ backgroundColor: `${kursus.coverColor}15` }}
-              >
-                <BookOpen className="w-8 h-8" style={{ color: kursus.coverColor }} />
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                <BookOpen className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-medium mb-2 inline-block">
-                  Kelas {kursus.kelas}
+                <span className={`text-xs px-2.5 py-1 rounded-full font-medium mb-2 inline-block ${
+                  kursus.isPublic ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                }`}>
+                  {kursus.isPublic ? "Publik" : "Privat"}
                 </span>
                 <h1 className="font-heading font-bold text-3xl text-on-surface mt-2">
-                  {kursus.nama}
+                  {kursus.judul}
                 </h1>
                 <p className="text-on-surface-variant mt-3 leading-relaxed">
                   {kursus.deskripsi}
@@ -71,9 +140,9 @@ export default function KursusDetailPage() {
 
             <div className="grid grid-cols-3 gap-4">
               {[
-                { label: "Siswa Terdaftar", value: kursus.jumlahSiswa, icon: Users },
-                { label: "Materi", value: kursus.jumlahMateri, icon: FileText },
-                { label: "Status", value: kursus.status, icon: CheckCircle },
+                { label: "Siswa Terdaftar", value: "-", icon: Users },
+                { label: "Materi", value: "-", icon: FileText },
+                { label: "Status", value: kursus.isPublic ? "Aktif" : "Privat", icon: CheckCircle },
               ].map((s) => (
                 <div
                   key={s.label}
@@ -162,10 +231,10 @@ export default function KursusDetailPage() {
                 ) : (
                   <button
                     onClick={handleEnroll}
-                    disabled={loading}
+                    disabled={enrolling}
                     className="w-full py-3 px-4 bg-primary text-white font-semibold text-sm rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 font-heading flex items-center justify-center gap-2"
                   >
-                    {loading ? (
+                    {enrolling ? (
                       "Mendaftarkan..."
                     ) : (
                       <>
@@ -173,6 +242,10 @@ export default function KursusDetailPage() {
                       </>
                     )}
                   </button>
+                )}
+
+                {error && (
+                  <p className="text-red-600 text-xs text-center mt-3">{error}</p>
                 )}
               </div>
             </div>

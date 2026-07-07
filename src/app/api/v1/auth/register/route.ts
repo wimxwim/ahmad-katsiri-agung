@@ -2,86 +2,120 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { hashPassword } from "@/lib/auth-password";
 import { signSession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME, SESSION_DURATION_SECONDS, type SesiRole } from "@/lib/session";
+import {
+  SESSION_COOKIE_NAME,
+  SESSION_DURATION_SECONDS,
+  ROLE_HOME_PATHS,
+  INTENT_PORTAL,
+  roleToSessionRole,
+} from "@/lib/session";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { logAuthEvent } from "@/lib/auth-audit";
 
 const RegisterSchema = z.object({
-  nama: z.string().min(1).max(100),
+  nama: z.string().min(2).max(100),
   email: z.string().email().max(255),
-  password: z.string().min(6).max(128),
-  role: z.enum(["SISWA", "GURU"] as const),
+  password: z.string().min(8).max(128),
+  role: z.enum(["SISWA", "GURU", "ASISTEN_GURU", "ORANG_TUA"]).optional().default("SISWA"),
+  kelas: z.string().max(10).optional(),
+  noAbsen: z.string().max(5).optional(),
+  portal: z.enum(["guru", "siswa"]).optional(),
+  redirectTo: z.string().startsWith("/").optional(),
 });
-
-function roleToSessionRole(role: string): SesiRole {
-  if (role === "GURU") return "guru";
-  return "murid";
-}
 
 export async function POST(request: NextRequest) {
   try {
     const ip = ipFromRequest(request);
-    const rl = checkRateLimit(`register:${ip}`, 3, 60000);
-    if (!rl.allowed) {
-      return NextResponse.json(
-        { error: `Terlalu banyak percobaan. Coba lagi dalam ${rl.retryAfter} detik.` },
-        { status: 429, headers: { "Retry-After": String(rl.retryAfter) } },
-      );
-    }
+    const rl = await checkRateLimit(`register:${ip}`, 3, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const body = await request.json();
     const parsed = RegisterSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: parsed.error.issues[0]?.message || "Data tidak valid" },
-        { status: 400 },
-      );
+      return apiError("VALIDATION_ERROR", "Data tidak valid", parsed.error.flatten(), 400);
     }
 
-    const { nama, email, password, role } = parsed.data;
+    const { nama, password, kelas, noAbsen, role, portal, redirectTo } = parsed.data;
+    const email = parsed.data.email.toLowerCase();
+
+    if (portal) {
+      const allowedRoles = INTENT_PORTAL[portal];
+      const sessionRoleOfRequested = roleToSessionRole(role);
+      if (!allowedRoles.includes(sessionRoleOfRequested)) {
+        await logAuthEvent("auth.intent_mismatch", { email, portal, reason: `register_role=${role}` });
+        return apiError(`Portal ${portal} tidak menerima role ${role}.`, 400);
+      }
+    }
 
     const existing = await db
-      .select({ id: users.id })
+      .select({ id: users.id, role: users.role })
       .from(users)
-      .where(eq(users.email, email))
+      .where(and(eq(users.email, email), isNull(users.deletedAt)))
       .limit(1);
 
     if (existing.length > 0) {
-      return NextResponse.json(
-        { error: "Email sudah terdaftar" },
-        { status: 409 },
-      );
+      await logAuthEvent("auth.register.duplicate", { email, reason: "duplicate", ip });
+      return apiError("Email sudah terdaftar. Silakan masuk atau gunakan email lain.", 409);
     }
 
     const passwordHash = await hashPassword(password);
     const [user] = await db
       .insert(users)
-      .values({ nama, email, passwordHash, role })
+      .values({
+        nama,
+        email,
+        passwordHash,
+        role,
+        kelas: kelas || null,
+        noAbsen: noAbsen || null,
+      })
       .returning({ id: users.id, nama: users.nama, role: users.role, email: users.email });
 
+    const sessionRole = roleToSessionRole(user.role);
     const token = await signSession({
       userId: user.id,
-      role: roleToSessionRole(user.role),
+      role: sessionRole,
       nama: user.nama,
       email: user.email,
     });
 
-    const response = NextResponse.json({ success: true, user });
+    const target = (redirectTo && !redirectTo.startsWith("//"))
+      ? redirectTo
+      : ROLE_HOME_PATHS[sessionRole];
+
+    const response = NextResponse.json({
+      success: true,
+      user: { id: user.id, nama: user.nama, role: user.role, email: user.email },
+      redirect: target,
+    });
     response.cookies.set(SESSION_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       path: "/",
       maxAge: SESSION_DURATION_SECONDS,
+    });
+    await logAuthEvent("auth.register.success", {
+      userId: user.id,
+      email: user.email,
+      method: "password",
+      ip,
+      portal: portal || "unknown",
+    });
+    await logAuthEvent("auth.login.success", {
+      userId: user.id,
+      email: user.email,
+      method: "password",
+      ip,
+      portal: portal || "unknown",
     });
     return response;
   } catch (e) {
     console.error("Register error:", e);
-    return NextResponse.json(
-      { error: "Terjadi kesalahan server" },
-      { status: 500 },
-    );
+    return apiError("Terjadi kesalahan server", 500);
   }
 }

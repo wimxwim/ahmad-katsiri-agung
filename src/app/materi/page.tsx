@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { BookOpen, Sparkles, CheckCircle2 } from "lucide-react";
+import { BookOpen, Sparkles, CheckCircle2, Search } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
 import { ALL_MATERI as ALL_MATERI_HARD } from "@/data/materi";
 import { GRADIENT_SLUGS } from "@/lib/constants";
@@ -26,6 +26,7 @@ export default function MateriPage() {
   const ALL_MATERI = materiList ?? ALL_MATERI_FALLBACK;
 
   const [filterKelas, setFilterKelas] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
   const [progress, setProgress] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -46,9 +47,12 @@ export default function MateriPage() {
 
   const totalRead = Object.keys(progress).length;
 
-  const filtered = filterKelas
+  const filtered = (filterKelas
     ? ALL_MATERI.filter((m) => m.kelas === filterKelas)
-    : ALL_MATERI;
+    : ALL_MATERI).filter((m) => {
+      const q = search.toLowerCase();
+      return !q || m.title.toLowerCase().includes(q) || m.ringkasan.toLowerCase().includes(q);
+    });
 
   return (
     <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-16 pb-24 sm:pb-32">
@@ -100,6 +104,19 @@ export default function MateriPage() {
               <span className="sm:hidden">{k}</span>
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className="max-w-md mx-auto mb-10">
+        <div className="relative">
+          <Search className="absolute left-3.5 top-2.5 w-4.5 h-4.5 text-on-surface-variant/40" />
+          <input
+            type="text"
+            placeholder="Cari materi..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10.5 pr-4 py-2.5 rounded-xl bg-white border border-border-precision text-sm text-on-surface placeholder:text-on-surface-variant/40 focus:outline-hidden focus:border-primary/40"
+          />
         </div>
       </div>
 

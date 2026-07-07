@@ -47,7 +47,7 @@ export function HeroSection() {
               className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:bg-primary/20 active:scale-[0.98] transition-transform duration-300"
             >
               <GraduationCap className="w-5 h-5" aria-hidden="true" />
-              Masuk Kuis Siswa
+              Kerjakan Kuis
               <ArrowRight className="w-5 h-5" aria-hidden="true" />
             </Link>
           </div>

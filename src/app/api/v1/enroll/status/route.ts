@@ -1,40 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-import { mockKursus } from "@/data/mock";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
-
-const EnrollStatusSchema = z.object({
-  siswaId: z.string().min(1).max(50).optional(),
-});
+import { verifySession } from "@/lib/auth";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { db } from "@/lib/db";
+import { siswaKursus, kursus, users } from "@/lib/db/schema";
+import { and, eq, isNull } from "drizzle-orm";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 
 export async function GET(request: NextRequest) {
   try {
+    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
+    if (!sessionCookie?.value) {
+      return apiError("Silakan login terlebih dahulu", 401);
+    }
+    const session = await verifySession(sessionCookie.value);
+    if (!session) {
+      return apiError("Sesi tidak valid", 401);
+    }
+
     const ip = ipFromRequest(request);
-    const rl = checkRateLimit(`enroll-status:${ip}`, 20, 15000);
-    if (!rl.allowed) {
-      return NextResponse.json(
-        { error: "Terlalu banyak permintaan" },
-        { status: 429, headers: { "Retry-After": String(rl.retryAfter) } },
-      );
-    }
+    const rl = await checkRateLimit(`enroll-status:${ip}`, 20, 15000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const { searchParams } = new URL(request.url);
-    const rawSiswaId = searchParams.get("siswaId");
-    const parsed = EnrollStatusSchema.safeParse({ siswaId: rawSiswaId });
-    if (rawSiswaId && !parsed.success) {
-      return NextResponse.json({ error: "Parameter tidak valid" }, { status: 400 });
-    }
+    const enrollments = await db
+      .select({
+        kursusId: siswaKursus.kursusId,
+        status: siswaKursus.status,
+        tanggalDaftar: siswaKursus.tanggalDaftar,
+        judul: kursus.judul,
+        nama: users.nama,
+      })
+      .from(siswaKursus)
+      .leftJoin(kursus, eq(siswaKursus.kursusId, kursus.id))
+      .leftJoin(users, and(eq(siswaKursus.siswaId, users.id), isNull(users.deletedAt)))
+      .where(eq(siswaKursus.siswaId, session.userId!));
 
-    const enrolled = mockKursus.slice(0, 2).map((k, i) => ({
-      kursusId: k.id,
-      kursusNama: k.nama,
-      progress: [65, 32][i] ?? 0,
-      enrolledAt: "2026-03-01",
-    }));
-
-    return NextResponse.json({ data: enrolled });
+    return NextResponse.json({ data: enrollments });
   } catch (e) {
     console.error("Enroll status error:", e);
-    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 });
+    return apiError("Terjadi kesalahan server", 500);
   }
 }

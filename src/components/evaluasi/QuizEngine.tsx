@@ -55,6 +55,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
   const timerExpiredRef = useRef(false);
   const selectedRef = useRef(selected);
   const soalRef = useRef<{ nomor: number } | null>(null);
+  const finalJawabanRef = useRef<Record<number, string>>({});
 
   const session = useSession();
 
@@ -88,7 +89,11 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
         const s = selectedRef.current;
         const q = soalRef.current;
         if (s && q) {
-          setJawaban((prev) => ({ ...prev, [q.nomor]: s }));
+          const fj = { ...jawaban, [q.nomor]: s };
+          setJawaban(fj);
+          finalJawabanRef.current = fj;
+        } else {
+          finalJawabanRef.current = { ...jawaban };
         }
         setQuizState("result");
       }
@@ -119,14 +124,20 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
     submittedRef.current = true;
     setSubmitError("");
 
+    const finalJawaban = finalJawabanRef.current;
     const jawabanSalah = shuffledSoal
-      .filter((s) => jawaban[s.nomor] !== s.jawaban)
+      .filter((s) => finalJawaban[s.nomor] !== s.jawaban)
       .map((s) => ({
         nomor: s.nomor,
         pertanyaan: s.pertanyaan,
-        jawabanSiswa: `${jawaban[s.nomor]} (${s.opsi[jawaban[s.nomor]] || ""})`,
+        jawabanSiswa: `${finalJawaban[s.nomor]} (${s.opsi[finalJawaban[s.nomor]] || ""})`,
         kunciJawaban: `${s.jawaban} (${s.opsi[s.jawaban]})`,
       }));
+
+    let benar = 0;
+    for (const s of shuffledSoal) {
+      if (finalJawaban[s.nomor] === s.jawaban) benar++;
+    }
 
     try {
       const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -145,7 +156,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
           status: loginData.status,
           judulBab: bab.title,
           slugBab: bab.slug,
-          skor: hitungSkor(),
+          skor: benar,
           totalSoal: shuffledSoal.length,
           jawabanSalah,
         }),
@@ -154,11 +165,11 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
         const data = await res.json().catch(() => ({ error: "Gagal menyimpan hasil" }));
         setSubmitError(data.error || "Gagal menyimpan hasil");
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Submit hasil kuis gagal:", err);
       setSubmitError("Gagal terhubung ke server. Coba lagi.");
     }
-  }, [loginData, shuffledSoal, jawaban, bab]);
+  }, [loginData, shuffledSoal, bab]);
 
   const startQuiz = useCallback(() => {
     setShuffledSoal(shuffleArray(bab.soal));
@@ -167,7 +178,9 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
     setSelected(null);
     setShowFeedback(false);
     setShowReview(false);
+    setSubmitError("");
     setQuizState("playing");
+    submittedRef.current = false;
     const durPerSoal = 72;
     const minDur = 1500;
     setTimeLeft(Math.max(bab.soal.length * durPerSoal, minDur));
@@ -181,9 +194,11 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
   };
 
   const handleNext = () => {
-    if (selected && soal) {
-      setJawaban((prev) => ({ ...prev, [soal.nomor]: selected }));
-    }
+    const finalJawaban = selected && soal
+      ? { ...jawaban, [soal.nomor]: selected }
+      : { ...jawaban };
+    setJawaban(finalJawaban);
+    finalJawabanRef.current = finalJawaban;
     setSelected(null);
     setShowFeedback(false);
 
@@ -196,11 +211,12 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
 
   const hitungSkor = useCallback(() => {
     let benar = 0;
+    const fj = finalJawabanRef.current;
     for (const s of shuffledSoal) {
-      if (jawaban[s.nomor] === s.jawaban) benar++;
+      if (fj[s.nomor] === s.jawaban) benar++;
     }
     return benar;
-  }, [shuffledSoal, jawaban]);
+  }, [shuffledSoal]);
 
   const skor = hitungSkor();
   const salah = totalSoal - skor;
@@ -260,14 +276,14 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
           </p>
         )}
         <p className="text-on-surface-variant mb-6">
-          Uji pemahamanmu dengan {totalSoal} soal pilihan ganda.
+          Uji pemahamanmu dengan {bab.soal.length} soal pilihan ganda.
         </p>
 
           <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-6 shadow-glass mb-8">
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-primary/5 rounded-2xl p-4 text-center">
               <p className="font-heading text-2xl font-bold text-primary">
-                {totalSoal}
+                {bab.soal.length}
               </p>
               <p className="text-xs text-on-surface-variant mt-1">Total Soal</p>
             </div>
@@ -304,7 +320,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
   if (quizState === "result") {
     const result = resultEmoji(skor);
     const wrongAnswers = shuffledSoal.filter(
-      (s) => jawaban[s.nomor] !== s.jawaban
+      (s) => finalJawabanRef.current[s.nomor] !== s.jawaban
     );
 
     if (showReview) {
@@ -328,7 +344,7 @@ export function QuizEngine({ bab }: { bab: BabSoal }) {
 
           <div className="space-y-6">
             {shuffledSoal.map((s, i) => {
-              const userAnswer = jawaban[s.nomor];
+              const userAnswer = finalJawabanRef.current[s.nomor];
               const correct = userAnswer === s.jawaban;
               const opsiEntries = Object.entries(s.opsi);
 

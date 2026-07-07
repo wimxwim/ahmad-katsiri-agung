@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { Plus, X, Send, CheckCircle } from "lucide-react";
+import { EASE_CURVE } from "@/lib/constants";
 
 const KATEGORI = [
   { value: "tanya-jawab", label: "❓ Tanya Jawab" },
@@ -43,7 +44,9 @@ export function DiskusiForm() {
         <motion.button
           onClick={() => setOpen(true)}
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: EASE_CURVE }}
           className="flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-on-primary text-sm font-semibold hover:bg-primary/90 transition-colors"
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
@@ -55,7 +58,9 @@ export function DiskusiForm() {
         <motion.form
           onSubmit={handleSubmit}
           initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: EASE_CURVE }}
           className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl p-6 space-y-4"
         >
           <div className="flex items-center justify-between">
@@ -107,6 +112,11 @@ export function DiskusiForm() {
           {state === "error" && (
             <p className="text-red-600 text-sm">Gagal mengirim diskusi</p>
           )}
+
+          <p className="text-xs text-on-surface-variant/60 leading-relaxed">
+            Diskusi ditampilkan publik. Jangan bagikan data pribadi.{" "}
+            <a href="/kebijakan-privasi" target="_blank" className="text-primary hover:underline">Kebijakan Privasi</a>
+          </p>
 
           <button type="submit" disabled={state === "loading"}
             className="w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-primary text-on-primary text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"

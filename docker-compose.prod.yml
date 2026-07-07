@@ -13,6 +13,10 @@ services:
     depends_on:
       app:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 128M
     networks:
       - akal
 
@@ -22,17 +26,15 @@ services:
       dockerfile: Dockerfile
     container_name: akal-app
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     env_file:
       - .env.production
     environment:
-      - DATABASE_URL=postgresql://akal:akaldev@postgres:5432/akal_center
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-akal}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD wajib diset}@postgres:5432/${POSTGRES_DB:-akal_center}
       - PGHOST=postgres
       - PGPORT=5432
-      - PGUSER=akal
-      - PGPASSWORD=akaldev
-      - PGDATABASE=akal_center
+      - PGUSER=${POSTGRES_USER:-akal}
+      - PGPASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD wajib diset}
+      - PGDATABASE=${POSTGRES_DB:-akal_center}
       - REDIS_URL=redis://redis:6379
       - NODE_ENV=production
     depends_on:
@@ -40,8 +42,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 1500M
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/readyz"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -54,13 +60,17 @@ services:
     container_name: akal-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: akal
-      POSTGRES_PASSWORD: akaldev
-      POSTGRES_DB: akal_center
+      POSTGRES_USER: ${POSTGRES_USER:-akal}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD wajib diset}
+      POSTGRES_DB: ${POSTGRES_DB:-akal_center}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 400M
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U akal -d akal_center"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-akal} -d ${POSTGRES_DB:-akal_center}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -75,6 +85,10 @@ services:
     command: redis-server --maxmemory-policy allkeys-lru --maxmemory 150mb --save 60 1 --loglevel warning
     volumes:
       - redisdata:/data
+    deploy:
+      resources:
+        limits:
+          memory: 150M
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s

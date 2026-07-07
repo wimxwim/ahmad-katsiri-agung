@@ -1,38 +1,53 @@
-import { Pool } from "pg";
-import bcrypt from "bcryptjs";
-
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://akal:akaldev@localhost:5433/akal_center";
+import "dotenv/config";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema";
+import { hashPassword } from "@/lib/auth-password";
+import { eq } from "drizzle-orm";
 
 async function main() {
-  const pool = new Pool({ connectionString: DATABASE_URL, max: 1 });
+  const pass = await hashPassword("admin123");
 
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      nama VARCHAR(255) NOT NULL,
-      email VARCHAR(255) UNIQUE,
-      password_hash TEXT,
-      role VARCHAR(50) NOT NULL DEFAULT 'SISWA',
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      updated_at TIMESTAMPTZ DEFAULT NOW()
-    )
-  `);
+  const owners = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, "admin@akalcenter.my.id"))
+    .limit(1);
 
-  const pass = await bcrypt.hash("admin123", 12);
-  await pool.query(
-    `INSERT INTO users (nama, email, password_hash, role) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING`,
-    ["Admin AKAL", "admin@akalcenter.my.id", pass, "OWNER"],
-  );
-  await pool.query(
-    `INSERT INTO users (nama, email, password_hash, role) VALUES ($1, $2, $3, $4) ON CONFLICT (email) DO NOTHING`,
-    ["Ahmad Katsiri Agung", "guru@akalcenter.my.id", pass, "GURU"],
-  );
+  if (owners.length === 0) {
+    await db.insert(users).values({
+      nama: "Admin AKAL",
+      email: "admin@akalcenter.my.id",
+      passwordHash: pass,
+      role: "OWNER",
+    });
+    console.log("✓ Admin created (admin@akalcenter.my.id / admin123)");
+  } else {
+    console.log("– Admin already exists");
+  }
 
-  console.log("Seed complete: admin + guru created (password: admin123)");
-  await pool.end();
+  const gurus = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, "guru@akalcenter.my.id"))
+    .limit(1);
+
+  if (gurus.length === 0) {
+    await db.insert(users).values({
+      nama: "Ahmad Katsiri Agung",
+      email: "guru@akalcenter.my.id",
+      passwordHash: pass,
+      role: "GURU",
+    });
+    console.log("✓ Guru created (guru@akalcenter.my.id / admin123)");
+  } else {
+    console.log("– Guru already exists");
+  }
+
+  console.log("Seed complete.");
+  process.exit(0);
 }
 
 main().catch((e) => {
-  console.error(e);
+  console.error("Seed failed:", e);
   process.exit(1);
 });

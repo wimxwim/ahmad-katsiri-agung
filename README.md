@@ -5,11 +5,23 @@ Live di **[akalcenter.my.id](https://akalcenter.my.id)**
 
 ---
 
+## Visi & Misi
+
+**AKAL Center** adalah ikhtiar sederhana yang sedang kami bangun pelan-pelan — belum peluncuran, masih terus disempurnakan. Intinya, platform ini ingin meringankan beban tiga pihak sekaligus.
+
+**Untuk murid:** setiap jawaban kuis dicatat bukan cuma benar-salah, tapi juga berapa detik dia berpikir — dari situ sistem bisa membedakan antara anak yang sudah paham (jawab cepat dan benar), anak yang bingung (jawab lama tapi salah), atau anak yang asal klik (jawab cepat asal-asalan). Setiap topik seperti "Wudhu", "Tayamum", "Jujur" dihitung persentase penguasaannya — bukan sekadar nilai rata-rata, tapi "Wudhu sudah 91%, Tayamum baru 42%" — sehingga siswa tidak disuruh mengulang semua, cukup fokus 15 menit di topik yang belum dikuasai.
+
+**Untuk guru:** platform ini membantu menjawab pertanyaan sehari-hari: "Topik mana yang paling banyak murid belum paham?", "Siapa yang mulai tertinggal sebelum nilainya benar-benar jatuh?", "Remedial seperti apa yang pas buat si A?" — semua muncul otomatis di dashboard, guru tinggal klik "kirim" dan murid dapat jalur belajar personal.
+
+**Untuk kepala sekolah:** tersedia ringkasan simpel — bukan grafik rumit — cukup lampu hijau-kuning-merah yang menunjukkan kondisi tiap kelas, guru mana yang butuh pendampingan (bukan guru mana yang "malas", tapi guru mana yang butuh bantuan), dan tren keseluruhan: "Tahun ini pemahaman akhlak naik, tapi hafalan dalil perlu diperkuat."
+
+Soal biaya, kami hitung dengan hati-hati: **Rp20 ribu/bulan per guru**, **Rp125 ribu untuk tim 5 guru**, **Rp200 ribu untuk paket lengkap dengan dashboard kepala sekolah** — dan ke depan akan dibantu AI Qwen 3.7 yang meringankan guru bikin soal atau analisis kelas, tapi tetap guru yang memegang kendali penuh. Ini bukan alat untuk menggantikan guru, justru untuk memuliakan peran guru — karena kami percaya, secanggih apapun sistem, keputusan akhir tetap di tangan pendidik.
+
+---
+
 ## Tentang Project
 
 AKAL Center adalah platform pembelajaran Pendidikan Agama Islam yang dibangun untuk **Ahmad Katsiri Agung, S.Pd.** — seorang pendidik PAI yang ingin membawa metode pembelajaran akidah akhlak ke ranah digital.
-
-Platform ini bukan sekadar LMS biasa. Visi jangka panjangnya adalah menjadi **sistem diagnostik pembelajaran cerdas** — yang bisa mendeteksi siswa yang mulai tertinggal SEBELUM nilai ujian jelek muncul, meresepkan remedial yang presisi berdasarkan akar masalah, dan mengukur kesiapan mengajar guru secara objektif.
 
 ### Fase Saat Ini: Single-Guru (v1.0 — LIVE)
 
@@ -30,7 +42,7 @@ Platform ini bukan sekadar LMS biasa. Visi jangka panjangnya adalah menjadi **si
 - Remedial otomatis — resep belajar personal berbasis data
 - Teacher Readiness Index — ukur kesiapan mengajar guru
 - Sertifikat PDF + QR anti-palsu
-- AI Tutor + AI Grading Essay
+- AI Tutor + AI Grading Essay (Qwen 3.7 via NaraRouter)
 - Dashboard Orang Tua — view-only progress anak
 - QRIS payment integration
 

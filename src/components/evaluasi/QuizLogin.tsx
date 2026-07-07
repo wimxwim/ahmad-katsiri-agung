@@ -84,7 +84,7 @@ export function QuizLogin({ onLogin }: QuizLoginProps) {
               </span>
               <div className="flex-1 min-w-0">
                 <p className="font-heading text-lg font-semibold text-on-surface">
-                  Siswa Pak Aggung
+                  Siswa Pak Agung
                 </p>
                 <p className="text-sm text-on-surface-variant">
                   Tercatat di Nilai Kelas
@@ -131,7 +131,7 @@ export function QuizLogin({ onLogin }: QuizLoginProps) {
         </div>
 
         <h2 className="font-heading text-xl sm:text-2xl text-on-surface mb-6">
-          Masuk sebagai Siswa Pak Aggung
+          Masuk sebagai Siswa Pak Agung
         </h2>
 
         <form

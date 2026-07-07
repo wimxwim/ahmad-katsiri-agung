@@ -1,6 +1,6 @@
 export const mockGuru = {
   id: "g1",
-  nama: "Ahmad Katsiri Aggung, S.Pd.",
+  nama: "Ahmad Katsiri Agung, S.Pd.",
   email: "guru@akalcenter.my.id",
   role: "GURU" as const,
 };

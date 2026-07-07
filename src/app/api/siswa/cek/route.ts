@@ -1,31 +1,43 @@
+/**
+ * ⚠️ LEGACY ONLY — VERIFIKASI SISWA LAMA ⚠️
+ *
+ * Endpoint ini masih memakai Google Sheets sebagai sumber data siswa lama.
+ * Akan dimatikan setelah flow registrasi siswa baru via Supabase stabil.
+ *
+ * FRONTEND YANG MASIH PAKAI:
+ *   - src/components/evaluasi/QuizLogin.tsx (form login kuis legacy)
+ *
+ * RENCANA:
+ *   - Migrasi ke /api/v1/siswa/login yang baca tabel users + siswa_kursus
+ *   - Setelah quiz engine baru hidup, endpoint ini bisa dihapus
+ *
+ * @see /prd/TODO-V2-MULTI-GURU.md Gelombang 9
+ */
+
 import { NextRequest, NextResponse } from "next/server";
 import { readRows } from "@/lib/google-sheets";
 import { SiswaCekSchema } from "@/lib/validation";
 import { signQuizToken } from "@/lib/auth";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 
 const SHEET_RANGE = "DaftarSiswa!A:D";
 
 export async function POST(req: NextRequest) {
   try {
     const ip = ipFromRequest(req);
-    const limit = checkRateLimit(`siswa-cek:${ip}`, 10, 30_000);
-    if (!limit.allowed) {
-      return NextResponse.json(
-        { error: `Terlalu banyak percobaan. Coba lagi ${limit.retryAfter} detik.` },
-        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
-      );
-    }
+    const limit = await checkRateLimit(`siswa-cek:${ip}`, 10, 30_000);
+    if (!limit.allowed) return apiRateLimit(limit.retryAfter);
 
     const text = await req.text();
     if (text.length > 5_000) {
-      return NextResponse.json({ error: "Payload terlalu besar" }, { status: 413 });
+      return apiError("Payload terlalu besar", 413);
     }
     const raw = JSON.parse(text);
     const parsed = SiswaCekSchema.safeParse(raw);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
+      return apiError("Data tidak valid", 400);
     }
 
     const { nama, tanggalLahir } = parsed.data;
@@ -58,7 +70,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ found: false });
-  } catch {
-    return NextResponse.json({ error: "Gagal memeriksa data siswa" }, { status: 500 });
+  } catch (e) { console.error("POST /api/siswa/cek error:", e);
+    return apiError("Gagal memeriksa data siswa", 500);
   }
 }

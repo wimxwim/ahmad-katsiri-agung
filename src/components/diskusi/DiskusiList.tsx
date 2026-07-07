@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { MessageSquare, RefreshCw } from "lucide-react";
+import { EASE_CURVE } from "@/lib/constants";
 
 type DiskusiItem = {
   id: string;
@@ -72,8 +73,9 @@ export function DiskusiList() {
           <motion.div
             key={item.id}
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: i * 0.03 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: i * 0.05, ease: EASE_CURVE }}
           >
             <Link
               href={`/diskusi/${item.slug}`}

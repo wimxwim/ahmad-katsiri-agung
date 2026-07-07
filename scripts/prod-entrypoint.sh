@@ -11,7 +11,7 @@ done
 echo "✓ PostgreSQL ready"
 
 echo "📋 Running database migrations..."
-export PGPASSWORD="${PGPASSWORD:-akaldev}"
+export PGPASSWORD="${PGPASSWORD:?PGPASSWORD wajib diset}"
 
 psql -h "${PGHOST:-postgres}" -p "${PGPORT:-5432}" -U "${PGUSER:-akal}" -d "${PGDATABASE:-akal_center}" -c "
   CREATE TABLE IF NOT EXISTS _migrations (

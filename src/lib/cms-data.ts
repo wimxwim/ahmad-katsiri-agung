@@ -1,11 +1,18 @@
 /**
  * CMS Data Layer — unified data access.
  *
+ * ⚠️ CMS_LEGACY_READONLY ⚠️
+ * Per TODO V2 Multi-Guru (Gelombang 3), Keystatic dibekukan.
+ * File ini READ-ONLY untuk backward compatibility. Konten legacy tetap tampil,
+ * tapi JANGAN panggil dari fitur baru — pakai Drizzle/Supabase langsung.
+ *
  * Tries CMS first, falls back to hardcoded.
  * Components import from here instead of directly from src/data/.
  *
  * Currently: all functions return hardcoded data (CMS behind toggle).
  * When CMS_ENABLED=true and JSON files exist → reads from CMS.
+ *
+ * @see /prd/TODO-V2-MULTI-GURU.md Gelombang 3
  */
 
 import { CMS_ENABLED } from "./cms-config";
