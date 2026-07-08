@@ -1,9 +1,16 @@
 import "server-only";
 import { importSPKI, importPKCS8, exportJWK } from "jose";
 
+const MIN_JWT_SECRET_LENGTH = 32;
+
 export function hs256Secret(): Uint8Array {
   const s = process.env.JWT_SECRET;
   if (!s) throw new Error("JWT_SECRET not configured");
+  if (s.length < MIN_JWT_SECRET_LENGTH) {
+    throw new Error(
+      `JWT_SECRET too short (${s.length} chars). Minimum ${MIN_JWT_SECRET_LENGTH} characters required for HS256.`,
+    );
+  }
   return new TextEncoder().encode(s);
 }
 

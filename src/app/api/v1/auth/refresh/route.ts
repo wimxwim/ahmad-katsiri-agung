@@ -31,6 +31,14 @@ export async function POST(request: NextRequest) {
       maxAge: SESSION_DURATION_SECONDS,
     });
 
+    response.cookies.set(REFRESH_COOKIE_NAME, result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60,
+    });
+
     return response;
   } catch (e) {
     console.error("Session refresh error:", e);

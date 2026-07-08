@@ -46,7 +46,7 @@ export async function POST(
     await db
       .update(aiGeneration)
       .set({ materiStatus: "not_generated", updatedAt: new Date() })
-      .where(eq(aiGeneration.id, id));
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)));
 
     regenerateMateriOnly(id)
       .catch((e) => {

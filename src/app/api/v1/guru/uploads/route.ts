@@ -194,7 +194,6 @@ export async function POST(request: NextRequest) {
       fileName: originalName,
       sizeBytes: file.size,
       ext: detected,
-      link: uploadResult.link,
       generationId: generation.id,
       message: concRl.allowed
         ? "File tersimpan ke ImageKit. Pipeline AI berjalan di background."

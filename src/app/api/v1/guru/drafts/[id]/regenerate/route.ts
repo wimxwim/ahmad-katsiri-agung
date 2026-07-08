@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
-import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { checkRateLimit, checkRateLimitPerUser, checkConcurrentLimit, releaseConcurrent, ipFromRequest } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { aiGeneration, fileMateri } from "@/lib/db/schema";
@@ -38,6 +38,11 @@ export async function POST(
     const rl = await checkRateLimit(`ai-regen:${ip}`, 2, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
+    const userRl = await checkRateLimitPerUser(`regen:${session.userId}`, 5, 60_000);
+    if (!userRl.allowed) {
+      return apiError(`Terlalu banyak regenerate. Coba lagi dalam ${userRl.retryAfter} detik.`, 429);
+    }
+
     if (!row.fileMateriId) {
       return apiError("Draft ini tidak punya file sumber", 400);
     }
@@ -64,13 +69,23 @@ export async function POST(
     await db
       .update(aiGeneration)
       .set({ status: "queued", errorMessage: null, updatedAt: new Date() })
-      .where(eq(aiGeneration.id, id));
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)));
     await appendEvent(`gen:${session.userId}`, "gen.regenerate_queued", { generationId: id });
 
     const ext = (file.tipeMime.includes("pdf") ? "pdf" : file.tipeMime.includes("word") ? "docx" : "doc");
-    runGeneration(id, bytes, ext).catch((e) => {
-      console.error("Regenerate async error:", e);
-    });
+
+    const concRl = await checkConcurrentLimit(`gen:${session.userId}`, 2);
+    if (!concRl.allowed) {
+      return apiError("Sudah ada 2 job AI aktif. Tunggu selesai sebelum regenerate.", 429);
+    }
+
+    runGeneration(id, bytes, ext)
+      .catch((e) => {
+        console.error("Regenerate async error:", e);
+      })
+      .finally(() => {
+        releaseConcurrent(`gen:${session.userId}`);
+      });
 
     return NextResponse.json({ success: true, status: "queued" });
   } catch (e) {

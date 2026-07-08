@@ -60,7 +60,7 @@ export async function POST(
     const [updated] = await db
       .update(aiGeneration)
       .set(updates)
-      .where(eq(aiGeneration.id, id))
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)))
       .returning();
 
     await appendEvent(`gen:${session.userId}`, "gen.materi_edited", { generationId: id });

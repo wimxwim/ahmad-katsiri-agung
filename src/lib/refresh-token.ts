@@ -32,7 +32,7 @@ export async function createRefreshToken(userId: string): Promise<string> {
 
 export async function rotateRefreshToken(
   rawToken: string,
-): Promise<{ accessToken: string } | null> {
+): Promise<{ accessToken: string; refreshToken: string } | null> {
   const colonIdx = rawToken.indexOf(":");
   if (colonIdx === -1) return null;
   const family = rawToken.slice(0, colonIdx);
@@ -70,6 +70,7 @@ export async function rotateRefreshToken(
   // Issue new token in same family
   const newToken = generateRefreshToken();
   const newHash = hashToken(newToken);
+  const rawRefreshToken = `${family}:${newToken}`;
 
   await db.insert(refreshTokens).values({
     userId: row.userId,
@@ -97,7 +98,7 @@ export async function rotateRefreshToken(
     email: userRow.email,
   });
 
-  return { accessToken };
+  return { accessToken, refreshToken: rawRefreshToken };
 }
 
 function roleToSesiRole(role: string): "murid" | "guru" | "owner" | "admin_sekolah" | "orang_tua" {

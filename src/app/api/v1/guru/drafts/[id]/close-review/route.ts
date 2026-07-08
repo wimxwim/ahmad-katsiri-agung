@@ -151,7 +151,7 @@ export async function POST(
         publishedQuizId: quizId,
         updatedAt: new Date(),
       })
-      .where(eq(aiGeneration.id, id))
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)))
       .returning();
 
     await appendEvent(`gen:${session.userId}`, "gen.review_closed", {

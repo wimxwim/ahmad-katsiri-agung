@@ -38,7 +38,7 @@ export async function POST(
     await db
       .update(aiGeneration)
       .set({ status: "rejected", updatedAt: new Date() })
-      .where(eq(aiGeneration.id, id));
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)));
     await appendEvent(`gen:${session.userId}`, "gen.rejected", { generationId: id });
 
     return NextResponse.json({ success: true, status: "rejected" });
