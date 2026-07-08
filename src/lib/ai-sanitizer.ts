@@ -34,6 +34,45 @@ function cleanText(input: unknown, max: number): string {
     .slice(0, max);
 }
 
+/**
+ * Sanitasi untuk rich text (HTML aman) — untuk future use ketika konten
+ * materi perlu mendukung format kaya (bold, italic, list).
+ *
+ * ATURAN:
+ * - Hanya tag HTML aman yang diizinkan: b, i, em, strong, u, ol, ul, li, p, br
+ * - Semua attribute dihapus (termasuk class, style, id, onclick, dll)
+ * - Protocol berbahaya diblokir (javascript:, data:, file:)
+ * - Script, iframe, object, embed, form, input, style dihapus total
+ */
+const ALLOWED_RICH_TAGS = new Set([
+  "b", "i", "em", "strong", "u", "ol", "ul", "li", "p", "br", "sub", "sup",
+]);
+
+export function sanitizeRichText(input: unknown): string {
+  if (typeof input !== "string") return "";
+  const cleaned = input
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
+    .replace(/<object[\s\S]*?<\/object>/gi, "")
+    .replace(/<embed[\s\S]*?<\/embed>/gi, "")
+    .replace(/<form[\s\S]*?<\/form>/gi, "")
+    .replace(/<input[\s\S]*?\/?>/gi, "")
+    .replace(/<style[\s\S]*?<\/style>/gi, "")
+    .replace(/<[^>]*\s(on\w+)\s*=[^>]*>/gi, "")
+    .replace(/<[^>]*\s(href|src)\s*=\s*["']?\s*(javascript|vbscript|data|file)\s*:/gi, "")
+    .replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, "")
+    .replace(/&#x?[\da-fA-F]+;?/g, "");
+
+  return cleaned.replace(/<\/?([a-zA-Z]+)[^>]*>/g, (match, tag) => {
+    const lower = tag.toLowerCase();
+    if (ALLOWED_RICH_TAGS.has(lower)) {
+      if (match.startsWith("</")) return `</${lower}>`;
+      return `<${lower}>`;
+    }
+    return "";
+  });
+}
+
 const GeneratedSoalSchema = z.object({
   pertanyaan: z.string().transform((v) => cleanText(v, SAFE_TEXT_LIMITS.pertanyaan)).refine((v) => v.length > 5, {
     message: "pertanyaan terlalu pendek",

@@ -143,7 +143,11 @@ export const siswaKursus = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [unique("siswa_kursus_unique").on(table.siswaId, table.kursusId)]
+  (table) => [
+    unique("siswa_kursus_unique").on(table.siswaId, table.kursusId),
+    index("siswa_kursus_kursus_id_idx").on(table.kursusId),
+    index("siswa_kursus_status_idx").on(table.status),
+  ]
 );
 
 export const soal = pgTable(
@@ -314,50 +318,63 @@ export const sertifikat = pgTable(
   (table) => [index("sertifikat_siswa_idx").on(table.siswaId)]
 );
 
-export const transaksi = pgTable("transaksi", {
-  id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
-  siswaId: uuid("siswa_id")
-    .notNull()
-    .references(() => users.id),
-  kursusId: uuid("kursus_id")
-    .notNull()
-    .references(() => kursus.id),
-  jumlah: integer("jumlah").notNull(),
-  metodePembayaran: varchar("metode_pembayaran", { length: 50 }),
-  paymentGatewayRef: varchar("payment_gateway_ref", { length: 255 }).unique(),
-  status: varchar("status", { length: 20 }).notNull().default("PENDING"),
-  paidAt: timestamp("paid_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-});
+export const transaksi = pgTable(
+  "transaksi",
+  {
+    id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+    siswaId: uuid("siswa_id")
+      .notNull()
+      .references(() => users.id),
+    kursusId: uuid("kursus_id")
+      .notNull()
+      .references(() => kursus.id),
+    jumlah: integer("jumlah").notNull(),
+    metodePembayaran: varchar("metode_pembayaran", { length: 50 }),
+    paymentGatewayRef: varchar("payment_gateway_ref", { length: 255 }).unique(),
+    status: varchar("status", { length: 20 }).notNull().default("PENDING"),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    index("transaksi_status_idx").on(t.status),
+    index("transaksi_siswa_idx").on(t.siswaId),
+  ]
+);
 
-export const fileMateri = pgTable("file_materi", {
-  id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
-  skillId: uuid("skill_id").references(() => skill.id),
-  kursusId: uuid("kursus_id").references(() => kursus.id),
-  namaFile: varchar("nama_file", { length: 255 }).notNull(),
-  tipeMime: varchar("tipe_mime", { length: 255 }).notNull(),
-  ukuranBytes: bigint("ukuran_bytes", { mode: "number" }).notNull(),
-  lokasi: lokasiStorageEnum("lokasi").notNull(),
-  driveFileId: varchar("drive_file_id", { length: 255 }),
-  imagekitFileId: varchar("imagekit_file_id", { length: 255 }),
-  linkAkses: text("link_akses").notNull(),
-  status: varchar("status", { length: 20 }).notNull().default("uploaded"),
-  extractionText: text("extraction_text"),
-  guruId: uuid("guru_id").references(() => users.id),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-});
+export const fileMateri = pgTable(
+  "file_materi",
+  {
+    id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+    skillId: uuid("skill_id").references(() => skill.id),
+    kursusId: uuid("kursus_id").references(() => kursus.id),
+    namaFile: varchar("nama_file", { length: 255 }).notNull(),
+    tipeMime: varchar("tipe_mime", { length: 255 }).notNull(),
+    ukuranBytes: bigint("ukuran_bytes", { mode: "number" }).notNull(),
+    lokasi: lokasiStorageEnum("lokasi").notNull(),
+    driveFileId: varchar("drive_file_id", { length: 255 }),
+    imagekitFileId: varchar("imagekit_file_id", { length: 255 }),
+    linkAkses: text("link_akses").notNull(),
+    status: varchar("status", { length: 20 }).notNull().default("uploaded"),
+    extractionText: text("extraction_text"),
+    guruId: uuid("guru_id").references(() => users.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    index("file_materi_skill_id_idx").on(t.skillId),
+  ]
+);
 
 export const featureFlag = pgTable("feature_flag", {
   id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
@@ -738,15 +755,82 @@ export const aiGeneration = pgTable("ai_generation", {
   guruIdx: index("ai_generation_guru_idx").on(t.guruId),
   statusIdx: index("ai_generation_status_idx").on(t.status),
   fileIdx: index("ai_generation_file_idx").on(t.fileMateriId),
+  kursusIdx: index("ai_generation_kursus_id_idx").on(t.kursusId),
 }));
 
-export const aiGenerationRelations = relations(aiGeneration, ({ one }) => ({
+export const aiGenerationRelations = relations(aiGeneration, ({ one, many }) => ({
   file: one(fileMateri, { fields: [aiGeneration.fileMateriId], references: [fileMateri.id] }),
   guru: one(users, { fields: [aiGeneration.guruId], references: [users.id] }),
   kursus: one(kursus, { fields: [aiGeneration.kursusId], references: [kursus.id] }),
   materiPublished: one(materiPublished, { fields: [aiGeneration.id], references: [materiPublished.aiGenerationId] }),
   quizPublished: one(quizPublished, { fields: [aiGeneration.id], references: [quizPublished.aiGenerationId] }),
   soalPublished: one(soalPublished, { fields: [aiGeneration.id], references: [soalPublished.aiGenerationId] }),
+  attempts: many(generationAttempts),
+}));
+
+export const promptVersionEnum = pgEnum("prompt_version_enum", [
+  "V1",
+  "V2",
+  "V3",
+]);
+
+export const promptVersion = pgTable(
+  "prompt_version",
+  {
+    id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+    version: promptVersionEnum("version").notNull(),
+    tipe: varchar("tipe", { length: 20 }).notNull(), // 'materi', 'quiz', 'soal'
+    systemPrompt: text("system_prompt").notNull(),
+    userPromptTemplate: text("user_prompt_template").notNull(),
+    modelName: varchar("model_name", { length: 100 }).notNull().default("narrarouter"),
+    temperature: real("temperature").notNull().default(0.3),
+    maxTokens: integer("max_tokens").notNull().default(4096),
+    isActive: boolean("is_active").notNull().default(true),
+    changelog: text("changelog"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => ({
+    activeVersionIdx: index("prompt_version_active_idx").on(t.tipe, t.isActive),
+  }),
+);
+
+export const promptVersionRelations = relations(promptVersion, () => ({}));
+
+export const generationAttempts = pgTable(
+  "generation_attempts",
+  {
+    id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+    aiGenerationId: uuid("ai_generation_id")
+      .notNull()
+      .references(() => aiGeneration.id, { onDelete: "cascade" }),
+    attemptNumber: integer("attempt_number").notNull(),
+    status: varchar("status", { length: 20 }).notNull().default("started"), // started, success, failed
+    outputType: varchar("output_type", { length: 20 }).notNull(), // 'materi', 'quiz', 'soal', 'all'
+    tokenInput: integer("token_input"),
+    tokenOutput: integer("token_output"),
+    modelName: varchar("model_name", { length: 100 }),
+    errorMessage: text("error_message"),
+    durationMs: integer("duration_ms"),
+    promptVersionId: uuid("prompt_version_id").references(() => promptVersion.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => ({
+    genAttemptGenIdx: index("gen_attempt_ai_gen_idx").on(t.aiGenerationId, t.attemptNumber),
+    genAttemptStatusIdx: index("gen_attempt_status_idx").on(t.status),
+  }),
+);
+
+export const generationAttemptsRelations = relations(generationAttempts, ({ one }) => ({
+  aiGeneration: one(aiGeneration, { fields: [generationAttempts.aiGenerationId], references: [aiGeneration.id] }),
+  promptVersion: one(promptVersion, { fields: [generationAttempts.promptVersionId], references: [promptVersion.id] }),
 }));
 
 export const modeEvaluasiEnum = pgEnum("mode_evaluasi", [
@@ -826,6 +910,7 @@ export const quizAttempt = pgTable(
   (t) => ({
     siswaIdx: index("quiz_attempt_siswa_idx").on(t.siswaId, t.waktuMulai),
     quizIdx: index("quiz_attempt_quiz_idx").on(t.quizPublishedId),
+    statusIdx: index("quiz_attempt_status_idx").on(t.status),
   }),
 );
 

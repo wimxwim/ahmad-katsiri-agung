@@ -52,6 +52,7 @@ Berikut adalah seluruh *skill* yang tersedia. Silakan pilih **semua** yang relev
 - `pipeline-planning-and-task-breakdown` · `orchestration-and-backfills` · `safe-backfill-and-replay-orchestration`
 
 ## 3.2 Database, Skema & Kualitas Data
+- `supabase-postgres-best-practices` · `drizzle-orm-patterns`
 - `warehouse-and-schema-design` · `schema-evolution-and-contract-migrations`
 - `data-quality-and-contract-testing` · `operational-datastore-selection-relational-and-nosql`
 - `data-quality-platforms-and-rule-management` · `master-data-and-entity-resolution` · `feature-store-and-ml-data-pipelines`

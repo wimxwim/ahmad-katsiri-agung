@@ -226,7 +226,12 @@ export async function GET(request: NextRequest) {
       .where(eq(fileMateri.guruId, session.userId!))
       .orderBy(fileMateri.createdAt);
 
-    return NextResponse.json({ data });
+    const sanitized = data.map((f) => ({
+      ...f,
+      linkAkses: `/api/v1/storage/${f.id}`,
+    }));
+
+    return NextResponse.json({ data: sanitized });
   } catch (e) {
     console.error("Upload list error:", e);
     return apiError("Terjadi kesalahan server", 500);

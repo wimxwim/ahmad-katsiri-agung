@@ -92,6 +92,20 @@
       "when": 1785100000000,
       "tag": "0012_add_refresh_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1786000000000,
+      "tag": "0013_data_model_completion",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1786100000000,
+      "tag": "0013_fix_indexes_and_rls",
+      "breakpoints": true
     }
   ]
 }

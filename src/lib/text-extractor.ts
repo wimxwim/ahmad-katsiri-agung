@@ -15,6 +15,7 @@ const MAX_DOCX_UNCOMPRESSED = 100 * 1024 * 1024;
 const ZIP_BOMB_RATIO = 100;
 const MAX_DOCX_FILES = 500;
 const MAX_EXTRACT_TIME_MS = 30_000;
+const MAX_PDF_PAGES = 200;
 
 function truncate(text: string): string {
   if (text.length <= MAX_TEXT_LENGTH) return text;
@@ -33,12 +34,17 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 export async function extractPdfText(bytes: Buffer): Promise<string> {
   const { PDFParse } = (await import("pdf-parse")) as unknown as {
     PDFParse: new (opts: { data: Buffer }) => {
-      getText(): Promise<{ text: string }>;
+      getText(): Promise<{ text: string; pages?: number }>;
+      getPageCount(): Promise<number>;
       destroy(): Promise<void>;
     };
   };
   const parser = new PDFParse({ data: bytes });
   try {
+    const pageCount = await withTimeout(parser.getPageCount(), MAX_EXTRACT_TIME_MS, "hitung halaman PDF");
+    if (pageCount > MAX_PDF_PAGES) {
+      throw new Error(`PDF memiliki ${pageCount} halaman (maks ${MAX_PDF_PAGES}), kemungkinan dokumen tidak wajar`);
+    }
     const result = await withTimeout(parser.getText(), MAX_EXTRACT_TIME_MS, "ekstraksi PDF");
     return truncate(result.text || "");
   } finally {
