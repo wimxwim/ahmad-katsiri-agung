@@ -16,10 +16,11 @@ export async function GET(
     if (!sessionCookie?.value) {
       return apiError("Silakan login terlebih dahulu", 401);
     }
-    const session = await verifySession(sessionCookie.value);
-    if (!session) {
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success) {
       return apiError("Sesi tidak valid", 401);
     }
+    const session = _ar.data;
 
     const rl = await checkRateLimit(`kursus-detail:${session.userId}`, 30, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

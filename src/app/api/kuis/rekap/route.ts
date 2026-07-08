@@ -42,7 +42,8 @@ export async function GET(req: NextRequest) {
       const cookieStore = await cookies();
       const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
       if (sessionCookie?.value) {
-        const session = await verifySession(sessionCookie.value);
+        const _ar = await verifySession(sessionCookie.value);
+        const session = _ar.success ? _ar.data : null;
         isGuruSession = session?.role === "guru";
       }
     }

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Upload, FileText, Sparkles, Loader2, CheckCircle2, AlertCircle, X, History, FilePlus, Layers } from "lucide-react";
+import { Upload, FileText, Sparkles, Loader2, AlertCircle, X, History, FilePlus, Layers } from "lucide-react";
+import { UploadProgress } from "@/components/ui/ScreenContracts";
 
 const ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx"];
 const MAX_SIZE = 10 * 1024 * 1024;
@@ -272,23 +273,13 @@ export default function GuruUploadPage() {
       </label>
 
       {job.state !== "idle" && (
-        <div className="mt-4 p-4 rounded-2xl border border-border-precision bg-white shadow-glass">
-          <div className="flex items-center gap-3 mb-2">
-            {job.state === "uploading" && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
-            {job.state === "extracting" && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
-            {job.state === "generating" && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
-            {job.state === "ready" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
-            {job.state === "failed" && <AlertCircle className="w-4 h-4 text-red-600" />}
-            <p className="text-sm font-semibold text-on-surface">{job.message}</p>
-          </div>
-          <div className="h-1.5 w-full bg-surface rounded-full overflow-hidden">
-            <div
-              className={`h-full transition-all duration-500 ${
-                job.state === "failed" ? "bg-red-500" : "bg-primary"
-              }`}
-              style={{ width: `${job.progress}%` }}
-            />
-          </div>
+        <div className="mt-4">
+          <UploadProgress
+            status={job.state}
+            progress={job.progress}
+            message={job.message}
+            fileName={file?.name}
+          />
         </div>
       )}
 

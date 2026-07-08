@@ -13,10 +13,11 @@ export async function GET(request: NextRequest) {
     if (!sessionCookie?.value) {
       return apiError("Silakan login terlebih dahulu", 401);
     }
-    const session = await verifySession(sessionCookie.value);
-    if (!session) {
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success) {
       return apiError("Sesi tidak valid", 401);
     }
+    const session = _ar.data;
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`enroll-status:${ip}`, 20, 15000);

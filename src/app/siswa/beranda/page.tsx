@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BookOpen, Clock, CheckCircle2, ArrowRight, Sparkles, Megaphone } from "lucide-react";
+import { SkeletonDashboardSiswa } from "@/components/ui/SkeletonBlocks";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 
 interface FeedItem {
@@ -61,21 +63,15 @@ export default function SiswaBerandaPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  if (loading) {
+  if (loading) return <SkeletonDashboardSiswa />;
+
+  if (feed && feed.data.length === 0) {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-3 gap-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-glass rounded-2xl p-5 h-20 animate-pulse" />
-          ))}
-        </div>
-        <div className="bg-glass rounded-2xl p-6 h-40 animate-pulse" />
-        <div className="space-y-2">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-glass rounded-2xl p-5 h-24 animate-pulse" />
-          ))}
-        </div>
-      </div>
+      <EmptyState
+        icon={BookOpen}
+        title="Belum ada materi"
+        description="Gurumu belum menerbitkan materi. Cek kembali nanti atau hubungi gurumu untuk info lebih lanjut."
+      />
     );
   }
 
@@ -180,26 +176,6 @@ export default function SiswaBerandaPage() {
       )}
 
       <h2 className="font-heading font-semibold text-lg text-on-surface mb-3">Materi untukmu</h2>
-      {feed && feed.data.length === 0 ? (
-        <div className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass text-center">
-          <span className="w-14 h-14 rounded-2xl bg-primary/10 text-primary grid place-items-center mx-auto mb-4">
-            <BookOpen className="w-7 h-7" />
-          </span>
-          <h3 className="font-heading text-xl font-bold text-on-surface mb-2">
-            Belum ada materi untukmu
-          </h3>
-          <p className="text-sm text-on-surface-variant max-w-md mx-auto mb-5">
-            Guru kamu belum menerbitkan materi baru. Setelah materi tersedia, kamu bisa mulai
-            belajar dan mengerjakan quiz di sini. Tenang — materi akan muncul secara otomatis.
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
-          >
-            Muat Ulang
-          </button>
-        </div>
-      ) : (
         <div className="space-y-3">
           {feed?.data.map((m) => (
             <Link
@@ -247,7 +223,6 @@ export default function SiswaBerandaPage() {
             </Link>
           ))}
         </div>
-      )}
 
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Link

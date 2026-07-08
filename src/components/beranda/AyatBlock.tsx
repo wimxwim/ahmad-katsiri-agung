@@ -1,5 +1,7 @@
 "use client";
 
+/* LEGACY — old single-guru PAI beranda component. Not used in new landing page. */
+
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Quote } from "lucide-react";

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BookOpen, CheckCircle2, Circle, ArrowRight } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 
 interface MateriItem {
   id: string;
@@ -40,13 +42,7 @@ export default function SiswaMateriListPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-glass rounded-2xl p-5 h-24 animate-pulse" />
-        ))}
-      </div>
-    );
+    return <SkeletonList />;
   }
 
   if (error) {
@@ -63,10 +59,11 @@ export default function SiswaMateriListPage() {
       <h1 className="font-heading font-bold text-2xl text-on-surface mb-6">Materi Belajar</h1>
 
       {data.length === 0 ? (
-        <div className="text-center py-12 bg-glass rounded-2xl border border-border-precision">
-          <BookOpen className="w-10 h-10 text-on-surface-variant/30 mx-auto mb-3" />
-          <p className="text-on-surface-variant">Belum ada materi untuk kursus Anda</p>
-        </div>
+        <EmptyState
+          icon={BookOpen}
+          title="Belum ada materi"
+          description="Gurumu belum menerbitkan materi untuk kursus ini. Cek kembali nanti ya."
+        />
       ) : (
         <div className="space-y-3">
           {data.map((m) => (

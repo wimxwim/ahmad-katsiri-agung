@@ -6,6 +6,8 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
 import { useEffect, useState } from "react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonDashboardGuru } from "@/components/ui/SkeletonBlocks";
 
 interface KursusItem {
   id: string;
@@ -42,17 +44,7 @@ export default function GuruBerandaPage() {
     };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-glass rounded-2xl p-5 h-24 animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <SkeletonDashboardGuru />;
 
   if (error) {
     return (
@@ -65,6 +57,17 @@ export default function GuruBerandaPage() {
           Coba lagi
         </button>
       </div>
+    );
+  }
+
+  if (kursus.length === 0) {
+    return (
+      <EmptyState
+        icon={BookOpen}
+        title="Belum ada kursus"
+        description="Mulai dengan membuat kursus pertama atau upload dokumen untuk menghasilkan materi."
+        action={{ label: "Upload Dokumen", href: "/guru/upload" }}
+      />
     );
   }
 

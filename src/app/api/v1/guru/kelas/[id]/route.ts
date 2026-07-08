@@ -21,8 +21,9 @@ export async function PATCH(
   try {
     const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
     if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const session = await verifySession(sessionCookie.value);
-    if (!session) return apiError("Sesi tidak valid", 401);
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success) return apiError("Sesi tidak valid", 401);
+    const session = _ar.data;
 
     const { id } = await params;
     const existing = await db
@@ -67,8 +68,9 @@ export async function DELETE(
   try {
     const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
     if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const session = await verifySession(sessionCookie.value);
-    if (!session) return apiError("Sesi tidak valid", 401);
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success) return apiError("Sesi tidak valid", 401);
+    const session = _ar.data;
 
     const { id } = await params;
     const existing = await db

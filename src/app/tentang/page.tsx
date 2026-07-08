@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { BookHeart, ArrowRight } from "lucide-react";
+import { BookHeart, ArrowRight, Sparkles, GraduationCap, Users, FileText, Target } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
 import { EASE_CURVE } from "@/lib/constants";
 
@@ -15,6 +15,29 @@ export default function TentangPage() {
   const visi = about?.visi ?? "Menjadi platform pembelajaran PAI nomor satu di Indonesia yang membuat setiap siswa jatuh cinta pada pelajaran agama Islam.";
   const misiList = about?.misi ?? [];
 
+  const platformHighlights = [
+    {
+      icon: Sparkles,
+      title: "AI Document Generator",
+      desc: "Ubah PDF, DOCX, atau catatan menjadi materi pembelajaran, quiz, dan soal otomatis. Guru cukup upload — AI mengerjakan sisanya.",
+    },
+    {
+      icon: GraduationCap,
+      title: "Multi-Guru & Multi-Kelas",
+      desc: "Platform yang melayani banyak guru dan ribuan siswa sekaligus. Setiap guru punya workspace sendiri, setiap siswa punya ruang belajarnya.",
+    },
+    {
+      icon: FileText,
+      title: "Draft-Dulu, Baru Publik",
+      desc: "Semua hasil generated AI masuk draft dulu. Guru review, edit, dan approve — tidak ada konten yang lolos tanpa verifikasi pengajar.",
+    },
+    {
+      icon: Target,
+      title: "Deep Learning Method",
+      desc: "Mindful, Meaningful, Joyful — pendekatan yang mengajak siswa sadar, menghayati nilai, dan senang dalam setiap proses belajar.",
+    },
+  ];
+
   return (
     <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 md:pt-40 pb-16 md:pb-32">
       <motion.section
@@ -23,7 +46,7 @@ export default function TentangPage() {
         transition={{ duration: 0.6, ease: EASE_CURVE }}
         className="max-w-3xl mx-auto"
       >
-          <div className="text-center mb-12 sm:mb-20">
+        <div className="text-center mb-12 sm:mb-20">
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8">
             <BookHeart className="w-10 h-10 text-primary" aria-hidden="true" />
           </div>
@@ -33,8 +56,8 @@ export default function TentangPage() {
           </h1>
 
           <p className="text-sm sm:text-base md:text-lg text-on-surface-variant leading-relaxed max-w-xl mx-auto">
-            Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning yang lahir
-            dari keprihatinan terhadap metode pengajaran agama yang monoton.
+            Platform guru-siswa dengan AI document generator — ubah bahan ajar
+            jadi materi, quiz, dan soal dalam hitungan menit.
           </p>
         </div>
 
@@ -61,22 +84,28 @@ export default function TentangPage() {
             transition={{ duration: 0.5, delay: 0.1, ease: EASE_CURVE }}
             className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
-            <div className="flex flex-col sm:flex-row gap-6 items-start">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 bg-primary/10">
-                <img
-                  src={pendiriFoto}
-                  alt={pendiriNama}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-4">
-                  Tentang Pendiri
-                </h2>
-                <p className="text-on-surface-variant leading-relaxed">
-                  <strong>{pendiriNama}</strong> adalah pendidik PAI yang berdedikasi untuk menghadirkan pengalaman belajar agama yang bermakna bagi generasi muda Indonesia.
-                </p>
-              </div>
+            <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-8">
+              Platform untuk Guru Zaman Now
+            </h2>
+            <div className="grid gap-6">
+              {platformHighlights.map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <div key={i} className="flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 mt-1">
+                      <Icon className="w-5 h-5 text-primary" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-base sm:text-lg text-on-surface mb-1">
+                        {item.title}
+                      </h3>
+                      <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
+                        {item.desc}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </motion.div>
 
@@ -109,12 +138,60 @@ export default function TentangPage() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.25, ease: EASE_CURVE }}
+            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
+          >
+            <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-6">
+              Tim AKAL Center
+            </h2>
+            <div className="flex flex-col sm:flex-row gap-6 items-start mb-8 pb-8 border-b border-glass-stroke">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 bg-primary/10">
+                <img
+                  src={pendiriFoto}
+                  alt={pendiriNama}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h3 className="font-heading text-base sm:text-lg text-on-surface mb-1">
+                  {pendiriNama}
+                </h3>
+                <p className="text-xs sm:text-sm text-primary font-medium mb-2">
+                  Founder & Penggagas Platform
+                </p>
+                <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
+                  Pendidik PAI yang berdedikasi menghadirkan pengalaman belajar agama yang bermakna. AKAL Center lahir dari pengalaman langsung mengajar di kelas — melihat kebutuhan guru akan alat bantu digital yang praktis dan sesuai Kurikulum Merdeka.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 mt-1">
+                <Users className="w-5 h-5 text-primary" aria-hidden="true" />
+              </div>
+              <div>
+                <h3 className="font-heading text-base sm:text-lg text-on-surface mb-1">
+                  Platform Developers
+                </h3>
+                <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
+                  Tim pengembang yang membangun platform ini dari sisi teknis — arsitektur Next.js, integrasi AI, database Supabase, dan antarmuka guru-siswa. Platform ini dikembangkan secara bertahap dengan fokus pada stabilitas, keamanan data, dan kemudahan penggunaan.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.3, ease: EASE_CURVE }}
             className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-6">
-              Tim Verifikator
+              Verifikator & Mitra Akademik
             </h2>
+            <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed mb-6">
+              Konten dan media pembelajaran AKAL Center diverifikasi oleh akademisi berpengalaman untuk memastikan kualitas dan kesesuaian dengan standar pendidikan nasional.
+            </p>
             <div className="grid sm:grid-cols-2 gap-6 sm:gap-8">
               <div>
                 <h3 className="font-heading text-base sm:text-lg text-primary mb-3">
@@ -138,10 +215,10 @@ export default function TentangPage() {
 
         <div className="text-center mt-16">
           <Link
-            href="/materi"
+            href="/daftar"
             className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
           >
-            Mulai Belajar
+            Coba Gratis
             <ArrowRight className="w-5 h-5" aria-hidden="true" />
           </Link>
 

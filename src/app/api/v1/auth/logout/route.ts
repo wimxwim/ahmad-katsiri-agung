@@ -27,13 +27,15 @@ export async function POST(request: NextRequest) {
     let userId: string | undefined;
     if (sessionCookie?.value) {
       const { verifySession } = await import("@/lib/auth");
-      const session = await verifySession(sessionCookie.value);
-      userId = session?.userId;
-      await logAuthEvent("auth.logout", {
-        userId,
-        email: session?.email,
-        ip,
-      });
+      const _ar = await verifySession(sessionCookie.value);
+      if (_ar.success) {
+        userId = _ar.data.userId;
+        await logAuthEvent("auth.logout", {
+          userId,
+          email: _ar.data.email,
+          ip,
+        });
+      }
     }
 
     // Revoke refresh tokens

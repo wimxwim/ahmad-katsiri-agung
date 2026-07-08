@@ -13,7 +13,8 @@ export async function GET(
 ) {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  const session = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+  const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+  const session = _ar && _ar.success ? _ar.data : null;
   if (!session) return apiError("Sesi tidak valid", 401);
 
   const { id } = await params;

@@ -10,16 +10,11 @@ import { handleLogout } from "@/lib/logout";
 
 const NAV_ITEMS_FALLBACK = [
   { href: "/", label: "Beranda" },
-  { href: "/kursus", label: "Kursus" },
-  { href: "/pendidik", label: "Pendidik" },
-  { href: "/materi", label: "Materi" },
-  { href: "/evaluasi", label: "Kuis" },
-  { href: "/game", label: "Game" },
-  { href: "/quran", label: "Qur'an" },
+  { href: "/fitur", label: "Fitur" },
+  { href: "/harga", label: "Harga" },
   { href: "/tentang", label: "Tentang" },
+  { href: "/materi", label: "Materi" },
 ];
-
-const TEACHER_LABELS = new Set(["Pendidik"]);
 
 export function Navbar() {
   const pathname = usePathname();
@@ -28,15 +23,11 @@ export function Navbar() {
 
   if (pathname.startsWith("/masuk")) return null;
 
-  const navItems = (navigation?.navbarItems ?? NAV_ITEMS_FALLBACK)
-    .filter((item) => {
-      if (session?.role === "guru") return true;
-      return !TEACHER_LABELS.has(item.label);
-    });
+  const navItems = navigation?.navbarItems ?? NAV_ITEMS_FALLBACK;
 
-  const visibleItems = navItems.slice(0, 7);
+  const visibleItems = navItems.slice(0, 5);
   const [moreOpen, setMoreOpen] = useState(false);
-  const hasMore = navItems.length > 7;
+  const hasMore = navItems.length > 5;
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -85,7 +76,7 @@ export function Navbar() {
                 </button>
                 {moreOpen && (
                   <div className="absolute top-full right-0 mt-2 bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl p-2 shadow-glass-lg min-w-[180px] z-50">
-                    {navItems.slice(7).map((item) => (
+                    {navItems.slice(5).map((item) => (
                       <Link
                         key={item.href}
                         href={item.href}
@@ -114,26 +105,26 @@ export function Navbar() {
                   <Link
                     href={
                       session.role === "guru"
-                        ? "/guru/beranda"
+                        ? "/guru"
                         : session.role === "owner"
                         ? "/owner"
                         : session.role === "admin_sekolah"
                         ? "/admin-sekolah"
                         : session.role === "orang_tua"
                         ? "/orang-tua"
-                        : "/siswa/beranda"
+                        : "/siswa"
                     }
                     className={`relative px-4 py-2 text-sm rounded-full transition-colors duration-200 ${
                       isActive(
                         session.role === "guru"
-                          ? "/guru/beranda"
+                          ? "/guru"
                           : session.role === "owner"
                           ? "/owner"
                           : session.role === "admin_sekolah"
                           ? "/admin-sekolah"
                           : session.role === "orang_tua"
                           ? "/orang-tua"
-                          : "/siswa/beranda",
+                          : "/siswa",
                       )
                         ? "bg-primary/10 text-primary font-semibold"
                         : "text-on-surface-variant hover:text-primary hover:bg-primary/5"

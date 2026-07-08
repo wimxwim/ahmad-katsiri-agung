@@ -15,7 +15,8 @@ const ALLOWED: SesiRole[] = ["murid", "orang_tua"];
 export default async function SiswaLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  const session = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+  const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+  const session = _ar && _ar.success ? _ar.data : null;
   if (!session) redirect("/masuk?portal=siswa&redirect=/siswa/beranda");
   if (!ALLOWED.includes(session.role)) redirect(ROLE_HOME_PATHS[session.role] || "/");
   return <SiswaLayoutClient>{children}</SiswaLayoutClient>;

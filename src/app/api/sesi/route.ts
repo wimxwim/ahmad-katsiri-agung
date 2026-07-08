@@ -15,10 +15,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ session: null });
     }
 
-    const payload = await verifySession(sessionCookie.value);
-    if (!payload) {
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success) {
       return NextResponse.json({ session: null });
     }
+    const payload = _ar.data;
 
     return NextResponse.json({
       session: {

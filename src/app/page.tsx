@@ -113,10 +113,10 @@ export default function Home() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
-                href="/materi"
+                href="/fitur"
                 className="inline-flex items-center gap-2 rounded-2xl border border-border-precision bg-glass px-6 py-3.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
               >
-                Lihat Demo
+                Lihat Fitur
               </Link>
             </div>
 

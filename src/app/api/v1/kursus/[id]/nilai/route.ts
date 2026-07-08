@@ -16,10 +16,11 @@ export async function GET(
     if (!sessionCookie?.value) {
       return apiError("Silakan login terlebih dahulu", 401);
     }
-    const session = await verifySession(sessionCookie.value);
-    if (!session || (session.role !== "guru" && session.role !== "owner" && session.role !== "murid")) {
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner" && _ar.data.role !== "murid")) {
       return apiError("Anda tidak memiliki akses ke nilai", 403);
     }
+    const session = _ar.data;
 
     const rl = await checkRateLimit(`kursus-nilai:${session.userId}`, 20, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

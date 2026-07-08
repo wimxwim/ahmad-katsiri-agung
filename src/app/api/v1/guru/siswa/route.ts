@@ -13,10 +13,11 @@ export async function GET(request: NextRequest) {
     if (!sessionCookie?.value) {
       return apiError("Silakan login terlebih dahulu", 401);
     }
-    const session = await verifySession(sessionCookie.value);
-    if (!session || (session.role !== "guru" && session.role !== "owner")) {
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner")) {
       return apiError("Hanya guru yang dapat mengakses daftar siswa", 403);
     }
+    const session = _ar.data;
 
     const rl = await checkRateLimit(`guru-siswa:${session.userId}`, 20, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

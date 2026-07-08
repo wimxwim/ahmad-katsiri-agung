@@ -33,7 +33,10 @@ function clearTempCookies(response: NextResponse) {
  * Setelah login sukses → redirect ke role-home (atau returnTo jika valid).
  */
 export async function GET(request: NextRequest) {
-  const redirectBase = (process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin).replace(/\/$/, "");
+  // Di development, selalu pakai origin dari request supaya OAuth redirect tidak
+  // kabur ke domain production (NEXT_PUBLIC_APP_URL) saat tes di localhost.
+  const isDev = process.env.NODE_ENV !== "production";
+  const redirectBase = (isDev ? request.nextUrl.origin : (process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin)).replace(/\/$/, "");
 
   try {
     const ip = ipFromRequest(request);
@@ -204,14 +207,21 @@ export async function GET(request: NextRequest) {
     resp.cookies.set(SESSION_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       path: "/",
       maxAge: SESSION_DURATION_SECONDS,
     });
     return resp;
   } catch (e) {
     console.error("Google callback fatal error:", e);
-    const resp = NextResponse.redirect(`${redirectBase}/masuk?error=login_google_gagal`, 302);
+    const isDbError =
+      e instanceof Error &&
+      (e.message.includes("ECONNREFUSED") ||
+        e.message.includes("database") ||
+        e.message.includes("connection") ||
+        /connect\s+ECONNREFUSED/i.test(e.message));
+    const errorCode = isDbError ? "db_tidak_terhubung" : "login_google_gagal";
+    const resp = NextResponse.redirect(`${redirectBase}/masuk?error=${errorCode}`, 302);
     clearTempCookies(resp);
     return resp;
   }

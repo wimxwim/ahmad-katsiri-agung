@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         ip,
         portal: portalIntent || "unknown",
       });
-      return apiError("Akun ini belum punya kata sandi. Masuk lewat Google dulu lalu atur kata sandi.", 401);
+      return apiError("NO_PASSWORD_SET", "Akun ini belum punya kata sandi. Masuk lewat Google dulu lalu atur kata sandi di halaman profil.", { email }, 401);
     }
 
     const result = await verifyPassword(password, user.passwordHash);

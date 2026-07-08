@@ -34,10 +34,11 @@ export async function POST(request: NextRequest) {
     if (!sessionCookie?.value) {
       return apiError("Sesi tidak ditemukan. Masuk dulu sebelum mengatur kata sandi.", 401);
     }
-    const session = await verifySession(sessionCookie.value);
-    if (!session?.userId) {
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success) {
       return apiError("Sesi tidak valid", 401);
     }
+    const session = _ar.data;
 
     const body = await request.json();
     const parsed = SetPasswordSchema.safeParse(body);
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
     const [updated] = await db
       .update(users)
       .set({ passwordHash, updatedAt: new Date() })
-      .where(eq(users.id, session.userId))
+      .where(eq(users.id, session.userId!))
       .returning({ id: users.id });
 
     if (!updated) {

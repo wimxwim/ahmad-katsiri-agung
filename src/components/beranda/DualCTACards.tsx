@@ -1,5 +1,7 @@
 "use client";
 
+/* LEGACY — old single-guru PAI beranda component. Not used in new landing page. */
+
 import { motion } from "motion/react";
 import Link from "next/link";
 import { CheckCircle, Sparkles, ArrowRight } from "lucide-react";
@@ -59,7 +61,7 @@ export function DualCTACards() {
             </ul>
 
             <Link
-              href="/pendidik"
+              href="/guru"
               className="inline-flex items-center gap-2 bg-white text-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:brightness-95 active:scale-[0.98] transition-transform duration-300"
             >
               MASUK DASHBOARD

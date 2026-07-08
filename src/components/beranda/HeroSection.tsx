@@ -1,5 +1,7 @@
 "use client";
 
+/* LEGACY — old single-guru PAI beranda component. Not used in new landing page. */
+
 import { motion } from "motion/react";
 import Link from "next/link";
 import { BookOpen, Gamepad2, GraduationCap, ArrowRight } from "lucide-react";

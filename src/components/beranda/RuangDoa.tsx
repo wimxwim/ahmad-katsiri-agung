@@ -1,5 +1,7 @@
 "use client";
 
+/* LEGACY — old single-guru PAI beranda component. Not used in new landing page. */
+
 import { useState, useEffect, FormEvent } from "react";
 import { motion } from "motion/react";
 import { Send, Heart } from "lucide-react";

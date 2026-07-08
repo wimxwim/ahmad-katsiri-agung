@@ -35,10 +35,11 @@ export async function PUT(
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
   if (!sessionCookie?.value) return apiError("Harus login", 401);
 
-  const session = await verifySession(sessionCookie.value);
-  if (!session || (session.role !== "guru" && session.role !== "owner" && session.role !== "admin_sekolah")) {
+  const _ar = await verifySession(sessionCookie.value);
+  if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner" && _ar.data.role !== "admin_sekolah")) {
     return apiError("Tidak diizinkan", 403);
   }
+  const session = _ar.data;
 
   const { id } = await params;
   const [existing] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
@@ -79,10 +80,11 @@ export async function DELETE(
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
   if (!sessionCookie?.value) return apiError("Harus login", 401);
 
-  const session = await verifySession(sessionCookie.value);
-  if (!session || (session.role !== "guru" && session.role !== "owner" && session.role !== "admin_sekolah")) {
+  const _ar2 = await verifySession(sessionCookie.value);
+  if (!_ar2.success || (_ar2.data.role !== "guru" && _ar2.data.role !== "owner" && _ar2.data.role !== "admin_sekolah")) {
     return apiError("Tidak diizinkan", 403);
   }
+  const session = _ar2.data;
 
   const { id } = await params;
   const [existing] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);

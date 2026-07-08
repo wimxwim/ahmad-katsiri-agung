@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-    const session = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+    const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+    const session = _ar && _ar.success ? _ar.data : null;
 
     if (!session) {
       return apiError("Silakan login terlebih dahulu", 401);
@@ -68,10 +69,11 @@ export async function POST(request: NextRequest) {
     if (!sessionCookie?.value) {
       return apiError("Silakan login terlebih dahulu", 401);
     }
-    const session = await verifySession(sessionCookie.value);
-    if (!session || (session.role !== "guru" && session.role !== "owner")) {
+    const _ar2 = await verifySession(sessionCookie.value);
+    if (!_ar2.success || (_ar2.data.role !== "guru" && _ar2.data.role !== "owner")) {
       return apiError("Hanya guru yang dapat membuat kursus", 403);
     }
+    const session = _ar2.data;
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`kursus-create:${ip}`, 5, 60000);

@@ -1,5 +1,5 @@
 import "server-only";
-import { SignJWT, jwtVerify, type JWTPayload } from "jose";
+import { SignJWT, jwtVerify, errors, type JWTPayload } from "jose";
 import { randomUUID } from "crypto";
 import type { SesiPayload } from "./session";
 import {
@@ -8,6 +8,12 @@ import {
   hs256Secret,
   hasES256Keys,
 } from "./auth-keys";
+
+export type AuthErrorCode = "expired" | "invalid" | "internal";
+
+export type AuthResult<T> =
+  | { success: true; data: T }
+  | { success: false; code: AuthErrorCode };
 
 export interface QuizTokenPayload extends JWTPayload {
   nama: string;
@@ -22,12 +28,14 @@ export async function signQuizToken(nama: string, kelas: string): Promise<string
     .sign(hs256Secret());
 }
 
-export async function verifyQuizToken(token: string): Promise<QuizTokenPayload | null> {
+export async function verifyQuizToken(token: string): Promise<AuthResult<QuizTokenPayload>> {
   try {
     const { payload } = await jwtVerify(token, hs256Secret());
-    return payload as QuizTokenPayload;
-  } catch {
-    return null;
+    return { success: true, data: payload as QuizTokenPayload };
+  } catch (err) {
+    if (err instanceof errors.JWTExpired) return { success: false, code: "expired" };
+    console.error("[verifyQuizToken] unexpected error:", err);
+    return { success: false, code: "internal" };
   }
 }
 
@@ -43,20 +51,29 @@ export async function signSession(payload: Omit<SesiPayload, "iss" | "exp" | "ia
     .sign(key);
 }
 
-export async function verifySession(token: string): Promise<SesiPayload | null> {
+export async function verifySession(token: string): Promise<AuthResult<SesiPayload>> {
   if (hasES256Keys()) {
     try {
       const key = await getVerifyingKey();
       const { payload } = await jwtVerify(token, key);
-      return payload as SesiPayload;
-    } catch {
-      // fall through to HS256 fallback
+      return { success: true, data: payload as SesiPayload };
+    } catch (err) {
+      if (err instanceof errors.JWTExpired) {
+        return { success: false, code: "expired" };
+      }
+      if (!(err instanceof errors.JWSSignatureVerificationFailed)) {
+        console.error("[verifySession] ES256 verification error:", err);
+      }
     }
   }
   try {
     const { payload } = await jwtVerify(token, hs256Secret());
-    return payload as SesiPayload;
-  } catch {
-    return null;
+    return { success: true, data: payload as SesiPayload };
+  } catch (err) {
+    if (err instanceof errors.JWTExpired) {
+      return { success: false, code: "expired" };
+    }
+    console.error("[verifySession] verification failed:", err);
+    return { success: false, code: "internal" };
   }
 }

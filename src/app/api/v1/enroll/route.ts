@@ -18,10 +18,11 @@ export async function POST(request: NextRequest) {
     if (!sessionCookie?.value) {
       return apiError("Silakan login terlebih dahulu", 401);
     }
-    const session = await verifySession(sessionCookie.value);
-    if (!session || session.role !== "murid") {
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success || _ar.data.role !== "murid") {
       return apiError("Hanya siswa yang dapat mendaftar kursus", 403);
     }
+    const session = _ar.data;
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`enroll:${ip}`, 5, 30000);

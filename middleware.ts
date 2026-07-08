@@ -43,6 +43,11 @@ const LEGACY_DASHBOARD_TO_HOME: { prefix: string; target: SesiRole[] }[] = [
   { prefix: "/dashboard-siswa", target: ["murid", "orang_tua"] },
 ];
 
+const LEGACY_PUBLIC_TO_HOME: { prefix: string; target: string }[] = [
+  { prefix: "/pendidik", target: "/guru" },
+  { prefix: "/peserta-didik", target: "/siswa" },
+];
+
 function getJwtSecret(): Uint8Array {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error("JWT_SECRET tidak dikonfigurasi");
@@ -146,7 +151,7 @@ export async function middleware(request: NextRequest) {
     if (pathname === "/masuk-guru" || pathname === "/register-guru") qp.set("portal", "guru");
     const qs = qp.toString();
     const url = qs ? `${target}?${qs}` : target;
-    return NextResponse.redirect(new URL(url, request.url), 301);
+    return NextResponse.redirect(new URL(url, request.url), 307);
   }
 
   for (const { prefix, target } of LEGACY_DASHBOARD_TO_HOME) {
@@ -159,6 +164,14 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL(targetPath + qs, request.url), 308);
       }
       return NextResponse.redirect(new URL("/masuk", request.url), 307);
+    }
+  }
+
+  for (const { prefix, target } of LEGACY_PUBLIC_TO_HOME) {
+    if (pathname === prefix || pathname.startsWith(`${prefix}/`)) {
+      const rest = pathname.slice(prefix.length) || "";
+      const qs = request.nextUrl.search;
+      return NextResponse.redirect(new URL(target + rest + qs, request.url), 308);
     }
   }
 

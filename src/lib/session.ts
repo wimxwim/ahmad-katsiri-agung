@@ -46,7 +46,8 @@ export async function getRequestSession(
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
   const { verifySession } = await import("./auth");
-  return verifySession(token);
+  const result = await verifySession(token);
+  return result.success ? result.data : null;
 }
 
 export const ROLE_HOME_PATHS: Record<SesiRole, string> = {

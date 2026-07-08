@@ -23,6 +23,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   email_google_belum_diverifikasi: "Email Google belum diverifikasi.",
   akun_google_tidak_cocok: "Akun Google ini tidak cocok dengan akun yang sudah ada.",
   login_google_gagal: "Login Google gagal. Coba lagi.",
+  db_tidak_terhubung: "Database belum terhubung. Pastikan PostgreSQL sudah berjalan, lalu coba lagi.",
   auth: "Sesi autentikasi tidak valid.",
 };
 
@@ -37,12 +38,29 @@ export function FormMasuk({
   const [error, setError] = useState(() => (errorCode ? ERROR_MESSAGES[errorCode] || `Error: ${errorCode}` : ""));
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [noPassword, setNoPassword] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     setMode(initialPortal === "guru" ? "guru" : "murid");
     setTabMurid(initialTab);
     setError(errorCode ? ERROR_MESSAGES[errorCode] || `Error: ${errorCode}` : "");
+    setNoPassword(false);
+    setRedirecting(false);
   }, [initialPortal, initialTab, errorCode]);
+
+  useEffect(() => {
+    setNoPassword(false);
+    setRedirecting(false);
+  }, [mode, tabMurid]);
+
+  function startGoogleLogin(portal: "guru" | "siswa") {
+    setRedirecting(true);
+    const url = new URL("/api/v1/auth/google", window.location.origin);
+    url.searchParams.set("portal", portal);
+    if (redirectTo) url.searchParams.set("returnTo", redirectTo);
+    window.location.href = url.toString();
+  }
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -65,6 +83,12 @@ export function FormMasuk({
         if (err.code === "INTENT_MISMATCH") {
           const params = new URLSearchParams(err.details || {});
           window.location.href = `/masuk/role-mismatch?${params.toString()}`;
+          return;
+        }
+        if (err.code === "NO_PASSWORD_SET") {
+          setNoPassword(true);
+          setError(err.message || "Akun ini belum punya kata sandi. Masuk lewat Google dulu.");
+          setLoading(false);
           return;
         }
         setError(err.message || err.code || "Terjadi kesalahan");
@@ -296,6 +320,31 @@ export function FormMasuk({
                       <p className="text-xs text-red-600">{error}</p>
                     </div>
                   )}
+                  {noPassword && (
+                    <button
+                      type="button"
+                      onClick={() => startGoogleLogin("siswa")}
+                      disabled={redirecting}
+                      className="w-full inline-flex items-center justify-center gap-2 py-[13px] border border-border-precision rounded-[13px] text-[14px] font-semibold text-on-surface hover:bg-surface transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {redirecting ? (
+                        <span className="flex items-center gap-2">
+                          <span className="w-4 h-4 border-2 border-on-surface-variant/30 border-t-on-surface rounded-full animate-spin" />
+                          Sedang mengarahkan...
+                        </span>
+                      ) : (
+                        <>
+                          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                            <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
+                            <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.95v2.32A9 9 0 0 0 9 18z"/>
+                            <path fill="#FBBC05" d="M3.96 10.72A5.4 5.4 0 0 1 3.66 9c0-.6.1-1.18.3-1.72V4.96H.95A9 9 0 0 0 0 9c0 1.45.35 2.82.95 4.04l3.01-2.32z"/>
+                            <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.42 0 9 0A9 9 0 0 0 .95 4.96l3.01 2.32C4.68 5.16 6.66 3.58 9 3.58z"/>
+                          </svg>
+                          Lanjutkan dengan Google
+                        </>
+                      )}
+                    </button>
+                  )}
                 <button
                   type="submit"
                   disabled={loading}
@@ -308,18 +357,35 @@ export function FormMasuk({
                   <span className="text-[11px] uppercase tracking-wider text-on-surface-variant/60">atau</span>
                   <div className="flex-1 h-px bg-border-precision" />
                 </div>
-                <a
-                  href={`/api/v1/auth/google?portal=siswa${redirectTo ? `&returnTo=${encodeURIComponent(redirectTo)}` : ""}`}
-                  className="w-full inline-flex items-center justify-center gap-2 py-[13px] border border-border-precision rounded-[13px] text-[14px] font-semibold text-on-surface hover:bg-surface transition-colors"
+                <button
+                  type="button"
+                  onClick={() => startGoogleLogin("siswa")}
+                  disabled={redirecting}
+                  className="w-full inline-flex items-center justify-center gap-2 py-[13px] border border-border-precision rounded-[13px] text-[14px] font-semibold text-on-surface hover:bg-surface transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-                    <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
-                    <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.95v2.32A9 9 0 0 0 9 18z"/>
-                    <path fill="#FBBC05" d="M3.96 10.72A5.4 5.4 0 0 1 3.66 9c0-.6.1-1.18.3-1.72V4.96H.95A9 9 0 0 0 0 9c0 1.45.35 2.82.95 4.04l3.01-2.32z"/>
-                    <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.42 0 9 0A9 9 0 0 0 .95 4.96l3.01 2.32C4.68 5.16 6.66 3.58 9 3.58z"/>
-                  </svg>
-                  Masuk dengan Google
-                </a>
+                  {redirecting ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-on-surface-variant/30 border-t-on-surface rounded-full animate-spin" />
+                      Sedang mengarahkan ke Google...
+                    </span>
+                  ) : (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                        <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
+                        <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.95v2.32A9 9 0 0 0 9 18z"/>
+                        <path fill="#FBBC05" d="M3.96 10.72A5.4 5.4 0 0 1 3.66 9c0-.6.1-1.18.3-1.72V4.96H.95A9 9 0 0 0 0 9c0 1.45.35 2.82.95 4.04l3.01-2.32z"/>
+                        <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.42 0 9 0A9 9 0 0 0 .95 4.96l3.01 2.32C4.68 5.16 6.66 3.58 9 3.58z"/>
+                      </svg>
+                      Masuk dengan Google
+                    </>
+                  )}
+                </button>
+                <p className="text-center text-[13px] text-on-surface-variant">
+                  Belum punya akun siswa?{" "}
+                  <Link href="/daftar?portal=siswa&auto=siswa" className="font-semibold text-primary hover:underline">
+                    Daftar di sini
+                  </Link>
+                </p>
                 <p className="text-xs text-on-surface-variant bg-surface rounded-xl px-3 py-2.5">
                   Hanya akun siswa yang bisa masuk lewat alur ini. Jika akunmu guru, gunakan portal guru.
                 </p>
@@ -481,6 +547,31 @@ export function FormMasuk({
                     <p className="text-xs text-red-600">{error}</p>
                   </div>
                 )}
+                {noPassword && (
+                  <button
+                    type="button"
+                    onClick={() => startGoogleLogin("guru")}
+                    disabled={redirecting}
+                    className="w-full inline-flex items-center justify-center gap-2 py-[13px] border border-border-precision rounded-[13px] text-[14px] font-semibold text-on-surface hover:bg-surface transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {redirecting ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-4 h-4 border-2 border-on-surface-variant/30 border-t-on-surface rounded-full animate-spin" />
+                        Sedang mengarahkan...
+                      </span>
+                    ) : (
+                      <>
+                        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                          <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
+                          <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.95v2.32A9 9 0 0 0 9 18z"/>
+                          <path fill="#FBBC05" d="M3.96 10.72A5.4 5.4 0 0 1 3.66 9c0-.6.1-1.18.3-1.72V4.96H.95A9 9 0 0 0 0 9c0 1.45.35 2.82.95 4.04l3.01-2.32z"/>
+                          <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.42 0 9 0A9 9 0 0 0 .95 4.96l3.01 2.32C4.68 5.16 6.66 3.58 9 3.58z"/>
+                        </svg>
+                        Lanjutkan dengan Google
+                      </>
+                    )}
+                  </button>
+                )}
                 <button
                   type="submit"
                   disabled={loading}
@@ -493,18 +584,35 @@ export function FormMasuk({
                   <span className="text-[11px] uppercase tracking-wider text-on-surface-variant/60">atau</span>
                   <div className="flex-1 h-px bg-border-precision" />
                 </div>
-                <a
-                  href={`/api/v1/auth/google?portal=guru${redirectTo ? `&returnTo=${encodeURIComponent(redirectTo)}` : ""}`}
-                  className="w-full inline-flex items-center justify-center gap-2 py-[13px] border border-border-precision rounded-[13px] text-[14px] font-semibold text-on-surface hover:bg-surface transition-colors"
+                <button
+                  type="button"
+                  onClick={() => startGoogleLogin("guru")}
+                  disabled={redirecting}
+                  className="w-full inline-flex items-center justify-center gap-2 py-[13px] border border-border-precision rounded-[13px] text-[14px] font-semibold text-on-surface hover:bg-surface transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-                    <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
-                    <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.95v2.32A9 9 0 0 0 9 18z"/>
-                    <path fill="#FBBC05" d="M3.96 10.72A5.4 5.4 0 0 1 3.66 9c0-.6.1-1.18.3-1.72V4.96H.95A9 9 0 0 0 0 9c0 1.45.35 2.82.95 4.04l3.01-2.32z"/>
-                    <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.42 0 9 0A9 9 0 0 0 .95 4.96l3.01 2.32C4.68 5.16 6.66 3.58 9 3.58z"/>
-                  </svg>
-                  Masuk dengan Google
-                </a>
+                  {redirecting ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-on-surface-variant/30 border-t-on-surface rounded-full animate-spin" />
+                      Sedang mengarahkan ke Google...
+                    </span>
+                  ) : (
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                        <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/>
+                        <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.95v2.32A9 9 0 0 0 9 18z"/>
+                        <path fill="#FBBC05" d="M3.96 10.72A5.4 5.4 0 0 1 3.66 9c0-.6.1-1.18.3-1.72V4.96H.95A9 9 0 0 0 0 9c0 1.45.35 2.82.95 4.04l3.01-2.32z"/>
+                        <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.42 0 9 0A9 9 0 0 0 .95 4.96l3.01 2.32C4.68 5.16 6.66 3.58 9 3.58z"/>
+                      </svg>
+                      Masuk dengan Google
+                    </>
+                  )}
+                </button>
+                <p className="text-center text-[13px] text-on-surface-variant">
+                  Belum punya akun guru?{" "}
+                  <Link href="/daftar?portal=guru&auto=guru" className="font-semibold text-primary hover:underline">
+                    Daftar sebagai guru
+                  </Link>
+                </p>
                 <p className="text-xs text-on-surface-variant bg-surface rounded-xl px-3 py-2.5">
                   Hanya akun guru, owner, atau admin sekolah yang bisa masuk lewat alur ini.
                 </p>

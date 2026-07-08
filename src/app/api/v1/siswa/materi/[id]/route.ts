@@ -16,8 +16,9 @@ export async function GET(
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
     if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const session = await verifySession(sessionCookie.value);
-    if (!session) return apiError("Sesi tidak valid", 401);
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success) return apiError("Sesi tidak valid", 401);
+    const session = _ar.data;
     if (session.role !== "murid" && session.role !== "orang_tua") {
       return apiError("Hanya siswa yang dapat membaca materi", 403);
     }
@@ -84,8 +85,9 @@ export async function POST(
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
     if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const session = await verifySession(sessionCookie.value);
-    if (!session) return apiError("Sesi tidak valid", 401);
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success) return apiError("Sesi tidak valid", 401);
+    const session = _ar.data;
     if (session.role !== "murid" && session.role !== "orang_tua") {
       return apiError("Hanya siswa yang dapat menandai progress", 403);
     }

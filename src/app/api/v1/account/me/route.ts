@@ -13,10 +13,11 @@ export async function GET(request: NextRequest) {
     if (!sessionCookie?.value) {
       return apiError("Silakan login terlebih dahulu", 401);
     }
-    const session = await verifySession(sessionCookie.value);
-    if (!session?.userId) {
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success || !_ar.data.userId) {
       return apiError("Sesi tidak valid", 401);
     }
+    const session = _ar.data;
 
     const rl = await checkRateLimit(`account-me:${session.userId}`, 10, 60000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
         googleId: users.googleId,
       })
       .from(users)
-      .where(and(eq(users.id, session.userId), isNull(users.deletedAt)))
+      .where(and(eq(users.id, session.userId!), isNull(users.deletedAt)))
       .limit(1);
 
     if (!result.length) {
@@ -67,10 +68,11 @@ export async function DELETE(request: NextRequest) {
     if (!sessionCookie?.value) {
       return apiError("Silakan login terlebih dahulu", 401);
     }
-    const session = await verifySession(sessionCookie.value);
-    if (!session?.userId) {
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success || !_ar.data.userId) {
       return apiError("Sesi tidak valid", 401);
     }
+    const session = _ar.data;
 
     const rl = await checkRateLimit(`account-delete:${session.userId}`, 3, 300000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
@@ -83,7 +85,7 @@ export async function DELETE(request: NextRequest) {
         passwordHash: null,
         deletedAt: new Date(),
       })
-      .where(eq(users.id, session.userId));
+      .where(eq(users.id, session.userId!));
 
     const response = NextResponse.json({ message: "Akun berhasil dihapus" });
     response.cookies.set(SESSION_COOKIE_NAME, "", { httpOnly: true, path: "/", maxAge: 0 });

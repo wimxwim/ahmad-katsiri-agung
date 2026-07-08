@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Sparkles, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Sparkles, Clock, CheckCircle2, AlertCircle, ClipboardList } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 
 interface QuizItem {
   id: string;
@@ -40,13 +42,7 @@ export default function SiswaQuizListPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-glass rounded-2xl p-5 h-24 animate-pulse" />
-        ))}
-      </div>
-    );
+    return <SkeletonList />;
   }
 
   if (error) {
@@ -68,18 +64,12 @@ export default function SiswaQuizListPage() {
       </div>
 
       {data.length === 0 ? (
-        <div className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass text-center">
-          <span className="w-14 h-14 rounded-2xl bg-tertiary/10 text-tertiary grid place-items-center mx-auto mb-4">
-            <Sparkles className="w-7 h-7" />
-          </span>
-          <h3 className="font-heading text-xl font-bold text-on-surface mb-2">
-            Belum ada kuis
-          </h3>
-          <p className="text-sm text-on-surface-variant max-w-md mx-auto">
-            Guru kamu belum menerbitkan kuis. Setelah kuis tersedia, kamu bisa mulai
-            mengerjakan di sini.
-          </p>
-        </div>
+        <EmptyState
+          icon={ClipboardList}
+          title="Belum ada quiz"
+          description="Gurumu belum menerbitkan quiz. Kerjakan materi terlebih dahulu ya."
+          action={{ label: "Lihat Materi", href: "/siswa/materi" }}
+        />
       ) : (
         <div className="space-y-3">
           {data.map((q) => (

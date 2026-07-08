@@ -15,7 +15,8 @@ const ALLOWED: SesiRole[] = ["admin_sekolah", "owner"];
 export default async function AdminSekolahLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  const session = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+  const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+  const session = _ar && _ar.success ? _ar.data : null;
   if (!session) redirect("/masuk?portal=guru&redirect=/admin-sekolah");
   if (!ALLOWED.includes(session.role)) redirect(ROLE_HOME_PATHS[session.role] || "/");
   return <AdminSekolahLayoutClient>{children}</AdminSekolahLayoutClient>;

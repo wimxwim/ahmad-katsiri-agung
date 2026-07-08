@@ -32,10 +32,11 @@ export async function POST(request: NextRequest) {
   try {
     const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
     if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const session = await verifySession(sessionCookie.value);
-    if (!session || (session.role !== "guru" && session.role !== "owner")) {
+    const _ar = await verifySession(sessionCookie.value);
+    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner")) {
       return apiError("Hanya guru yang dapat import siswa", 403);
     }
+    const session = _ar.data;
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`siswa-import:${ip}`, 3, 60_000);

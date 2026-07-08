@@ -20,10 +20,11 @@ export async function PATCH(
   try {
     const cookieStore = request.cookies.get(SESSION_COOKIE_NAME);
     if (!cookieStore?.value) return apiError("Sesi tidak valid", 401);
-    const session = await verifySession(cookieStore.value);
-    if (!session || (session.role !== "guru" && session.role !== "owner")) {
+    const _ar = await verifySession(cookieStore.value);
+    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner")) {
       return apiError("Hanya guru yang dapat mengubah status kursus", 403);
     }
+    const session = _ar.data;
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`kursus-publish:${ip}`, 30, 60_000);

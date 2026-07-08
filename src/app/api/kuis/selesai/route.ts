@@ -93,10 +93,11 @@ export async function POST(req: NextRequest) {
 
     if (status === "resmi") {
       if (token) {
-        const payload = await verifyQuizToken(token);
-        if (!payload) {
+        const _qt = await verifyQuizToken(token);
+        if (!_qt.success) {
           return apiError("Token tidak valid atau kedaluwarsa", 401);
         }
+        const payload = _qt.data;
         if (payload.nama !== cleanNamaSiswa || payload.kelas !== cleanKelas) {
           return apiError("Data tidak cocok dengan token", 403);
         }
@@ -106,10 +107,11 @@ export async function POST(req: NextRequest) {
         if (!sessionCookie?.value) {
           return apiError("Sesi tidak ditemukan", 401);
         }
-        const session = await verifySession(sessionCookie.value);
-        if (!session) {
+        const _ar2 = await verifySession(sessionCookie.value);
+        if (!_ar2.success) {
           return apiError("Sesi tidak valid", 401);
         }
+        const session = _ar2.data;
         if (session.nama !== cleanNamaSiswa || (session.kelas && session.kelas !== cleanKelas)) {
           return apiError("Data tidak cocok dengan sesi", 403);
         }

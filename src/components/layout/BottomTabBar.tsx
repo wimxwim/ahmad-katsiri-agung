@@ -8,15 +8,11 @@ import {
   Home,
   BookOpen,
   ClipboardList,
-  Gamepad2,
   Grid3x3,
-  Book,
-  Brain,
-  MessageSquare,
   Info,
-  Library,
   LogOut,
   GraduationCap,
+  Sparkles,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -25,11 +21,10 @@ import { handleLogout } from "@/lib/logout";
 import { EASE_CURVE } from "@/lib/constants";
 
 const SHEET_ITEMS: { href: string; label: string; icon: LucideIcon; desc: string }[] = [
-  { href: "/kursus", label: "Kursus", icon: Library, desc: "Jelajahi katalog kursus" },
-  { href: "/quran", label: "Qur'an", icon: Book, desc: "Baca dan dengarkan Al-Qur'an" },
-  { href: "/refleksi", label: "Refleksi", icon: Brain, desc: "Tulis muhasabah harian" },
-  { href: "/diskusi", label: "Diskusi", icon: MessageSquare, desc: "Ruang tanya jawab" },
+  { href: "/fitur", label: "Fitur", icon: Sparkles, desc: "Lihat semua fitur platform" },
   { href: "/tentang", label: "Tentang", icon: Info, desc: "Tentang AKAL Center" },
+  { href: "/materi", label: "Materi", icon: BookOpen, desc: "Jelajahi materi pembelajaran" },
+  { href: "/evaluasi", label: "Kuis", icon: ClipboardList, desc: "Kerjakan kuis dan evaluasi" },
 ];
 
 export function BottomTabBar() {
@@ -57,10 +52,9 @@ export function BottomTabBar() {
 
   const navTabs = [
     { href: "/", label: "Beranda", icon: Home },
+    { href: "/fitur", label: "Fitur", icon: Sparkles },
     { href: "/materi", label: "Materi", icon: BookOpen },
-    { href: "/evaluasi", label: "Kuis", icon: ClipboardList },
-    ...(session ? [{ href: session.role === "guru" ? "/guru/beranda" : session.role === "owner" ? "/owner" : session.role === "admin_sekolah" ? "/admin-sekolah" : session.role === "orang_tua" ? "/orang-tua" : "/siswa/beranda", label: "Dashboard", icon: GraduationCap, sessionOnly: true }] : []),
-    { href: "/game", label: "Game", icon: Gamepad2, featured: true },
+    ...(session ? [{ href: session.role === "guru" ? "/guru" : session.role === "owner" ? "/owner" : session.role === "admin_sekolah" ? "/admin-sekolah" : session.role === "orang_tua" ? "/orang-tua" : "/siswa", label: "Dashboard", icon: GraduationCap, sessionOnly: true }] : []),
   ];
 
   return (
@@ -170,33 +164,6 @@ export function BottomTabBar() {
           {navTabs.map((tab) => {
             const active = tab.href !== null && isActive(tab.href);
             const Icon = tab.icon;
-
-            if (tab.featured) {
-              return (
-                <Link
-                  key={tab.label}
-                  href="/game"
-                  className="relative flex flex-col items-center justify-center min-w-0 flex-1 min-h-[44px]"
-                >
-                  <div
-                    className={`w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-200 ${
-                      isActive("/game")
-                        ? "bg-primary text-on-primary shadow-primary/30 scale-110"
-                        : "bg-primary/90 text-on-primary shadow-primary/20"
-                    }`}
-                  >
-                    <Gamepad2 className="w-5 h-5" />
-                  </div>
-                  <span
-                    className={`text-[10px] font-semibold leading-none mt-1 ${
-                      isActive("/game") ? "text-primary" : "text-on-surface-variant/60"
-                    }`}
-                  >
-                    Game
-                  </span>
-                </Link>
-              );
-            }
 
             return (
               <Link

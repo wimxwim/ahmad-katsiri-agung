@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
 
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  const session = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+  const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+  const session = _ar && _ar.success ? _ar.data : null;
 
   const now = new Date();
   const rows = await db
@@ -54,10 +55,11 @@ export async function POST(request: NextRequest) {
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
   if (!sessionCookie?.value) return apiError("Harus login", 401);
 
-  const session = await verifySession(sessionCookie.value);
-  if (!session || (session.role !== "guru" && session.role !== "owner" && session.role !== "admin_sekolah")) {
+  const _ar2 = await verifySession(sessionCookie.value);
+  if (!_ar2.success || (_ar2.data.role !== "guru" && _ar2.data.role !== "owner" && _ar2.data.role !== "admin_sekolah")) {
     return apiError("Hanya guru yang bisa membuat pengumuman", 403);
   }
+  const session = _ar2.data;
 
   const ip = ipFromRequest(request);
   const rl = checkRateLimitSync(`pengumuman-create:${ip}`, 10, 60000);

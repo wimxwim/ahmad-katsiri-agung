@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, Plus, BookOpen } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 
 interface KursusItem {
   id: string;
@@ -42,13 +44,7 @@ export default function KursusListPage() {
   );
 
   if (loading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-glass rounded-2xl p-6 h-20 animate-pulse" />
-        ))}
-      </div>
-    );
+    return <SkeletonList />;
   }
 
   if (error) {
@@ -89,20 +85,19 @@ export default function KursusListPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="text-center py-12 bg-glass rounded-2xl border border-border-precision">
-          <BookOpen className="w-10 h-10 text-on-surface-variant/30 mx-auto mb-3" />
-          <p className="text-on-surface-variant mb-4">
-            {search ? "Tidak ada kursus yang cocok" : "Belum ada kursus"}
-          </p>
-          {!search && (
-            <Link
-              href="/guru/buat"
-              className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
-            >
-              Buat Kursus Pertama
-            </Link>
-          )}
-        </div>
+        kursus.length === 0 ? (
+          <EmptyState
+            icon={BookOpen}
+            title="Belum ada kursus"
+            description="Buat kursus pertama untuk mulai mengatur kelas dan materi."
+            action={{ label: "Buat Kursus", href: "/guru/buat" }}
+          />
+        ) : (
+          <div className="text-center py-12 bg-glass rounded-2xl border border-border-precision">
+            <BookOpen className="w-10 h-10 text-on-surface-variant/30 mx-auto mb-3" />
+            <p className="text-on-surface-variant mb-4">Tidak ada kursus yang cocok</p>
+          </div>
+        )
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((k) => (

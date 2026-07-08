@@ -154,11 +154,11 @@ export default function BulkSoalPage() {
   return (
     <div className="max-w-[900px] mx-auto px-3 sm:px-5 lg:px-8 py-8 sm:py-12">
       <Link
-        href="/pendidik"
+        href="/guru"
         className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Kembali ke Portal Pendidik
+        Kembali ke Ruang Guru
       </Link>
 
       <div className="flex items-center gap-3 mb-2">

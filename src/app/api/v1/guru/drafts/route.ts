@@ -10,7 +10,8 @@ import { apiError } from "@/lib/api-response";
 export async function GET() {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  const session = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+  const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+  const session = _ar && _ar.success ? _ar.data : null;
   if (!session || (session.role !== "guru" && session.role !== "owner")) {
     return apiError("FORBIDDEN", "Akses ditolak", undefined, 403);
   }

@@ -21,10 +21,11 @@ export async function POST(
   try {
     const cookieStore = request.cookies.get(SESSION_COOKIE_NAME);
     if (!cookieStore?.value) return apiError("Sesi tidak valid", 401);
-    const session = await verifySession(cookieStore.value);
-    if (!session || (session.role !== "guru" && session.role !== "owner")) {
+    const _ar = await verifySession(cookieStore.value);
+    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner")) {
       return apiError("Hanya guru yang dapat menutup siklus review", 403);
     }
+    const session = _ar.data;
 
     const { id } = await params;
 
