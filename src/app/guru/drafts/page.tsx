@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Sparkles, FileText, CheckCircle2, XCircle, RefreshCw, Clock, AlertCircle, Loader2 } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 
 interface DraftItem {
   id: string;
@@ -47,15 +49,18 @@ export default function GuruDraftsPage() {
     }
   }
 
+  const draftsRef = useRef(drafts);
+  draftsRef.current = drafts;
+
   useEffect(() => {
     load();
     const interval = setInterval(() => {
-      if (drafts.some((d) => ["queued", "extracting", "generating"].includes(d.status))) {
+      if (draftsRef.current.some((d) => ["queued", "extracting", "generating"].includes(d.status))) {
         load();
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [drafts]);
+  }, []);
 
   return (
     <div>
@@ -67,22 +72,14 @@ export default function GuruDraftsPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {[1, 2].map((i) => (
-            <div key={i} className="bg-glass rounded-2xl p-5 h-20 animate-pulse" />
-          ))}
-        </div>
+        <SkeletonList />
       ) : drafts.length === 0 ? (
-        <div className="text-center py-12 bg-glass rounded-2xl border border-border-precision">
-          <Sparkles className="w-10 h-10 text-on-surface-variant/30 mx-auto mb-3" />
-          <p className="text-on-surface-variant mb-4">Belum ada draft</p>
-          <Link
-            href="/guru/upload"
-            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
-          >
-            Upload Dokumen
-          </Link>
-        </div>
+        <EmptyState
+          icon={Sparkles}
+          title="Belum ada draft AI"
+          description="Upload dokumen PDF atau DOCX untuk membuat draft materi, quiz, dan soal."
+          action={{ label: "Upload Dokumen", href: "/guru/upload" }}
+        />
       ) : (
         <div className="space-y-3">
           {drafts.map((d) => {

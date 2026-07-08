@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { SESSION_COOKIE_NAME, ROLE_HOME_PATHS } from "@/lib/session";
 import { FormMasuk } from "./FormMasuk";
 
 export const metadata: Metadata = {
@@ -34,9 +34,9 @@ export default async function MasukPage({
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
 
   if (sessionCookie?.value) {
-    const session = await verifySession(sessionCookie.value);
-    if (session) {
-      redirect(redirectTo || "/");
+    const _ar = await verifySession(sessionCookie.value);
+    if (_ar.success) {
+      redirect(redirectTo || ROLE_HOME_PATHS[_ar.data.role] || "/");
     }
   }
 
