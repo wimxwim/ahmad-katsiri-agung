@@ -146,6 +146,7 @@ async function loadCmsData(): Promise<CmsData> {
           ringkasan: m.ringkasan,
           subTopik: m.subTopik,
           icon: m.icon,
+          isLegacy: m.isLegacy,
         };
       });
       materiDetail = slugs.reduce(
@@ -175,6 +176,7 @@ async function loadCmsData(): Promise<CmsData> {
             prevTitle: m.prevTitle,
             nextSlug: m.nextSlug,
             nextTitle: m.nextTitle,
+            isLegacy: m.isLegacy,
           };
           return acc;
         },

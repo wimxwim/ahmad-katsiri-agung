@@ -17,6 +17,7 @@ const ALL_MATERI_FALLBACK = Object.values(ALL_MATERI_HARD)
     ringkasan: m.ringkasan,
     subTopik: m.subTopik,
     icon: m.icon,
+    isLegacy: m.isLegacy,
   }));
 
 const KELAS = [7, 8, 9] as const;
@@ -180,6 +181,11 @@ export default function MateriPage() {
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/15 text-primary text-[10px] font-bold tracking-wider">
                     <CheckCircle2 className="w-3 h-3" aria-hidden="true" />
                     SELESAI
+                  </span>
+                )}
+                {materi.isLegacy && (
+                  <span className="inline-block px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold tracking-wider border border-amber-200/50">
+                    MATERI LAMA
                   </span>
                 )}
               </div>

@@ -61,6 +61,11 @@ function HeroSection({ materi }: { materi: BabMateri }) {
           <Clock className="w-4 h-4" aria-hidden="true" />
           {materi.waktuBaca}
         </span>
+        {materi.isLegacy && (
+          <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 text-amber-800 text-xs font-bold tracking-wider border border-amber-200/50">
+            MATERI LAMA
+          </span>
+        )}
       </div>
 
       <h1 className="font-heading text-3xl sm:text-4xl md:text-6xl lg:text-7xl tracking-tighter text-on-surface mb-4">

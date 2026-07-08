@@ -288,6 +288,31 @@
   <rule>Jika ada perubahan auth/routing, uji alur guru vs siswa secara eksplisit</rule>
 </verification>
 
+## PROTOKOL PENGGUNAAN SKILL (WAJIB)
+
+<skill-protocol>
+  <rule>Sebelum menulis kode untuk fitur baru, WAJIB load skill yang relevan dari `.agents/skills/` via tool `skill()` — jangan tebak-tebak sendiri</rule>
+  <rule>Skill project-specific yang WAJIB dipakai: `auth-flow-akal-center` (auth), `design-taste-frontend` (UI/UX), `vercel-react-best-practices` (performa React/Next.js)</rule>
+  <rule>Skill general yang tersedia: `backend-patterns`, `code-review-and-quality`, `security-review`, `cloudflare`, `workers-best-practices`, `wrangler`, `midtrans-payment`, `xendit-payment`, `semgrep`, `web-perf`, `core-web-vitals`, `pwa-checklist`, `site-architecture`, `system-design`, `frontend-design`, `ui-ux-pro-max`, `high-end-visual-design`, `extract-design-system`, `web-design-guidelines`</rule>
+  <rule>Untuk perubahan lintas-lapisan (API + DB + UI), load skill dari MULTIPLE kategori sekaligus — jangan cuma satu</rule>
+  <rule>Skill `.agents/skills/` lebih hemat token karena memberikan konteks preskriptif, bukan instruksi panjang dari agent</rule>
+  <rule>Jangan panggil skill yang tidak ada di daftar `.agents/skills/` — cek dulu dengan `ls .agents/skills/`</rule>
+</skill-protocol>
+
+## GOTCHAS KRITIS (YANG SERING TERLEWAT)
+
+<gotchas>
+  <item>Role DB enum uppercase (`"SISWA"`, `"GURU"`, `"OWNER"`) → session role lowercase (`"siswa"`, `"guru"`, `"owner"`) via `roleToSessionRole()` di `src/lib/session.ts`</item>
+  <item>Build OOM: `npm run build` sudah pakai `NODE_OPTIONS=--max-old-space-size=4096` — jangan ubah</item>
+  <item>Auth session cookie: `session` (httpOnly, secure, sameSite=lax) — middleware verifikasi JWT, set `x-user-*` headers</item>
+  <item>Portal intent: `/masuk?portal=guru` vs `/masuk?portal=siswa` — middleware guard beda prefix route</item>
+  <item>KKM threshold hardcoded `70` — tidak ada kolom KKM di schema</item>
+  <item>Legacy content: `src/data/materi.ts` (ALL_MATERI) sudah ditandai `isLegacy: true` — konten baru dari DB via Drizzle</item>
+  <item>Keystatic FROZEN: jangan buat fitur baru lewat `content/*` atau `src/lib/cms.ts` — semua konten baru DB-driven</item>
+  <item>File upload = untrusted: jangan oper file mentah ke subsistem lain tanpa validasi/sanitasi</item>
+  <item>Semua hasil AI wajib status `draft` sampai di-approve guru</item>
+</gotchas>
+
 ## CARA BERPIKIR AGENT
 
 <execution-style>

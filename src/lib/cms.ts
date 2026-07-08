@@ -91,6 +91,7 @@ interface RawMateri {
   ringkasan: string;
   subTopik: number;
   waktuBaca: string;
+  isLegacy?: boolean;
   icon: string;
   videoUrl: string;
   pdfUrl: string | null;
@@ -155,6 +156,7 @@ export async function getMateriFromCms(): Promise<Record<string, BabMateri> | nu
         ringkasan: raw.ringkasan,
         subTopik: raw.subTopik,
         waktuBaca: raw.waktuBaca,
+        isLegacy: raw.isLegacy !== false,
         icon: raw.icon,
         videoUrl: raw.videoUrl || undefined,
         pdfUrl: raw.pdfUrl || undefined,

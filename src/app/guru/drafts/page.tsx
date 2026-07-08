@@ -31,13 +31,16 @@ const STATUS_META: Record<string, { label: string; color: string; icon: typeof S
 export default function GuruDraftsPage() {
   const [drafts, setDrafts] = useState<DraftItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
   async function load() {
     try {
+      setError("");
       const res = await fetch("/api/v1/guru/drafts", { credentials: "include" });
       if (!res.ok) {
+        setError("Gagal memuat draft. Coba lagi.");
         setDrafts([]);
         setLoading(false);
         return;
@@ -47,6 +50,7 @@ export default function GuruDraftsPage() {
       setLoading(false);
     } catch (error) {
       console.error("[guru/drafts] load failed:", error);
+      setError("Terjadi kesalahan saat memuat draft.");
       setLoading(false);
     }
   }
@@ -91,6 +95,21 @@ export default function GuruDraftsPage() {
 
       {loading ? (
         <SkeletonList />
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center min-h-[30vh] text-center px-4">
+          <div className="w-16 h-16 rounded-3xl bg-red-50 flex items-center justify-center mb-6">
+            <AlertCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="font-heading text-xl text-on-surface mb-2">Gagal Memuat Draft</h2>
+          <p className="text-on-surface-variant mb-6 max-w-md">{error}</p>
+          <button
+            onClick={load}
+            className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 cursor-pointer"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Coba Lagi
+          </button>
+        </div>
       ) : drafts.length === 0 ? (
         <EmptyState
           icon={Sparkles}

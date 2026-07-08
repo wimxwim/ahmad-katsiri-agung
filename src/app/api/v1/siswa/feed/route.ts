@@ -37,6 +37,7 @@ export async function GET(_request: NextRequest) {
         totalKursus: 0,
         totalMateri: 0,
         totalSelesai: 0,
+        terdaftar: false,
       });
     }
 
@@ -110,6 +111,7 @@ export async function GET(_request: NextRequest) {
       totalKursus: kursusList.length,
       totalMateri: enriched.length,
       totalSelesai,
+      terdaftar: true,
     });
   } catch (e) {
     console.error("Feed siswa error:", e);

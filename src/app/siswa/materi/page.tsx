@@ -92,13 +92,18 @@ export default function SiswaMateriListPage() {
                     </p>
                   )}
                   {m.sudahDibaca && !m.selesai && (
-                    <div className="mt-2 ml-6">
-                      <div className="w-full bg-border-precision rounded-full h-1.5">
-                        <div
-                          className="bg-primary h-1.5 rounded-full transition-all"
-                          style={{ width: `${m.progressPersen}%` }}
-                        />
+                    <div className="mt-2 ml-6 flex items-center gap-3">
+                      <div className="flex-1 max-w-[200px]">
+                        <div className="w-full bg-border-precision rounded-full h-1.5">
+                          <div
+                            className="bg-primary h-1.5 rounded-full transition-all"
+                            style={{ width: `${m.progressPersen}%` }}
+                          />
+                        </div>
                       </div>
+                      <span className="text-[10px] font-bold text-primary tabular-nums">
+                        {m.progressPersen}%
+                      </span>
                     </div>
                   )}
                 </div>

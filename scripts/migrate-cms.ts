@@ -155,6 +155,7 @@ function materiToJson(m: BabMateri) {
     subTopik: m.subTopik,
     waktuBaca: m.waktuBaca,
     icon: m.icon,
+    isLegacy: m.isLegacy ?? true,
     videoUrl: m.videoUrl ?? "",
     soalUrl: m.soalUrl ?? "",
     gameUrl: m.gameUrl ?? "",

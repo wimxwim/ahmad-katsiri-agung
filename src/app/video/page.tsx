@@ -168,6 +168,11 @@ export default function VideoPage() {
                     <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider mb-3 w-fit">
                       KELAS {bab.kelas} — BAB {bab.bab}
                     </div>
+                    {bab.isLegacy && (
+                      <span className="inline-block ml-2 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold tracking-wider border border-amber-200/50">
+                        MATERI LAMA
+                      </span>
+                    )}
 
                     <h2 className="font-heading text-xl sm:text-2xl lg:text-3xl text-on-surface mb-3">
                       {bab.title}

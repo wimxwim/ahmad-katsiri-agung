@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useEffect, useState } from "react";
 import Link from "next/link";
-import { BarChart3, CheckCircle2, Sparkles, AlertCircle } from "lucide-react";
+import { BarChart3, CheckCircle2, Sparkles, AlertCircle, BookOpen } from "lucide-react";
 
 interface AttemptItem {
   id: string;
@@ -14,6 +14,10 @@ interface AttemptItem {
   durasiDetik: number;
   waktuMulai: string;
   status: string;
+  modeEvaluasi: string;
+  tampilkanNilai: boolean;
+  kursusId: string | null;
+  kursusJudul: string | null;
 }
 
 interface ProgresResponse {
@@ -21,6 +25,13 @@ interface ProgresResponse {
   totalKursus: number;
   totalAttempt: number;
   totalSelesai: number;
+  rataNilai: number;
+}
+
+interface GroupedCourse {
+  kursusId: string;
+  kursusJudul: string;
+  attempts: AttemptItem[];
   rataNilai: number;
 }
 
@@ -47,6 +58,31 @@ export default function SiswaProgresPage() {
         setLoading(false);
       });
   }, []);
+
+  const groupedCourses: GroupedCourse[] = useMemo(() => {
+    if (!data?.attempts.length) return [];
+    const groups = new Map<string, AttemptItem[]>();
+    for (const a of data.attempts) {
+      const key = a.kursusId ?? "tanpa-kursus";
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(a);
+    }
+    return Array.from(groups.entries()).map(([key, attempts]) => {
+      const first = attempts[0];
+      const nilaiList = attempts
+        .map((a) => a.nilai)
+        .filter((n): n is number => n !== null);
+      const rataNilai = nilaiList.length > 0
+        ? Math.round(nilaiList.reduce((s, n) => s + n, 0) / nilaiList.length)
+        : 0;
+      return {
+        kursusId: key,
+        kursusJudul: first?.kursusJudul ?? "Tanpa Kursus",
+        attempts,
+        rataNilai,
+      };
+    });
+  }, [data]);
 
   if (loading) {
     return (
@@ -128,41 +164,83 @@ export default function SiswaProgresPage() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-2">
-          {data?.attempts.map((a) => {
-            const nilai = a.nilai ?? 0;
-            const color =
-              nilai >= 80
-                ? "text-emerald-700"
-                : nilai >= 60
-                  ? "text-amber-700"
-                  : "text-red-600";
-            return (
-              <div
-                key={a.id}
-                className="bg-glass border border-border-precision rounded-2xl p-4 flex items-center gap-4"
-              >
-                <div className={`w-12 h-12 rounded-xl grid place-items-center shrink-0 ${
-                  nilai >= 80 ? "bg-emerald-50" : nilai >= 60 ? "bg-amber-50" : "bg-red-50"
-                }`}>
-                  <span className={`font-heading font-bold text-lg ${color}`}>{nilai}</span>
+        <div className="space-y-6">
+          {groupedCourses.map((course) => (
+            <section key={course.kursusId}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-on-surface-variant" />
+                  <h2 className="font-heading font-semibold text-on-surface">
+                    {course.kursusJudul}
+                  </h2>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-on-surface truncate">{a.quizJudul}</p>
-                  <p className="text-xs text-on-surface-variant flex items-center gap-2 mt-0.5">
-                    {new Date(a.waktuMulai).toLocaleString("id-ID")}
-                    <span>·</span>
-                    <span>{a.jumlahBenar} benar / {a.jumlahSalah} salah</span>
-                    <span>·</span>
-                    <span>{Math.floor(a.durasiDetik / 60)}m {a.durasiDetik % 60}s</span>
-                  </p>
-                </div>
-                {a.status === "SELESAI" && (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                )}
+                <span className="text-xs text-on-surface-variant tabular-nums">
+                  {course.attempts.length} attempt{course.attempts.length > 1 ? "s" : ""}
+                  {course.attempts.some((a) => a.nilai !== null) && (
+                    <span className="ml-2 font-semibold text-primary">
+                      · Ø {course.rataNilai}
+                    </span>
+                  )}
+                </span>
               </div>
-            );
-          })}
+              <div className="space-y-2">
+                {course.attempts.map((a) => {
+                  const nilai = a.nilai ?? 0;
+                  const dapatNilai = a.tampilkanNilai !== false && a.nilai !== null;
+                  const color =
+                    !dapatNilai
+                      ? "text-on-surface-variant"
+                      : nilai >= 80
+                        ? "text-emerald-700"
+                        : nilai >= 60
+                          ? "text-amber-700"
+                          : "text-red-600";
+                  const bgColor =
+                    !dapatNilai
+                      ? "bg-surface"
+                      : nilai >= 80
+                        ? "bg-emerald-50"
+                        : nilai >= 60
+                          ? "bg-amber-50"
+                          : "bg-red-50";
+                  return (
+                    <div
+                      key={a.id}
+                      className="bg-glass border border-border-precision rounded-2xl p-4 flex items-center gap-4"
+                    >
+                      <div className={`w-12 h-12 rounded-xl grid place-items-center shrink-0 ${bgColor}`}>
+                        <span className={`font-heading font-bold text-lg ${color}`}>
+                          {dapatNilai ? nilai : "—"}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-on-surface truncate">{a.quizJudul}</p>
+                        <p className="text-xs text-on-surface-variant flex items-center gap-2 mt-0.5 flex-wrap">
+                          {new Date(a.waktuMulai).toLocaleString("id-ID")}
+                          {dapatNilai && (
+                            <>
+                              <span>·</span>
+                              <span>{a.jumlahBenar} benar / {a.jumlahSalah} salah</span>
+                            </>
+                          )}
+                          <span>·</span>
+                          <span>{Math.floor(a.durasiDetik / 60)}m {a.durasiDetik % 60}s</span>
+                          {a.modeEvaluasi !== "BELAJAR" && (
+                            <span className="text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                              {a.modeEvaluasi}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      {a.status === "SELESAI" && (
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
         </div>
       )}
     </div>

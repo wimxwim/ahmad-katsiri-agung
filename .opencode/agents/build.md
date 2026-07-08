@@ -71,17 +71,19 @@ pb-safe = padding-bottom: env(safe-area-inset-bottom)
 </css_patterns>
 
 <structure>
-src/app/ → pages (Beranda, Materi, Pendidik, Game, Evaluasi, Video, Hafalan, Tentang, Login)
-src/app/materi/[slug]/ → dynamic detail pages (14 bab)
-src/app/api/ → route handlers (doa, siswa/cek, kuis/selesai, kuis/rekap, masuk, keystatic)
-src/components/beranda/ → HeroSection, FeatureGrid, DualCTACards, AyatBlock, RuangDoa
-src/components/layout/ → Navbar, BottomTabBar, Footer, FloatingWA
-src/components/evaluasi/ → QuizEngine, QuizLogin
-src/components/materi/ → MateriDetailClient
-src/data/ → materi.ts(14 bab,484 lines), soal.ts, hafalan.ts, dalil.ts
-src/lib/ → utils.ts, google-sheets.ts, telegram.ts, auth.ts, rate-limit.ts, sanitize.ts, validation.ts
+src/app/ → pages (Beranda, Materi, Pendidik, Game, Evaluasi, Video, Hafalan, Tentang, Login, Masuk, Daftar, Fitur, Harga)
+src/app/materi/[slug]/ → dynamic detail pages (14 bab, isLegacy: true)
+src/app/guru/ → dashboard guru (beranda, kursus, siswa, analytics, drafts, upload, kelas, nilai, sertifikat)
+src/app/siswa/ → dashboard siswa (beranda, materi, quiz, cbt, kursus, progres, pengumuman, payment)
+src/app/api/v1/ → route handlers baru (auth, guru, siswa, kursus, enroll, payment, pengumuman, sertifikat)
+src/app/api/ → legacy route handlers (doa, siswa/cek, kuis/selesai, kuis/rekap, masuk, keystatic)
+src/components/ → UI components (beranda/, layout/, evaluasi/, materi/, providers/, ui/)
+src/data/ → legacy data (materi.ts — 14 bab, isLegacy: true; soal.ts, hafalan.ts, dalil.ts)
+src/lib/ → utils, auth, session, route-guard, drizzle schema, cms (legacy)
+src/db/ → Drizzle schema definitions (schema/, migrations/)
 workers/akal-centre/ → Cloudflare Worker proxy (index.ts, wrangler.jsonc)
-prd/ → 8 PRD files (read before architecture decisions)
+.agents/skills/ → 106 project-specific skills (load via skill() tool)
+prd/ → 8 PRD files + TODO files (read before architecture decisions)
 </structure>
 
 <deploy>
@@ -94,11 +96,16 @@ Git user: wimxwim | NEVER delete vercel.json
 </deploy>
 
 <skills_use>
-UI design: ui-ux-pro-max, design-taste-frontend, vercel-react-best-practices
-SEO: seo-audit, local-seo-indonesia, schema
-Infra: cloudflare, domain-management
-Debug: debug skill | Deep analysis: diskusi skill
+Project-specific (WAJIB): auth-flow-akal-center, design-taste-frontend, vercel-react-best-practices
+UI design: ui-ux-pro-max, high-end-visual-design, frontend-design
+Backend: backend-patterns, security-review, code-review-and-quality
+Infra: cloudflare, workers-best-practices, wrangler
+Payment: midtrans-payment, xendit-payment
+SEO: web-perf, core-web-vitals, pwa-checklist
+Debug: debug skill (from ~/.agents/skills/)
+Deep analysis: diskusi skill (from ~/.agents/skills/)
 SKIP: hunt-*, bug-bounty, pentest-*, crypto-*, blockchain-*
+Cek daftar lengkap: ls .agents/skills/
 </skills_use>
 
 <behavior>

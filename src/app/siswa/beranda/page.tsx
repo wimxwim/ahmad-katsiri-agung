@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, Clock, CheckCircle2, ArrowRight, Sparkles, Megaphone } from "lucide-react";
+import { BookOpen, Clock, CheckCircle2, ArrowRight, Sparkles, Megaphone, AlertTriangle, RefreshCw } from "lucide-react";
 import { SkeletonDashboardSiswa } from "@/components/ui/SkeletonBlocks";
 import { EmptyState } from "@/components/ui/EmptyState";
 
@@ -25,6 +25,18 @@ interface FeedResponse {
   totalKursus: number;
   totalMateri: number;
   totalSelesai: number;
+  terdaftar: boolean;
+}
+
+interface QuizItem {
+  id: string;
+  judul: string;
+  modeEvaluasi: string;
+  durasiMenit: number;
+  totalSoal: number;
+  sudahDikerjakan: boolean;
+  nilaiTerbaik: number | null;
+  publishedAt: string;
 }
 
 interface PengumumanItem {
@@ -40,7 +52,9 @@ interface PengumumanItem {
 export default function SiswaBerandaPage() {
   const [feed, setFeed] = useState<FeedResponse | null>(null);
   const [pengumuman, setPengumuman] = useState<PengumumanItem[]>([]);
+  const [quizList, setQuizList] = useState<QuizItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [nama, setNama] = useState("Siswa");
 
   useEffect(() => {
@@ -54,16 +68,52 @@ export default function SiswaBerandaPage() {
     Promise.all([
       fetch("/api/v1/siswa/feed", { credentials: "include" }).then((r) => (r.ok ? r.json() : null)),
       fetch("/api/v1/siswa/pengumuman", { credentials: "include" }).then((r) => (r.ok ? r.json() : null)),
+      fetch("/api/v1/siswa/quiz", { credentials: "include" }).then((r) => (r.ok ? r.json() : null)),
     ])
-      .then(([feedData, pengum]) => {
+      .then(([feedData, pengum, quiz]) => {
         if (feedData) setFeed(feedData);
         if (pengum?.data) setPengumuman(pengum.data);
+        if (quiz?.data) setQuizList(quiz.data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setError("Terjadi kesalahan saat memuat data. Coba lagi.");
+        setLoading(false);
+      });
   }, []);
 
   if (loading) return <SkeletonDashboardSiswa />;
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[40vh] text-center px-4">
+        <div className="w-16 h-16 rounded-3xl bg-red-50 flex items-center justify-center mb-6">
+          <AlertTriangle className="w-8 h-8 text-red-500" />
+        </div>
+        <h2 className="font-heading text-xl text-on-surface mb-2">Gagal Memuat Data</h2>
+        <p className="text-on-surface-variant mb-6 max-w-md">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 cursor-pointer"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Coba Lagi
+        </button>
+      </div>
+    );
+  }
+
+  if (feed && feed.terdaftar === false) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <EmptyState
+          icon={BookOpen}
+          title="Kamu belum terdaftar di kelas"
+          description="Kamu belum terdaftar di kelas mana pun. Hubungi gurumu untuk mendapatkan akses materi dan quiz."
+        />
+      </div>
+    );
+  }
 
   if (feed && feed.data.length === 0) {
     return (
@@ -71,6 +121,7 @@ export default function SiswaBerandaPage() {
         icon={BookOpen}
         title="Belum ada materi"
         description="Gurumu belum menerbitkan materi. Cek kembali nanti atau hubungi gurumu untuk info lebih lanjut."
+        action={{ label: "Lihat Kuis Tersedia", href: "/siswa/quiz" }}
       />
     );
   }
@@ -141,6 +192,79 @@ export default function SiswaBerandaPage() {
         </Link>
       )}
 
+      {(() => {
+        const pendingQuiz = quizList.find((q) => !q.sudahDikerjakan);
+        const todayMateri = feed?.data.filter((m) => {
+          const pub = new Date(m.publishedAt);
+          const now = new Date();
+          return pub.toDateString() === now.toDateString();
+        }) ?? [];
+        const hasHariIni = pendingQuiz || todayMateri.length > 0;
+        return hasHariIni ? (
+          <section className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-4 h-4 text-tertiary" />
+              <h2 className="font-heading font-semibold text-on-surface">Hari Ini</h2>
+            </div>
+            <div className="space-y-2">
+              {pendingQuiz && (
+                <Link
+                  href={`/siswa/cbt/${pendingQuiz.id}`}
+                  className="block bg-glass border border-border-precision rounded-2xl p-4 hover:border-primary/30 hover:shadow-glass-lg transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-xl bg-tertiary/10 text-tertiary grid place-items-center shrink-0">
+                      <Sparkles className="w-5 h-5" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">
+                        KUIS TERSEDIA
+                      </p>
+                      <p className="font-semibold text-on-surface truncate mt-0.5">
+                        {pendingQuiz.judul}
+                      </p>
+                      <p className="text-xs text-on-surface-variant mt-0.5">
+                        {pendingQuiz.totalSoal} soal · {pendingQuiz.durasiMenit} menit
+                        {pendingQuiz.modeEvaluasi !== "BELAJAR" && (
+                          <span className="ml-2 text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                            {pendingQuiz.modeEvaluasi}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 shrink-0 text-on-surface-variant/60" />
+                  </div>
+                </Link>
+              )}
+              {todayMateri.map((m) => (
+                <Link
+                  key={m.id}
+                  href={`/siswa/materi/${m.id}`}
+                  className="block bg-glass border border-border-precision rounded-2xl p-4 hover:border-primary/30 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
+                      <BookOpen className="w-5 h-5" />
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">
+                        MATERI BARU
+                      </p>
+                      <p className="font-semibold text-on-surface truncate mt-0.5">
+                        {m.judul}
+                      </p>
+                      <p className="text-xs text-on-surface-variant mt-0.5">
+                        {m.kursusJudul}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null;
+      })()}
+
       {pengumuman.length > 0 && (
         <section className="mb-6">
           <div className="flex items-center gap-2 mb-3">
@@ -198,23 +322,28 @@ export default function SiswaBerandaPage() {
                     <p className="text-sm text-on-surface-variant mt-2 line-clamp-2">{m.ringkasan}</p>
                   )}
                   <div className="mt-3 flex items-center gap-3">
-                    {m.progress > 0 && (
-                      <div className="flex-1 max-w-[200px]">
-                        <div className="h-1.5 bg-surface rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary transition-all"
-                            style={{ width: `${m.progress}%` }}
-                          />
+                    {m.progress > 0 && !m.selesai && (
+                      <>
+                        <div className="flex-1 max-w-[160px]">
+                          <div className="h-1.5 bg-surface rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary transition-all"
+                              style={{ width: `${m.progress}%` }}
+                            />
+                          </div>
                         </div>
-                      </div>
+                        <span className="text-[10px] font-bold text-primary tabular-nums">
+                          {m.progress}%
+                        </span>
+                      </>
                     )}
-                    <span className="text-[10px] text-on-surface-variant flex items-center gap-1">
+                    <span className="text-[10px] text-on-surface-variant flex items-center gap-1 ml-auto">
                       {m.selesai ? (
                         <><CheckCircle2 className="w-3 h-3 text-emerald-600" /> Selesai</>
                       ) : m.lastReadAt ? (
                         <><Clock className="w-3 h-3" /> Dilanjutkan</>
                       ) : (
-                        "Baru"
+                        <><span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" /> Baru</>
                       )}
                     </span>
                   </div>
