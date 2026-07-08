@@ -9,32 +9,32 @@
 
 ### P0.1 Finalisasi Data Model (Gelombang 14)
 
-| # | Item | File Terkait | Skill Wajib |
-|---|------|-------------|-------------|
-| 1 | ✅ Sudah ada — review schema Drizzle untuk kelengkapan relasi guru-siswa, pastikan index untuk query dashboard | `src/lib/db/schema/*.ts` | `warehouse-and-schema-design` · `schema-evolution-and-contract-migrations` · `code-review-and-quality` |
-| 2 | ✅ Sudah ada — review tabel `ai_generation`, pastikan kolom `promptVersion` untuk versioning prompt | `*migrations/*.sql` · `src/lib/db/schema/` | `data-quality-and-contract-testing` · `architect` |
-| 3 | **Tambah tabel prompt/version metadata** — buat tabel `ai_prompt_versions` untuk versioning prompt generator | `src/lib/db/schema/` · `src/lib/ai-generator.ts` | `schema-evolution-and-contract-migrations` · `backend-patterns` · `data-specification` |
-| 4 | **Tambah tabel generation_attepts / retry history** — lacak tiap retry agar tidak loss history | `src/lib/db/schema/` · `src/lib/ai-generator.ts` | `data-quality-and-contract-testing` · `pipeline-planning-and-task-breakdown` |
-| 5 | **Tambah index untuk query dashboard guru sering dipakai** — analisis query pattern guru/siswa | `src/lib/db/schema/` · `drizzle.config.ts` | `warehouse-performance-and-cost-optimization` · `duckdb-local-analytics-and-dev` |
+| # | Item | File Terkait | Skill Wajib | Status |
+|---|------|-------------|-------------|--------|
+| 1 | Review schema Drizzle untuk kelengkapan relasi guru-siswa, pastikan index untuk query dashboard | `src/lib/db/schema/*.ts` | `warehouse-and-schema-design` · `schema-evolution-and-contract-migrations` · `code-review-and-quality` | ✅ |
+| 2 | Review tabel `ai_generation`, pastikan kolom `promptVersion` untuk versioning prompt | `*migrations/*.sql` · `src/lib/db/schema/` | `data-quality-and-contract-testing` · `architect` | ✅ |
+| 3 | **Tambah tabel prompt/version metadata** — buat tabel `ai_prompt_versions` untuk versioning prompt generator | `src/lib/db/schema/` · `src/lib/ai-generator.ts` | `schema-evolution-and-contract-migrations` · `backend-patterns` · `data-specification` | ⏸️ **defer** — perlu resolve snapshot drift dulu |
+| 4 | **Tambah tabel generation_attempts / retry history** — lacak tiap retry agar tidak loss history | `src/lib/db/schema/` · `src/lib/ai-generator.ts` | `data-quality-and-contract-testing` · `pipeline-planning-and-task-breakdown` | ⏸️ **defer** — perlu resolve snapshot drift dulu |
+| 5 | **Tambah index untuk query dashboard guru sering dipakai** — analisis query pattern guru/siswa | `src/lib/db/schema/` · `drizzle.config.ts` | `warehouse-performance-and-cost-optimization` · `duckdb-local-analytics-and-dev` | ⏸️ **defer** — perlu query pattern analysis |
 
 ### P0.2 Security Hardening Minimum (Gelombang 15)
 
-| # | Item | File Terkait | Skill Wajib |
-|---|------|-------------|-------------|
-| 6 | **Validasi DOCX zip bomb** — batasi rasio kompresi dan ukuran ekstraksi | `src/lib/text-extractor.ts` · `src/app/api/v1/guru/uploads/route.ts` | `security-review` · `backend-patterns` |
-| 7 | **Validasi PDF text extraction runaway** — batasi jumlah halaman dan karakter output | `src/lib/text-extractor.ts` | `security-review` · `code-review-and-quality` |
-| 8 | **Batasi jumlah upload per guru per periode** — rate limit upload per user per jam | `src/app/api/v1/guru/uploads/route.ts` · `src/lib/rate-limit.ts` | `security-review` · `backend-patterns` |
-| 9 | **Batasi concurrent generation job per guru** — cegah overload AI API dari satu user | `src/app/api/v1/guru/drafts/[id]/regenerate/route.ts` · `src/lib/rate-limit.ts` | `security-review` · `api-and-saas-ingestion-patterns` |
-| 10 | **Timeout aman extraction & generation** — pastikan fetch ke AI API punya timeout | `src/lib/text-extractor.ts` · `src/lib/ai-generator.ts` | `backend-patterns` · `kafka-resilience-and-schema-evolution` |
-| 11 | **Pastikan user tidak bisa baca draft guru lain** — audit scope query semua route drafts | `src/app/api/v1/guru/drafts/**/route.ts` | `security-review` · `differential-review` · `backend-patterns` |
-| 12 | **Pastikan privat asset tidak bisa ditebak URL** — audit akses ke file yang belum publish | `src/lib/storage/ImageKitAdapter.ts` · route upload | `security-review` · `source-reliability-and-extraction-resilience` |
+| # | Item | File Terkait | Skill Wajib | Status |
+|---|------|-------------|-------------|--------|
+| 6 | **Validasi DOCX zip bomb** — batasi rasio kompresi, ukuran ekstraksi, dan jumlah file | `src/lib/text-extractor.ts` | `security-review` · `backend-patterns` | ✅  `MAX_DOCX_FILES=500`, `MAX_DOCX_UNCOMPRESSED=100MB`, `ZIP_BOMB_RATIO=100` |
+| 7 | **Validasi PDF text extraction runaway** — batasi waktu eksekusi dan karakter output | `src/lib/text-extractor.ts` | `security-review` · `code-review-and-quality` | ✅ `withTimeout(30s)`, `MAX_TEXT_LENGTH=200k` |
+| 8 | **Batasi jumlah upload per guru per periode** — rate limit upload per user | `src/app/api/v1/guru/uploads/route.ts` · `src/lib/rate-limit.ts` | `security-review` · `backend-patterns` | ✅ sudah ada IP 10/60s + user 20/60s |
+| 9 | **Batasi concurrent generation job per guru** — cegah overload AI API dari satu user | `src/app/api/v1/guru/drafts/[id]/regenerate/route.ts` | `security-review` · `api-and-saas-ingestion-patterns` | 🔴 **FIXED** — tambah `checkConcurrentLimit` (max 2) + `releaseConcurrent()` |
+| 10 | **Timeout aman extraction & generation** — pastikan ekstraksi teks punya timeout | `src/lib/text-extractor.ts` | `backend-patterns` · `kafka-resilience-and-schema-evolution` | ✅ `withTimeout(30s)` di PDF parse + DOCX open/read |
+| 11 | **Pastikan user tidak bisa baca draft guru lain** — audit scope query semua route drafts | `src/app/api/v1/guru/drafts/**/route.ts` | `security-review` · `differential-review` · `backend-patterns` | ✅ 14/14 SELECT ✅, 0/13 UPDATE ❌ → **semua 13 difixed** dengan `eq(guruId, session.userId)` |
+| 12 | **Pastikan privat asset tidak bisa ditebak URL** — audit akses ke file yang belum publish | `src/lib/storage/ImageKitAdapter.ts` · route upload | `security-review` · `source-reliability-and-extraction-resilience` | 🔶 **Partial** — `link` dihapus dari response upload. ImageKit `isPrivateFile` belum diset (butuh signed URL). Risiko rendah (fileId = UUID). |
 
 ### P0.3 Auth Finalization (Gelombang 12 — sisa polishing)
 
-| # | Item | File Terkait | Skill Wajib |
-|---|------|-------------|-------------|
-| 13 | **Audit length & strength session token** — pastikan JWT_SECRET cukup kuat, pastikan `jti` unik per sesi | `src/lib/auth.ts` · `src/lib/auth-keys.ts` | `security-review` · `architect` |
-| 14 | **Audit refresh token rotation** — pastikan refresh token di-rotate tiap pakai dan revoked setelah logout | `src/lib/refresh-token.ts` · `src/app/api/v1/auth/refresh/route.ts` | `security-review` · `code-review-and-quality` |
+| # | Item | File Terkait | Skill Wajib | Status |
+|---|------|-------------|-------------|--------|
+| 13 | **Audit length & strength session token** — pastikan JWT_SECRET cukup kuat, pastikan `jti` unik per sesi | `src/lib/auth.ts` · `src/lib/auth-keys.ts` | `security-review` · `architect` | ✅ `JWT_SECRET` min 32 karakter validated. JTI `randomUUID()` sudah unik per sesi. |
+| 14 | **Audit refresh token rotation** — pastikan refresh token di-rotate tiap pakai dan revoked setelah logout | `src/lib/refresh-token.ts` · `src/app/api/v1/auth/refresh/route.ts` | `security-review` · `code-review-and-quality` | 🔴 **BUG FIXED** — `rotateRefreshToken()` return token baru + cookie di-set di response |
 
 ---
 

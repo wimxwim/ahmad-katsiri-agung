@@ -1,7 +1,7 @@
 "use client";
 
 import { StatCard } from "@/components/dashboard/StatCard";
-import { BookOpen, Users, Award, TrendingUp, Sparkles, ArrowRight, Upload } from "lucide-react";
+import { BookOpen, Users, Sparkles, ArrowRight, Upload, FileCheck, Layers, GraduationCap, Clock, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -9,18 +9,32 @@ import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonDashboardGuru } from "@/components/ui/SkeletonBlocks";
 
-interface KursusItem {
-  id: string;
-  judul: string;
-  slug: string;
-  deskripsi: string | null;
-  harga: number;
-  isPublic: boolean;
-  createdAt: string;
+interface DashboardData {
+  totalKursus: number;
+  totalSiswa: number;
+  draftMenunggu: number;
+  siswaBelumMengerjakan: number;
+  totalKuisDikerjakan: number;
+  totalMateriPublished: number;
+  totalQuizPublished: number;
+  kursusList: { id: string; judul: string; slug: string; deskripsi: string | null; statusPublikasi: string }[];
 }
 
+const STATUS_BADGE: Record<string, { label: string; color: string }> = {
+  DRAFT: { label: "Draft", color: "bg-amber-50 text-amber-700" },
+  PUBLIK: { label: "Publik", color: "bg-emerald-50 text-emerald-700" },
+  ARSIP: { label: "Arsip", color: "bg-surface text-on-surface-variant" },
+};
+
+const QUICK_ACTIONS = [
+  { label: "Upload Dokumen", href: "/guru/upload", icon: Upload, desc: "PDF/DOCX untuk draft AI" },
+  { label: "Review Draft AI", href: "/guru/drafts", icon: FileCheck, desc: "Tinjau hasil AI" },
+  { label: "Kelola Kelas", href: "/guru/kelas", icon: Layers, desc: "Atur kelas & siswa" },
+  { label: "Daftar Siswa", href: "/guru/siswa", icon: Users, desc: "Lihat progres siswa" },
+];
+
 export default function GuruBerandaPage() {
-  const [kursus, setKursus] = useState<KursusItem[]>([]);
+  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -28,10 +42,10 @@ export default function GuruBerandaPage() {
     let alive = true;
     async function fetchData() {
       try {
-        const res = await fetch("/api/v1/kursus", { credentials: "include" });
+        const res = await fetch("/api/v1/guru/dashboard", { credentials: "include" });
         if (!res.ok) throw new Error("Gagal memuat data");
-        const { data } = await res.json();
-        if (alive) setKursus(data || []);
+        const { data: d } = await res.json();
+        if (alive) setData(d || null);
       } catch (err) {
         if (alive) setError(err instanceof Error ? err.message : "Gagal memuat data");
       } finally {
@@ -39,9 +53,7 @@ export default function GuruBerandaPage() {
       }
     }
     fetchData();
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, []);
 
   if (loading) return <SkeletonDashboardGuru />;
@@ -60,7 +72,7 @@ export default function GuruBerandaPage() {
     );
   }
 
-  if (kursus.length === 0) {
+  if (!data || data.totalKursus === 0) {
     return (
       <EmptyState
         icon={BookOpen}
@@ -94,101 +106,121 @@ export default function GuruBerandaPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: EASE_CURVE }}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
       >
-        <StatCard label="Total Kursus" value={kursus.length} icon={BookOpen} color="#005231" />
-        <StatCard label="Total Siswa" value="-" icon={Users} color="#005231" trend="Segera" />
-        <StatCard label="Quiz Selesai" value="-" icon={Award} color="#005231" trend="Segera" />
-        <StatCard label="Rata-rata Skor" value="-" icon={TrendingUp} color="#005231" trend="Segera" />
+        <StatCard label="Total Kursus" value={data.totalKursus} icon={BookOpen} color="#005231" />
+        <StatCard label="Siswa Terdaftar" value={data.totalSiswa} icon={Users} color="#005231" />
+        <StatCard label="Draft AI Menunggu" value={data.draftMenunggu} icon={FileCheck} color="#5a4200" />
+        <StatCard label="Siswa Belum Mengerjakan" value={data.siswaBelumMengerjakan > 0 ? data.siswaBelumMengerjakan : 0} icon={GraduationCap} color="#005231" />
+      </motion.div>
+
+      {/* Priority cards — apa yang harus dilakukan sekarang */}
+      {data.draftMenunggu > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE_CURVE, delay: 0.1 }}
+          className="mb-6 p-5 rounded-2xl border border-amber-200 bg-amber-50/60 shadow-glass"
+        >
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+              <Clock className="w-5 h-5" />
+            </span>
+            <div className="flex-1">
+              <p className="font-heading font-semibold text-amber-900">
+                {data.draftMenunggu} draft AI menunggu review
+              </p>
+              <p className="text-sm text-amber-700">
+                Selesaikan review agar materi dan kuis bisa dipublikasikan ke siswa.
+              </p>
+            </div>
+            <Link
+              href="/guru/drafts"
+              className="shrink-0 inline-flex items-center gap-1.5 bg-amber-700 text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 transition-all"
+            >
+              Review Sekarang
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </motion.div>
+      )}
+
+      {data.siswaBelumMengerjakan > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE_CURVE, delay: 0.15 }}
+          className="mb-6 p-5 rounded-2xl border border-blue-200 bg-blue-50/60 shadow-glass"
+        >
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5" />
+            </span>
+            <div className="flex-1">
+              <p className="font-heading font-semibold text-blue-900">
+                {data.siswaBelumMengerjakan} siswa belum mengerjakan kuis
+              </p>
+              <p className="text-sm text-blue-700">
+                Beberapa siswa belum memulai kuis. Pantau progres mereka di halaman siswa.
+              </p>
+            </div>
+            <Link
+              href="/guru/siswa"
+              className="shrink-0 inline-flex items-center gap-1.5 bg-blue-700 text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 transition-all"
+            >
+              Lihat Siswa
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Quick action cards */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: EASE_CURVE, delay: 0.2 }}
+        className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8"
+      >
+        {QUICK_ACTIONS.map((qa) => (
+          <Link
+            key={qa.label}
+            href={qa.href}
+            className="bg-glass border border-border-precision rounded-2xl p-4 shadow-glass hover:shadow-glass-lg transition-all duration-300 group"
+          >
+            <span className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-2.5 group-hover:bg-primary/20 transition-colors">
+              <qa.icon className="w-4 h-4" />
+            </span>
+            <p className="font-heading font-semibold text-sm text-on-surface">{qa.label}</p>
+            <p className="text-xs text-on-surface-variant mt-0.5">{qa.desc}</p>
+          </Link>
+        ))}
       </motion.div>
 
       <h2 className="font-heading font-semibold text-lg text-on-surface mb-4">Kursus Terbaru</h2>
-      {kursus.length === 0 ? (
-        <div className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-              <Sparkles className="w-6 h-6" />
-            </span>
-            <div>
-              <h3 className="font-heading text-xl font-bold text-on-surface">Selamat datang di Ruang Guru!</h3>
-              <p className="text-sm text-on-surface-variant">Mari mulai dengan 3 langkah pertama.</p>
-            </div>
-          </div>
-
-          <ol className="space-y-3 my-6">
-            <li className="flex items-start gap-3 p-3 rounded-xl bg-white/60 border border-border-precision/40">
-              <span className="w-7 h-7 rounded-full bg-primary text-white text-sm font-bold grid place-items-center shrink-0 mt-0.5">1</span>
-              <div>
-                <p className="font-semibold text-on-surface">Buat kursus pertama</p>
-                <p className="text-sm text-on-surface-variant">
-                  Kursus adalah wadah untuk mengelompokkan materi, kuis, dan siswa.
-                </p>
-              </div>
-            </li>
-            <li className="flex items-start gap-3 p-3 rounded-xl bg-white/60 border border-border-precision/40">
-              <span className="w-7 h-7 rounded-full bg-primary text-white text-sm font-bold grid place-items-center shrink-0 mt-0.5">2</span>
-              <div>
-                <p className="font-semibold text-on-surface">Upload dokumen PDF atau DOCX</p>
-                <p className="text-sm text-on-surface-variant">
-                  AI akan membuat draft materi, kuis, dan soal. Anda yang memutuskan hasilnya.
-                </p>
-              </div>
-            </li>
-            <li className="flex items-start gap-3 p-3 rounded-xl bg-white/60 border border-border-precision/40">
-              <span className="w-7 h-7 rounded-full bg-primary text-white text-sm font-bold grid place-items-center shrink-0 mt-0.5">3</span>
-              <div>
-                <p className="font-semibold text-on-surface">Undang siswa ke kelas</p>
-                <p className="text-sm text-on-surface-variant">
-                  Buat kelas dan tambahkan siswa, atau import dari CSV.
-                </p>
-              </div>
-            </li>
-          </ol>
-
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/guru/buat"
-              className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
-            >
-              Buat Kursus Pertama
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="/guru/upload"
-              className="inline-flex items-center gap-2 bg-white text-primary border border-primary/20 px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/5 transition-colors"
-            >
-              <Upload className="w-4 h-4" />
-              Upload Dokumen
-            </Link>
-            <Link
-              href="/guru/kelas"
-              className="inline-flex items-center gap-2 bg-white text-primary border border-primary/20 px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-primary/5 transition-colors"
-            >
-              <Users className="w-4 h-4" />
-              Buat Kelas
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {kursus.map((k) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {data.kursusList.map((k) => {
+          const badge = STATUS_BADGE[k.statusPublikasi] || STATUS_BADGE.DRAFT;
+          return (
             <Link
               key={k.id}
               href={`/guru/kursus/${k.id}`}
               className="bg-glass border border-border-precision rounded-2xl sm:rounded-[32px] p-6 shadow-glass hover:shadow-glass-lg transition-all duration-300 block"
             >
-              <div className="w-full h-1 bg-primary rounded-full mb-4" />
+              <div className="flex items-start justify-between mb-3">
+                <div className="w-full h-1 bg-primary rounded-full flex-1 mr-3" />
+                <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider ${badge.color}`}>
+                  {badge.label}
+                </span>
+              </div>
               <h3 className="font-heading font-semibold text-on-surface mb-1.5">{k.judul}</h3>
-              <p className="text-sm text-on-surface-variant line-clamp-2 mb-3">
+              <p className="text-sm text-on-surface-variant line-clamp-2">
                 {k.deskripsi || "Tanpa deskripsi"}
               </p>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                {k.isPublic ? "PUBLIK" : "PRIVAT"}
-              </span>
             </Link>
-          ))}
-        </div>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 }

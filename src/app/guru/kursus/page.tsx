@@ -6,12 +6,18 @@ import { Search, Plus, BookOpen } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 
+const STATUS_BADGE: Record<string, { label: string; color: string }> = {
+  DRAFT: { label: "Draft", color: "bg-amber-50 text-amber-700" },
+  PUBLIK: { label: "Publik", color: "bg-emerald-50 text-emerald-700" },
+  ARSIP: { label: "Arsip", color: "bg-surface text-on-surface-variant" },
+};
+
 interface KursusItem {
   id: string;
   judul: string;
   slug: string;
   deskripsi: string | null;
-  isPublic: boolean;
+  statusPublikasi: string;
   createdAt: string;
 }
 
@@ -105,7 +111,12 @@ export default function KursusListPage() {
               key={k.id}
               className="bg-glass border border-border-precision rounded-2xl sm:rounded-[32px] p-6 shadow-glass"
             >
-              <div className="w-full h-1 bg-primary rounded-full mb-4" />
+              <div className="flex items-start justify-between mb-3">
+                <div className="w-full h-1 bg-primary rounded-full flex-1 mr-3" />
+                <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider ${STATUS_BADGE[k.statusPublikasi]?.color || STATUS_BADGE.DRAFT.color}`}>
+                  {STATUS_BADGE[k.statusPublikasi]?.label || "Draft"}
+                </span>
+              </div>
               <h3 className="font-heading font-semibold text-on-surface mb-1.5">{k.judul}</h3>
               <p className="text-sm text-on-surface-variant line-clamp-2 mb-4">
                 {k.deskripsi || "Tanpa deskripsi"}
