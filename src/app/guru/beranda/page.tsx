@@ -18,6 +18,7 @@ interface DashboardData {
   totalMateriPublished: number;
   totalQuizPublished: number;
   kursusList: { id: string; judul: string; slug: string; deskripsi: string | null; statusPublikasi: string }[];
+  weakTopics: { pertanyaan: string; errorRate: number; totalJawab: number }[];
 }
 
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
@@ -171,6 +172,50 @@ export default function GuruBerandaPage() {
               Lihat Siswa
               <ArrowRight className="w-3 h-3" />
             </Link>
+          </div>
+        </motion.div>
+      )}
+
+      {data.weakTopics.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE_CURVE, delay: 0.2 }}
+          className="mb-6 p-5 rounded-2xl border border-red-200 bg-red-50/60 shadow-glass"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <span className="w-10 h-10 rounded-xl bg-red-100 text-red-700 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5" />
+            </span>
+            <div className="flex-1">
+              <p className="font-heading font-semibold text-red-900">
+                Topik paling sulit bagi siswa
+              </p>
+              <p className="text-sm text-red-700">
+                Soal dengan tingkat kesalahan tertinggi. Pertimbangkan untuk memberikan remedial.
+              </p>
+            </div>
+            <Link
+              href="/guru/analytics"
+              className="shrink-0 inline-flex items-center gap-1.5 bg-red-700 text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 transition-all"
+            >
+              Lihat Analytics
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {data.weakTopics.map((t, i) => (
+              <div key={i} className="flex items-center gap-3 bg-white/60 rounded-xl px-4 py-2.5">
+                <span className="w-7 h-7 rounded-lg bg-red-100 text-red-700 flex items-center justify-center text-xs font-bold shrink-0">
+                  {i + 1}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-red-900 truncate">{t.pertanyaan}</p>
+                  <p className="text-xs text-red-600">{t.totalJawab} siswa menjawab</p>
+                </div>
+                <span className="shrink-0 text-sm font-bold text-red-700">{t.errorRate}% salah</span>
+              </div>
+            ))}
           </div>
         </motion.div>
       )}

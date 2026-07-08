@@ -55,6 +55,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [tab, setTab] = useState<TabKey>("materi");
   const [editingMateri, setEditingMateri] = useState(false);
   const [editJudul, setEditJudul] = useState("");
@@ -98,6 +99,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
     if (!draft) return;
     setBusy(label);
     setError("");
+    setSuccessMsg("");
     try {
       const res = await fetch(`/api/v1/guru/drafts/${draft.id}${path}`, {
         method: "POST",
@@ -112,6 +114,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
         router.push(json.redirectTo);
         return;
       }
+      setSuccessMsg(`${label} berhasil`);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal");
@@ -208,6 +211,13 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
       {error && (
         <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
           {error}
+        </div>
+      )}
+
+      {successMsg && (
+        <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-800 flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          {successMsg}
         </div>
       )}
 

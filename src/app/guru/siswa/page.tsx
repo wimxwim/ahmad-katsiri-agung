@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Users } from "lucide-react";
+import { Search, Users, Filter } from "lucide-react";
 
 interface SiswaItem {
   siswaId: string;
@@ -10,27 +10,44 @@ interface SiswaItem {
   status: string;
 }
 
+interface KursusOption {
+  id: string;
+  judul: string;
+}
+
 export default function SiswaListPage() {
   const [siswa, setSiswa] = useState<SiswaItem[]>([]);
+  const [kursusOptions, setKursusOptions] = useState<KursusOption[]>([]);
   const [search, setSearch] = useState("");
+  const [filterKursus, setFilterKursus] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/v1/guru/siswa", { credentials: "include" });
-        if (!res.ok) throw new Error("Gagal memuat data");
-        const { data } = await res.json();
-        setSiswa(data || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal memuat data");
-      } finally {
-        setLoading(false);
-      }
+  async function fetchData(kursusId?: string) {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (kursusId) params.set("kursusId", kursusId);
+      const url = `/api/v1/guru/siswa${params.toString() ? `?${params.toString()}` : ""}`;
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) throw new Error("Gagal memuat data");
+      const json = await res.json();
+      setSiswa(json.data || []);
+      if (json.kursusOptions) setKursusOptions(json.kursusOptions);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memuat data");
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    fetchData(filterKursus);
+  }, [filterKursus]);
 
   const filtered = siswa.filter((s) => {
     const q = search.toLowerCase();
@@ -60,14 +77,29 @@ export default function SiswaListPage() {
     <div>
       <h1 className="font-heading font-bold text-2xl text-on-surface mb-6">Siswa</h1>
 
-      <div className="relative mb-6">
-        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/40" />
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Cari nama atau kursus..."
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/40 focus:outline-hidden focus:border-primary/40 text-sm"
-        />
+      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/40" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Cari nama atau kursus..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/40 focus:outline-hidden focus:border-primary/40 text-sm"
+          />
+        </div>
+        <div className="relative">
+          <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/40" />
+          <select
+            value={filterKursus}
+            onChange={(e) => setFilterKursus(e.target.value)}
+            className="pl-10 pr-4 py-2.5 rounded-xl border border-border-precision bg-white text-sm outline-hidden focus:border-primary/40 appearance-none cursor-pointer min-w-[160px]"
+          >
+            <option value="">Semua Kursus</option>
+            {kursusOptions.map((k) => (
+              <option key={k.id} value={k.id}>{k.judul}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {filtered.length === 0 ? (

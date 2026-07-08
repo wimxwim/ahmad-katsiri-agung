@@ -9,8 +9,10 @@ import {
   quizPublished,
   quizAttempt,
   materiPublished,
+  jawabanLog,
+  soal,
 } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql, desc, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -65,6 +67,41 @@ export async function GET() {
   const totalSiswa = enrolledRows.length;
   const siswaYangPunyaAttempt = quizAttemptRows.length;
 
+  // Weak topics: top 3 soal dengan error rate tertinggi
+  let weakTopics: { pertanyaan: string; errorRate: number; totalJawab: number }[] = [];
+  try {
+    const jawabanStats = await db
+      .select({
+        soalId: jawabanLog.soalId,
+        totalJawab: sql<number>`cast(count(*) as integer)`,
+        totalSalah: sql<number>`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as integer)`,
+      })
+      .from(jawabanLog)
+      .groupBy(jawabanLog.soalId)
+      .having(sql`count(*) >= 3`)
+      .orderBy(desc(sql`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as real) / cast(count(*) as real)`))
+      .limit(3);
+
+    if (jawabanStats.length > 0) {
+      const soalIds = jawabanStats.map((s) => s.soalId);
+      const soalMap = await db
+        .select({ id: soal.id, teks: soal.teks })
+        .from(soal)
+        .where(inArray(soal.id, soalIds));
+      const soalLookup = new Map(soalMap.map((s) => [s.id, s]));
+      for (const stat of jawabanStats) {
+        const s = soalLookup.get(stat.soalId);
+        weakTopics.push({
+          pertanyaan: s?.teks ?? "Soal tidak ditemukan",
+          errorRate: Math.round((stat.totalSalah / stat.totalJawab) * 100),
+          totalJawab: stat.totalJawab,
+        });
+      }
+    }
+  } catch {
+    // best-effort
+  }
+
   return NextResponse.json({
     data: {
       totalKursus: kursusRows.length,
@@ -75,6 +112,7 @@ export async function GET() {
       totalMateriPublished: materiPubRows.length,
       totalQuizPublished: quizPubRows.length,
       kursusList: kursusRows,
+      weakTopics,
     },
   });
 }
