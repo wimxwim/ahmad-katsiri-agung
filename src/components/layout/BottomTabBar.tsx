@@ -7,24 +7,22 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Home,
   BookOpen,
-  ClipboardList,
-  Gamepad2,
   Grid3x3,
-  Book,
-  Brain,
-  MessageSquare,
   Info,
   LogOut,
+  GraduationCap,
+  Sparkles,
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useSession } from "../providers/SessionProvider";
+import { useSession } from "@/components/providers/SessionProvider";
+import { handleLogout } from "@/lib/logout";
+import { EASE_CURVE } from "@/lib/constants";
 
 const SHEET_ITEMS: { href: string; label: string; icon: LucideIcon; desc: string }[] = [
-  { href: "/quran", label: "Qur'an", icon: Book, desc: "Baca dan dengarkan Al-Qur'an" },
-  { href: "/refleksi", label: "Refleksi", icon: Brain, desc: "Tulis muhasabah harian" },
-  { href: "/diskusi", label: "Diskusi", icon: MessageSquare, desc: "Ruang tanya jawab" },
+  { href: "/fitur", label: "Fitur", icon: Sparkles, desc: "Lihat semua fitur platform" },
   { href: "/tentang", label: "Tentang", icon: Info, desc: "Tentang AKAL Center" },
+  { href: "/kursus", label: "Kursus", icon: BookOpen, desc: "Jelajahi katalog kursus" },
 ];
 
 export function BottomTabBar() {
@@ -43,26 +41,18 @@ export function BottomTabBar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [sheetOpen, closeSheet]);
 
-  if (pathname.startsWith("/masuk") || pathname.startsWith("/login")) return null;
+  if (pathname.startsWith("/masuk")) return null;
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
 
-  const handleLogout = async () => {
-    const fd = new FormData();
-    fd.set("_mode", "logout");
-    const res = await fetch("/api/masuk", { method: "POST", body: fd });
-    const data = await res.json();
-    if (data.redirect) window.location.href = data.redirect;
-  };
-
   const navTabs = [
     { href: "/", label: "Beranda", icon: Home },
-    { href: "/materi", label: "Materi", icon: BookOpen },
-    { href: "/evaluasi", label: "Kuis", icon: ClipboardList },
-    { href: "/game", label: "Game", icon: Gamepad2, featured: true },
+    { href: "/fitur", label: "Fitur", icon: Sparkles },
+    { href: "/kursus", label: "Kursus", icon: BookOpen },
+    ...(session ? [{ href: session.role === "guru" ? "/guru" : session.role === "owner" ? "/owner" : session.role === "admin_sekolah" ? "/admin-sekolah" : session.role === "orang_tua" ? "/orang-tua" : "/siswa", label: "Dashboard", icon: GraduationCap, sessionOnly: true }] : []),
   ];
 
   return (
@@ -84,7 +74,7 @@ export function BottomTabBar() {
                 initial={{ transform: "translateY(100%)" }}
                 animate={{ transform: "translateY(0%)" }}
                 exit={{ transform: "translateY(100%)" }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as const }}
+                transition={{ duration: 0.25, ease: EASE_CURVE }}
                 className="absolute bottom-0 inset-x-0 bg-white rounded-t-[32px] shadow-glass-xl pb-[calc(1rem+env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto will-change-transform"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -132,7 +122,7 @@ export function BottomTabBar() {
 
                   {!session ? (
                     <Link
-                      href="/login"
+                      href="/masuk"
                       onClick={closeSheet}
                       className="flex flex-col items-start gap-2 p-4 rounded-2xl border border-border-precision bg-white hover:bg-primary/5 hover:border-primary/20 transition-all duration-200"
                     >
@@ -146,7 +136,7 @@ export function BottomTabBar() {
                     </Link>
                   ) : (
                     <button
-                      onClick={() => { closeSheet(); handleLogout(); }}
+                      onClick={() => { closeSheet(); handleLogout().then((r) => (window.location.href = r)); }}
                       className="flex flex-col items-start gap-2 p-4 rounded-2xl border border-border-precision bg-white hover:bg-red-50 hover:border-red-200 transition-all duration-200 text-left"
                     >
                       <div className="p-2 rounded-xl bg-red-50">
@@ -172,33 +162,6 @@ export function BottomTabBar() {
           {navTabs.map((tab) => {
             const active = tab.href !== null && isActive(tab.href);
             const Icon = tab.icon;
-
-            if (tab.featured) {
-              return (
-                <Link
-                  key={tab.label}
-                  href="/game"
-                  className="relative flex flex-col items-center justify-center min-w-0 flex-1 min-h-[44px]"
-                >
-                  <div
-                    className={`w-11 h-11 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-200 ${
-                      isActive("/game")
-                        ? "bg-primary text-on-primary shadow-primary/30 scale-110"
-                        : "bg-primary/90 text-on-primary shadow-primary/20"
-                    }`}
-                  >
-                    <Gamepad2 className="w-5 h-5" />
-                  </div>
-                  <span
-                    className={`text-[10px] font-semibold leading-none mt-1 ${
-                      isActive("/game") ? "text-primary" : "text-on-surface-variant/60"
-                    }`}
-                  >
-                    Game
-                  </span>
-                </Link>
-              );
-            }
 
             return (
               <Link

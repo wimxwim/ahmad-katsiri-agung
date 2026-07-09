@@ -6,20 +6,6 @@ import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWA } from "@/components/layout/FloatingWA";
 import type { CmsData } from "@/components/providers/CmsProvider";
-import {
-  getNavigationFromCms,
-  getSiteConfigFromCms,
-  getGamesFromCms,
-  getHaditsFromCms,
-  getMateriFromCms,
-  getSoalMetaFromCms,
-  getSoalFromCms,
-  getAboutFromCms,
-  getPendidikPageFromCms,
-  getPerangkatAjarFromCms,
-} from "@/lib/cms";
-import { CMS_ENABLED } from "@/lib/cms-config";
-import type { CmsMateriListItem, CmsMateriFull } from "@/components/providers/CmsProvider";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -58,37 +44,37 @@ export const metadata: Metadata = {
   },
   title: {
     template: "%s | AKAL Center",
-    default: "AKAL Center — Deep Learning Akidah Akhlak",
+    default: "AKAL Center — Platform Guru-Siswa + AI Document Generator",
   },
   description:
-    "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berdasarkan Kurikulum Merdeka.",
-  keywords: ["Akidah Akhlak", "Aqidah Akhlaq", "Deep Learning", "PAI", "SMP", "Kurikulum Merdeka", "AKAL Center", "agung", "katsiri"],
+    "Platform pembelajaran multi-guru untuk mengubah PDF/DOCX menjadi draft materi, quiz, dan soal yang ditinjau guru sebelum diterbitkan ke siswa.",
+  keywords: ["AKAL Center", "platform guru siswa", "AI document generator", "LMS Indonesia", "materi digital", "quiz", "soal", "Supabase", "ImageKit"],
   manifest: "/manifest.json",
-  authors: [{ name: "Ahmad Katsiri Aggung, S.Pd." }],
-  creator: "Ahmad Katsiri Aggung, S.Pd.",
-  publisher: "Ahmad Katsiri Aggung",
+  authors: [{ name: "Ahmad Katsiri Agung, S.Pd." }],
+  creator: "Ahmad Katsiri Agung, S.Pd.",
+  publisher: "Ahmad Katsiri Agung",
   openGraph: {
     type: "website",
     locale: "id_ID",
     siteName: "AKAL Center",
-    title: "AKAL Center — Deep Learning Akidah Akhlak",
+    title: "AKAL Center — Platform Guru-Siswa + AI Document Generator",
     description:
-      "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP Kelas 7-9. Pembelajaran sadar, bermakna, dan menyenangkan berdasarkan Kurikulum Merdeka.",
+      "Ubah PDF/DOCX menjadi draft materi, quiz, dan soal. AI membantu, guru meninjau, siswa belajar di ruang yang tepat.",
     url: "https://akalcenter.my.id",
     images: [
       {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "AKAL Center — Deep Learning Akidah Akhlak",
+        alt: "AKAL Center — Platform Guru-Siswa + AI Document Generator",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AKAL Center — Deep Learning Akidah Akhlak",
+    title: "AKAL Center — Platform Guru-Siswa + AI Document Generator",
     description:
-      "Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk SMP Kelas 7-9.",
+      "Platform multi-guru dengan AI document generator untuk draft materi, quiz, dan soal yang ditinjau guru.",
     images: ["/opengraph-image.png"],
   },
   robots: {
@@ -117,87 +103,7 @@ export const viewport: Viewport = {
 };
 
 async function loadCmsData(): Promise<CmsData> {
-  if (!CMS_ENABLED) return {};
-  try {
-    const [nav, siteConfig, games, hadits, rawMateri, soalMeta, rawSoal, about, pendidikPage, perangkatAjar] = await Promise.all([
-      getNavigationFromCms(),
-      getSiteConfigFromCms(),
-      getGamesFromCms(),
-      getHaditsFromCms(),
-      getMateriFromCms(),
-      getSoalMetaFromCms(),
-      getSoalFromCms(),
-      getAboutFromCms(),
-      getPendidikPageFromCms(),
-      getPerangkatAjarFromCms(),
-    ]);
-
-    let materiList: CmsMateriListItem[] | undefined;
-    let materiDetail: Record<string, CmsMateriFull> | undefined;
-    if (rawMateri) {
-      const slugs = Object.keys(rawMateri);
-      materiList = slugs.map((slug) => {
-        const m = rawMateri[slug];
-        return {
-          slug: m.slug,
-          title: m.title,
-          kelas: m.kelas,
-          bab: m.bab,
-          ringkasan: m.ringkasan,
-          subTopik: m.subTopik,
-          icon: m.icon,
-        };
-      });
-      materiDetail = slugs.reduce(
-        (acc, slug) => {
-          const m = rawMateri[slug];
-          acc[slug] = {
-            slug: m.slug,
-            title: m.title,
-            kelas: m.kelas,
-            bab: m.bab,
-            babLabel: m.babLabel,
-            ringkasan: m.ringkasan,
-            subTopik: m.subTopik,
-            waktuBaca: m.waktuBaca,
-            icon: m.icon,
-            videoUrl: m.videoUrl,
-            pdfUrl: m.pdfUrl,
-            pptUrl: m.pptUrl,
-            soalUrl: m.soalUrl,
-            gameUrl: m.gameUrl,
-            pendahuluan: m.pendahuluan,
-            konten: m.konten,
-            dalil: m.dalil,
-            dimensi: m.dimensi,
-            poinPenting: m.poinPenting,
-            prevSlug: m.prevSlug,
-            prevTitle: m.prevTitle,
-            nextSlug: m.nextSlug,
-            nextTitle: m.nextTitle,
-          };
-          return acc;
-        },
-        {} as Record<string, CmsMateriFull>,
-      );
-    }
-
-    return {
-      navigation: nav ?? undefined,
-      siteConfig: siteConfig ?? undefined,
-      games: games ?? undefined,
-      hadits: hadits ?? undefined,
-      materiList,
-      materiDetail,
-      soalMeta: soalMeta ?? undefined,
-      soalData: rawSoal ?? undefined,
-      about: about ?? undefined,
-      pendidikPage: pendidikPage ?? undefined,
-      perangkatAjar: perangkatAjar ?? undefined,
-    };
-  } catch {
-    return {};
-  }
+  return {};
 }
 
 export default async function RootLayout({
@@ -236,7 +142,7 @@ export default async function RootLayout({
               educationalLevel: "SMP",
               author: {
                 "@type": "Person",
-                name: "Ahmad Katsiri Aggung, S.Pd.",
+                name: "Ahmad Katsiri Agung, S.Pd.",
               },
             }),
           }}
@@ -259,7 +165,7 @@ export default async function RootLayout({
               },
               provider: {
                 "@type": "Person",
-                name: "Ahmad Katsiri Aggung, S.Pd.",
+                name: "Ahmad Katsiri Agung, S.Pd.",
               },
               offers: {
                 "@type": "Offer",
@@ -274,12 +180,12 @@ export default async function RootLayout({
           <Navbar />
           <BottomTabBar />
           <main className="flex-1 pt-24 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-x-hidden">{children}</main>
-          <Footer navigation={cmsData.navigation} />
+          <Footer navigation={cmsData.navigation} pendiriNama={cmsData.about?.pendiriNama} />
           <FloatingWA waNumber={cmsData.navigation?.waNumber} />
         </Providers>
         <Analytics />
         <SpeedInsights />
-        <GoogleAnalytics gaId={cmsData.siteConfig?.googleAnalyticsId || "G-FKHV466K10"} />
+        <GoogleAnalytics gaId={cmsData.siteConfig?.googleAnalyticsId || process.env.NEXT_PUBLIC_GA_ID || ""} />
       </body>
     </html>
   );

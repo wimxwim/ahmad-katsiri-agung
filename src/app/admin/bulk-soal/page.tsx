@@ -154,11 +154,11 @@ export default function BulkSoalPage() {
   return (
     <div className="max-w-[900px] mx-auto px-3 sm:px-5 lg:px-8 py-8 sm:py-12">
       <Link
-        href="/pendidik"
+        href="/guru"
         className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Kembali ke Portal Pendidik
+        Kembali ke Ruang Guru
       </Link>
 
       <div className="flex items-center gap-3 mb-2">
@@ -169,7 +169,7 @@ export default function BulkSoalPage() {
       </div>
       <p className="text-sm text-on-surface-variant mb-8 max-w-2xl">
         Paste soal dalam format teks sederhana, lalu copy JSON hasil parsing
-        untuk ditempel ke CMS Keystatic.
+        untuk diimpor ke database.
       </p>
 
       <div className="grid gap-8">
@@ -181,7 +181,7 @@ export default function BulkSoalPage() {
             <select
               value={selectedBab}
               onChange={(e) => { setSelectedBab(e.target.value); setResult(null); }}
-              className="w-full sm:w-80 rounded-xl border border-border-precision bg-white/80 px-3.5 py-2.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none"
+              className="w-full sm:w-80 rounded-xl border border-border-precision bg-white/80 px-3.5 py-2.5 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary/30 appearance-none"
             >
               {BAB_LIST.map((bab) => (
                 <option key={bab.slug} value={bab.slug}>
@@ -191,8 +191,7 @@ export default function BulkSoalPage() {
             </select>
             {selectedBabData && (
               <p className="text-xs text-on-surface-variant mt-1">
-                Slug: <code className="bg-primary/10 px-1 rounded">{selectedBabData.slug}</code> &middot;
-                File: <code className="bg-primary/10 px-1 rounded">content/soal/{selectedBabData.slug}/index.json</code>
+                Slug: <code className="bg-primary/10 px-1 rounded">{selectedBabData.slug}</code>
               </p>
             )}
           </div>
@@ -222,7 +221,7 @@ export default function BulkSoalPage() {
               value={text}
               onChange={(e) => { setText(e.target.value); setResult(null); }}
               rows={12}
-              className="w-full rounded-xl border border-border-precision bg-white/80 px-3.5 py-3 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y font-mono"
+              className="w-full rounded-xl border border-border-precision bg-white/80 px-3.5 py-3 text-sm text-on-surface focus:outline-hidden focus:ring-2 focus:ring-primary/30 resize-y font-mono"
               placeholder={`Tempel soal di sini...\n\nContoh:\n1. Pertanyaan?\nA. Opsi A\nB. Opsi B\nC. Opsi C\nD. Opsi D\nJawaban: A`}
             />
           </div>
@@ -241,7 +240,7 @@ export default function BulkSoalPage() {
             Hasil JSON
           </h2>
           <p className="text-xs text-on-surface-variant mb-4">
-            Copy JSON ini, lalu buka CMS &rarr; pilih bab &rarr; paste di editor.
+            Copy JSON ini untuk diimpor ke database.
           </p>
 
           {result ? (
@@ -304,12 +303,10 @@ export default function BulkSoalPage() {
               </ul>
             </div>
             <div>
-              <p className="font-semibold text-on-surface mb-1">Cara ke CMS:</p>
+              <p className="font-semibold text-on-surface mb-1">Integrasi DB:</p>
               <ol className="list-decimal list-inside space-y-1 text-xs">
-                <li>Buka akalcenter.my.id/keystatic</li>
-                <li>Pilih Bank Soal &rarr; bab yang sesuai</li>
-                <li>Hapus isi JSON lama, paste hasil di atas</li>
-                <li>Simpan (tombol di pojok kanan atas)</li>
+                <li>JSON hasil parsing bisa diimpor ke database</li>
+                <li>Endpoint API impor akan menyimpan ke tabel soal</li>
               </ol>
             </div>
           </div>

@@ -1,5 +1,11 @@
 import { config, collection, singleton, fields } from "@keystatic/core";
 
+/**
+ * LEGACY ONLY: konfigurasi ini dipertahankan untuk membaca/merawat konten lama.
+ * Jangan tambah collection atau fitur baru di Keystatic/content/*.
+ * Konten baru platform multi-guru wajib DB/ImageKit-driven.
+ */
+
 const isGithub = process.env.NEXT_PUBLIC_KEYSTATIC_STORAGE_KIND === "github";
 
 export default config({
@@ -168,7 +174,7 @@ export default config({
             href: fields.text({ label: "URL" }),
             label: fields.text({ label: "Label" }),
           }),
-          { label: "Navbar Items", itemLabel: (p) => p.fields.label.value || "Item" },
+          { label: "Navbar Items (7 item langsung + sisanya di dropdown \"Lainnya...\")", itemLabel: (p) => p.fields.label.value || "Item" },
         ),
         bottomTabs: fields.array(
           fields.object({

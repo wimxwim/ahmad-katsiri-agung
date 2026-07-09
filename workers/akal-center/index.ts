@@ -1,6 +1,10 @@
 const ALLOWED_METHODS = ['GET', 'HEAD', 'POST', 'OPTIONS'];
-const ORIGIN = 'https://ahmad-katsiri-agung.vercel.app';
+const ORIGIN = process.env.ORIGIN_URL;
 const TIMEOUT_MS = 15_000;
+
+if (!ORIGIN) {
+  throw new Error("ORIGIN_URL environment variable wajib diset. Contoh: https://origin.akalcenter.my.id");
+}
 
 // ── Rate limiter ──
 interface RateEntry {
@@ -11,10 +15,17 @@ const rateStore = new Map<string, RateEntry>();
 const MAX_STORE_SIZE = 10_000;
 
 function checkRateLimit(key: string, maxRequests: number, windowMs: number): boolean {
-  if (rateStore.size > MAX_STORE_SIZE) return true;
   const now = Date.now();
   const entry = rateStore.get(key);
   if (!entry || now > entry.resetAt) {
+    if (rateStore.size >= MAX_STORE_SIZE) {
+      let oldestKey: string | null = null;
+      let oldestReset = Infinity;
+      for (const [k, v] of rateStore) {
+        if (v.resetAt < oldestReset) { oldestReset = v.resetAt; oldestKey = k; }
+      }
+      if (oldestKey) rateStore.delete(oldestKey);
+    }
     rateStore.set(key, { count: 1, resetAt: now + windowMs });
     return true;
   }
@@ -40,6 +51,31 @@ const SECURITY_HEADERS = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
 };
 
+// ── Path configuration ──
+const BLOCKED_PATHS = [
+  '/keystatic',
+  '/api/keystatic',
+];
+
+const STATIC_ASSET_EXTS = /\.(ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot)$/i;
+
+function isBlocked(pathname: string): boolean {
+  return BLOCKED_PATHS.some((p) => pathname.startsWith(p));
+}
+
+function isStaticAsset(pathname: string): boolean {
+  return pathname.startsWith('/_next/static/')
+    || pathname.startsWith('/pdf/')
+    || STATIC_ASSET_EXTS.test(pathname);
+}
+
+function isHtmlPage(pathname: string): boolean {
+  return !pathname.startsWith('/api/')
+    && !pathname.startsWith('/_next/static/')
+    && !pathname.startsWith('/pdf/')
+    && !STATIC_ASSET_EXTS.test(pathname);
+}
+
 export default {
   async fetch(request) {
     if (!ALLOWED_METHODS.includes(request.method)) {
@@ -47,6 +83,10 @@ export default {
     }
 
     const url = new URL(request.url);
+
+    if (isBlocked(url.pathname)) {
+      return new Response(null, { status: 403 });
+    }
 
     // Rate limiting for API endpoints (worker-level; defense-in-depth)
     if (url.pathname.startsWith('/api/')) {
@@ -65,12 +105,16 @@ export default {
       }
     }
 
-    const isHtmlPage = !url.pathname.startsWith('/api/')
-      && !url.pathname.startsWith('/_next/static/')
-      && !url.pathname.startsWith('/pdf/')
-      && !/\.(ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot)$/i.test(url.pathname);
+    const page = isHtmlPage(url.pathname);
 
     // ── Fetch from Vercel origin ──
+    const targetUrl = new URL(ORIGIN);
+    if (url.hostname === targetUrl.hostname) {
+      return new Response(JSON.stringify({ error: 'Proxy loop detected: ORIGIN_URL tidak boleh sama dengan domain publik' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
     const upstreamUrl = ORIGIN + url.pathname + url.search;
     const headers = new Headers(request.headers);
     headers.set('X-From-Worker', 'akal-center');
@@ -128,16 +172,16 @@ export default {
     // Cache-Control
     if (url.pathname.startsWith('/_next/static/')) {
       response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-    } else if (url.pathname.startsWith('/pdf/') || /\.(ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot)$/i.test(url.pathname)) {
+    } else if (isStaticAsset(url.pathname)) {
       response.headers.set('Cache-Control', 'public, max-age=604800');
-    } else if (isHtmlPage && request.method === 'GET') {
+    } else if (page && request.method === 'GET') {
       response.headers.set('Cache-Control', 'private, no-cache, must-revalidate');
     } else {
       response.headers.set('Cache-Control', 'no-cache');
     }
 
     // Strip Next.js RSC vary so CF edge cache can work
-    if (isHtmlPage) {
+    if (page) {
       response.headers.set('Vary', 'Accept-Encoding');
     }
 

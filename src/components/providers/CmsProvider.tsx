@@ -41,6 +41,7 @@ export interface CmsMateriListItem {
   ringkasan: string;
   subTopik: number;
   icon: string;
+  isLegacy?: boolean;
 }
 
 export interface CmsMateriFull {
@@ -63,6 +64,7 @@ export interface CmsMateriFull {
   dalil?: { surah: string; arab: string; arti: string };
   dimensi?: { nomor: number; judul: string; deskripsi: string }[];
   poinPenting: string[];
+  isLegacy?: boolean;
   prevSlug?: string;
   prevTitle?: string;
   nextSlug?: string;

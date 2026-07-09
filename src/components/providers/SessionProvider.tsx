@@ -3,8 +3,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 interface ClientSession {
+  userId?: string;
   role: string;
   nama: string;
+  email?: string;
   kelas?: string;
   noAbsen?: string;
   nis?: string;

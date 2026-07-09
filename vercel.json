@@ -1,15 +1,22 @@
 {
   "framework": "nextjs",
-  "routes": [
+  "buildCommand": "next build",
+  "installCommand": "npm install",
+  "devCommand": "next dev",
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "has": [
-        { "type": "host", "value": "ahmad-katsiri-agung.vercel.app" }
-      ],
-      "missing": [
-        { "type": "header", "key": "x-from-worker", "value": "akal-center" }
-      ],
-      "mitigate": { "action": "deny" }
+      "source": "/session",
+      "destination": "/api/keystatic/session"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
     }
   ]
 }

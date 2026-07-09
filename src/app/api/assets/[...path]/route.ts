@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { apiError } from "@/lib/api-response";
+
+/**
+ * ⚠️ LEGACY ASSET ROUTE — READ-ONLY ⚠️
+ *
+ * Per TODO V2 Multi-Guru (Gelombang 3), endpoint ini hanya untuk backward compatibility
+ * dengan file legacy yang sudah di-upload ke `content/*` via Keystatic.
+ *
+ * Untuk upload file BARU:
+ *   - Pakai ImageKit (lihat src/lib/storage/ImageKitAdapter)
+ *   - Simpan metadata ke tabel `file_materi` di Supabase
+ *
+ * Jangan tambah koleksi baru di sini. Kalau butuh file baru, pakai ImageKit.
+ *
+ * @see /prd/TODO-V2-MULTI-GURU.md Gelombang 3
+ */
 
 const ALLOWED_EXTENSIONS = new Set([
   ".pdf",
@@ -38,37 +54,38 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
+  try {
   const { path: pathSegments } = await params;
   const ip =
     req.headers.get("cf-connecting-ip") ||
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     "unknown";
 
-  const rateCheck = checkRateLimit(`assets:${ip}`, 60, 60_000);
+  const rateCheck = await checkRateLimit(`assets:${ip}`, 60, 60_000);
   if (!rateCheck.allowed) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    return apiError("Too many requests", 429);
   }
 
   const [entrySlug, ...filenameParts] = pathSegments;
   if (!entrySlug || filenameParts.length === 0) {
-    return NextResponse.json({ error: "Invalid path" }, { status: 400 });
+    return apiError("Invalid path", 400);
   }
 
   // Path traversal protection
   if (entrySlug.includes("..") || entrySlug.includes("/") || entrySlug.includes("\\") ||
       entrySlug.includes("\0")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return apiError("Forbidden", 403);
   }
 
   const filename = filenameParts.join("/");
   if (filename.includes("..") || filename.includes("\0")) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return apiError("Forbidden", 403);
   }
 
   // Extension whitelist
   const ext = path.extname(filename).toLowerCase();
   if (!ALLOWED_EXTENSIONS.has(ext)) {
-    return NextResponse.json({ error: "File type not allowed" }, { status: 403 });
+    return apiError("File type not allowed", 403);
   }
 
   const fs = await import("fs");
@@ -97,7 +114,8 @@ export async function GET(
           },
         });
       }
-    } catch {
+    } catch (e) {
+      console.error("Assets local read error:", e);
       continue;
     }
   }
@@ -127,9 +145,13 @@ export async function GET(
         });
       }
     }
-  } catch {
-    // GitHub unavailable — continue to 404
+  } catch (e) {
+    console.error("Assets GitHub fallback error:", e);
   }
 
-  return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return apiError("Not found", 404);
+  } catch (e) {
+    console.error("Assets route error:", e);
+    return apiError("Internal server error", 500);
+  }
 }
