@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Upload, FileText, Sparkles, Loader2, AlertCircle, X, History, FilePlus, Layers } from "lucide-react";
 import { UploadProgress } from "@/components/ui/ScreenContracts";
+import { useToast } from "@/components/ui/Toast";
 
 const ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx"];
 const MAX_SIZE = 10 * 1024 * 1024;
@@ -41,6 +42,7 @@ export default function GuruUploadPage() {
   const [history, setHistory] = useState<FileHistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [successFileName, setSuccessFileName] = useState<string | null>(null);
+  const { toast } = useToast();
 
   async function loadHistory() {
     try {
@@ -138,6 +140,7 @@ export default function GuruUploadPage() {
       if (!res.ok) {
         setJob({ state: "failed", progress: 0, message: json.error || "Upload gagal" });
         setError(json.error || "Upload gagal");
+        toast("error", json.error || "Upload gagal");
         return;
       }
 
@@ -155,21 +158,25 @@ export default function GuruUploadPage() {
           if (data.status === "ready") {
             setJob({ state: "ready", progress: 100, message: "Draft siap direview!" });
             setSuccessFileName(file.name);
+            toast("success", "Draft berhasil dibuat! Siap untuk direview.");
             await loadHistory();
             return;
           }
           if (data.status === "failed") {
             setJob({ state: "failed", progress: 0, message: data.errorMessage || "AI generation gagal" });
             setError(data.errorMessage || "AI generation gagal");
+            toast("error", data.errorMessage || "AI gagal memproses dokumen");
             return;
           }
         }
         attempts += 1;
       }
       setJob({ state: "failed", progress: 0, message: "Timeout menunggu AI" });
+      toast("error", "Timeout menunggu AI. Coba lagi nanti.");
     } catch (e) {
       setJob({ state: "failed", progress: 0, message: "Gagal" });
       setError(e instanceof Error ? e.message : "Gagal");
+      toast("error", e instanceof Error ? e.message : "Gagal memproses file");
     }
   }
 

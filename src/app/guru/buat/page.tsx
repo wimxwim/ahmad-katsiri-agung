@@ -37,7 +37,10 @@ export default function BuatKursusPage() {
         body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Gagal membuat kursus");
+      if (!res.ok) {
+        const msg = data.error || data.message || "Gagal membuat kursus";
+        throw new Error(msg);
+      }
       router.push("/guru/kursus");
       router.refresh();
     } catch (err) {

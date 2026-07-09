@@ -3,6 +3,7 @@
 import { MotionConfig } from "motion/react";
 import { CmsProvider, type CmsData } from "./CmsProvider";
 import { SessionProvider } from "./SessionProvider";
+import { ToastProvider } from "@/components/ui/Toast";
 
 export function Providers({
   children,
@@ -13,9 +14,11 @@ export function Providers({
 }) {
   return (
     <MotionConfig reducedMotion="user">
-      <CmsProvider data={cmsData}>
-        <SessionProvider>{children}</SessionProvider>
-      </CmsProvider>
+      <ToastProvider>
+        <CmsProvider data={cmsData}>
+          <SessionProvider>{children}</SessionProvider>
+        </CmsProvider>
+      </ToastProvider>
     </MotionConfig>
   );
 }

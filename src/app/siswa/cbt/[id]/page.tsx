@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Clock, AlertCircle, Loader2 } from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf";
+import { useToast } from "@/components/ui/Toast";
 
 interface Soal {
   id: string;
@@ -36,6 +37,7 @@ interface SubmitResult {
 export default function SiswaCBTPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
+  const { toast } = useToast();
   const [quiz, setQuiz] = useState<QuizDetail | null>(null);
   const [jawaban, setJawaban] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -84,8 +86,10 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error || "Gagal submit");
       setResult(j.data);
+      toast("success", "Jawaban berhasil dikirim!");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal submit");
+      toast("error", e instanceof Error ? e.message : "Gagal mengirim jawaban");
     } finally {
       setSubmitting(false);
     }

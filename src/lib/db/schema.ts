@@ -92,7 +92,7 @@ export const kursus = pgTable(
       .references(() => users.id),
     sekolahId: uuid("sekolah_id").references(() => sekolah.id),
     judul: varchar("judul", { length: 255 }).notNull(),
-    slug: varchar("slug", { length: 255 }).notNull().unique(),
+    slug: varchar("slug", { length: 255 }).notNull(),
     keystaticSlug: varchar("keystatic_slug", { length: 255 }),
     deskripsi: text("deskripsi"),
     harga: integer("harga").notNull().default(0),
@@ -108,6 +108,7 @@ export const kursus = pgTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
+    unique("kursus_slug_sekolah_unique").on(table.slug, table.sekolahId),
     index("kursus_guru_id_idx").on(table.guruId),
     index("kursus_status_publikasi_idx").on(table.statusPublikasi),
   ],
@@ -120,12 +121,24 @@ export const skill = pgTable(
     kursusId: uuid("kursus_id")
       .notNull()
       .references(() => kursus.id, { onDelete: "cascade" }),
+    sekolahId: uuid("sekolah_id").references(() => sekolah.id),
     nama: varchar("nama", { length: 255 }).notNull(),
     prasyaratSkillId: uuid("prasyarat_skill_id").references((): AnyPgColumn => skill.id),
     bloomLevel: integer("bloom_level").notNull().default(1),
     urutan: integer("urutan").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
-  (table) => [index("skill_kursus_id_urutan_idx").on(table.kursusId, table.urutan)]
+  (table) => [
+    index("skill_kursus_id_urutan_idx").on(table.kursusId, table.urutan),
+    index("skill_sekolah_id_idx").on(table.sekolahId),
+    index("skill_sekolah_kursus_idx").on(table.sekolahId, table.kursusId),
+  ]
 );
 
 export const siswaKursus = pgTable(
@@ -157,6 +170,7 @@ export const soal = pgTable(
     skillId: uuid("skill_id")
       .notNull()
       .references(() => skill.id, { onDelete: "cascade" }),
+    sekolahId: uuid("sekolah_id").references(() => sekolah.id),
     teks: text("teks").notNull(),
     tipe: tipeSoalEnum("tipe").notNull(),
     pilihanGanda: jsonb("pilihan_ganda"),
@@ -174,22 +188,36 @@ export const soal = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [index("soal_skill_id_idx").on(table.skillId)]
+  (table) => [
+    index("soal_skill_id_idx").on(table.skillId),
+    index("soal_sekolah_id_idx").on(table.sekolahId),
+    index("soal_sekolah_skill_idx").on(table.sekolahId, table.skillId),
+  ]
 );
 
-export const quizSession = pgTable("quiz_session", {
-  id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
-  kursusId: uuid("kursus_id")
-    .notNull()
-    .references(() => kursus.id),
-  judul: varchar("judul", { length: 255 }).notNull(),
-  durasiMenit: integer("durasi_menit").notNull().default(30),
-  soalIds: jsonb("soal_ids").notNull().$type<string[]>(),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const quizSession = pgTable(
+  "quiz_session",
+  {
+    id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+    kursusId: uuid("kursus_id")
+      .notNull()
+      .references(() => kursus.id),
+    sekolahId: uuid("sekolah_id").references(() => sekolah.id),
+    judul: varchar("judul", { length: 255 }).notNull(),
+    durasiMenit: integer("durasi_menit").notNull().default(30),
+    soalIds: jsonb("soal_ids").notNull().$type<string[]>(),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("quiz_session_kursus_id_idx").on(table.kursusId),
+    index("quiz_session_sekolah_id_idx").on(table.sekolahId),
+    index("quiz_session_is_active_idx").on(table.isActive),
+    index("quiz_session_sekolah_active_idx").on(table.sekolahId, table.isActive),
+  ]
+);
 
 export const jawabanLog = pgTable(
   "jawaban_log",
@@ -201,6 +229,7 @@ export const jawabanLog = pgTable(
     soalId: uuid("soal_id")
       .notNull()
       .references(() => soal.id, { onDelete: "cascade" }),
+    sekolahId: uuid("sekolah_id").references(() => sekolah.id),
     jawabanSiswa: text("jawaban_siswa").notNull(),
     isBenar: boolean("is_benar").notNull(),
     waktuJawabDetik: integer("waktu_jawab_detik").notNull(),
@@ -208,10 +237,15 @@ export const jawabanLog = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     index("jawaban_log_siswa_created_idx").on(table.siswaId, table.createdAt),
     index("jawaban_log_soal_id_idx").on(table.soalId),
+    index("jawaban_log_sekolah_id_idx").on(table.sekolahId),
+    index("jawaban_log_sekolah_siswa_idx").on(table.sekolahId, table.siswaId, table.createdAt),
   ]
 );
 
@@ -240,6 +274,7 @@ export const skillMastery = pgTable(
     skillId: uuid("skill_id")
       .notNull()
       .references(() => skill.id, { onDelete: "cascade" }),
+    sekolahId: uuid("sekolah_id").references(() => sekolah.id),
     pL: real("p_l").notNull().default(0.1),
     memoryStrength: real("memory_strength").notNull().default(1.0),
     lastPracticedAt: timestamp("last_practiced_at", { withTimezone: true }),
@@ -254,6 +289,7 @@ export const skillMastery = pgTable(
     unique("skill_mastery_unique").on(table.siswaId, table.skillId),
     index("skill_mastery_siswa_idx").on(table.siswaId),
     index("skill_mastery_next_review_idx").on(table.nextReviewAt),
+    index("skill_mastery_sekolah_id_idx").on(table.sekolahId),
   ]
 );
 
@@ -267,6 +303,7 @@ export const riskSnapshot = pgTable(
     kursusId: uuid("kursus_id")
       .notNull()
       .references(() => kursus.id, { onDelete: "cascade" }),
+    sekolahId: uuid("sekolah_id").references(() => sekolah.id),
     riskScore: real("risk_score").notNull(),
     status: varchar("status", { length: 20 }).notNull(),
     komponen: jsonb("komponen").notNull(),
@@ -277,6 +314,7 @@ export const riskSnapshot = pgTable(
   (table) => [
     index("risk_snapshot_siswa_date_idx").on(table.siswaId, table.snapshotDate),
     index("risk_snapshot_kursus_status_idx").on(table.kursusId, table.status),
+    index("risk_snapshot_sekolah_id_idx").on(table.sekolahId),
   ]
 );
 
@@ -290,13 +328,20 @@ export const remedialRecommendation = pgTable(
     skillId: uuid("skill_id")
       .notNull()
       .references(() => skill.id, { onDelete: "cascade" }),
+    sekolahId: uuid("sekolah_id").references(() => sekolah.id),
     prioritasScore: real("prioritas_score").notNull(),
     status: varchar("status", { length: 20 }).notNull().default("tersedia"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [unique("remedial_unique").on(table.siswaId, table.skillId)]
+  (table) => [
+    unique("remedial_unique").on(table.siswaId, table.skillId),
+    index("remedial_recommendation_sekolah_id_idx").on(table.sekolahId),
+  ]
 );
 
 export const sertifikat = pgTable(
@@ -309,13 +354,20 @@ export const sertifikat = pgTable(
     kursusId: uuid("kursus_id")
       .notNull()
       .references(() => kursus.id, { onDelete: "cascade" }),
+    sekolahId: uuid("sekolah_id").references(() => sekolah.id),
     nomorSertifikat: varchar("nomor_sertifikat", { length: 255 }).notNull().unique(),
     qrSecretHash: text("qr_secret_hash").notNull(),
     issuedAt: timestamp("issued_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
-  (table) => [index("sertifikat_siswa_idx").on(table.siswaId)]
+  (table) => [
+    index("sertifikat_siswa_idx").on(table.siswaId),
+    index("sertifikat_sekolah_id_idx").on(table.sekolahId),
+  ]
 );
 
 export const transaksi = pgTable(

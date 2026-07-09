@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, RefreshCw, XCircle, Loader2, FileText, BookOpen, ClipboardList, Edit3, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/Toast";
 
 interface GeneratedSoal {
   pertanyaan: string;
@@ -51,6 +52,7 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
 
 export default function DraftReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [draft, setDraft] = useState<DraftDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -111,13 +113,15 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
       }
       const json = await res.json();
       if (json.redirectTo) {
+        toast("success", "Review selesai. Kursus sudah diterbitkan.");
         router.push(json.redirectTo);
         return;
       }
-      setSuccessMsg(`${label} berhasil`);
+      toast("success", `${label} berhasil`);
       await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal");
+      toast("error", e instanceof Error ? e.message : "Gagal");
     } finally {
       setBusy(null);
     }

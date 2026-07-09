@@ -100,6 +100,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: newKursus }, { status: 201 });
   } catch (e) {
+    const pgError = e as { code?: string; constraint?: string };
+    if (pgError.code === "23505" && (pgError.constraint === "kursus_slug_unique" || pgError.constraint === "kursus_slug_sekolah_unique")) {
+      return apiError("Judul kursus sudah digunakan. Gunakan judul yang berbeda.", 409);
+    }
     console.error("Kursus POST error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }
