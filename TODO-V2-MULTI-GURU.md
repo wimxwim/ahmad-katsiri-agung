@@ -352,21 +352,25 @@
 - [x] Tambahkan halaman detail progres per kursus — ✅ `/guru/kursus/[id]/progres` + `/guru/kursus/[id]/nilai` (sudah ada sejak build)
 - [x] Simpan TRI untuk owner/internal, tapi jangan ekspos ke guru dulu — ✅ API `/api/v1/owner/tri` + halaman owner dashboard dengan tabel score, label, komponen
 
-## Gelombang 19 — Content & Legacy Content Governance ❌ BELUM MULAI
+## Gelombang 19 — Content & Legacy Content Governance ✅ SKIP (D-011)
 
-- [ ] Tag konten lama mana yang tetap publik
-- [ ] Tag konten lama mana yang menjadi referensi internal saja
-- [ ] Tentukan apakah materi legacy tetap muncul di public route atau dipindah ke mode arsip
-- [ ] Pastikan konten DB-driven baru bisa coexist dengan legacy tanpa membingungkan siswa
-- [ ] Tambahkan label visual untuk konten `legacy` vs `baru` bila perlu saat transisi internal
+> Legacy content (materi.ts, soal.ts, routes lama) sudah dihapus total per 9 Juli 2026.
+> Tidak ada konten legacy yang perlu di-tag, di-arsip, atau di-coexist.
+> Semua konten sekarang DB-driven (Drizzle + Supabase). Gelombang ini tidak relevan.
 
-## Gelombang 20 — Dokumentasi untuk Agent Bawahan ❌ BELUM MULAI
+- [x] ~~Tag konten lama mana yang tetap publik~~ → legacy sudah dihapus
+- [x] ~~Tag konten lama mana yang menjadi referensi internal saja~~ → legacy sudah dihapus
+- [x] ~~Tentukan apakah materi legacy tetap muncul di public route atau dipindah ke mode arsip~~ → legacy sudah dihapus
+- [x] ~~Pastikan konten DB-driven baru bisa coexist dengan legacy~~ → legacy sudah dihapus
+- [x] ~~Tambahkan label visual untuk konten legacy vs baru~~ → legacy sudah dihapus
 
-- [ ] Pecah TODO ini per gelombang menjadi file turunan jika agent bawahan mulai banyak
-- [ ] Buat checklist eksekusi per gelombang
-- [ ] Buat daftar file mana yang boleh disentuh per gelombang
-- [ ] Buat daftar file mana yang tidak boleh disentuh tanpa approval
-- [ ] Tambahkan acceptance criteria ringkas per gelombang
+## Gelombang 20 — Dokumentasi untuk Agent Bawahan ✅ SELESAI
+
+- [x] Pecah TODO ini per gelombang menjadi file turunan — ✅ `docs/gelombang/README.md` indeks + template + file per gelombang
+- [x] Buat checklist eksekusi per gelombang — ✅ ada di setiap file gelombang
+- [x] Buat daftar file mana yang boleh disentuh per gelombang — ✅ tabel di setiap file
+- [x] Buat daftar file mana yang tidak boleh disentuh tanpa approval — ✅ aturan global di README + spesifik per file
+- [x] Tambahkan acceptance criteria ringkas per gelombang — ✅ checklist penutup di setiap file
 
 ## Gelombang 21 — Screen-by-Screen Acceptance Criteria ❌ BELUM MULAI
 
@@ -407,11 +411,11 @@
 | 14 | ✅ SELESAI | 100% |
 | 15 | ✅ SELESAI | 100% |
 | 16 | ✅ SELESAI | 100% |
-| 17 | ✅ SELESAI | 100% (7/7 sudah ada sejak build awal) |
-| 18 | ✅ SELESAI | 86% (6/7 — TRI belum terintegrasi) |
-| 19 | ❌ BELUM MULAI | 0% |
-| 20 | ❌ BELUM MULAI | 0% |
+| 17 | ✅ SELESAI | 100% (7/7) |
+| 18 | ✅ SELESAI | 100% (7/7) |
+| 19 | ✅ SKIP (D-011) | — |
+| 20 | ✅ SELESAI | 100% (5/5) |
 | 21 | ❌ BELUM MULAI | 0% |
 | 22 | ❌ BELUM MULAI | 0% |
 
-**Total Progress:** 182/215 item (85%)
+**Total Progress:** 188/210 item (90%)

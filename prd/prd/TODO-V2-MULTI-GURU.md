@@ -347,21 +347,21 @@ Basis: keputusan user + audit codebase nyata + environment terverifikasi parsial
 - [x] Tambahkan halaman detail progres per kursus
 - [x] Simpan TRI untuk owner/internal, tapi jangan ekspos ke guru dulu
 
-## Gelombang 19 — Content & Legacy Content Governance
+## Gelombang 19 — Content & Legacy Content Governance ✅ SKIP (D-011)
 
-- [ ] Tag konten lama mana yang tetap publik
-- [ ] Tag konten lama mana yang menjadi referensi internal saja
-- [ ] Tentukan apakah materi legacy tetap muncul di public route atau dipindah ke mode arsip
-- [ ] Pastikan konten DB-driven baru bisa coexist dengan legacy tanpa membingungkan siswa
-- [ ] Tambahkan label visual untuk konten `legacy` vs `baru` bila perlu saat transisi internal
+> Legacy content sudah dihapus total per 9 Juli 2026 (D-011).
 
-## Gelombang 20 — Dokumentasi untuk Agent Bawahan
+- [x] ~~Tag konten lama~~ → legacy sudah dihapus
+- [x] ~~Materi legacy coexist~~ → legacy sudah dihapus
+- [x] ~~Label legacy vs baru~~ → legacy sudah dihapus
 
-- [ ] Pecah TODO ini per gelombang menjadi file turunan jika agent bawahan mulai banyak
-- [ ] Buat checklist eksekusi per gelombang
-- [ ] Buat daftar file mana yang boleh disentuh per gelombang
-- [ ] Buat daftar file mana yang tidak boleh disentuh tanpa approval
-- [ ] Tambahkan acceptance criteria ringkas per gelombang
+## Gelombang 20 — Dokumentasi untuk Agent Bawahan ✅
+
+- [x] Pecah TODO ini per gelombang menjadi file turunan — `docs/gelombang/`
+- [x] Buat checklist eksekusi per gelombang — di setiap file gelombang
+- [x] Buat daftar file mana yang boleh disentuh per gelombang — di setiap file
+- [x] Buat daftar file mana yang tidak boleh disentuh tanpa approval — global + per file
+- [x] Tambahkan acceptance criteria ringkas per gelombang — checklist penutup per file
 
 ## Gelombang 21 — Screen-by-Screen Acceptance Criteria
 
