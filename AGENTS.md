@@ -1,9 +1,10 @@
 # AGENTS.md — AKAL Center (Single Source of Truth untuk AI Coding Agent)
 
 <!--
-  FILE INI SUDAH DI-UPGRADE untuk kondisi project terbaru.
-  Fokus baru: platform multi-guru berbasis Vercel + Supabase + ImageKit,
-  bukan lagi website single-guru lama.
+  UPDATE TERAKHIR: 9 Juli 2026 — cutover multi-guru selesai dieksekusi & LIVE.
+  Konten single-guru lama (Bang Agung) sudah dihapus total dari kode & branch
+  production (main). Platform sekarang murni multi-guru, DB-driven, siap
+  dipakai Bang Agung sebagai guru pertama untuk upload materi sendiri.
 -->
 
 ## IDENTITAS PROJECT
@@ -12,15 +13,15 @@
   <name>AKAL Center</name>
   <tagline>Platform Guru-Siswa + AI Document Generator</tagline>
   <description>
-    Platform pembelajaran yang sedang dirombak total dari website PAI single-guru
-    menjadi platform multi-guru dengan alur yang lebih jelas untuk guru, siswa,
-    dan sekolah. Prioritas utama saat ini adalah: auth yang rapi, landing page baru,
-    dashboard guru/siswa baru, upload dokumen, dan AI generator dari PDF/DOCX ke
-    materi, quiz, dan soal.
+    Platform pembelajaran multi-guru. Cutover dari website PAI single-guru lama
+    sudah selesai — branch `main` (production) sekarang identik dengan `master`
+    (kode terbaru). Prioritas utama saat ini adalah: guru (Bang Agung) melakukan
+    onboarding & upload materi pertama sebagai uji coba fitur, sambil melanjutkan
+    gelombang implementasi 14 ke atas (AI document pipeline, dashboard lanjutan).
   </description>
   <domain>https://akalcenter.my.id</domain>
   <repo>https://github.com/wimxwim/ahmad-katsiri-agung</repo>
-  <status>REBUILD ACTIVE — live lama boleh diganti</status>
+  <status>LIVE — platform multi-guru sudah production, konten kosong menunggu guru pertama upload</status>
   <klien>Ahmad Katsiri Agung, S.Pd. (WA: 0851-5879-5502)</klien>
 </project>
 
@@ -30,13 +31,15 @@
   <decision id="D-001">ORM final = Drizzle</decision>
   <decision id="D-002">Fase sekarang = Vercel + Supabase + ImageKit</decision>
   <decision id="D-003">VPS ditunda sampai user, siswa, dan guru sudah banyak</decision>
-  <decision id="D-004">Keystatic dibekukan untuk FITUR BARU</decision>
-  <decision id="D-005">Konten lama Keystatic tetap dibaca sebagai legacy/read-only selama transisi</decision>
+  <decision id="D-004">Keystatic dibekukan untuk FITUR BARU (config tetap ada untuk migrasi manual bila perlu, tapi reader lama sudah dihapus)</decision>
+  <decision id="D-005">Konten lama Keystatic TIDAK lagi dibaca — dihapus total per 9 Juli 2026 (lihat D-011)</decision>
   <decision id="D-006">Payment online ditunda; sementara CTA ke WhatsApp manual</decision>
-  <decision id="D-007">AI prioritas utama = generator PDF/DOCX → materi + quiz + soal</decision>
+  <decision id="D-007">AI prioritas utama = generator PDF/DOCX -> materi + quiz + soal</decision>
   <decision id="D-008">Hasil AI wajib draft dulu, tidak boleh auto-publish</decision>
   <decision id="D-009">Auth harus memisahkan intent guru vs siswa secara tegas</decision>
   <decision id="D-010">Live lama tidak wajib dipertahankan UX-nya; boleh dirombak total</decision>
+  <decision id="D-011">Data lama Bang Agung (materi hardcode, Google Sheets, kuis/refleksi/diskusi legacy) DIHAPUS TOTAL — klien memutuskan tidak perlu migrasi, Bang Agung upload ulang sendiri via fitur baru sebagai testing platform (9 Juli 2026)</decision>
+  <decision id="D-012">Branch main (production Vercel) dan master (dev) disamakan lewat merge commit resmi — riwayat main lama tetap ada di git log, working tree ikut master (9 Juli 2026)</decision>
 </locked-decisions>
 
 ## STACK TEKNIS RESMI SAAT INI
@@ -48,40 +51,41 @@
   <animation>motion/react</animation>
   <icons>lucide-react</icons>
   <fonts>Bricolage Grotesque, Inter, Amiri, JetBrains Mono</fonts>
-  <hosting>Vercel (fase sekarang)</hosting>
-  <database>Supabase Postgres (Singapore)</database>
+  <hosting>Vercel — project "ahmad-katsiri-agung", production branch = main</hosting>
+  <database>Supabase Postgres (Singapore, ap-southeast-1)</database>
   <orm>Drizzle ORM</orm>
   <storage>ImageKit untuk PDF, foto, dan media</storage>
-  <auth>JWT app-level + Google OAuth/Supabase integration</auth>
+  <auth>JWT app-level (HS256/ES256) + Google OAuth</auth>
   <validation>zod</validation>
-  <legacy-cms>Keystatic (dibekukan untuk fitur baru)</legacy-cms>
-  <legacy-data>Google Sheets (bridge/transisi, jangan dihapus gegabah)</legacy-data>
-  <notifications>Telegram legacy + email/Resend nanti</notifications>
+  <legacy-cms>Keystatic — config masih ada (content/*), tapi reader (cms.ts/cms-data.ts) sudah dihapus. Tidak dipakai fitur apapun saat ini.</legacy-cms>
+  <legacy-data>Google Sheets — DIHAPUS TOTAL per 9 Juli 2026, tidak ada bridge lagi</legacy-data>
+  <notifications>email/Resend</notifications>
   <package-manager>npm</package-manager>
 </stack>
 
-## STATUS IMPLEMENTASI TERBARU
+## STATUS IMPLEMENTASI TERBARU (per 9 Juli 2026)
 
 <implementation-status>
   <done>
-    <item>Landing page publik sudah mulai dirombak ke narasi platform baru</item>
-    <item>Intent login guru vs siswa sudah mulai dipisahkan di backend dan frontend</item>
-    <item>/masuk-guru sekarang diarahkan ke /masuk?portal=guru</item>
-    <item>/daftar sudah dibuat sebagai entry onboarding baru</item>
-    <item>Build sudah lolos kembali setelah heap Node build dinaikkan</item>
+    <item>Cutover branch main -> isi master selesai, production akalcenter.my.id LIVE dengan kode multi-guru</item>
+    <item>Semua konten legacy single-guru (materi.ts, soal.ts, google-sheets.ts, rute /materi /evaluasi /refleksi /diskusi /hafalan /video /dalil) dihapus total</item>
+    <item>Register & Login (password + Google OAuth) sudah diverifikasi jalan di production</item>
+    <item>Database Supabase Postgres: semua 14 file migrasi sudah diterapkan manual (kolom google_id, refresh_tokens, ai_generation, dsb sudah ada)</item>
+    <item>Environment variables production lengkap tersimpan di Vercel (AI, Supabase, ImageKit, Redis, Google OAuth, Encryption Secret)</item>
+    <item>Root cause build gagal (_global-error prerender) ditemukan & diperbaiki: NODE_ENV="development" di .env.local tidak boleh di-hardcode</item>
+    <item>Google Analytics Bang Agung (G-FKHV466K10) tetap terpasang di layout.tsx & content/site-config</item>
+    <item>Landing page publik, /masuk, /daftar, /kursus (katalog DB-driven), dashboard guru/siswa/owner/admin-sekolah/orang-tua sudah live</item>
   </done>
   <in-progress>
-    <item>Rombak total auth flow, dashboard baru, dan workspace multi-guru</item>
-    <item>Freeze Keystatic untuk fitur baru dan migrasi bertahap ke DB-driven content</item>
-    <item>Storage abstraction ke ImageKit</item>
-    <item>AI document pipeline</item>
+    <item>Bang Agung sebagai guru pertama — belum mulai upload materi/kursus (database kosong by design)</item>
+    <item>AI document pipeline (upload PDF/DOCX -> draft materi/quiz/soal)</item>
+    <item>Gelombang implementasi 15 ke atas (lihat TODO-V2-MULTI-GURU.md — gelombang 1-15 selesai, progres 166/215=77%)</item>
   </in-progress>
   <not-done>
-    <item>Google OAuth end-to-end final</item>
-    <item>Register guru final</item>
-    <item>Dashboard owner/admin sekolah/orang tua</item>
-    <item>AI generator dokumen hidup</item>
-    <item>Cutover penuh dari legacy Google Sheets</item>
+    <item>ImageKit health-check endpoint masih error_404 di /api/health (bukan blocker fitur, cuma endpoint cek yang salah — perlu audit checkImageKit() di src/app/api/health/route.ts)</item>
+    <item>Supabase Auth REST health-check error_401 di /api/health (tidak dipakai untuk auth utama, auth utama via Drizzle+JWT langsung — bisa diabaikan atau diperbaiki endpoint cek-nya)</item>
+    <item>Dashboard owner/admin-sekolah/orang-tua — sudah ada rute, belum full battle-tested dengan data nyata</item>
+    <item>AI generator dokumen — endpoint ada, belum ada percobaan end-to-end dengan file PDF/DOCX nyata dari guru</item>
   </not-done>
 </implementation-status>
 
@@ -89,25 +93,19 @@
 
 <priority-order>
   <p0>
-    <item>Auth architecture final (guru/siswa tidak boleh campur)</item>
-    <item>Landing page publik baru</item>
-    <item>Register/login flow baru</item>
-    <item>Role-based redirect & route protection</item>
-    <item>Freeze Keystatic untuk fitur baru</item>
+    <item>Dampingi Bang Agung upload materi/kursus pertama — pastikan alur upload+ImageKit+draft AI benar-benar jalan end-to-end</item>
+    <item>Perbaiki checkImageKit() dan checkSupabase() di /api/health supaya tidak false-alarm "degraded"</item>
   </p0>
   <p1>
-    <item>Workspace guru multi-tenant</item>
-    <item>Dashboard siswa baru</item>
-    <item>ImageKit upload pipeline</item>
-    <item>Bridge konten lama -> konten baru</item>
+    <item>AI document generator end-to-end dengan file nyata (PDF/DOCX -> draft materi/quiz/soal)</item>
+    <item>Battle-test dashboard owner/admin-sekolah/orang-tua dengan data nyata</item>
   </p1>
   <p2>
-    <item>AI document generator</item>
-    <item>Analitik dasar guru</item>
+    <item>Analitik dasar guru (BKT/Elo/IRT/spaced-rep sudah ada di src/lib/analytics, perlu dipakai nyata)</item>
     <item>Remedial recommendation awal</item>
   </p2>
   <p3>
-    <item>Payment online</item>
+    <item>Payment online (Midtrans, sudah ada src/lib/midtrans.ts tapi belum aktif dipakai)</item>
     <item>VPS migration</item>
     <item>Teacher Readiness Index untuk semua guru</item>
   </p3>
@@ -121,14 +119,15 @@
   <rule priority="CRITICAL">JANGAN ganti design system dasar yang sudah ada</rule>
   <rule priority="CRITICAL">JANGAN ubah ease curve animasi dari [0.16, 1, 0.3, 1] as const</rule>
   <rule priority="CRITICAL">JANGAN tambah library baru tanpa alasan kuat dan tanpa cek package.json dulu</rule>
+  <rule priority="CRITICAL">JANGAN pernah hardcode NODE_ENV di .env.local atau .env manapun — biarkan Next.js yang mengatur (dev vs build otomatis beda). Ini pernah menyebabkan seluruh production build gagal (lihat GOTCHAS).</rule>
   <rule priority="HIGH">Semua type/interface explicit, jangan pakai any</rule>
   <rule priority="HIGH">Gunakan cn() dari src/lib/utils.ts untuk className kondisional</rule>
   <rule priority="HIGH">Semua desain tetap mobile-first: px-3 sm:px-5 lg:px-8</rule>
   <rule priority="HIGH">Semua route auth harus memisahkan intent guru vs siswa dengan jelas</rule>
   <rule priority="HIGH">JANGAN izinkan akun siswa masuk dari portal guru tanpa error eksplisit</rule>
   <rule priority="HIGH">JANGAN izinkan akun guru masuk dari portal siswa tanpa error eksplisit</rule>
-  <rule priority="HIGH">JANGAN buat fitur baru lewat Keystatic/content/*</rule>
-  <rule priority="HIGH">Semua fitur baru yang melibatkan materi/quiz/soal harus DB-driven</rule>
+  <rule priority="HIGH">JANGAN buat fitur baru lewat Keystatic/content/* — reader-nya (cms.ts, cms-data.ts) sudah dihapus, jangan dibuat ulang</rule>
+  <rule priority="HIGH">Semua fitur baru yang melibatkan materi/quiz/soal harus DB-driven (Drizzle + Supabase, bukan hardcode file)</rule>
   <rule priority="HIGH">Semua hasil AI harus status draft sampai di-approve guru</rule>
   <rule priority="HIGH">Semua file upload dianggap untrusted content</rule>
   <rule priority="HIGH">JANGAN eksekusi file upload, JANGAN treat file upload sebagai trusted input</rule>
@@ -139,6 +138,8 @@
   <rule priority="HIGH">Jika ada lebih dari satu pendekatan yang sama-sama bisa jalan, pilih yang paling future-proof, paling konsisten dengan arsitektur project, dan paling sedikit utang teknis</rule>
   <rule priority="HIGH">JANGAN impor path internal package secara rapuh hanya karena cepat lolos build; utamakan public API library</rule>
   <rule priority="HIGH">Setiap fitur baru yang kompleks wajib diuji bukan hanya build, tapi juga kesesuaian desain, alur UX, dan integrasi data</rule>
+  <rule priority="HIGH">JANGAN pernah set env var Postgres/URL lewat `echo "$val" | vercel env add` di shell — karakter spesial ($, @, #, backtick) bisa ketelan shell interpolation. Gunakan node script yang tulis file dulu, atau REST API Vercel langsung dengan payload JSON.</rule>
+  <rule priority="HIGH">Password/connection string yang mengandung karakter spesial (!@#$ dll) WAJIB di-encodeURIComponent() dulu sebelum dipasang ke URL Postgres — kalau tidak, parser URL salah membaca password sebagai host/fragment (error: "Invalid URL" atau "SASL: client password must be a string").</rule>
   <rule priority="MEDIUM">Ikuti naming convention file tetangga kecuali memang sedang membuat arsitektur baru yang lebih rapi</rule>
   <rule priority="MEDIUM">Refactor besar boleh dilakukan jika memang menghapus alur legacy yang kacau, asalkan build tetap hijau</rule>
 </rules>
@@ -152,17 +153,19 @@
   <step>4. Jika sudah 3x gagal, wajib ganti mode dari "patch" ke "root-cause analysis".</step>
   <step>5. Kalau docs resmi tersedia, utamakan docs resmi 2026. Jangan ambil solusi internal-path, workaround rapuh, atau hack sementara kalau ada API publik yang benar.</step>
   <step>6. Setelah fix, verifikasi dengan build dan cek apakah solusi itu benar-benar cocok dengan desain sistem jangka menengah.</step>
+  <step>7. Verifikasi di production langsung dengan curl/tes fungsional (bukan cuma build hijau) sebelum klaim "selesai" — kasus nyata: build hijau tapi register/login tetap gagal karena migrasi DB belum diterapkan.</step>
 </error-recovery-protocol>
 
 ## STANDAR KUALITAS SOLUSI
 
 <solution-quality-bar>
   <rule>Solusi terbaik = bukan yang paling cepat lolos build, tetapi yang paling benar secara arsitektur.</rule>
-  <rule>Kalau library menyediakan API publik yang jelas, gunakan itu. Hindari mengimpor file internal package path dalam `node_modules` kecuali tidak ada opsi lain dan alasannya didokumentasikan.</rule>
+  <rule>Kalau library menyediakan API publik yang jelas, gunakan itu. Hindari mengimpor file internal package path dalam node_modules kecuali tidak ada opsi lain dan alasannya didokumentasikan.</rule>
   <rule>Kalau schema project belum mendukung fitur, perbaiki schema dengan benar dulu — jangan paksa route/controller menebak field yang belum ada.</rule>
   <rule>Kalau UI sudah berhasil tampil tapi alurnya masih membingungkan user, anggap tugas belum selesai.</rule>
   <rule>Untuk frontend, nilai keberhasilan bukan cuma compile, tapi juga hierarchy visual, intent UX, dan mobile-first quality.</rule>
   <rule>Untuk backend, nilai keberhasilan bukan cuma request 200, tapi juga role guard, data ownership, dan failure state yang aman.</rule>
+  <rule>"Build hijau" BUKAN bukti fitur jalan di production — selalu tes fungsional nyata (curl endpoint, coba register/login) sebelum klaim selesai.</rule>
 </solution-quality-bar>
 
 ## DESIGN SYSTEM (TETAP DIPAKAI)
@@ -180,47 +183,49 @@
   <shadow>shadow-glass, shadow-glass-lg, shadow-glass-xl</shadow>
 </design>
 
-## STRUKTUR BARU YANG HARUS JADI ACUAN
+## STRUKTUR AKTUAL (SUDAH LIVE, BUKAN LAGI TARGET)
 
 <target-structure>
   <public>
-    <route>/</route>
+    <route>/ (landing baru "Platform Guru-Siswa + AI Document Generator")</route>
     <route>/masuk</route>
     <route>/daftar</route>
     <route>/fitur</route>
     <route>/harga</route>
     <route>/tentang</route>
+    <route>/kursus (katalog publik, DB-driven)</route>
+    <route>/kursus/[slug]</route>
+    <route>/game (fallback kosong, menunggu guru isi)</route>
+    <route>/quran (tools generik, tidak terikat data guru)</route>
   </public>
   <dashboards>
-    <route>/guru</route>
-    <route>/guru/kursus</route>
-    <route>/guru/siswa</route>
-    <route>/guru/analytics</route>
-    <route>/guru/uploads</route>
-    <route>/siswa</route>
-    <route>/siswa/materi</route>
-    <route>/siswa/quiz</route>
-    <route>/siswa/cbt</route>
+    <route>/guru, /guru/kursus, /guru/siswa, /guru/analytics, /guru/upload, /guru/drafts, /guru/kelas, /guru/nilai, /guru/sertifikat</route>
+    <route>/siswa, /siswa/materi, /siswa/quiz, /siswa/cbt, /siswa/kursus, /siswa/progres, /siswa/pengumuman, /siswa/payment</route>
     <route>/owner</route>
     <route>/admin-sekolah</route>
     <route>/orang-tua</route>
   </dashboards>
   <note>
-    Folder dashboard lama boleh dipakai sebagai referensi, tapi jangan dianggap arsitektur final.
+    Rute legacy /materi, /evaluasi, /refleksi, /diskusi, /hafalan, /video, /dalil
+    SUDAH DIHAPUS (9 Juli 2026). Jangan dibuat ulang — kalau butuh browse materi
+    publik pakai /kursus, kalau butuh akses materi siswa pakai /siswa/materi.
   </note>
 </target-structure>
 
-## LEGACY YANG MASIH BOLEH HIDUP SEMENTARA
+## LEGACY — SUDAH DIHAPUS TOTAL (9 Juli 2026)
 
 <legacy>
-  <item>src/lib/google-sheets.ts</item>
-  <item>src/app/api/siswa/cek/route.ts</item>
-  <item>src/app/api/kuis/selesai/route.ts</item>
-  <item>src/app/api/kuis/rekap/route.ts</item>
-  <item>src/lib/cms.ts</item>
-  <item>src/lib/cms-data.ts</item>
-  <item>src/app/api/assets/[...path]/route.ts</item>
-  <rule>Legacy ini tidak boleh dijadikan dasar fitur baru. Hanya bridge selama transisi.</rule>
+  <rule priority="CRITICAL">Semua item di bawah ini SUDAH DIHAPUS dari kode. JANGAN buat ulang tanpa izin eksplisit klien.</rule>
+  <item status="DIHAPUS">src/lib/google-sheets.ts</item>
+  <item status="DIHAPUS">src/app/api/siswa/cek/route.ts</item>
+  <item status="DIHAPUS">src/app/api/kuis/selesai/route.ts</item>
+  <item status="DIHAPUS">src/app/api/kuis/rekap/route.ts</item>
+  <item status="DIHAPUS">src/app/api/doa/route.ts, src/app/api/refleksi/route.ts, src/app/api/diskusi/*</item>
+  <item status="DIHAPUS">src/lib/cms.ts, src/lib/cms-data.ts, src/lib/cms-config.ts</item>
+  <item status="DIHAPUS">src/data/materi.ts, src/data/soal.ts, src/data/mock.ts (14 bab hardcode Bang Agung lama)</item>
+  <item status="DIHAPUS">src/app/materi/*, src/app/evaluasi/*, src/app/refleksi/*, src/app/diskusi/*, src/app/hafalan/*, src/app/video/*, src/app/dalil/*</item>
+  <item status="DIHAPUS">scripts/seed-materi.ts, scripts/seed-soal.ts, scripts/migrate-cms.ts, scripts/cleanup-doa.ts, scripts/inspect-doa.ts, scripts/migrate/*</item>
+  <item status="MASIH ADA (tidak dipakai)">content/* (Keystatic content files) — dibiarkan di repo sebagai arsip, TIDAK dibaca kode manapun lagi. keystatic.config.ts masih ada untuk kemungkinan migrasi manual di masa depan.</item>
 </legacy>
 
 ## AUTH PRINCIPLES
@@ -228,10 +233,11 @@
 <auth-principles>
   <principle>Auth flow harus tunggal, tegas, dan deterministik</principle>
   <principle>/masuk dan /daftar adalah entry utama publik</principle>
-  <principle>/masuk-guru hanya alias/redirect, bukan flow auth berbeda</principle>
   <principle>Role sumber kebenaran berasal dari DB/session, bukan dari URL halaman semata</principle>
   <principle>Intent dari portal dipakai untuk validasi UX dan guard pesan error</principle>
   <principle>Jika role tidak cocok dengan portal, tampilkan error eksplisit</principle>
+  <principle>Auth utama: password (argon2 via @node-rs/argon2) + Google OAuth. Redirect URI production: https://akalcenter.my.id/api/v1/auth/callback/google (sudah terdaftar di Google Cloud Console)</principle>
+  <principle>Sudah diverifikasi jalan end-to-end di production per 9 Juli 2026 (register password berhasil, tabel users lengkap dengan kolom google_id)</principle>
 </auth-principles>
 
 ## AI PRINCIPLES
@@ -255,28 +261,29 @@
   <file path="prd/06-model-data.md">schema dan model</file>
   <file path="prd/07-rencana-migrasi.md">langkah transisi</file>
   <file path="prd/08-riset-2026-rekomendasi.md">stack terbaru</file>
-  <file path="prd/TODO-V2-MULTI-GURU.md">todo implementasi aktif</file>
+  <file path="prd/TODO-V2-MULTI-GURU.md">todo implementasi aktif — gelombang 14 ke atas belum selesai</file>
 </required-reading>
 
 ## TUGAS YANG SUDAH SELESAI / JANGAN DIULANG
 
 <done-tasks>
-  <item>Fondasi pemisahan intent login guru vs siswa sudah mulai ditanam</item>
-  <item>/daftar sudah dibuat</item>
-  <item>Landing page publik sudah mulai diarahkan ke platform baru</item>
+  <item>Fondasi pemisahan intent login guru vs siswa sudah ditanam</item>
+  <item>/daftar dan /masuk sudah jadi entry utama, sudah tes production</item>
+  <item>Landing page publik baru sudah live</item>
   <item>Build OOM sudah diperbaiki lewat NODE_OPTIONS di script build</item>
-  <item>User sudah mengonfirmasi TODO 1-3 sudah dikerjakan</item>
+  <item>Cutover total dari single-guru ke multi-guru: konten legacy dihapus, branch main = master, deploy production sukses (9 Juli 2026)</item>
+  <item>Migrasi database (14 file SQL) sudah diterapkan manual ke Supabase production</item>
+  <item>Environment variables production lengkap (AI/Supabase/ImageKit/Redis/Google OAuth/Encryption)</item>
+  <item>Register & login sudah diverifikasi jalan nyata di akalcenter.my.id (bukan cuma build hijau)</item>
 </done-tasks>
 
 ## TUGAS KRITIKAL BERIKUTNYA
 
 <next-critical>
-  <task priority="P0">Finalisasi auth architecture</task>
-  <task priority="P0">Register guru + siswa yang benar</task>
-  <task priority="P0">Route dashboard baru (/guru, /siswa, dst)</task>
-  <task priority="P0">Freeze Keystatic untuk fitur baru</task>
-  <task priority="P1">Implementasi ImageKit adapter nyata</task>
-  <task priority="P1">AI document upload + extraction + draft generation</task>
+  <task priority="P0">Dampingi Bang Agung upload materi/kursus pertama sebagai guru — uji end-to-end fitur upload+ImageKit+draft AI</task>
+  <task priority="P0">Perbaiki checkImageKit() dan checkSupabase() di src/app/api/health/route.ts supaya tidak false-alarm "degraded" (endpoint yang dicek saat ini salah target)</task>
+  <task priority="P1">AI document upload + extraction + draft generation — uji dengan file PDF/DOCX nyata</task>
+  <task priority="P1">Lanjutkan gelombang implementasi 14 ke atas sesuai prd/TODO-V2-MULTI-GURU.md</task>
 </next-critical>
 
 ## BUILD / VERIFICATION RULE
@@ -286,6 +293,8 @@
   <rule>JANGAN klaim selesai kalau build masih merah</rule>
   <rule>Kalau build gagal, selesaikan error kritikal dulu sebelum lanjut UI kosmetik</rule>
   <rule>Jika ada perubahan auth/routing, uji alur guru vs siswa secara eksplisit</rule>
+  <rule>Build hijau TIDAK CUKUP — untuk perubahan yang menyentuh auth/DB, wajib tes fungsional nyata di production (curl register/login, cek response 200 + data benar) sebelum klaim selesai</rule>
+  <rule>Sebelum push ke branch production (main), pastikan `git diff master main --quiet` (atau branch dev yang dipakai) menunjukkan tidak ada bedanya, supaya tidak ada kejutan konten lama nongol lagi</rule>
 </verification>
 
 ## PROTOKOL PENGGUNAAN SKILL (WAJIB)
@@ -302,15 +311,20 @@
 ## GOTCHAS KRITIS (YANG SERING TERLEWAT)
 
 <gotchas>
-  <item>Role DB enum uppercase (`"SISWA"`, `"GURU"`, `"OWNER"`) → session role lowercase (`"siswa"`, `"guru"`, `"owner"`) via `roleToSessionRole()` di `src/lib/session.ts`</item>
-  <item>Build OOM: `npm run build` sudah pakai `NODE_OPTIONS=--max-old-space-size=4096` — jangan ubah</item>
-  <item>Auth session cookie: `session` (httpOnly, secure, sameSite=lax) — middleware verifikasi JWT, set `x-user-*` headers</item>
-  <item>Portal intent: `/masuk?portal=guru` vs `/masuk?portal=siswa` — middleware guard beda prefix route</item>
-  <item>KKM threshold hardcoded `70` — tidak ada kolom KKM di schema</item>
-  <item>Legacy content: `src/data/materi.ts` (ALL_MATERI) sudah ditandai `isLegacy: true` — konten baru dari DB via Drizzle</item>
-  <item>Keystatic FROZEN: jangan buat fitur baru lewat `content/*` atau `src/lib/cms.ts` — semua konten baru DB-driven</item>
+  <item>Role DB enum uppercase ("SISWA", "GURU", "OWNER") -> session role lowercase ("siswa", "guru", "owner") via roleToSessionRole() di src/lib/session.ts</item>
+  <item>Build OOM: npm run build sudah pakai NODE_OPTIONS=--max-old-space-size=4096 — jangan ubah</item>
+  <item>Auth session cookie: session (httpOnly, secure, sameSite=lax/strict) — middleware verifikasi JWT, set x-user-* headers</item>
+  <item>Portal intent: /masuk?portal=guru vs /masuk?portal=siswa — middleware guard beda prefix route</item>
+  <item>KKM threshold hardcoded 70 — tidak ada kolom KKM di schema</item>
+  <item>Konten legacy (src/data/materi.ts dkk) SUDAH DIHAPUS per 9 Juli 2026 — kalau ada agent lama menyarankan pakai file itu, itu instruksi usang, abaikan</item>
+  <item>Keystatic FROZEN & reader dihapus: jangan buat fitur baru lewat content/* atau bikin ulang src/lib/cms.ts — semua konten baru DB-driven</item>
   <item>File upload = untrusted: jangan oper file mentah ke subsistem lain tanpa validasi/sanitasi</item>
-  <item>Semua hasil AI wajib status `draft` sampai di-approve guru</item>
+  <item>Semua hasil AI wajib status draft sampai di-approve guru</item>
+  <item>DATABASE_URL Supabase mengandung password dengan karakter spesial (!@#$) — HARUS di-encodeURIComponent() sebelum dipasang di connection string, kalau tidak parser URL Node pg akan error "Invalid URL" atau "SASL: client password must be a string"</item>
+  <item>Migrasi Drizzle (src/lib/db/migrations/*.sql) TIDAK auto-apply ke Supabase — harus dijalankan manual (drizzle-kit push butuh TTY interaktif, atau eksekusi SQL langsung via node pg Pool). Cek dulu dengan query information_schema.columns sebelum asumsi migrasi sudah jalan.</item>
+  <item>JANGAN set env var lewat echo "$value" | vercel env add KEY production di shell kalau value mengandung $, backtick, atau karakter shell-sensitive lain — akan ke-interpolasi jadi salah/kosong. Tulis value ke file dulu dengan Node (fs.writeFileSync), baru pipe file itu, atau pakai REST API Vercel langsung dengan JSON payload.</item>
+  <item>Vercel API GET /v9/projects/{id}/env TIDAK mengembalikan plaintext value untuk env bertipe sensitive/encrypted (selalu tampil string terenkripsi/kosong) — itu normal, bukan tanda env-nya kosong. Verifikasi env benar-benar terpasang lewat efek nyatanya (redeploy + curl /api/health atau endpoint terkait), bukan dari isi response API.</item>
+  <item>Production branch Vercel untuk project ini = main (bukan master). Kalau develop di branch lain, harus di-merge ke main supaya ter-deploy ke akalcenter.my.id.</item>
 </gotchas>
 
 ## CARA BERPIKIR AGENT
@@ -323,4 +337,5 @@
   <item>Kalau harus memilih, pilih perbaikan yang memperjelas arsitektur dan peran user</item>
   <item>Jangan kerja seperti "asal bisa lanjut" — kerja seperti tech lead yang memilih keputusan paling benar, paling tahan lama, dan paling sulit disalahpahami oleh agent berikutnya</item>
   <item>Kalau menemukan pendekatan yang technically works tapi terasa rapuh, anggap itu sinyal untuk cari solusi yang lebih baik sebelum lanjut</item>
+  <item>Root cause dulu, baru fix — kasus nyata 9 Juli 2026: build gagal karena NODE_ENV salah, health check "degraded" karena password URL tidak di-encode, register gagal karena migrasi DB belum jalan. Semua ditemukan lewat investigasi bertahap (baca log asli, tes lokal dengan kondisi sama seperti production), bukan tebak-tebakan.</item>
 </execution-style>

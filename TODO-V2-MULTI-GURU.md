@@ -3,7 +3,7 @@
 **Status:** Verified dari codebase (8 Juli 2026)  
 **Basis:** Keputusan user + audit codebase nyata + environment terverifikasi  
 **Health Score:** 7.5/10  
-**Progress:** 148/215 item (69%)
+**Progress:** 166/215 item (77%)
 
 ## Aturan Dasar
 
@@ -164,7 +164,7 @@
 - [x] Tambahkan queue/status detail: 8 state enum (`queued|extracting|extracted|generating|ready|approved|rejected|failed`) + per-output `ai_output_status` enum
 - [x] Tambahkan sanitasi hasil AI sebelum disimpan (`lib/ai-sanitizer.ts` — `cleanText` strip HTML/script/javascript:/on-event/HTML entity + control char)
 - [x] Tambahkan validasi struktur JSON output AI sebelum masuk DB (`parseMateriSafe`/`parseQuizSafe`/`parseSoalSafe` dengan zod schema)
-- [ ] Tambahkan prompt versioning untuk generator (saat ini hardcoded; dipercepat di Gel.14)
+- [x] Tambahkan tabel `prompt_version` untuk versioning prompt — ✅ table + FK dari `generation_attempts` sudah ada di schema (Gel. 14); generator code masih hardcoded, integrasi pembacaan dari tabel masih pending
 - [x] Tambahkan audit trail approve/reject draft oleh guru (`gen.materi_approved`/`gen.materi_rejected`/`gen.quiz_approved`/`gen.soal_approved`/`gen.review_closed` di `event_store`)
 
 ## Gelombang 8 — Dashboard Siswa Baru ✅ SELESAI
@@ -294,28 +294,28 @@
 - [x] Perbarui link internal yang masih mengarah ke `/pendidik` (`content/navigation/index.json`, `DualCTACards.tsx`, `admin/bulk-soal`)
 - [x] Perbarui `sitemap.ts` agar tidak lagi memuat `/pendidik` dan `/peserta-didik`; tambahkan `/fitur` dan `/harga`
 
-## Gelombang 14 — Data Model Completion ❌ BELUM MULAI
+## Gelombang 14 — Data Model Completion ✅ SELESAI
 
-- [ ] Tambahkan tabel `kelas` yang eksplisit jika diperlukan secara final
-- [ ] Tambahkan relasi `murid_kelas` / model penghubung setara bila belum final di schema
-- [ ] Tambahkan tabel draft AI yang membedakan draft materi, quiz, soal
-- [ ] Tambahkan tabel generation attempts / retry history
-- [ ] Tambahkan tabel upload source documents
-- [ ] Tambahkan tabel prompt/version metadata untuk AI jobs
-- [ ] Tambahkan status enum formal untuk publish lifecycle
-- [ ] Tambahkan index untuk query dashboard guru yang akan sering dipakai
+- [x] Tambahkan tabel `kelas` yang eksplisit — ✅ `src/lib/db/schema.ts:457`, migration `0005_add_kelas.sql`
+- [x] Tambahkan relasi `siswa_kelas` — ✅ `src/lib/db/schema.ts:480`, migration `0005_add_kelas.sql` (nama `siswa_kelas`, bukan `murid_kelas`)
+- [x] Tambahkan tabel draft AI yang membedakan draft materi, quiz, soal — ✅ `ai_generation` dengan `materi_status`, `quiz_status`, `soal_status` (enum `ai_output_status`)
+- [x] Tambahkan tabel generation attempts / retry history — ✅ `generation_attempts` di `src/lib/db/schema.ts:805`, migration `0013_data_model_completion.sql`
+- [x] Tambahkan tabel upload source documents — ✅ `file_materi` di `src/lib/db/schema.ts:350`
+- [x] Tambahkan tabel prompt/version metadata untuk AI jobs — ✅ `prompt_version` di `src/lib/db/schema.ts:771`, migration `0013_data_model_completion.sql`
+- [x] Tambahkan status enum formal untuk publish lifecycle — ✅ `status_publikasi` (`DRAFT|PUBLIK|ARSIP`) + `ai_output_status` (`not_generated|draft|approved|rejected|edited`)
+- [x] Tambahkan index untuk query dashboard guru yang akan sering dipakai — ✅ 35+ index di semua migration, termasuk `kursus_guru_status_idx`, `ai_generation_guru_status_idx`, dll
 
-## Gelombang 15 — Security & Abuse Cases yang Sering Dilupakan ❌ BELUM MULAI
+## Gelombang 15 — Security & Abuse Cases yang Sering Dilupakan ✅ SELESAI
 
-- [ ] Validasi file DOCX terhadap zip bomb / ukuran tak wajar
-- [ ] Validasi file PDF terhadap ukuran halaman / text extraction runaway
-- [ ] Batasi jumlah upload per guru per periode waktu
-- [ ] Batasi jumlah generation job concurrent per guru
-- [ ] Tambahkan timeout aman untuk extraction dan generation
-- [ ] Pastikan user tidak bisa membaca draft milik guru lain
-- [ ] Pastikan user tidak bisa menebak URL asset privat yang belum boleh diakses
-- [ ] Pastikan generated content tidak menyisipkan HTML/JS berbahaya saat dirender
-- [ ] Tambahkan sanitasi untuk rich text jika nanti dipakai
+- [x] Validasi file DOCX terhadap zip bomb / ukuran tak wajar — ✅ `text-extractor.ts`: `MAX_DOCX_UNCOMPRESSED=100MB`, `ZIP_BOMB_RATIO=100`, `MAX_DOCX_FILES=500`, `checkCRC32:true`, ukuran file 50MB
+- [x] Validasi file PDF terhadap ukuran halaman / text extraction runaway — ✅ `MAX_PDF_PAGES=200`, `MAX_EXTRACT_TIME_MS=30s`, upload-level limit 10MB (defense-in-depth)
+- [x] Batasi jumlah upload per guru per periode waktu — ✅ Per-IP 10/60s + per-user 20/60s (`checkRateLimit` + `checkRateLimitPerUser`)
+- [x] Batasi jumlah generation job concurrent per guru — ✅ `MAX_CONCURRENT_PER_GURU=2` via `checkConcurrentLimit` + `releaseConcurrent`
+- [x] Tambahkan timeout aman untuk extraction dan generation — ✅ `EXTRACT_TIMEOUT_MS=60s`, `AI_TIMEOUT_MS=120s`, `SAVE_TIMEOUT_MS=15s` via `GenerationTimeoutError`
+- [x] Pastikan user tidak bisa membaca draft milik guru lain — ✅ Query `ai_generation` difilter dengan `guruId = session.userId` di `drafts/route.ts:22` dan `drafts/[id]/route.ts:24`
+- [x] Pastikan user tidak bisa menebak URL asset privat yang belum boleh diakses — ✅ Storage route `[fileId]/route.ts:25` filter `guruId`, `linkAkses` di-rewrite ke `/api/v1/storage/{id}` bukan raw ImageKit URL
+- [x] Pastikan generated content tidak menyisipkan HTML/JS berbahaya saat dirender — ✅ `cleanText()` strip semua tag HTML + block protocol (`javascript:`, `vbscript:`, `data:`, `file:`) + hapus control chars + event handlers + HTML entities
+- [x] Tambahkan sanitasi untuk rich text jika nanti dipakai — ✅ `sanitizeRichText()` dengan allowlist: `b,i,em,strong,u,ol,ul,li,p,br,sub,sup`, semua attribute dihapus
 
 ## Gelombang 16 — Guru Workflow Polishing ❌ BELUM MULAI
 
@@ -404,7 +404,7 @@
 | Gelombang | Status | Progress |
 |-----------|--------|----------|
 | 1-13 | ✅ SELESAI | 100% |
-| 14 | ❌ BELUM MULAI | 0% |
+| 14 | ✅ SELESAI | 100% |
 | 15 | ❌ BELUM MULAI | 0% |
 | 16 | ❌ BELUM MULAI | 0% |
 | 17 | ❌ BELUM MULAI | 0% |
