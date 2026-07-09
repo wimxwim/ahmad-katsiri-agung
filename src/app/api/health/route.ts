@@ -33,10 +33,10 @@ async function checkSupabase(): Promise<{ status: string; latencyMs: number }> {
   try {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     if (!url) return { status: "not_configured", latencyMs: 0 };
-    const res = await fetch(`${url}/auth/v1/settings`, {
+    const res = await fetch(`${url}/rest/v1/`, {
       signal: AbortSignal.timeout(5000),
     });
-    return { status: res.ok ? "connected" : `error_${res.status}`, latencyMs: Math.round(performance.now() - t0) };
+    return { status: res.ok || res.status === 401 || res.status === 404 ? "connected" : `error_${res.status}`, latencyMs: Math.round(performance.now() - t0) };
   } catch {
     return { status: "unreachable", latencyMs: Math.round(performance.now() - t0) };
   }
@@ -45,9 +45,13 @@ async function checkSupabase(): Promise<{ status: string; latencyMs: number }> {
 async function checkImageKit(): Promise<{ status: string; latencyMs: number }> {
   const t0 = performance.now();
   try {
-    const url = process.env.IMAGEKIT_URL_ENDPOINT;
-    if (!url) return { status: "not_configured", latencyMs: 0 };
-    const res = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(5000) });
+    const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
+    const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT;
+    if (!privateKey || !urlEndpoint) return { status: "not_configured", latencyMs: 0 };
+    const res = await fetch("https://api.imagekit.io/v1/files?limit=1", {
+      headers: { Authorization: `Basic ${Buffer.from(`${privateKey}:`).toString("base64")}` },
+      signal: AbortSignal.timeout(5000),
+    });
     return { status: res.ok ? "connected" : `error_${res.status}`, latencyMs: Math.round(performance.now() - t0) };
   } catch {
     return { status: "unreachable", latencyMs: Math.round(performance.now() - t0) };

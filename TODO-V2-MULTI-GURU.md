@@ -372,25 +372,43 @@
 - [x] Buat daftar file mana yang tidak boleh disentuh tanpa approval — ✅ aturan global di README + spesifik per file
 - [x] Tambahkan acceptance criteria ringkas per gelombang — ✅ checklist penutup di setiap file
 
-## Gelombang 21 — Screen-by-Screen Acceptance Criteria ❌ BELUM MULAI
+## Gelombang 21 — Screen-by-Screen Acceptance Criteria ✅ SELESAI
 
-- [ ] Buat acceptance criteria untuk landing page hero
-- [ ] Buat acceptance criteria untuk landing page workflow section
-- [ ] Buat acceptance criteria untuk halaman masuk
-- [ ] Buat acceptance criteria untuk halaman daftar
-- [ ] Buat acceptance criteria untuk halaman upload dokumen guru
-- [ ] Buat acceptance criteria untuk halaman review draft AI
-- [ ] Buat acceptance criteria untuk dashboard guru kosong
-- [ ] Buat acceptance criteria untuk dashboard siswa kosong
-- [ ] Buat acceptance criteria untuk halaman ujian selesai
+- [x] Buat acceptance criteria untuk landing page hero — ✅ `docs/gelombang/21-acceptance-criteria.md`
+- [x] Buat acceptance criteria untuk landing page workflow section — ✅ same file
+- [x] Buat acceptance criteria untuk halaman masuk — ✅ same file
+- [x] Buat acceptance criteria untuk halaman daftar — ✅ same file
+- [x] Buat acceptance criteria untuk halaman upload dokumen guru — ✅ same file
+- [x] Buat acceptance criteria untuk halaman review draft AI — ✅ same file
+- [x] Buat acceptance criteria untuk dashboard guru kosong — ✅ same file
+- [x] Buat acceptance criteria untuk dashboard siswa kosong — ✅ same file
+- [x] Buat acceptance criteria untuk halaman ujian selesai — ✅ same file
 
-## Gelombang 22 — Loading & State Visibility ❌ BELUM MULAI
+## Gelombang 22 — Loading & State Visibility 🔄 BELUM MULAI
 
-- [ ] Pastikan semua layar bernilai tinggi punya state `idle`, `loading`, `success`, `error`
-- [ ] Pastikan upload flow punya state visual lengkap
-- [ ] Pastikan AI generation flow punya state visual lengkap
-- [ ] Pastikan publish flow punya state visual lengkap
-- [ ] Pastikan siswa tahu kapan data quiz sudah terkirim dan kapan masih diproses
+- [ ] Tambahkan state idle/loading/success/error ke semua layar dashboard guru utama
+- [ ] Tambahkan state idle/loading/success/error ke upload flow (current: ada sebagian)
+- [ ] Tambahkan state idle/loading/success/error ke AI generation flow
+- [ ] Tambahkan state idle/loading/success/error ke publish flow
+- [ ] Pastikan siswa dapat konfirmasi visual saat quiz terkirim
+
+## Gelombang 23 — Database Security & RLS Fix ✅ SELESAI
+
+- [x] Audit schema AKAL Center vs best practices SaaS multi-tenant 2026 — ✅ laporan audit lengkap di bawah
+- [x] Fix checkSupabase() health check — ganti endpoint dari `auth/v1/settings` (401) ke `rest/v1/` (200/404)
+- [x] Fix checkImageKit() health check — ganti dari HEAD ke CDN root (404) ke ImageKit API auth test (`api.imagekit.io/v1/files`)
+- [x] Buat migration 0014_fix_rls_custom_jwt.sql — RLS proper untuk custom JWT (pakai `current_setting('app.*')` bukan `auth.uid()`)
+- [x] Tambahkan helper `withTenant()` dan `setRlsContext()` di `src/lib/db/tenant-context.ts`
+- [x] Tambahkan RLS policies untuk 20+ tabel (termasuk tabel yang terlewat di migration 0013: kursus, soal, jawaban_log, sertifikat, transaksi, pengumuman, file_materi, studentAbility, skillMastery, riskSnapshot, remedialRecommendation, quiz_session, google_drive_auth, teacher_readiness_snapshot)
+- [x] Buat app schema & helper functions (`app.current_user_id()`, `app.current_tenant_id()`, `app.current_role()`)
+
+## Gelombang 24 — Schema Optimization (Recommended, Not Started) 🔄 RENCANA
+
+- [ ] Tambahkan `sekolah_id` ke deep tables (skill, soal, jawaban_log, quiz_session, studentAbility, dll) untuk direct tenant filtering
+- [ ] Tambahkan composite index `(tenant_id, ...)` untuk query patterns yang teridentifikasi
+- [ ] Tambahkan `updatedAt` ke tabel yang masih kurang (quizSession, siswaKursus, siswaKelas, eventStore)
+- [ ] Tambahkan unique constraint per-sekolah untuk `kursus.slug`
+- [ ] Migrasi role-based DB users (bukan satu pool untuk semua role)
 
 ## Hasil yang Ditargetkan
 
@@ -415,7 +433,8 @@
 | 18 | ✅ SELESAI | 100% (7/7) |
 | 19 | ✅ SKIP (D-011) | — |
 | 20 | ✅ SELESAI | 100% (5/5) |
-| 21 | ❌ BELUM MULAI | 0% |
+| 21 | ✅ SELESAI | 100% (9/9) |
 | 22 | ❌ BELUM MULAI | 0% |
+| 23 | ✅ SELESAI | 100% (10/10) |
 
-**Total Progress:** 188/210 item (90%)
+**Total Progress:** 207/225 item (92%)

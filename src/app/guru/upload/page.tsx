@@ -67,6 +67,12 @@ export default function GuruUploadPage() {
     loadHistory();
   }, []);
 
+  useEffect(() => {
+    if (kursus.length > 0 && !selectedKursus) {
+      setSelectedKursus(kursus[0].id);
+    }
+  }, [kursus, selectedKursus]);
+
   function validate(f: File): { ok: boolean; reason?: string } {
     const ext = "." + (f.name.split(".").pop() || "").toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
@@ -320,7 +326,7 @@ export default function GuruUploadPage() {
         <button
           onClick={handleUpload}
           disabled={!file || !selectedKursus || (job.state !== "idle" && job.state !== "failed" && job.state !== "ready")}
-          className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-50"
+          className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {job.state === "uploading" || job.state === "extracting" || job.state === "generating" ? (
             <Loader2 className="w-4 h-4 animate-spin" />

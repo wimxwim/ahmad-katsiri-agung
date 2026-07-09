@@ -22,7 +22,7 @@ export default async function MasukPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await searchParams;
-  const portal = params.portal === "guru" ? "guru" : "siswa";
+  const portal = params.portal === "guru" ? "guru" : params.portal === "siswa" ? "siswa" : undefined;
   const tab = params.tab === "daftar" ? "daftar" : "masuk";
   const redirectTo =
     typeof params.redirect === "string" && params.redirect.startsWith("/")

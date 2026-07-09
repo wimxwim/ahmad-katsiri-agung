@@ -33,7 +33,7 @@ export function FormMasuk({
   initialTab = "masuk",
   errorCode,
 }: FormMasukProps) {
-  const [mode, setMode] = useState<Mode>(initialPortal === "guru" ? "guru" : "murid");
+  const [mode, setMode] = useState<Mode>(initialPortal === "guru" ? "guru" : initialPortal === "siswa" ? "murid" : "pilih");
   const [tabMurid, setTabMurid] = useState<TabMurid>(initialTab);
   const [error, setError] = useState(() => (errorCode ? ERROR_MESSAGES[errorCode] || `Error: ${errorCode}` : ""));
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ export function FormMasuk({
   const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    setMode(initialPortal === "guru" ? "guru" : "murid");
+    setMode(initialPortal === "guru" ? "guru" : initialPortal === "siswa" ? "murid" : "pilih");
     setTabMurid(initialTab);
     setError(errorCode ? ERROR_MESSAGES[errorCode] || `Error: ${errorCode}` : "");
     setNoPassword(false);
