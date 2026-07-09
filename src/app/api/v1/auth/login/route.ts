@@ -91,14 +91,18 @@ export async function POST(request: NextRequest) {
 
     const result = await verifyPassword(password, user.passwordHash);
     if (!result.valid) {
+      const failReason = result.error || "bad_password";
       await logAuthEvent("auth.login.failed", {
         userId: user.id,
         email: user.email,
-        reason: "bad_password",
+        reason: failReason,
         method: "password",
         ip,
         portal: portalIntent || "unknown",
       });
+      if (result.error) {
+        return apiError(result.error, 500);
+      }
       return apiError("Email atau kata sandi salah", 401);
     }
 

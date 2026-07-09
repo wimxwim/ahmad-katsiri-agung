@@ -36,7 +36,9 @@ export default async function MasukPage({
   if (sessionCookie?.value) {
     const _ar = await verifySession(sessionCookie.value);
     if (_ar.success) {
-      redirect(redirectTo || ROLE_HOME_PATHS[_ar.data.role] || "/");
+      const home = ROLE_HOME_PATHS[_ar.data.role] || "/";
+      const target = redirectTo || home;
+      redirect(target);
     }
   }
 

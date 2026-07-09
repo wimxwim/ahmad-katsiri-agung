@@ -121,6 +121,8 @@ export function FormMasuk({
           password: formData.get("password"),
           kelas: formData.get("kelas") || undefined,
           noAbsen: formData.get("noAbsen") || undefined,
+          portal: mode === "guru" ? "guru" : "siswa",
+          role: mode === "guru" ? "GURU" : "SISWA",
           redirectTo,
         }),
       });
