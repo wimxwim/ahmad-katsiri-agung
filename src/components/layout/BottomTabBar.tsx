@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Home,
   BookOpen,
-  ClipboardList,
   Grid3x3,
   Info,
   LogOut,
@@ -23,8 +22,7 @@ import { EASE_CURVE } from "@/lib/constants";
 const SHEET_ITEMS: { href: string; label: string; icon: LucideIcon; desc: string }[] = [
   { href: "/fitur", label: "Fitur", icon: Sparkles, desc: "Lihat semua fitur platform" },
   { href: "/tentang", label: "Tentang", icon: Info, desc: "Tentang AKAL Center" },
-  { href: "/materi", label: "Materi", icon: BookOpen, desc: "Jelajahi materi pembelajaran" },
-  { href: "/evaluasi", label: "Kuis", icon: ClipboardList, desc: "Kerjakan kuis dan evaluasi" },
+  { href: "/kursus", label: "Kursus", icon: BookOpen, desc: "Jelajahi katalog kursus" },
 ];
 
 export function BottomTabBar() {
@@ -53,7 +51,7 @@ export function BottomTabBar() {
   const navTabs = [
     { href: "/", label: "Beranda", icon: Home },
     { href: "/fitur", label: "Fitur", icon: Sparkles },
-    { href: "/materi", label: "Materi", icon: BookOpen },
+    { href: "/kursus", label: "Kursus", icon: BookOpen },
     ...(session ? [{ href: session.role === "guru" ? "/guru" : session.role === "owner" ? "/owner" : session.role === "admin_sekolah" ? "/admin-sekolah" : session.role === "orang_tua" ? "/orang-tua" : "/siswa", label: "Dashboard", icon: GraduationCap, sessionOnly: true }] : []),
   ];
 

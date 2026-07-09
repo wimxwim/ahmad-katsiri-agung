@@ -222,7 +222,7 @@ export default function KursusDetailPage() {
                       </p>
                     </div>
                     <Link
-                      href="/materi"
+                      href="/siswa/materi"
                       className="block w-full py-2.5 px-4 bg-primary text-white text-center font-semibold text-sm rounded-xl hover:bg-primary/90 transition-colors font-heading"
                     >
                       Mulai Belajar

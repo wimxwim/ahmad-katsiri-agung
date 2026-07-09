@@ -6,20 +6,6 @@ import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWA } from "@/components/layout/FloatingWA";
 import type { CmsData } from "@/components/providers/CmsProvider";
-import {
-  getNavigationFromCms,
-  getSiteConfigFromCms,
-  getGamesFromCms,
-  getHaditsFromCms,
-  getMateriFromCms,
-  getSoalMetaFromCms,
-  getSoalFromCms,
-  getAboutFromCms,
-  getPendidikPageFromCms,
-  getPerangkatAjarFromCms,
-} from "@/lib/cms";
-import { CMS_ENABLED } from "@/lib/cms-config";
-import type { CmsMateriListItem, CmsMateriFull } from "@/components/providers/CmsProvider";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -117,89 +103,7 @@ export const viewport: Viewport = {
 };
 
 async function loadCmsData(): Promise<CmsData> {
-  if (!CMS_ENABLED) return {};
-  try {
-    const [nav, siteConfig, games, hadits, rawMateri, soalMeta, rawSoal, about, pendidikPage, perangkatAjar] = await Promise.all([
-      getNavigationFromCms(),
-      getSiteConfigFromCms(),
-      getGamesFromCms(),
-      getHaditsFromCms(),
-      getMateriFromCms(),
-      getSoalMetaFromCms(),
-      getSoalFromCms(),
-      getAboutFromCms(),
-      getPendidikPageFromCms(),
-      getPerangkatAjarFromCms(),
-    ]);
-
-    let materiList: CmsMateriListItem[] | undefined;
-    let materiDetail: Record<string, CmsMateriFull> | undefined;
-    if (rawMateri) {
-      const slugs = Object.keys(rawMateri);
-      materiList = slugs.map((slug) => {
-        const m = rawMateri[slug];
-        return {
-          slug: m.slug,
-          title: m.title,
-          kelas: m.kelas,
-          bab: m.bab,
-          ringkasan: m.ringkasan,
-          subTopik: m.subTopik,
-          icon: m.icon,
-          isLegacy: m.isLegacy,
-        };
-      });
-      materiDetail = slugs.reduce(
-        (acc, slug) => {
-          const m = rawMateri[slug];
-          acc[slug] = {
-            slug: m.slug,
-            title: m.title,
-            kelas: m.kelas,
-            bab: m.bab,
-            babLabel: m.babLabel,
-            ringkasan: m.ringkasan,
-            subTopik: m.subTopik,
-            waktuBaca: m.waktuBaca,
-            icon: m.icon,
-            videoUrl: m.videoUrl,
-            pdfUrl: m.pdfUrl,
-            pptUrl: m.pptUrl,
-            soalUrl: m.soalUrl,
-            gameUrl: m.gameUrl,
-            pendahuluan: m.pendahuluan,
-            konten: m.konten,
-            dalil: m.dalil,
-            dimensi: m.dimensi,
-            poinPenting: m.poinPenting,
-            prevSlug: m.prevSlug,
-            prevTitle: m.prevTitle,
-            nextSlug: m.nextSlug,
-            nextTitle: m.nextTitle,
-            isLegacy: m.isLegacy,
-          };
-          return acc;
-        },
-        {} as Record<string, CmsMateriFull>,
-      );
-    }
-
-    return {
-      navigation: nav ?? undefined,
-      siteConfig: siteConfig ?? undefined,
-      games: games ?? undefined,
-      hadits: hadits ?? undefined,
-      materiList,
-      materiDetail,
-      soalMeta: soalMeta ?? undefined,
-      soalData: rawSoal ?? undefined,
-      about: about ?? undefined,
-      pendidikPage: pendidikPage ?? undefined,
-      perangkatAjar: perangkatAjar ?? undefined,
-    };
-  } catch {
-    return {};
-  }
+  return {};
 }
 
 export default async function RootLayout({

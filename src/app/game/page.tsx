@@ -7,92 +7,13 @@ import { Gamepad2, ExternalLink, ArrowRight, AlertTriangle, RefreshCw } from "lu
 import { useCmsData } from "@/components/providers/CmsProvider";
 import { EASE_CURVE } from "@/lib/constants";
 
-const GAMES_FALLBACK = [
-  {
-    title: "Game Beriman kepada Malaikat",
-    desc: "Game interaktif tentang malaikat Allah untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-malaikat",
-    badge: "EKSTERNAL",
-    image: "/images/games/game-beriman-kepada-malaikat.webp",
-  },
-  {
-    title: "Game Membiasakan Tabayyun dan Menjauhi Ghibah",
-    desc: "Game interaktif tentang tabayyun dan menjauhi ghibah untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/membiasakan-tabayyun-dan-menjauhi-ghibah",
-    badge: "EKSTERNAL",
-    image: "/images/games/game-membiasakan-tabayyun-dan-menjauhi-ghibah.webp",
-  },
-  {
-    title: "Game Salat Mencegah Perbuatan Keji dan Mungkar",
-    desc: "Game interaktif tentang hikmah salat mencegah perbuatan keji dan mungkar.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/salat-mencegah-perbuatan-keji-dan-mungkar",
-    badge: "EKSTERNAL",
-    image: "/images/games/game-salat-mencegah-perbuatan-keji-dan-mungkar.webp",
-  },
-  {
-    title: "Game Amanah dan Jujur",
-    desc: "Game interaktif tentang sifat amanah dan jujur dalam kehidupan sehari-hari.",
-    url: "https://jujurdanamanah.my.canva.site/",
-    badge: "EKSTERNAL",
-    image: "/images/games/game-jujur-dan-amanah.webp",
-  },
-  {
-    title: "Game Kitab Allah SWT",
-    desc: "Game interaktif mengenal kitab-kitab Allah SWT untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-kitab-allah",
-    badge: "EKSTERNAL",
-    image: "/images/games/game-kitab-allah-swt.webp",
-  },
-  {
-    title: "Game Beriman kepada Nabi dan Rasul",
-    desc: "Game interaktif tentang nabi dan rasul untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-nabi-dan-rasul",
-    badge: "EKSTERNAL",
-    image: "/images/games/game-beriman-kepada-nabi-dan-rasul.webp",
-  },
-  {
-    title: "Game Moderasi Beragama",
-    desc: "Game interaktif tentang moderasi beragama sebagai wujud Islam rahmatan lil alamin.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/moderasi-beragama",
-    badge: "EKSTERNAL",
-    image: "/images/games/game-moderasi-beragama.webp",
-  },
-  {
-    title: "Game Adab dalam Islam",
-    desc: "Game interaktif tentang adab-adab dalam Islam untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/adab-dalam-islam",
-    badge: "EKSTERNAL",
-    image: "/images/games/game-adab-dalam-islam.webp",
-  },
-  {
-    title: "Game Beriman kepada Hari Akhir",
-    desc: "Game interaktif tentang iman kepada hari akhir untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-hari-akhir",
-    badge: "EKSTERNAL",
-    image: "/images/games/game-beriman-kepada-hari-akhir.webp",
-  },
-  {
-    title: "Game Beriman kepada Qada dan Qadar",
-    desc: "Game interaktif tentang qada dan qadar untuk siswa SMP.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/beriman-kepada-qada-dan-qadar",
-    badge: "EKSTERNAL",
-    image: "/images/games/game-beriman-kepada-qada-dan-qadar.webp",
-  },
-  {
-    title: "Game Semangat Mencari Ilmu",
-    desc: "Game interaktif tentang semangat mencari ilmu sebagai kewajiban setiap muslim.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/semangat-mencari-ilmu",
-    badge: "EKSTERNAL",
-    image: "/images/games/game-semangat-mencari-ilmu.webp",
-  },
-  {
-    title: "Game Manusia sebagai Khalifah di Bumi",
-    desc: "Game interaktif tentang peran dan tanggung jawab manusia sebagai khalifah di muka bumi.",
-    url: "https://kuis-bangun-ruang9.my.canva.site/manusia-sebagai-khalifah-di-bumi",
-    badge: "EKSTERNAL",
-    image: "/images/games/game-manusia-khalifah-di-muka-bumi.webp",
-  },
-];
+const GAMES_FALLBACK: {
+  title: string;
+  desc: string;
+  url: string;
+  badge: string;
+  image: string;
+}[] = [];
 
 function GameSkeleton() {
   return (
@@ -184,10 +105,10 @@ export default function GamePage() {
           <h2 className="font-heading text-xl text-on-surface mb-3">Game edukasi akan segera hadir</h2>
           <p className="text-on-surface-variant mb-6">Koleksi game edukasi interaktif sedang dipersiapkan. Kunjungi kembali nanti!</p>
           <Link
-            href="/materi"
+            href="/kursus"
             className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
           >
-            Jelajahi Materi
+            Jelajahi Kursus
             <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
@@ -256,10 +177,10 @@ export default function GamePage() {
             className="text-center"
           >
             <Link
-              href="/materi"
+              href="/kursus"
               className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 sm:px-8 py-3.5 sm:py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
             >
-              Jelajahi Materi
+              Jelajahi Kursus
               <ArrowRight className="w-5 h-5" aria-hidden="true" />
             </Link>
           </motion.div>

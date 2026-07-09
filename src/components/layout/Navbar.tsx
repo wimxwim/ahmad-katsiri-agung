@@ -10,10 +10,10 @@ import { handleLogout } from "@/lib/logout";
 
 const NAV_ITEMS_FALLBACK = [
   { href: "/", label: "Beranda" },
+  { href: "/kursus", label: "Kursus" },
   { href: "/fitur", label: "Fitur" },
   { href: "/harga", label: "Harga" },
   { href: "/tentang", label: "Tentang" },
-  { href: "/materi", label: "Materi" },
 ];
 
 export function Navbar() {

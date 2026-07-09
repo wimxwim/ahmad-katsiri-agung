@@ -1,15 +1,13 @@
 import Link from "next/link";
-import type { CmsNavigation } from "@/lib/cms";
+import type { CmsNavigation } from "@/components/providers/CmsProvider";
 
 const FOOTER_LINKS_FALLBACK = [
   { href: "/", label: "Beranda" },
   { href: "/kursus", label: "Katalog Kursus" },
-  { href: "/materi", label: "Materi" },
-  { href: "/hafalan", label: "Hafalan Dalil" },
-  { href: "/video", label: "Video" },
-  { href: "/evaluasi", label: "Kuis" },
-  { href: "/diskusi", label: "Diskusi" },
   { href: "/game", label: "Game Edukasi" },
+  { href: "/quran", label: "Qur'an" },
+  { href: "/fitur", label: "Fitur" },
+  { href: "/harga", label: "Harga" },
   { href: "/tentang", label: "Tentang Kami" },
 ];
 
