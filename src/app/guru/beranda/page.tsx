@@ -1,7 +1,7 @@
 "use client";
 
 import { StatCard } from "@/components/dashboard/StatCard";
-import { BookOpen, Users, Sparkles, ArrowRight, Upload, FileCheck, Layers, GraduationCap, Clock, AlertCircle } from "lucide-react";
+import { BookOpen, Users, Sparkles, ArrowRight, Upload, FileCheck, Layers, GraduationCap, Clock, AlertCircle, ClipboardList, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -32,6 +32,8 @@ const QUICK_ACTIONS = [
   { label: "Review Draft AI", href: "/guru/drafts", icon: FileCheck, desc: "Tinjau hasil AI" },
   { label: "Kelola Kelas", href: "/guru/kelas", icon: Layers, desc: "Atur kelas & siswa" },
   { label: "Daftar Siswa", href: "/guru/siswa", icon: Users, desc: "Lihat progres siswa" },
+  { label: "Buat Kuis", href: "/guru/drafts", icon: ClipboardList, desc: "Dari draft AI siap review" },
+  { label: "Undang Siswa", href: "/guru/kelas", icon: UserPlus, desc: "Kelola keanggotaan kelas" },
 ];
 
 export default function GuruBerandaPage() {

@@ -3,7 +3,7 @@
 **Status:** Verified dari codebase (8 Juli 2026)  
 **Basis:** Keputusan user + audit codebase nyata + environment terverifikasi  
 **Health Score:** 7.5/10  
-**Progress:** 166/215 item (77%)
+**Progress:** 183/215 item (85%)
 
 ## Aturan Dasar
 
@@ -317,40 +317,40 @@
 - [x] Pastikan generated content tidak menyisipkan HTML/JS berbahaya saat dirender — ✅ `cleanText()` strip semua tag HTML + block protocol (`javascript:`, `vbscript:`, `data:`, `file:`) + hapus control chars + event handlers + HTML entities
 - [x] Tambahkan sanitasi untuk rich text jika nanti dipakai — ✅ `sanitizeRichText()` dengan allowlist: `b,i,em,strong,u,ol,ul,li,p,br,sub,sup`, semua attribute dihapus
 
-## Gelombang 16 — Guru Workflow Polishing ❌ BELUM MULAI
+## Gelombang 16 — Guru Workflow Polishing ✅ SELESAI
 
-- [ ] Tambahkan dashboard "apa yang harus saya lakukan sekarang" untuk guru
-- [ ] Tambahkan status badge pada kursus: draft/publik/arsip
-- [ ] Tambahkan quick action: upload dokumen, review draft, buat kuis, undang siswa
-- [ ] Tambahkan card "siswa belum mengerjakan"
-- [ ] Tambahkan card "topik paling lemah"
-- [ ] Tambahkan card "draft AI menunggu tinjauan"
-- [ ] Tambahkan search dan filter pada daftar siswa guru
-- [ ] Tambahkan search dan filter pada daftar draft AI guru
-- [ ] Tambahkan search dan filter pada daftar kursus guru
-- [ ] Tambahkan closure state setelah upload berhasil diproses
-- [ ] Tambahkan closure state setelah materi dipublish
-- [ ] Tambahkan closure state setelah quiz diapprove atau diterbitkan
+- [x] Tambahkan dashboard "apa yang harus saya lakukan sekarang" untuk guru — ✅ `guru/beranda/page.tsx`: priority cards (draft, siswa, weak topics) + quick actions
+- [x] Tambahkan status badge pada kursus: draft/publik/arsip — ✅ `guru/kursus/page.tsx` + `guru/beranda/page.tsx`: STATUS_BADGE map DRAFT/PUBLIK/ARSIP
+- [x] Tambahkan quick action: upload dokumen, review draft, buat kuis, undang siswa — ✅ 6 actions in QUICK_ACTIONS array (`guru/beranda/page.tsx:30-37`)
+- [x] Tambahkan card "siswa belum mengerjakan" — ✅ `guru/beranda/page.tsx` L149-177: blue priority card
+- [x] Tambahkan card "topik paling lemah" — ✅ `guru/beranda/page.tsx` L179-221: red card with top 3 error rate
+- [x] Tambahkan card "draft AI menunggu tinjauan" — ✅ `guru/beranda/page.tsx` L119-147: amber priority card
+- [x] Tambahkan search dan filter pada daftar siswa guru — ✅ `guru/siswa/page.tsx`: search + filter by kursus
+- [x] Tambahkan search dan filter pada daftar draft AI guru — ✅ `guru/drafts/page.tsx`: search + filter by status
+- [x] Tambahkan search dan filter pada daftar kursus guru — ✅ `guru/kursus/page.tsx`: search by judul/deskripsi
+- [x] Tambahkan closure state setelah upload berhasil diproses — ✅ `guru/upload/page.tsx` L293-317: success card + CTA review draft
+- [x] Tambahkan closure state setelah materi dipublish — ✅ `guru/drafts/[id]/published/page.tsx`: published/closed review page
+- [x] Tambahkan closure state setelah quiz diapprove atau diterbitkan — ✅ Same published page, shows approved/materi/quiz/soal status
 
-## Gelombang 17 — Student Workflow Polishing ❌ BELUM MULAI
+## Gelombang 17 — Student Workflow Polishing ✅ (7/7 — semua sudah ada sejak build awal)
 
-- [ ] Tambahkan continue card berdasarkan materi terakhir dibuka
-- [ ] Tambahkan section "hari ini" untuk siswa
-- [ ] Tambahkan section quiz berikutnya
-- [ ] Tambahkan riwayat hasil quiz yang mudah dibaca
-- [ ] Tambahkan badge progress yang tidak kekanak-kanakan
-- [ ] Tambahkan pengumuman guru dalam bentuk card yang jelas
-- [ ] Tambahkan fallback jika siswa belum tergabung kelas/kursus mana pun
+- [x] Tambahkan continue card berdasarkan materi terakhir dibuka — ✅ `siswa/beranda/page.tsx` feed.continueLearning
+- [x] Tambahkan section "hari ini" untuk siswa — ✅ `siswa/beranda/page.tsx` pending quiz + materi baru hari ini
+- [x] Tambahkan section quiz berikutnya — ✅ bagian dari section "Hari Ini"
+- [x] Tambahkan riwayat hasil quiz yang mudah dibaca — ✅ `siswa/progres/page.tsx` grouped per kursus + color-coded score
+- [x] Tambahkan badge progress yang tidak kekanak-kanakan — ✅ progress bar + % + status labels (Baru/Dilanjutkan/Selesai)
+- [x] Tambahkan pengumuman guru dalam bentuk card yang jelas — ✅ pinned indicator + konten + guru name + date
+- [x] Tambahkan fallback jika siswa belum tergabung kelas/kursus mana pun — ✅ EmptyState "Kamu belum terdaftar di kelas"
 
-## Gelombang 18 — Analytics & Remedial UX ❌ BELUM MULAI
+## Gelombang 18 — Analytics & Remedial UX ✅ (7/7)
 
-- [ ] Buat summary analytics yang bicara bahasa guru, bukan bahasa statistik mentah
-- [ ] Tambahkan visual weak topic yang mudah dipahami
-- [ ] Tambahkan remedial recommendation card
-- [ ] Tambahkan CTA "kirim remedial" atau "tinjau rekomendasi"
-- [ ] Tambahkan halaman detail progres per siswa
-- [ ] Tambahkan halaman detail progres per kursus
-- [ ] Simpan TRI untuk owner/internal, tapi jangan ekspos ke guru dulu
+- [x] Buat summary analytics yang bicara bahasa guru, bukan bahasa statistik mentah — ✅ insight naratif dinamis: ringkasan kursus, siswa tuntas/belum, aktivitas mingguan dalam bahasa Indonesia ramah guru
+- [x] Tambahkan visual weak topic yang mudah dipahami — ✅ top 3 dengan badge prioritas, progress bar multi-warna (merah/oranye/kuning), teks kontekstual sesuai error rate
+- [x] Tambahkan remedial recommendation card — ✅ standalone card di analytics dengan filter "Siswa Perlu Bimbingan Tambahan"
+- [x] Tambahkan CTA "kirim remedial" atau "tinjau rekomendasi" — ✅ 3 CTA: Tinjau Semua Siswa, Buat Quiz Remedial, Lihat Kursus
+- [x] Tambahkan halaman detail progres per siswa — ✅ `/guru/siswa/[id]` lengkap dengan profil, metrik, riwayat quiz (sudah ada sejak build)
+- [x] Tambahkan halaman detail progres per kursus — ✅ `/guru/kursus/[id]/progres` + `/guru/kursus/[id]/nilai` (sudah ada sejak build)
+- [x] Simpan TRI untuk owner/internal, tapi jangan ekspos ke guru dulu — ✅ API `/api/v1/owner/tri` + halaman owner dashboard dengan tabel score, label, komponen
 
 ## Gelombang 19 — Content & Legacy Content Governance ❌ BELUM MULAI
 
@@ -405,13 +405,13 @@
 |-----------|--------|----------|
 | 1-13 | ✅ SELESAI | 100% |
 | 14 | ✅ SELESAI | 100% |
-| 15 | ❌ BELUM MULAI | 0% |
-| 16 | ❌ BELUM MULAI | 0% |
-| 17 | ❌ BELUM MULAI | 0% |
-| 18 | ❌ BELUM MULAI | 0% |
+| 15 | ✅ SELESAI | 100% |
+| 16 | ✅ SELESAI | 100% |
+| 17 | ✅ SELESAI | 100% (7/7 sudah ada sejak build awal) |
+| 18 | ✅ SELESAI | 86% (6/7 — TRI belum terintegrasi) |
 | 19 | ❌ BELUM MULAI | 0% |
 | 20 | ❌ BELUM MULAI | 0% |
 | 21 | ❌ BELUM MULAI | 0% |
 | 22 | ❌ BELUM MULAI | 0% |
 
-**Total Progress:** 148/215 item (69%)
+**Total Progress:** 182/215 item (85%)

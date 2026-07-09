@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, Users, TrendingUp, Award, AlertTriangle, Send, ChevronRight, BarChart3, XCircle, RefreshCw } from "lucide-react";
+import { BookOpen, Users, TrendingUp, Award, AlertTriangle, Send, ChevronRight, BarChart3, XCircle, RefreshCw, Lightbulb, GraduationCap, FileEdit, ListChecks } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 
 interface KursusBreakdown {
@@ -196,32 +196,149 @@ export default function GuruAnalyticsPage() {
             </div>
           )}
 
+          {data.rataNilaiKeseluruhan > 0 && (
+            <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Lightbulb className="w-5 h-5 text-tertiary" />
+                <h2 className="font-heading font-semibold text-on-surface">Ringkasan untuk Bapak/Ibu Guru</h2>
+              </div>
+              <div className="space-y-2 text-sm text-on-surface">
+                {(() => {
+                  const insightLines: string[] = [];
+                  const kursusCount = data.kursusBreakdown.length;
+                  const allTuntas = data.totalSiswaBelumTuntas === 0;
+                  const weakCount = data.weakTopics.length;
+
+                  if (kursusCount > 0) {
+                    const bestCourse = [...data.kursusBreakdown].sort((a, b) => b.rataNilai - a.rataNilai)[0];
+                    const worstCourse = [...data.kursusBreakdown].sort((a, b) => a.rataNilai - b.rataNilai)[0];
+                    insightLines.push(
+                      `${data.totalSiswa} siswa terdaftar di ${kursusCount} kursus. ` +
+                      `Rata-rata nilai keseluruhan: ${data.rataNilaiKeseluruhan}.`
+                    );
+                    if (data.totalSiswaTuntas > 0) {
+                      const pct = Math.round((data.totalSiswaTuntas / data.totalSiswa) * 100);
+                      insightLines.push(
+                        `${data.totalSiswaTuntas} dari ${data.totalSiswa} siswa sudah tuntas (${pct}%).`
+                      );
+                    }
+                    if (bestCourse && worstCourse && bestCourse.kursusId !== worstCourse.kursusId) {
+                      insightLines.push(
+                        `Kursus dengan rata-rata tertinggi: "${bestCourse.judul}" (${bestCourse.rataNilai}). ` +
+                        `Kursus yang perlu perhatian lebih: "${worstCourse.judul}" (rata-rata ${worstCourse.rataNilai}).`
+                      );
+                    }
+                  }
+
+                  if (allTuntas && data.totalSiswa > 0) {
+                    insightLines.push(
+                      "Semua siswa sudah mencapai nilai tuntas. Pertahankan! " +
+                      "Tantang mereka dengan quiz yang lebih bervariasi."
+                    );
+                  }
+
+                  if (weakCount > 0) {
+                    const topWeak = data.weakTopics.slice(0, 3);
+                    const hardest = topWeak[0];
+                    insightLines.push(
+                      `${weakCount} soal paling sering dijawab salah oleh siswa. ` +
+                      `Soal tersulit memiliki error rate ${hardest.errorRate}%. ` +
+                      `Pertimbangkan untuk membahas ulang topik-topik ini di kelas.`
+                    );
+                  }
+
+                  if (data.trend && data.trend.length >= 2) {
+                    const last = data.trend[data.trend.length - 1].total;
+                    const prev = data.trend[data.trend.length - 2].total;
+                    if (prev > 0) {
+                      const diff = last - prev;
+                      const pct = Math.round((diff / prev) * 100);
+                      if (diff > 0) {
+                        insightLines.push(
+                          `Aktivitas minggu ini naik ${pct}% dibanding minggu lalu. Semangat belajar siswa meningkat!`
+                        );
+                      } else if (diff < 0) {
+                        insightLines.push(
+                          `Aktivitas minggu ini turun ${Math.abs(pct)}% dibanding minggu lalu. ` +
+                          `Coba beri pengingat atau quiz ringan untuk memicu semangat belajar lagi.`
+                        );
+                      }
+                    }
+                  }
+
+                  return insightLines.length > 0
+                    ? insightLines.map((line, i) => (
+                        <p key={i} className="flex items-start gap-2">
+                          <span className="text-primary mt-1 shrink-0">•</span>
+                          <span>{line}</span>
+                        </p>
+                      ))
+                    : null;
+                })()}
+              </div>
+            </div>
+          )}
+
           {data.weakTopics.length > 0 && (
             <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass mb-6">
-              <h2 className="font-heading font-semibold text-on-surface mb-4 flex items-center gap-2">
-                <XCircle className="w-4 h-4 text-red-500" />
-                Topik Paling Lemah
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-heading font-semibold text-on-surface flex items-center gap-2">
+                  <XCircle className="w-4 h-4 text-red-500" />
+                  Soal Tersulit bagi Siswa
+                </h2>
+                <Link
+                  href="/guru/kursus"
+                  className="text-[10px] font-bold tracking-wider text-primary hover:underline flex items-center gap-1 shrink-0"
+                >
+                  <FileEdit className="w-3 h-3" />
+                  Buat Quiz Baru
+                </Link>
+              </div>
+              <p className="text-sm text-on-surface-variant mb-4">
+                {data.weakTopics[0].errorRate >= 70
+                  ? `Lebih dari separuh siswa kesulitan dengan soal-soal ini. Bahas ulang topiknya, lalu coba dengan quiz yang lebih mudah dipahami.`
+                  : data.weakTopics.length >= 5
+                    ? `Ada ${data.weakTopics.length} soal yang paling sering dijawab salah. Prioritaskan yang error rate-nya paling tinggi.`
+                    : `Soal-soal ini perlu diulas kembali agar siswa lebih paham.`}
+              </p>
               <div className="space-y-3">
-                {data.weakTopics.map((t) => (
+                {data.weakTopics.map((t, i) => (
                   <div key={t.soalId}>
                     <div className="flex items-start justify-between gap-3 mb-1">
-                      <p className="text-sm text-on-surface font-medium line-clamp-1 flex-1">
-                        {t.pertanyaan}
-                      </p>
-                      <span className="text-xs font-bold text-red-600 tabular-nums shrink-0">
-                        {t.errorRate}%
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {i < 3 && (
+                          <span className={`w-5 h-5 rounded-md text-[10px] font-bold grid place-items-center shrink-0 ${
+                            i === 0 ? "bg-red-500 text-white" :
+                            i === 1 ? "bg-orange-400 text-white" :
+                            "bg-amber-400 text-white"
+                          }`}>
+                            {i + 1}
+                          </span>
+                        )}
+                        <p className="text-sm text-on-surface font-medium line-clamp-1">
+                          {t.pertanyaan}
+                        </p>
+                      </div>
+                      <span className={`text-xs font-bold tabular-nums shrink-0 ${
+                        t.errorRate >= 70 ? "text-red-600" :
+                        t.errorRate >= 50 ? "text-orange-600" :
+                        "text-amber-600"
+                      }`}>
+                        {t.errorRate}% salah
                       </span>
                     </div>
-                    <div className="w-full bg-red-50 rounded-full h-2 overflow-hidden">
+                    <div className="w-full rounded-full h-2 overflow-hidden bg-red-50 ml-7">
                       <div
-                        className="h-full bg-red-400 rounded-full transition-all"
+                        className={`h-full rounded-full transition-all ${
+                          t.errorRate >= 70 ? "bg-red-400" :
+                          t.errorRate >= 50 ? "bg-orange-400" :
+                          "bg-amber-400"
+                        }`}
                         style={{ width: `${t.errorRate}%` }}
                       />
                     </div>
-                    <p className="text-[10px] text-on-surface-variant mt-0.5">
-                      {t.totalSalah} salah dari {t.totalJawab} jawaban
-                      <span className="ml-2 text-emerald-600">{t.totalBenar} benar</span>
+                    <p className="text-[10px] text-on-surface-variant mt-0.5 ml-7">
+                      {t.totalSalah} salah · {t.totalBenar} benar · {t.totalJawab} total jawaban
                     </p>
                   </div>
                 ))}
@@ -231,19 +348,23 @@ export default function GuruAnalyticsPage() {
 
           {data.remedialList.length > 0 && (
             <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass mb-6">
-              <h2 className="font-heading font-semibold text-on-surface mb-4 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-600" />
-                Rekomendasi Remedial
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-heading font-semibold text-on-surface flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4 text-amber-600" />
+                  Siswa Perlu Bimbingan Tambahan (Remedial)
+                </h2>
+              </div>
               <p className="text-sm text-on-surface-variant mb-4">
-                {data.remedialList.length} siswa dengan rata-rata nilai di bawah KKM (70).
-                Pertimbangkan untuk memberikan bimbingan tambahan.
+                {data.remedialList.length} siswa masih di bawah KKM (70).
+                {data.remedialList.length >= 5
+                  ? ` Cek detail masing-masing siswa untuk tahu topik mana yang perlu diperbaiki.`
+                  : ` Segera tindak lanjuti dengan bimbingan atau quiz ulang.`}
               </p>
-              <div className="space-y-2">
+              <div className="space-y-2 mb-4">
                 {data.remedialList.slice(0, 10).map((r) => (
                   <div
                     key={r.siswaId}
-                    className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border-precision"
+                    className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border-precision hover:border-amber-200 transition-colors"
                   >
                     <div className="w-10 h-10 rounded-full bg-red-50 text-red-600 grid place-items-center font-heading font-bold text-sm shrink-0">
                       {r.rataNilai}
@@ -255,7 +376,7 @@ export default function GuruAnalyticsPage() {
                         </Link>
                       </p>
                       <p className="text-[10px] text-on-surface-variant mt-0.5">
-                        {r.totalAttempt} attempt · {r.kursus.join(", ")}
+                        {r.totalAttempt} kali quiz · {r.kursus.join(", ")}
                       </p>
                     </div>
                     <Link
@@ -269,10 +390,33 @@ export default function GuruAnalyticsPage() {
                 ))}
               </div>
               {data.remedialList.length > 10 && (
-                <p className="text-xs text-on-surface-variant text-center mt-3">
+                <p className="text-xs text-on-surface-variant text-center mb-4">
                   +{data.remedialList.length - 10} siswa lainnya
                 </p>
               )}
+              <div className="flex flex-wrap gap-3 pt-2 border-t border-border-precision">
+                <Link
+                  href="/guru/siswa"
+                  className="inline-flex items-center gap-1.5 bg-primary text-on-primary px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 transition-all"
+                >
+                  <ListChecks className="w-3.5 h-3.5" />
+                  Tinjau Semua Siswa
+                </Link>
+                <Link
+                  href="/guru/drafts"
+                  className="inline-flex items-center gap-1.5 bg-amber-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 transition-all"
+                >
+                  <FileEdit className="w-3.5 h-3.5" />
+                  Buat Quiz Remedial
+                </Link>
+                <Link
+                  href="/guru/kursus"
+                  className="inline-flex items-center gap-1.5 bg-white border border-border-precision text-on-surface px-4 py-2 rounded-full text-xs font-semibold hover:bg-surface transition-all"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  Lihat Kursus
+                </Link>
+              </div>
             </div>
           )}
 

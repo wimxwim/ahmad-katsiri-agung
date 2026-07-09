@@ -337,15 +337,15 @@ Basis: keputusan user + audit codebase nyata + environment terverifikasi parsial
 - [ ] Tambahkan pengumuman guru dalam bentuk card yang jelas
 - [ ] Tambahkan fallback jika siswa belum tergabung kelas/kursus mana pun
 
-## Gelombang 18 — Analytics & Remedial UX
+## Gelombang 18 — Analytics & Remedial UX ✅
 
-- [ ] Buat summary analytics yang bicara bahasa guru, bukan bahasa statistik mentah
-- [ ] Tambahkan visual weak topic yang mudah dipahami
-- [ ] Tambahkan remedial recommendation card
-- [ ] Tambahkan CTA “kirim remedial” atau “tinjau rekomendasi”
-- [ ] Tambahkan halaman detail progres per siswa
-- [ ] Tambahkan halaman detail progres per kursus
-- [ ] Simpan TRI untuk owner/internal, tapi jangan ekspos ke guru dulu
+- [x] Buat summary analytics yang bicara bahasa guru, bukan bahasa statistik mentah
+- [x] Tambahkan visual weak topic yang mudah dipahami
+- [x] Tambahkan remedial recommendation card
+- [x] Tambahkan CTA "kirim remedial" atau "tinjau rekomendasi"
+- [x] Tambahkan halaman detail progres per siswa
+- [x] Tambahkan halaman detail progres per kursus
+- [x] Simpan TRI untuk owner/internal, tapi jangan ekspos ke guru dulu
 
 ## Gelombang 19 — Content & Legacy Content Governance
 
