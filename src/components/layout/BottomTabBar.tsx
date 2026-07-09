@@ -41,7 +41,15 @@ export function BottomTabBar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [sheetOpen, closeSheet]);
 
-  if (pathname.startsWith("/masuk")) return null;
+  if (
+    pathname.startsWith("/masuk") ||
+    pathname.startsWith("/guru") ||
+    pathname.startsWith("/siswa") ||
+    pathname.startsWith("/owner") ||
+    pathname.startsWith("/admin-sekolah") ||
+    pathname.startsWith("/orang-tua")
+  )
+    return null;
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -52,7 +60,7 @@ export function BottomTabBar() {
     { href: "/", label: "Beranda", icon: Home },
     { href: "/fitur", label: "Fitur", icon: Sparkles },
     { href: "/kursus", label: "Kursus", icon: BookOpen },
-    ...(session ? [{ href: session.role === "guru" ? "/guru" : session.role === "owner" ? "/owner" : session.role === "admin_sekolah" ? "/admin-sekolah" : session.role === "orang_tua" ? "/orang-tua" : "/siswa", label: "Dashboard", icon: GraduationCap, sessionOnly: true }] : []),
+    ...(session ? [{ href: session.role === "guru" ? "/guru/beranda" : session.role === "owner" ? "/owner" : session.role === "admin_sekolah" ? "/admin-sekolah" : session.role === "orang_tua" ? "/orang-tua" : "/siswa/beranda", label: "Dashboard", icon: GraduationCap, sessionOnly: true }] : []),
   ];
 
   return (

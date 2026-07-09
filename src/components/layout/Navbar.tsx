@@ -21,7 +21,15 @@ export function Navbar() {
   const { navigation } = useCmsData();
   const session = useSession();
 
-  if (pathname.startsWith("/masuk")) return null;
+  if (
+    pathname.startsWith("/masuk") ||
+    pathname.startsWith("/guru") ||
+    pathname.startsWith("/siswa") ||
+    pathname.startsWith("/owner") ||
+    pathname.startsWith("/admin-sekolah") ||
+    pathname.startsWith("/orang-tua")
+  )
+    return null;
 
   const navItems = navigation?.navbarItems ?? NAV_ITEMS_FALLBACK;
 
@@ -105,26 +113,26 @@ export function Navbar() {
                   <Link
                     href={
                       session.role === "guru"
-                        ? "/guru"
+                        ? "/guru/beranda"
                         : session.role === "owner"
                         ? "/owner"
                         : session.role === "admin_sekolah"
                         ? "/admin-sekolah"
                         : session.role === "orang_tua"
                         ? "/orang-tua"
-                        : "/siswa"
+                        : "/siswa/beranda"
                     }
                     className={`relative px-4 py-2 text-sm rounded-full transition-colors duration-200 ${
                       isActive(
                         session.role === "guru"
-                          ? "/guru"
+                          ? "/guru/beranda"
                           : session.role === "owner"
                           ? "/owner"
                           : session.role === "admin_sekolah"
                           ? "/admin-sekolah"
                           : session.role === "orang_tua"
                           ? "/orang-tua"
-                          : "/siswa",
+                          : "/siswa/beranda",
                       )
                         ? "bg-primary/10 text-primary font-semibold"
                         : "text-on-surface-variant hover:text-primary hover:bg-primary/5"
