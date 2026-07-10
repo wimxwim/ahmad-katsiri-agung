@@ -189,7 +189,8 @@
 
 ### LEG4. Evaluasi DeepSeek V4 Flash untuk AI ringan
 - **Referensi:** Flash: Rp1.440/1M input + Rp1.618/1M output vs Pro: Rp3.907/Rp7.814 — hemat 63%
-- **Fix:** `ai.ts` tambah `getFlashModel()` + `getModelForTask()`. Quiz PG → Flash, Materi + Soal → Pro. `ai-generator.ts` + `ai-regenerate.ts` updated. Env: `AI_FLASH_MODEL=deepseek-chat`
+- **Fix:** `ai.ts` tambah `getFlashModel()` + `getModelForTask()`. Quiz PG → Flash (`deepseek-v4-flash`), Materi + Soal → Pro (`mimo-v2.5`). `ai-generator.ts` + `ai-regenerate.ts` updated. Di-test via NaraRouter API: Flash 144 tokens untuk 1 soal PG valid.
+- **Audit:** `deepseek-chat` TIDAK ADA di NaraRouter. `deepseek-v4-flash` + `deepseek-v4-pro` + `mimo-v2.5` semua terverifikasi jalan.
 - **Effort:** 1 jam
 - **Status:** [x] selesai
 

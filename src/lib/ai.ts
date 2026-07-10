@@ -38,7 +38,7 @@ export function getModelName(): string {
 }
 
 export function getFlashModel(): string {
-  return process.env.AI_FLASH_MODEL || "deepseek-chat";
+  return process.env.AI_FLASH_MODEL || "deepseek-v4-flash";
 }
 
 export type AiTaskComplexity = "heavy" | "light";
