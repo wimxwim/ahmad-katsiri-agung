@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Users, Loader2, Edit3, GraduationCap, X, Check } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface KelasItem {
   id: string;
@@ -190,12 +191,15 @@ export default function GuruKelasPage() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="text-center py-12 bg-glass rounded-2xl border border-border-precision">
-          <GraduationCap className="w-10 h-10 text-on-surface-variant/30 mx-auto mb-3" />
-          <p className="text-on-surface-variant mb-4">Belum ada kelas</p>
+        <div className="text-center py-12">
+          <EmptyState
+            icon={GraduationCap}
+            title="Belum ada kelas"
+            description="Buat kelas pertama untuk mengelola siswa dan materi"
+          />
           <button
             onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
+            className="mt-4 inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
           >
             <Plus className="w-4 h-4" />
             Buat Kelas Pertama

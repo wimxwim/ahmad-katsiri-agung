@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { Megaphone, AlertCircle, Pin } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface PengumumanItem {
   id: string;
@@ -67,18 +67,11 @@ export default function SiswaPengumumanPage() {
       </div>
 
       {data.length === 0 ? (
-        <div className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass text-center">
-          <span className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-700 grid place-items-center mx-auto mb-4">
-            <Megaphone className="w-7 h-7" />
-          </span>
-          <h3 className="font-heading text-xl font-bold text-on-surface mb-2">
-            Belum ada pengumuman
-          </h3>
-          <p className="text-sm text-on-surface-variant max-w-md mx-auto">
-            Guru dan sekolah akan mengirim pengumuman ke kamu lewat halaman ini. Cek
-            kembali secara berkala.
-          </p>
-        </div>
+        <EmptyState
+          icon={Megaphone}
+          title="Belum ada pengumuman"
+          description="Guru dan sekolah akan mengirim pengumuman ke kamu lewat halaman ini. Cek kembali secara berkala."
+        />
       ) : (
         <div className="space-y-3">
           {data.map((p) => (

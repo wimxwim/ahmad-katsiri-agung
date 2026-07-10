@@ -63,10 +63,29 @@ function SkeletonDashboardSiswa() {
   );
 }
 
+function SkeletonDashboardGeneric() {
+  return (
+    <div className="space-y-6">
+      <div className="h-8 w-40 bg-primary/5 rounded-lg animate-pulse" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {[1, 2, 3].map((i) => (
+          <SkeletonCard key={i} className="p-5 h-20" />
+        ))}
+      </div>
+      <div className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <SkeletonCard key={i} className="p-4 sm:p-5 h-24" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export {
   SkeletonCard,
   SkeletonStatCards,
   SkeletonList,
   SkeletonDashboardGuru,
   SkeletonDashboardSiswa,
+  SkeletonDashboardGeneric,
 };

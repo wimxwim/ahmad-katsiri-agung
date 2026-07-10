@@ -4,6 +4,7 @@ import { ShieldCheck, School, Users, Sparkles, AlertTriangle, CheckCircle, Info,
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface KomponenTRI {
   materi: number;
@@ -175,8 +176,12 @@ export default function OwnerIndex() {
         )}
 
         {!loading && !error && triData?.length === 0 && (
-          <div className="mt-6 p-6 rounded-xl bg-primary/5 border border-primary/10 text-sm text-on-surface-variant text-center">
-            Belum ada guru terdaftar di sistem.
+          <div className="mt-6">
+            <EmptyState
+              icon={Users}
+              title="Belum ada guru terdaftar"
+              description="Sistem siap menerima guru pertama. Guru dapat mendaftar melalui halaman /daftar."
+            />
           </div>
         )}
 

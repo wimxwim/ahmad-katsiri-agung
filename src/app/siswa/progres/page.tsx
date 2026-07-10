@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useEffect, useState } from "react";
-import Link from "next/link";
-import { BarChart3, CheckCircle2, Sparkles, AlertCircle, BookOpen } from "lucide-react";
+import { BarChart3, CheckCircle2, AlertCircle, BookOpen } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface AttemptItem {
   id: string;
@@ -145,24 +145,12 @@ export default function SiswaProgresPage() {
       </div>
 
       {data && data.attempts.length === 0 ? (
-        <div className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass text-center">
-          <span className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 grid place-items-center mx-auto mb-4">
-            <BarChart3 className="w-7 h-7" />
-          </span>
-          <h3 className="font-heading text-xl font-bold text-on-surface mb-2">
-            Belum ada riwayat kuis
-          </h3>
-          <p className="text-sm text-on-surface-variant max-w-md mx-auto mb-5">
-            Mulai kerjakan kuis untuk melihat progres belajar kamu di sini.
-          </p>
-          <Link
-            href="/siswa/quiz"
-            className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold"
-          >
-            <Sparkles className="w-4 h-4" />
-            Lihat Kuis
-          </Link>
-        </div>
+        <EmptyState
+          icon={BarChart3}
+          title="Belum ada riwayat kuis"
+          description="Mulai kerjakan kuis untuk melihat progres belajar kamu di sini."
+          action={{ label: "Lihat Kuis", href: "/siswa/quiz" }}
+        />
       ) : (
         <div className="space-y-6">
           {groupedCourses.map((course) => (

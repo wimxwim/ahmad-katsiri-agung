@@ -1,10 +1,10 @@
 # TODO UPGRADE — AKAL Center 6.5/10 → 10/10
 
 > **Dibuat:** 10 Juli 2026
-> **Terakhir diupdate:** 10 Juli 2026 (Fase 2: naming unified + tenant-context integrated ke route-guard-v2 + /masuk fix portal selection)
+> **Terakhir diupdate:** 16 Juli 2026 (Fase 0-3 selesai + Fase BISNIS partial + Fase UX-A11Y defined)
 > **Metode:** Verifikasi 15/15 temuan audit + riset 2026 + diskusi owner (CATATAN DISKUSI OWNER.md)
 > **Prinsip:** UPGRADE kapabilitas, siapkan PINTU TEKNIS sebelum PINTU PEMASARAN
-> **Status:** Aktif — Fase 0-3 selesai, Fase BISNIS in progress
+> **Status:** Aktif — Fase 0-3 selesai, Fase BISNIS in progress, Fase UX-A11Y defined
 
 ---
 
@@ -267,25 +267,25 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 ### F5. Tambah `loading.tsx` di semua route dashboard
 
 - **Bukti:** `/guru/buat`, `/siswa/cbt`, `/owner`, `/orang-tua`, `/admin-sekolah` belum punya loading.tsx
-- **Fix:** Buat skeleton loading untuk setiap route
-- **Effort:** 1.5 jam
+- **Fix:** Buat `loading.tsx` untuk `/owner`, `/admin-sekolah`, `/orang-tua` + tambah `SkeletonDashboardGeneric` ke `SkeletonBlocks.tsx`. Route `/guru/*` dan `/siswa/*` sudah dicakup oleh parent `loading.tsx`.
+- **Effort:** 30 menit
 - **Referensi:** Vercel Next.js 16 — "Skeleton > Spinner"
-- **Status:** [ ] belum
+- **Status:** [x] selesai
 
 ### F6. Tambah `error.tsx` di semua route group
 
-- **Bukti:** Tidak ada error boundary bertingkat
-- **Fix:** Buat `error.tsx` di route groups
-- **Effort:** 1 jam
+- **Bukti:** Tidak ada error boundary di `/owner`, `/admin-sekolah`, `/orang-tua`
+- **Fix:** Buat `error.tsx` di 3 route group — ikuti pattern dari `/guru/error.tsx`
+- **Effort:** 15 menit
 - **Referensi:** Vercel Next.js 16 — "Error boundary bertingkat"
-- **Status:** [ ] belum
+- **Status:** [x] selesai
 
 ### F7. Standarisasi EmptyState + SkeletonList
 
-- **Bukti:** Hardcode empty state di `/guru/kelas` dan lainnya
-- **Fix:** Pakai komponen `@/components/ui/EmptyState` yang sudah ada
-- **Effort:** 1 jam
-- **Status:** [ ] belum
+- **Bukti:** Hardcode empty state di `/guru/kelas`, `/owner`, `/siswa/pengumuman`, `/siswa/progres`
+- **Fix:** Ganti 4 hardcode empty state dengan komponen `EmptyState` + 1 tambahan `SkeletonDashboardGeneric` di `SkeletonBlocks.tsx`
+- **Effort:** 30 menit
+- **Status:** [x] selesai
 
 **Total Fase 3:** ~10.5 jam
 
@@ -352,6 +352,168 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 - **Status:** [ ] belum
 
 **Total Fase BISNIS:** ~14 jam
+
+---
+
+## 🔥 FASE UX-A11Y — Audit Mega UI/UX (8 Skill + Web Guidelines + WCAG 2.2)
+
+> **Sumber:** Audit 16 Juli 2026 — 8 skill (web-design-guidelines, core-web-vitals, pwa-checklist, high-end-visual-design, frontend-design, ui-ux-pro-max, ui-ux-design-pro, design-taste-frontend) + Vercel Web Interface Guidelines + WCAG 2.2
+> **Cakupan:** 100+ file, 7 halaman publik, 2 dashboard
+> **Prinsip:** Premium agency-tier visual + accessibility-first + mobile-safe
+
+### 🔴 PWA — Blocker Install (CRITICAL)
+
+#### PWA1. Generate icon PWA yang hilang
+- **Bukti:** `public/manifest.json:12,18` — referensi `/icon.png` (512x512) dan `/icon.svg` — **KEDUA FILE TIDAK ADA**. File yang ada hanya `public/images/logo-512.webp`.
+- **Fix:** Generate `/public/icon.png` 512x512 + 192x192 maskable dari logo. Atau ubah manifest.json ke path yang benar.
+- **Effort:** 15 menit
+- **Status:** [ ] belum
+
+#### PWA2. Tambah Service Worker untuk offline support
+- **Bukti:** `public/sw.js` tidak ada. Tidak ada `next-pwa` di package.json. Zero offline.
+- **Fix:** Install `next-pwa` atau buat `sw.js` manual dengan cache-first strategy untuk static assets.
+- **Effort:** 2 jam
+- **Status:** [ ] belum
+
+#### PWA3. Tambah offline fallback page
+- **Bukti:** Tidak ada halaman offline. Browser default error jika network mati.
+- **Fix:** Buat `public/offline.html` atau halaman fallback di app.
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+### 🔴 AKSESIBILITAS — WCAG 2.2 Violations (CRITICAL)
+
+#### A11Y1. `text-[10px]` + `text-[11px]` MASIF — 100+ lokasi
+- **Bukti:** grep `text-\[10px\]` + `text-\[11px\]` → 100+ match. File terparah: `siswa/beranda/page.tsx` (~25), `guru/analytics/page.tsx` (~12), `owner/page.tsx` (~10). Melanggar WCAG 2.2 minimum 12px.
+- **Fix:** Ganti semua `text-[10px]` → `text-xs` (12px), `text-[11px]` → `text-xs`. Untuk label mikro yang memang harus kecil, gunakan `sr-only` + visible text lebih besar.
+- **Effort:** 3 jam (100+ lokasi, tapi bisa find-replace massal)
+- **Status:** [ ] belum
+
+#### A11Y2. Tidak ada skip-to-content link
+- **Bukti:** Keyboard-only users tidak bisa melewati navigasi ke konten utama.
+- **Fix:** Tambah `<a href="#main" class="sr-only focus:not-sr-only ...">Lewati ke konten</a>` di `layout.tsx`, dan `id="main"` di `<main>`.
+- **Effort:** 10 menit
+- **Status:** [ ] belum
+
+#### A11Y3. Touch target di bawah 44px
+- **Bukti:** `Toast.tsx:87` — close button `w-8 h-8` (32px). `BottomTabBar.tsx:98` — sheet close `w-8 h-8`. Melanggar WCAG 2.5.5 (min 44x44px).
+- **Fix:** `w-8 h-8` → `w-11 h-11` (44px).
+- **Effort:** 5 menit
+- **Status:** [ ] belum
+
+#### A11Y4. Placeholder kontras rendah
+- **Bukti:** `placeholder:text-on-surface-variant/50` — opacity 50% pada teks kecil bisa di bawah 4.5:1 kontras.
+- **Fix:** Naikkan ke `placeholder:text-on-surface-variant/70`. Atau gunakan warna solid `text-on-surface-variant` dengan opacity dikontrol via CSS `::placeholder { opacity: 0.7 }`.
+- **Effort:** 15 menit
+- **Status:** [ ] belum
+
+### 🔴 KEAMANAN — CSP Missing (CRITICAL)
+
+#### SEC1. Tambah Content-Security-Policy header
+- **Bukti:** Tidak ada CSP di `next.config.ts` maupun middleware. Rentan XSS injection.
+- **Fix:** Tambah CSP header di `next.config.ts` dengan directive minimal: `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;`
+- **Effort:** 1 jam (butuh testing supaya tidak break)
+- **Status:** [ ] belum
+
+### 🟡 ANTI-SLOP — Design Quality (HIGH)
+
+#### AS1. Ganti 11 emoji di UI dengan Lucide icons
+- **Bukti (terverifikasi):**
+  - `masuk/FormMasuk.tsx:182` — `✓` → ganti `<Check />`
+  - `masuk/FormMasuk.tsx:192` — `📘🎬🎮📝📿` → ganti Lucide icons (Book, Film, Gamepad, Pen, etc.)
+  - `masuk/FormMasuk.tsx:219,232` — `🧑🎓🧑🏫` → ganti `<GraduationCap />` / `<User />` + label
+  - `Navbar.tsx:176` — `✕` → ganti `<X />`
+  - `guru/upload/page.tsx:308`, `siswa/cbt/[id]/page.tsx:136`, `guru/drafts/*` — `✅✓` → ganti `<Check />` / `<CheckCircle />`
+- **Fix:** Ganti semua emoji dengan Lucide React icons.
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+#### AS2. Hapus 3-column simetris — ganti Bento/Asimetris
+- **Bukti:** 32+ lokasi `sm:grid-cols-3` / `lg:grid-cols-3`. High-End Visual Design Rule: "NO 3-Column Card Layouts — Use 2-column Zig-Zag, asymmetric grid, or horizontal scrolling".
+- **Lokasi utama:** `page.tsx:123` (pillar cards), `fitur/page.tsx:209,248`, `siswa/beranda/page.tsx:148`
+- **Fix:** Landing pillar cards → Bento grid (`col-span-8` + `col-span-4` stacked). Fitur cards → 2-col zig-zag layout. Dashboard stats → horizontal scroll atau 2-col.
+- **Effort:** 3 jam
+- **Status:** [ ] belum
+
+#### AS3. Ganti Inter font body → Geist atau Satoshi
+- **Bukti:** `layout.tsx` — `--font-body` = Inter. High-End Visual Design Section 2: Inter BANNED.
+- **Fix:** Ganti `Inter` → `Geist` atau `Plus Jakarta Sans` di `next/font/google`. Update `globals.css` body font-family.
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+### 🟡 VISUAL UPGRADE — Premium Agency Tier (HIGH)
+
+#### V1. Spacing generous — `pt-12` → `py-24` di landing page
+- **Bukti:** `page.tsx:92-93` — Hero `pt-12 sm:pt-16 pb-20`. Section antar `mt-16`. High-End Visual Design: minimum `py-24` (6rem).
+- **Fix:** `pt-12` → `pt-24`, `pb-20` → `pb-24`, `mt-16` → `mt-24`. Biarkan landing page "bernapas".
+- **Effort:** 15 menit
+- **Status:** [ ] belum
+
+#### V2. Tambah scroll reveal (`whileInView` + stagger) di landing page
+- **Bukti:** Landing page (`page.tsx`) — semua elemen statis, tidak ada motion import, tidak ada `whileInView`. `/tentang` dan `/fitur` sudah punya — landing TIDAK.
+- **Fix:** Bungkus section cards dengan `motion.div` + `whileInView` + `staggerChildren`. Import motion/react.
+- **Effort:** 1.5 jam
+- **Status:** [ ] belum
+
+#### V3. Tambah Double-Bezel pada hero CTA card
+- **Bukti:** Semua card single-layer flat. High-End Visual Design: nested architecture (outer shell `p-1.5` + inner core `shadow-[inset_0_1px_0_...]`).
+- **Fix:** Wrap CTA card di landing page dengan outer shell div (`p-[3px] rounded-[32px] bg-gradient-to-br from-primary/20 to-transparent`), inner core tetap `bg-white rounded-[29px]`.
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+#### V4. Hover states tambah transform
+- **Bukti:** 62+ hover states hanya ganti warna/brightness. Tidak ada `hover:scale-[1.02]` atau `hover:-translate-y-0.5`.
+- **Fix:** Tambah `hover:-translate-y-0.5 active:scale-[0.98]` ke semua CTA button dan card.
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+### 🟡 PERFORMA — Core Web Vitals (HIGH)
+
+#### PERF1. Migrasi `<img>` → `<Image>` dari `next/image`
+- **Bukti:** Semua gambar via `<img>` polos. Tidak ada lazy loading, tidak ada WebP auto-convert, tidak ada priority.
+- **Fix:** Ganti `<img src="...">` → `<Image src="..." width={...} height={...} />`. Tambah `priority` untuk hero, `loading="lazy"` auto untuk lainnya.
+- **Effort:** 1.5 jam
+- **Status:** [ ] belum
+
+#### PERF2. Tambah `loading="lazy"` ke gambar below-fold
+- **Bukti:** 3 gambar di Navbar, Footer, Tentang tanpa lazy loading.
+- **Fix:** Tambah atribut `loading="lazy"` atau pakai next/image.
+- **Effort:** 10 menit
+- **Status:** [ ] belum
+
+#### PERF3. Tambah preconnect untuk ImageKit + Supabase
+- **Bukti:** Hanya ada preconnect untuk googletagmanager (layout.tsx:122). Tidak ada untuk ImageKit CDN atau Supabase API.
+- **Fix:** Tambah `<link rel="preconnect">` untuk `https://ik.imagekit.io` dan `https://*.supabase.co`.
+- **Effort:** 5 menit
+- **Status:** [ ] belum
+
+### 🟢 LOW — Polish (NIT)
+
+#### NIT1. Fluid typography dengan `clamp()`
+- **Bukti:** Semua sizing breakpoint-based (`text-2xl sm:text-3xl lg:text-7xl`). Tidak ada `clamp()`.
+- **Fix:** Tambah CSS custom properties: `--text-hero: clamp(2rem, 5vw, 4.5rem)` di globals.css untuk heading.
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+#### NIT2. Foto Tentang — `onError` fallback
+- **Bukti:** `tentang/page.tsx:149` — `<img>` tanpa `onError`. Jika file tidak ada, broken image.
+- **Fix:** Tambah `onError={(e) => { e.currentTarget.src = '/images/avatar-placeholder.webp' }}`.
+- **Effort:** 5 menit
+- **Status:** [ ] belum
+
+#### NIT3. Deskripsi kursus hardcode "Akidah Akhlak" — ganti netral
+- **Bukti:** `kursus/page.tsx:60-61` — deskripsi spesifik PAI. Platform sekarang multi-guru.
+- **Fix:** Ganti jadi: "Jelajahi kursus yang tersedia. Setiap kursus dibuat dan dipublikasikan oleh guru secara mandiri."
+- **Effort:** 5 menit
+- **Status:** [ ] belum
+
+#### NIT4. Empty state kursus — tambah CTA
+- **Bukti:** `kursus/page.tsx:87-92` — teks "Belum ada kursus tersedia" tanpa ajakan tindakan.
+- **Fix:** Tambah link ke `/daftar` untuk user baru, atau ke dashboard untuk guru.
+- **Effort:** 10 menit
+- **Status:** [ ] belum
+
+**Total Fase UX-A11Y:** ~18 jam
 
 ---
 
@@ -706,8 +868,9 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 | 0 | Quick Wins | 1.1 jam | 6/6 ✅ | 0 |
 | 1 | Auth & Guard | 8.5 jam | 6/6 ✅ | Selesai |
 | 2 | Database & RLS | 10 jam | 4/5 ✅ (D1-D4 done) | D5 uji isolation |
-| 3 | Frontend & UX | 10.5 jam | 3/7 [~] | F2, F5, F6, F7 |
+| 3 | Frontend & UX | 10.5 jam | 6/7 ✅ (F5-F7 done) | F2 FormMasuk split |
 | 🔥 | **BISNIS — Persiapan 80 Guru** | **14 jam** | **0/7** | **Semua** |
+| 🔥 | **UX-A11Y (Mega Audit)** | **18 jam** | **0/20** | **Semua** |
 | 4 | Design System | 3.5 jam | 0/4 | Semua |
 | 5 | Security | 3.5 jam | 0/5 | Semua |
 | 6 | Performance | 5 jam | 0/5 | Semua |
@@ -716,7 +879,7 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 | 9 | Dokumentasi | 5.5 jam | 0/4 | Semua |
 | 10 | DevOps | 5 jam | 0/5 | Semua |
 | 11 | Upgrade (bonus) | 12 jam | 0/5 | Semua |
-| **TOTAL** | **69 item** | **~97 jam** | **21 selesai** | **48 pending** |
+| **TOTAL** | **89 item** | **~115 jam** | **24 selesai** | **65 pending** |
 
 ---
 
