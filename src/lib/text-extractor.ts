@@ -33,24 +33,21 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 }
 
 export async function extractPdfText(bytes: Buffer): Promise<string> {
-  const { PDFParse } = (await import("pdf-parse")) as unknown as {
-    PDFParse: new (opts: { data: Buffer }) => {
-      getText(): Promise<{ text: string; pages?: number }>;
-      getPageCount(): Promise<number>;
-      destroy(): Promise<void>;
-    };
-  };
-  const parser = new PDFParse({ data: bytes });
-  try {
-    const pageCount = await withTimeout(parser.getPageCount(), MAX_EXTRACT_TIME_MS, "hitung halaman PDF");
-    if (pageCount > MAX_PDF_PAGES) {
-      throw new Error(`PDF memiliki ${pageCount} halaman (maks ${MAX_PDF_PAGES}), kemungkinan dokumen tidak wajar`);
-    }
-    const result = await withTimeout(parser.getText(), MAX_EXTRACT_TIME_MS, "ekstraksi PDF");
-    return truncate(result.text || "");
-  } finally {
-    await parser.destroy().catch(() => {});
+  const { extractText, getDocumentProxy } = await import("unpdf");
+  const pdf = await withTimeout(
+    getDocumentProxy(new Uint8Array(bytes)),
+    MAX_EXTRACT_TIME_MS,
+    "membuka PDF",
+  );
+  const { totalPages, text } = await withTimeout(
+    extractText(pdf, { mergePages: true }),
+    MAX_EXTRACT_TIME_MS,
+    "ekstraksi PDF",
+  );
+  if (totalPages > MAX_PDF_PAGES) {
+    throw new Error(`PDF memiliki ${totalPages} halaman (maks ${MAX_PDF_PAGES}), kemungkinan dokumen tidak wajar`);
   }
+  return truncate(text || "");
 }
 
 export async function extractDocxText(bytes: Buffer): Promise<string> {
