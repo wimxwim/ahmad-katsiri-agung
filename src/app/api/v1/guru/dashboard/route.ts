@@ -9,6 +9,8 @@ import {
   materiPublished,
   jawabanLog,
   soal,
+  quotas,
+  quotaUsages,
 } from "@/lib/db/schema";
 import { and, eq, sql, desc, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
@@ -20,7 +22,7 @@ export async function GET(request: NextRequest) {
     const session = await requireGuru(request);
     const guruId = session.userId;
 
-    const [kursusRows, draftRows, enrolledRows, quizPubRows, quizAttemptRows, materiPubRows] =
+    const [kursusRows, draftRows, enrolledRows, quizPubRows, quizAttemptRows, materiPubRows, quotaRow] =
       await Promise.all([
         db
           .select({ id: kursus.id, judul: kursus.judul, slug: kursus.slug, deskripsi: kursus.deskripsi, statusPublikasi: kursus.statusPublikasi })
@@ -56,6 +58,13 @@ export async function GET(request: NextRequest) {
           .from(materiPublished)
           .innerJoin(kursus, eq(materiPublished.kursusId, kursus.id))
           .where(eq(kursus.guruId, guruId)),
+
+        db
+          .select({ limitValue: quotas.limitValue, currentUsage: quotaUsages.currentUsage })
+          .from(quotas)
+          .leftJoin(quotaUsages, and(eq(quotaUsages.quotaId, quotas.id), eq(quotaUsages.userId, guruId)))
+          .where(and(eq(quotas.role, "GURU"), eq(quotas.resourceType, "ai_generation"), eq(quotas.isActive, true)))
+          .limit(1),
       ]);
 
     const totalSiswa = enrolledRows.length;
@@ -95,6 +104,9 @@ export async function GET(request: NextRequest) {
       // best-effort
     }
 
+    const aiQuotaUsed = quotaRow?.[0]?.currentUsage ?? 0;
+    const aiQuotaLimit = quotaRow?.[0]?.limitValue ?? 0;
+
     return NextResponse.json({
       data: {
         totalKursus: kursusRows.length,
@@ -106,6 +118,8 @@ export async function GET(request: NextRequest) {
         totalQuizPublished: quizPubRows.length,
         kursusList: kursusRows,
         weakTopics,
+        aiQuotaUsed,
+        aiQuotaLimit,
       },
     });
   } catch (e) {

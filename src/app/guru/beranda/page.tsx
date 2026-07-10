@@ -1,7 +1,7 @@
 "use client";
 
 import { StatCard } from "@/components/dashboard/StatCard";
-import { BookOpen, Users, Sparkles, ArrowRight, Upload, FileCheck, Layers, GraduationCap, Clock, AlertCircle, ClipboardList, UserPlus, CheckCircle2, Circle } from "lucide-react";
+import { BookOpen, Users, Sparkles, ArrowRight, Upload, FileCheck, Layers, GraduationCap, Clock, AlertCircle, ClipboardList, UserPlus, CheckCircle2, Circle, Zap } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -19,6 +19,8 @@ interface DashboardData {
   totalQuizPublished: number;
   kursusList: { id: string; judul: string; slug: string; deskripsi: string | null; statusPublikasi: string }[];
   weakTopics: { pertanyaan: string; errorRate: number; totalJawab: number }[];
+  aiQuotaUsed: number;
+  aiQuotaLimit: number;
 }
 
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
@@ -111,14 +113,28 @@ export default function GuruBerandaPage() {
             Kelola kursus, siswa, dan draft AI kamu di satu tempat.
           </p>
         </div>
-        <Link
-          href="/guru/buat"
-          className="inline-flex items-center gap-2 self-start sm:self-auto bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all shadow-glass"
-        >
-          <Sparkles className="w-4 h-4" />
-          Buat Kursus dengan AI
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+        <div className="flex items-center gap-3 self-start sm:self-auto">
+          {data.aiQuotaLimit > 0 && (
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shadow-glass ${
+              data.aiQuotaUsed >= data.aiQuotaLimit
+                ? "bg-red-50 text-red-700 border border-red-200"
+                : data.aiQuotaUsed >= data.aiQuotaLimit * 0.8
+                  ? "bg-amber-50 text-amber-700 border border-amber-200"
+                  : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+            }`}>
+              <Zap className="w-3 h-3" />
+              AI: {data.aiQuotaUsed}/{data.aiQuotaLimit} tersisa bulan ini
+            </div>
+          )}
+          <Link
+            href="/guru/buat"
+            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all shadow-glass"
+          >
+            <Sparkles className="w-4 h-4" />
+            Buat Kursus dengan AI
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
 
       {onboarding && !onboarding.isComplete && (

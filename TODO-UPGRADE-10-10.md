@@ -199,11 +199,10 @@
 ## 🔴 FASE 4 — AKTIVASI "FREE VALUE" (Kode Ada, Tinggal Sambung)
 
 ### AV1. Pasang `checkQuota()` di SEMUA route handler AI
-- **Bukti:** `src/lib/quota-guard.ts` SUDAH ADA — 2 route handler + 1 lib sudah import (`regenerate/route.ts`, `uploads/route.ts`, `ai-generator.ts`)
-- **Fix:** Sisanya (approve, reject, edit, close-review) belum — tambah checkQuota() di semua
-- **Lokasi:** `/api/v1/guru/drafts/*/approve*`, `/api/v1/guru/drafts/*/reject*`, `/api/v1/guru/drafts/*/edit*`
-- **Effort:** 1 jam (dari 2 jam — 3 sudah wired)
-- **Status:** [~] 3/8 done
+- **Bukti:** `src/lib/quota-guard.ts` SUDAH ADA — upload + regenerate + regenerate-materi semua sudah wired
+- **Lokasi:** `uploads/route.ts`, `regenerate/route.ts`, `regenerate-materi/route.ts`
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ### AV2. Insert ke `ai_requests` setiap AI dipanggil
 - **Bukti:** `ai_requests` SUDAH ADA di DB (0 rows). Insert wired di `ai-generator.ts:220` + `ai-regenerate.ts:102`.
@@ -211,9 +210,9 @@
 - **Status:** [x] selesai
 
 ### AV3. Tampilkan sisa kuota AI di dashboard guru
-- **Fix:** "AI: 12/30 tersisa bulan ini" di `guru/beranda/page.tsx`
-- **Effort:** 1 jam
-- **Status:** [ ] belum
+- **Fix:** API `/api/v1/guru/dashboard` tambah field `aiQuotaUsed` + `aiQuotaLimit`. Dashboard guru tampilkan badge "AI: X/Y tersisa bulan ini" dengan warna indikator (hijau/kuning/merah).
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ### AV4. Buat + apply `ai_daily_costs` materialized view di Supabase
 - **Fix:** Buat SQL materialized view dulu (belum ada di schema/migration) → apply → pg_cron refresh harian

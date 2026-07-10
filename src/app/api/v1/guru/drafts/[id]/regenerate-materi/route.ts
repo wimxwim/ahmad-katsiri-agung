@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, checkConcurrentLimit, releaseConcurrent } from "@/lib/rate-limit";
+import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { aiGeneration } from "@/lib/db/schema";
@@ -32,6 +33,20 @@ export async function POST(
     const conc = await checkConcurrentLimit(`gen:${session.userId}`, 2);
     if (!conc.allowed) {
       return apiError("Terlalu banyak job aktif. Tunggu job sebelumnya selesai.", 429);
+    }
+
+    try {
+      await checkQuota(session.userId, session.role, "ai_generation");
+    } catch (e) {
+      if (e instanceof QuotaExceededError) {
+        return NextResponse.json({
+          error: e.message,
+          resourceType: e.resourceType,
+          limit: e.limitValue,
+          usage: e.currentUsage,
+        }, { status: 429 });
+      }
+      throw e;
     }
 
     const { regenerateMateriOnly } = await import("@/lib/ai-regenerate");
