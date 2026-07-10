@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Users, Loader2, Edit3, GraduationCap, X, Check } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { csrfHeaders } from "@/lib/csrf";
 
 interface KelasItem {
   id: string;
@@ -49,7 +50,7 @@ export default function GuruKelasPage() {
     try {
       const res = await fetch("/api/v1/guru/kelas", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         credentials: "include",
         body: JSON.stringify({ nama, tingkat }),
       });
@@ -73,6 +74,7 @@ export default function GuruKelasPage() {
     try {
       const res = await fetch(`/api/v1/guru/kelas/${id}`, {
         method: "DELETE",
+        headers: csrfHeaders(),
         credentials: "include",
       });
       if (!res.ok) {

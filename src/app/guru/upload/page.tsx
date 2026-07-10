@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Upload, FileText, Sparkles, Loader2, AlertCircle, X, History, FilePlus, Layers, CheckCircle2 } from "lucide-react";
 import { UploadProgress } from "@/components/ui/ScreenContracts";
 import { useToast } from "@/components/ui/Toast";
+import { csrfHeaders } from "@/lib/csrf";
 
 const ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx"];
 const MAX_SIZE = 10 * 1024 * 1024;
@@ -133,6 +134,7 @@ export default function GuruUploadPage() {
     try {
       const res = await fetch("/api/v1/guru/uploads", {
         method: "POST",
+        headers: csrfHeaders(),
         body: fd,
         credentials: "include",
       });

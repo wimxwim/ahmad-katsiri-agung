@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle2, RefreshCw, XCircle, Loader2, FileText, BookOpen, ClipboardList, Edit3, Save, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
+import { csrfHeaders } from "@/lib/csrf";
 
 interface GeneratedSoal {
   pertanyaan: string;
@@ -105,6 +106,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
     try {
       const res = await fetch(`/api/v1/guru/drafts/${draft.id}${path}`, {
         method: "POST",
+        headers: csrfHeaders(),
         credentials: "include",
       });
       if (!res.ok) {
@@ -141,7 +143,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
     try {
       const res = await fetch(`/api/v1/guru/drafts/${draft.id}/edit-materi`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         credentials: "include",
         body: JSON.stringify({ judul: editJudul, konten: editKonten }),
       });
