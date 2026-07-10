@@ -17,6 +17,7 @@ import { NextResponse } from "next/server";
 import { calculateTRI, getTRILabel } from "@/lib/analytics/calculateTRI";
 
 export async function GET() {
+  try {
   const session = await getSession();
   if (!session || session.role !== "owner") {
     return NextResponse.json({ data: null, error: "Hanya owner" }, { status: 403 });
@@ -166,4 +167,8 @@ export async function GET() {
     },
     data: results,
   });
+  } catch (e) {
+    console.error("Owner TRI error:", e);
+    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 });
+  }
 }

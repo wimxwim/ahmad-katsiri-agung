@@ -10,6 +10,7 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ fileId: string }> },
 ) {
+  try {
   const session = await getSession();
   if (!session) return apiUnauthorized();
 
@@ -27,4 +28,8 @@ export async function GET(
   const link = adapter.getLink(row.imagekitFileId || row.driveFileId || row.id);
 
   return NextResponse.redirect(link, 302);
+  } catch (e) {
+    console.error("Storage GET error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
 }

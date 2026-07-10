@@ -45,13 +45,13 @@ export default function SiswaMateriPage() {
     if (!id) return;
     setMarking(true);
     try {
-      await fetch(`/api/v1/siswa/materi/${id}`, {
+      const res = await fetch(`/api/v1/siswa/materi/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...csrfHeaders() },
         credentials: "include",
         body: JSON.stringify({ progress: 100, selesai: true }),
       });
-      setDone(true);
+      if (res.ok) setDone(true);
     } finally {
       setMarking(false);
     }

@@ -17,6 +17,7 @@ const CreateSchema = z.object({
 });
 
 export async function GET(request: NextRequest) {
+  try {
   const ip = ipFromRequest(request);
   const rl = await checkRateLimit(`pengumuman-list:${ip}`, 30, 15000);
   if (!rl.allowed) return apiRateLimit(rl.retryAfter);
@@ -43,9 +44,14 @@ export async function GET(request: NextRequest) {
     .limit(50);
 
   return NextResponse.json(rows.map(({ konten: _, ...rest }) => rest));
+  } catch (e) {
+    console.error("Pengumuman GET error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
 }
 
 export async function POST(request: NextRequest) {
+  try {
   const session = await getSession();
   if (!session) return apiUnauthorized();
 
@@ -77,4 +83,8 @@ export async function POST(request: NextRequest) {
     .returning();
 
   return NextResponse.json(row, { status: 201 });
+  } catch (e) {
+    console.error("Pengumuman POST error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
 }

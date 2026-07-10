@@ -42,8 +42,8 @@ export async function setRlsContext(
   sekolahId: string | null,
 ): Promise<void> {
   await db.execute(sql`
-    SELECT set_config('app.current_user_id', ${userId}, TRUE);
-    SELECT set_config('app.current_role', ${role}, TRUE);
-    SELECT set_config('app.current_tenant_id', ${sekolahId ?? ''}, TRUE);
+    SELECT set_config('app.user_id', ${userId}, TRUE);
+    SELECT set_config('app.role', ${role}, TRUE);
+    SELECT set_config('app.tenant_id', ${sekolahId ?? ''}, TRUE);
   `);
 }

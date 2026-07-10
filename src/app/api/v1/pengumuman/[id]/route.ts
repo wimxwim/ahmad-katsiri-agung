@@ -19,6 +19,7 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  try {
   const session = await getSession();
   if (!session) return apiUnauthorized();
 
@@ -26,12 +27,17 @@ export async function GET(
   const [row] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
   if (!row) return apiError("Pengumuman tidak ditemukan", 404);
   return NextResponse.json(row);
+  } catch (e) {
+    console.error("Pengumuman GET error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
 }
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  try {
   const session = await getSession();
   if (!session) return apiUnauthorized();
 
@@ -68,12 +74,17 @@ export async function PUT(
     .returning();
 
   return NextResponse.json(updated);
+  } catch (e) {
+    console.error("Pengumuman PUT error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
 }
 
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  try {
   const session = await getSession();
   if (!session) return apiUnauthorized();
 
@@ -90,4 +101,8 @@ export async function DELETE(
 
   await db.delete(pengumuman).where(eq(pengumuman.id, id));
   return NextResponse.json({ success: true });
+  } catch (e) {
+    console.error("Pengumuman DELETE error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
 }

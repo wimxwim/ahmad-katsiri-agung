@@ -4,14 +4,14 @@ import { db } from "@/lib/db";
 import { kursus } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
-import { requireGuru, GuardError } from "@/lib/route-guard-v2";
+import { requireSession, GuardError } from "@/lib/route-guard-v2";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await requireGuru(_req);
+    const session = await requireSession(_req);
 
     const rl = await checkRateLimit(`kursus-detail:${session.userId}`, 30, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

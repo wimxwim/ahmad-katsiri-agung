@@ -91,7 +91,7 @@ export default function GuruKelasPage() {
     try {
       const res = await fetch(`/api/v1/guru/kelas/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         credentials: "include",
         body: JSON.stringify({ nama: editNama, tingkat: editTingkat }),
       });
