@@ -21,7 +21,6 @@ const SKIP_CSRF_PATHS = [
   "/api/readyz",
   "/api/csp-report",
   "/api/keystatic",
-  "/api/siswa/cek",
 ];
 
 const ROLE_HOME: Record<SesiRole, string> = {

@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { getSession } from "@/lib/dal";
 import { checkRateLimitSync, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { pengumuman } from "@/lib/db/schema";
 import { desc, eq, or, and, gte, sql } from "drizzle-orm";
-import { apiError, apiRateLimit } from "@/lib/api-response";
+import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
 
 const CreateSchema = z.object({
   judul: z.string().min(1).max(255),
@@ -23,10 +21,7 @@ export async function GET(request: NextRequest) {
   const rl = checkRateLimitSync(`pengumuman-list:${ip}`, 30, 15000);
   if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
-  const session = _ar && _ar.success ? _ar.data : null;
+  const session = await getSession();
 
   const now = new Date();
   const rows = await db
@@ -51,15 +46,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  if (!sessionCookie?.value) return apiError("Harus login", 401);
+  const session = await getSession();
+  if (!session) return apiUnauthorized();
 
-  const _ar2 = await verifySession(sessionCookie.value);
-  if (!_ar2.success || (_ar2.data.role !== "guru" && _ar2.data.role !== "owner" && _ar2.data.role !== "admin_sekolah")) {
+  if (session.role !== "guru" && session.role !== "owner" && session.role !== "admin_sekolah") {
     return apiError("Hanya guru yang bisa membuat pengumuman", 403);
   }
-  const session = _ar2.data;
 
   const ip = ipFromRequest(request);
   const rl = checkRateLimitSync(`pengumuman-create:${ip}`, 10, 60000);

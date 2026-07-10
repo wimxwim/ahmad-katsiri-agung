@@ -1,23 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { getSession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { siswaKursus, kursus, users } from "@/lib/db/schema";
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { apiError, apiRateLimit } from "@/lib/api-response";
+import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
 
 export async function GET(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) {
-      return apiError("Silakan login terlebih dahulu", 401);
-    }
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner")) {
+    const session = await getSession();
+    if (!session) return apiUnauthorized();
+    if (session.role !== "guru" && session.role !== "owner") {
       return apiError("Hanya guru yang dapat mengakses daftar siswa", 403);
     }
-    const session = _ar.data;
 
     const rl = await checkRateLimit(`guru-siswa:${session.userId}`, 20, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

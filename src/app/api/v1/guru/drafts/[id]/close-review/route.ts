@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
@@ -13,26 +11,21 @@ import {
 import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
 import { sanitizeText } from "@/lib/sanitize";
+import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const cookieStore = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!cookieStore?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(cookieStore.value);
-    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner")) {
-      return apiError("Hanya guru yang dapat menutup siklus review", 403);
-    }
-    const session = _ar.data;
+    const session = await requireGuru(request);
 
     const { id } = await params;
 
     const [row] = await db
       .select()
       .from(aiGeneration)
-      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)))
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)))
       .limit(1);
     if (!row) return apiError("Draft tidak ditemukan", 404);
 
@@ -72,7 +65,7 @@ export async function POST(
         .insert(materiPublished)
         .values({
           aiGenerationId: row.id,
-          guruId: session.userId!,
+          guruId: session.userId,
           kursusId: row.kursusId,
         judul: materiJudulFinal || "Materi tanpa judul",
         konten: materiKontenFinal,
@@ -87,7 +80,7 @@ export async function POST(
         .insert(quizPublished)
         .values({
           aiGenerationId: row.id,
-          guruId: session.userId!,
+          guruId: session.userId,
           kursusId: row.kursusId,
           judul: row.quizJudul || "Kuis tanpa judul",
           modeEvaluasi: "BELAJAR",
@@ -151,7 +144,7 @@ export async function POST(
         publishedQuizId: quizId,
         updatedAt: new Date(),
       })
-      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)))
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)))
       .returning();
 
     await appendEvent(`gen:${session.userId}`, "gen.review_closed", {
@@ -168,6 +161,7 @@ export async function POST(
       redirectTo: `/guru/drafts/${id}/published`,
     });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Close review error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

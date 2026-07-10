@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { and, eq, isNull } from "drizzle-orm";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
 import { db } from "@/lib/db";
 import { kelas } from "@/lib/db/schema";
 import { apiError, apiRateLimit } from "@/lib/api-response";
+import { requireSession, GuardError } from "@/lib/route-guard-v2";
 
 const UpdateKelasSchema = z.object({
   nama: z.string().min(1).max(50).optional(),
@@ -19,11 +18,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success) return apiError("Sesi tidak valid", 401);
-    const session = _ar.data;
+    const session = await requireSession(request);
 
     const { id } = await params;
     const existing = await db
@@ -56,6 +51,7 @@ export async function PATCH(
 
     return NextResponse.json({ data: updated });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Kelas update error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }
@@ -66,11 +62,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success) return apiError("Sesi tidak valid", 401);
-    const session = _ar.data;
+    const session = await requireSession(request);
 
     const { id } = await params;
     const existing = await db
@@ -94,6 +86,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Kelas delete error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

@@ -1,26 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { db } from "@/lib/db";
 import { jawabanLog, users, kursus, quizSession } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
+import { requireRole, GuardError } from "@/lib/route-guard-v2";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const sessionCookie = req.cookies.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) {
-      return apiError("Silakan login terlebih dahulu", 401);
-    }
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner" && _ar.data.role !== "murid")) {
-      return apiError("Anda tidak memiliki akses ke nilai", 403);
-    }
-    const session = _ar.data;
+    const session = await requireRole(req, ["guru", "owner", "murid"]);
 
     const rl = await checkRateLimit(`kursus-nilai:${session.userId}`, 20, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
@@ -71,6 +62,7 @@ export async function GET(
 
     return NextResponse.json({ data: logs, total: logs.length });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Nilai error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

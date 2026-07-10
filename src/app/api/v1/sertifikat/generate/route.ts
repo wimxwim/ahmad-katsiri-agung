@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { eq, and, inArray } from "drizzle-orm";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { getSession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { sertifikat, kursus, jawabanLog, skill, soal } from "@/lib/db/schema";
 import { generateQRHash } from "@/lib/sertifikat/generateQRHash";
-import { apiError, apiRateLimit } from "@/lib/api-response";
+import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
 
 const GenerateSertifikatSchema = z.object({
   siswaId: z.string().uuid(),
@@ -22,15 +21,11 @@ function generateNomorSertifikat(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) {
-      return apiError("Silakan login terlebih dahulu", 401);
-    }
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner")) {
+    const session = await getSession();
+    if (!session) return apiUnauthorized();
+    if (session.role !== "guru" && session.role !== "owner") {
       return apiError("Hanya guru yang dapat membuat sertifikat", 403);
     }
-    const session = _ar.data;
 
     const rl = await checkRateLimit(`sertifikat-gen:${session.userId}`, 10, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

@@ -28,6 +28,7 @@ interface SurahDetail extends Surah {
 export default function QuranPage() {
   const [surahs, setSurahs] = useState<Surah[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [selected, setSelected] = useState<SurahDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [search, setSearch] = useState("");
@@ -44,9 +45,24 @@ export default function QuranPage() {
       })
       .catch(() => {
         setLoading(false);
-        console.error("Gagal memuat daftar surah");
+        setFetchError(true);
       });
   }, []);
+
+  function retryFetch() {
+    setLoading(true);
+    setFetchError(false);
+    fetch("https://equran.id/api/surat")
+      .then((r) => r.json())
+      .then((data: Surah[]) => {
+        setSurahs(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+        setFetchError(true);
+      });
+  }
 
   async function openSurah(nomor: number) {
     setDetailLoading(true);
@@ -226,6 +242,18 @@ export default function QuranPage() {
               {loading ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                </div>
+              ) : fetchError ? (
+                <div className="text-center py-16">
+                  <p className="text-on-surface-variant mb-4">
+                    Gagal memuat daftar surah. Periksa koneksi internet Anda.
+                  </p>
+                  <button
+                    onClick={retryFetch}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary text-sm font-semibold hover:brightness-110 transition-all"
+                  >
+                    Coba Lagi
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

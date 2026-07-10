@@ -1,21 +1,15 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { getSession } from "@/lib/dal";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { apiError, apiRateLimit } from "@/lib/api-response";
+import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { materiPublished, siswaKursus, materiRead } from "@/lib/db/schema";
 import { and, asc, eq, inArray } from "drizzle-orm";
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success) return apiError("Sesi tidak valid", 401);
-    const session = _ar.data;
+    const session = await getSession();
+    if (!session) return apiUnauthorized();
     if (session.role !== "murid" && session.role !== "orang_tua") {
       return apiError("Hanya siswa yang dapat melihat materi", 403);
     }

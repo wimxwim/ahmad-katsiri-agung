@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
-import { useSession } from "@/components/providers/SessionProvider";
+import { useSession, useSessionLoading } from "@/components/providers/SessionProvider";
 import { handleLogout } from "@/lib/logout";
 
 const NAV_ITEMS_FALLBACK = [
@@ -20,6 +20,7 @@ export function Navbar() {
   const pathname = usePathname();
   const { navigation } = useCmsData();
   const session = useSession();
+  const isLoading = useSessionLoading();
 
   if (
     pathname.startsWith("/masuk") ||
@@ -143,7 +144,7 @@ export function Navbar() {
                 </li>
               </>
             )}
-            {!session && (
+            {!session && !isLoading && (
               <li>
                 <Link
                   href="/masuk"
@@ -168,7 +169,7 @@ function LogoutButton({ role }: { role: string }) {
   if (pathname.startsWith("/masuk")) return null;
   return (
     <button
-      onClick={handleLogout}
+      onClick={() => handleLogout().then((r) => (window.location.href = r))}
       className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-red-500 transition-colors px-2 py-1 cursor-pointer"
       title={`${role === "guru" ? "Guru" : "Siswa"} — Keluar`}
     >

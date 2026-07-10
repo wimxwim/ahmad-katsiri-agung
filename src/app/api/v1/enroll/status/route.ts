@@ -1,23 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { getSession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { siswaKursus, kursus, users } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
-import { apiError, apiRateLimit } from "@/lib/api-response";
+import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
 
 export async function GET(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) {
-      return apiError("Silakan login terlebih dahulu", 401);
-    }
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success) {
-      return apiError("Sesi tidak valid", 401);
-    }
-    const session = _ar.data;
+    const session = await getSession();
+    if (!session) return apiUnauthorized();
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`enroll-status:${ip}`, 20, 15000);

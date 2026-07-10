@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { kursus } from "@/lib/db/schema";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { appendEvent } from "@/lib/event-store";
+import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 
 const PublishSchema = z.object({
   status: z.enum(["DRAFT", "PUBLIK", "ARSIP"]),
@@ -18,13 +17,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const cookieStore = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!cookieStore?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(cookieStore.value);
-    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner")) {
-      return apiError("Hanya guru yang dapat mengubah status kursus", 403);
-    }
-    const session = _ar.data;
+    const session = await requireGuru(request);
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`kursus-publish:${ip}`, 30, 60_000);
@@ -69,6 +62,7 @@ export async function PATCH(
 
     return NextResponse.json({ data: updated });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Publish error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

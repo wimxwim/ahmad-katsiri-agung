@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
-import { apiError } from "@/lib/api-response";
+import { getSession } from "@/lib/dal";
+import { apiError, apiUnauthorized } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { fileMateri } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
@@ -11,11 +10,8 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ fileId: string }> },
 ) {
-  const sessionCookie = _request.cookies.get(SESSION_COOKIE_NAME);
-  if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-  const _ar = await verifySession(sessionCookie.value);
-  if (!_ar.success) return apiError("Sesi tidak valid", 401);
-  const session = _ar.data;
+  const session = await getSession();
+  if (!session) return apiUnauthorized();
 
   const { fileId } = await params;
 

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { getSession } from "@/lib/dal";
 import {
   checkRateLimit,
   checkRateLimitPerUser,
@@ -8,7 +7,7 @@ import {
   releaseConcurrent,
   ipFromRequest,
 } from "@/lib/rate-limit";
-import { apiError, apiRateLimit } from "@/lib/api-response";
+import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { fileMateri, aiGeneration, kursus } from "@/lib/db/schema";
@@ -38,13 +37,11 @@ function detectExtension(buf: Buffer): string | null {
 
 export async function POST(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner")) {
+    const session = await getSession();
+    if (!session) return apiUnauthorized();
+    if (session.role !== "guru" && session.role !== "owner") {
       return apiError("Hanya guru yang dapat upload dokumen", 403);
     }
-    const session = _ar.data;
 
     const ip = ipFromRequest(request);
     const ipRl = await checkRateLimit(`upload-doc-ip:${ip}`, 10, 60_000);
@@ -208,13 +205,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner")) {
+    const session = await getSession();
+    if (!session) return apiUnauthorized();
+    if (session.role !== "guru" && session.role !== "owner") {
       return apiError("Hanya guru yang dapat melihat file", 403);
     }
-    const session = _ar.data;
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`upload-list:${ip}`, 30, 15000);

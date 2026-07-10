@@ -1,27 +1,25 @@
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { aiGeneration } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError } from "@/lib/api-response";
 
-export async function GET() {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
-  const session = _ar && _ar.success ? _ar.data : null;
-  if (!session || (session.role !== "guru" && session.role !== "owner")) {
-    return apiError("FORBIDDEN", "Akses ditolak", undefined, 403);
+export async function GET(request: NextRequest) {
+  try {
+    const session = await requireGuru(request);
+
+    const rows = await db
+      .select()
+      .from(aiGeneration)
+      .where(eq(aiGeneration.guruId, session.userId))
+      .orderBy(desc(aiGeneration.createdAt))
+      .limit(50);
+
+    return NextResponse.json({ data: rows });
+  } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
+    console.error("Drafts list error:", e);
+    return apiError("Terjadi kesalahan server", 500);
   }
-
-  const rows = await db
-    .select()
-    .from(aiGeneration)
-    .where(eq(aiGeneration.guruId, session.userId!))
-    .orderBy(desc(aiGeneration.createdAt))
-    .limit(50);
-
-  return NextResponse.json({ data: rows });
 }

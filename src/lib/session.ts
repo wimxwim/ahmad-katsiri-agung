@@ -1,10 +1,11 @@
+import "server-only";
 import type { JWTPayload } from "jose";
 import type { NextRequest } from "next/server";
 
 export type SesiRole = "murid" | "guru" | "owner" | "admin_sekolah" | "orang_tua";
 
 export interface SesiPayload extends JWTPayload {
-  userId?: string;
+  userId: string;
   role: SesiRole;
   nama: string;
   email?: string;

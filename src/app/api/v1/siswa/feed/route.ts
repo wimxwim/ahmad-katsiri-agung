@@ -1,24 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { materiPublished, materiRead, siswaKursus, kursus } from "@/lib/db/schema";
 import { and, asc, eq, inArray } from "drizzle-orm";
+import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success) return apiError("Sesi tidak valid", 401);
-    const session = _ar.data;
-    if (session.role !== "murid" && session.role !== "orang_tua") {
-      return apiError("Hanya siswa yang dapat mengakses feed materi", 403);
-    }
+    const session = await requireSiswa(request);
 
     const rl = await checkRateLimit(`siswa-feed:${session.userId}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
@@ -26,7 +16,7 @@ export async function GET(_request: NextRequest) {
     const myEnrollments = await db
       .select({ kursusId: siswaKursus.kursusId })
       .from(siswaKursus)
-      .where(and(eq(siswaKursus.siswaId, session.userId!), eq(siswaKursus.status, "AKTIF")));
+      .where(and(eq(siswaKursus.siswaId, session.userId), eq(siswaKursus.status, "AKTIF")));
 
     const enrolledIds = myEnrollments.map((e) => e.kursusId);
 
@@ -66,7 +56,7 @@ export async function GET(_request: NextRequest) {
         .from(materiRead)
         .where(
           and(
-            eq(materiRead.siswaId, session.userId!),
+            eq(materiRead.siswaId, session.userId),
             inArray(
               materiRead.materiPublishedId,
               materiList.map((m) => m.id),
@@ -114,6 +104,7 @@ export async function GET(_request: NextRequest) {
       terdaftar: true,
     });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Feed siswa error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

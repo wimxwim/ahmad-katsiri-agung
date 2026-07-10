@@ -1,27 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { users, kursus, siswaKursus, quizPublished, quizAttempt } from "@/lib/db/schema";
 import { and, desc, eq, inArray } from "drizzle-orm";
+import { requireRole, GuardError } from "@/lib/route-guard-v2";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success) return apiError("Sesi tidak valid", 401);
-    const session = _ar.data;
-    if (session.role !== "guru" && session.role !== "owner") {
-      return apiError("Hanya guru yang dapat melihat detail siswa", 403);
-    }
+    const session = await requireRole(request, ["guru", "owner"]);
 
     const rl = await checkRateLimit(`guru-siswa-detail:${session.userId}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
@@ -119,6 +109,7 @@ export async function GET(
       },
     });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Guru siswa detail error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

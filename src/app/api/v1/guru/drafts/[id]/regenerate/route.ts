@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit, checkRateLimitPerUser, checkConcurrentLimit, releaseConcurrent, ipFromRequest } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
@@ -11,30 +8,25 @@ import { runGeneration } from "@/lib/ai-generator";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { readFile } from "fs/promises";
 import { appendEvent } from "@/lib/event-store";
+import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-    const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
-    const session = _ar && _ar.success ? _ar.data : null;
-    if (!session || (session.role !== "guru" && session.role !== "owner")) {
-      return apiError("Hanya guru yang dapat regenerate draft", 403);
-    }
+    const session = await requireGuru(request);
 
     const { id } = await params;
 
     const [row] = await db
       .select()
       .from(aiGeneration)
-      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)))
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)))
       .limit(1);
     if (!row) return apiError("Draft tidak ditemukan", 404);
 
-    const ip = ipFromRequest(_request);
+    const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`ai-regen:${ip}`, 2, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
@@ -56,7 +48,7 @@ export async function POST(
 
     let bytes: Buffer;
     if (file.imagekitFileId && file.lokasi === "IMAGEKIT") {
-      const adapter = await getStorageAdapter(session.userId!);
+      const adapter = await getStorageAdapter(session.userId);
       const res = await fetch(adapter.getLink(file.imagekitFileId));
       if (!res.ok) return apiError("Gagal download file dari ImageKit", 502);
       bytes = Buffer.from(await res.arrayBuffer());
@@ -69,7 +61,7 @@ export async function POST(
     await db
       .update(aiGeneration)
       .set({ status: "queued", errorMessage: null, updatedAt: new Date() })
-      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)));
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)));
     await appendEvent(`gen:${session.userId}`, "gen.regenerate_queued", { generationId: id });
 
     const ext = (file.tipeMime.includes("pdf") ? "pdf" : file.tipeMime.includes("word") ? "docx" : "doc");
@@ -89,6 +81,7 @@ export async function POST(
 
     return NextResponse.json({ success: true, status: "queued" });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Regenerate error:", e);
     const msg = e instanceof Error ? e.message : "Terjadi kesalahan server";
     return apiError(msg, 500);

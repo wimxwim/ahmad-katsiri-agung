@@ -1,6 +1,3 @@
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { db } from "@/lib/db";
 import {
   kursus,
@@ -14,18 +11,15 @@ import {
   soal,
 } from "@/lib/db/schema";
 import { and, desc, eq, gte, sql, like, inArray } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { requireGuru, GuardError } from "@/lib/route-guard-v2";
+import { apiError } from "@/lib/api-response";
 
-export async function GET() {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
-  const session = _ar && _ar.success ? _ar.data : null;
-  if (!session || (session.role !== "guru" && session.role !== "owner")) {
-    return NextResponse.json({ data: null, error: "Hanya guru yang dapat melihat analytics" }, { status: 403 });
-  }
+export async function GET(request: NextRequest) {
+  try {
+    const session = await requireGuru(request);
 
-  const guruId = session.userId!;
+    const guruId = session.userId;
 
   const [kursusList, siswaList, draftsList, kuisList] = await Promise.all([
     db
@@ -265,4 +259,9 @@ export async function GET() {
       weakTopics,
     },
   });
+  } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
+    console.error("Analytics guru error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
 }

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { and, eq, isNull, inArray } from "drizzle-orm";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { getSession } from "@/lib/dal";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { hashPassword } from "@/lib/auth-password";
 import { db } from "@/lib/db";
 import { users, siswaKelas, kelas } from "@/lib/db/schema";
-import { apiError, apiRateLimit } from "@/lib/api-response";
+import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
 import { logAuthEvent } from "@/lib/auth-audit";
 
 const RowSchema = z.object({
@@ -30,13 +29,11 @@ interface ImportResult {
 
 export async function POST(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner")) {
+    const session = await getSession();
+    if (!session) return apiUnauthorized();
+    if (session.role !== "guru" && session.role !== "owner") {
       return apiError("Hanya guru yang dapat import siswa", 403);
     }
-    const session = _ar.data;
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`siswa-import:${ip}`, 3, 60_000);

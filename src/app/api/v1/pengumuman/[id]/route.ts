@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { getSession } from "@/lib/dal";
 import { checkRateLimitSync, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { pengumuman } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { apiError, apiRateLimit } from "@/lib/api-response";
+import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
 
 const UpdateSchema = z.object({
   judul: z.string().min(1).max(255).optional(),
@@ -31,15 +29,12 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  if (!sessionCookie?.value) return apiError("Harus login", 401);
+  const session = await getSession();
+  if (!session) return apiUnauthorized();
 
-  const _ar = await verifySession(sessionCookie.value);
-  if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner" && _ar.data.role !== "admin_sekolah")) {
+  if (session.role !== "guru" && session.role !== "owner" && session.role !== "admin_sekolah") {
     return apiError("Tidak diizinkan", 403);
   }
-  const session = _ar.data;
 
   const { id } = await params;
   const [existing] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
@@ -76,15 +71,12 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  if (!sessionCookie?.value) return apiError("Harus login", 401);
+  const session = await getSession();
+  if (!session) return apiUnauthorized();
 
-  const _ar2 = await verifySession(sessionCookie.value);
-  if (!_ar2.success || (_ar2.data.role !== "guru" && _ar2.data.role !== "owner" && _ar2.data.role !== "admin_sekolah")) {
+  if (session.role !== "guru" && session.role !== "owner" && session.role !== "admin_sekolah") {
     return apiError("Tidak diizinkan", 403);
   }
-  const session = _ar2.data;
 
   const { id } = await params;
   const [existing] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);

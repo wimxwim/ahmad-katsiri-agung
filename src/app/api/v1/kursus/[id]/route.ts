@@ -1,26 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { db } from "@/lib/db";
 import { kursus } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
+import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const sessionCookie = req.cookies.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) {
-      return apiError("Silakan login terlebih dahulu", 401);
-    }
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success) {
-      return apiError("Sesi tidak valid", 401);
-    }
-    const session = _ar.data;
+    const session = await requireGuru(_req);
 
     const rl = await checkRateLimit(`kursus-detail:${session.userId}`, 30, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
@@ -42,6 +33,7 @@ export async function GET(
 
     return NextResponse.json({ data: k });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Kursus detail error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { SignJWT, jwtVerify, errors, type JWTPayload } from "jose";
 import { randomUUID } from "crypto";
 import type { SesiPayload } from "./session";
@@ -51,7 +52,7 @@ export async function signSession(payload: Omit<SesiPayload, "iss" | "exp" | "ia
     .sign(key);
 }
 
-export async function verifySession(token: string): Promise<AuthResult<SesiPayload>> {
+export const verifySession = cache(async (token: string): Promise<AuthResult<SesiPayload>> => {
   if (hasES256Keys()) {
     try {
       const key = await getVerifyingKey();
@@ -76,4 +77,4 @@ export async function verifySession(token: string): Promise<AuthResult<SesiPaylo
     console.error("[verifySession] verification failed:", err);
     return { success: false, code: "internal" };
   }
-}
+});

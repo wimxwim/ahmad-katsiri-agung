@@ -30,16 +30,19 @@ export default function ProfilPage() {
   async function load() {
     try {
       const res = await fetch("/api/v1/account/me", { credentials: "include" });
-      if (!res.ok) {
+      if (res.status === 401) {
         router.push("/masuk");
         return;
+      }
+      if (!res.ok) {
+        throw new Error(`Server error (${res.status})`);
       }
       const { data } = await res.json();
       setMe(data);
       setLoading(false);
     } catch (error) {
       console.error("[profil] load failed:", error);
-      setError("Gagal memuat profil");
+      setError("Gagal memuat profil. Coba lagi nanti.");
       setLoading(false);
     }
   }

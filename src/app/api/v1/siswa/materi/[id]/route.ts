@@ -1,27 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { materiPublished, materiRead, siswaKursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
+import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success) return apiError("Sesi tidak valid", 401);
-    const session = _ar.data;
-    if (session.role !== "murid" && session.role !== "orang_tua") {
-      return apiError("Hanya siswa yang dapat membaca materi", 403);
-    }
+    const session = await requireSiswa(request);
 
     const { id } = await params;
     const rl = await checkRateLimit(`siswa-materi:${session.userId}`, 30, 60_000);
@@ -72,6 +62,7 @@ export async function GET(
 
     return NextResponse.json({ data: row });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Materi detail error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }
@@ -82,15 +73,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success) return apiError("Sesi tidak valid", 401);
-    const session = _ar.data;
-    if (session.role !== "murid" && session.role !== "orang_tua") {
-      return apiError("Hanya siswa yang dapat menandai progress", 403);
-    }
+    const session = await requireSiswa(request);
 
     const { id } = await params;
 
@@ -148,6 +131,7 @@ export async function POST(
 
     return NextResponse.json({ success: true });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Materi progress error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

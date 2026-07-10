@@ -1,29 +1,29 @@
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { apiError } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { aiGeneration } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { requireSession, GuardError } from "@/lib/route-guard-v2";
 
 export async function GET(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
-  const session = _ar && _ar.success ? _ar.data : null;
-  if (!session) return apiError("Sesi tidak valid", 401);
+  try {
+    const session = await requireSession(request);
 
-  const { id } = await params;
-  const [row] = await db
-    .select()
-    .from(aiGeneration)
-    .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)))
-    .limit(1);
+    const { id } = await params;
+    const [row] = await db
+      .select()
+      .from(aiGeneration)
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)))
+      .limit(1);
 
-  if (!row) return apiError("Draft tidak ditemukan", 404);
-  return NextResponse.json({ data: row });
+    if (!row) return apiError("Draft tidak ditemukan", 404);
+    return NextResponse.json({ data: row });
+  } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
+    console.error("Draft detail error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
 }

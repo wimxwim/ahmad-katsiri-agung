@@ -15,7 +15,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useSession } from "@/components/providers/SessionProvider";
+import { useSession, useSessionLoading } from "@/components/providers/SessionProvider";
 import { handleLogout } from "@/lib/logout";
 import { EASE_CURVE } from "@/lib/constants";
 
@@ -28,6 +28,7 @@ const SHEET_ITEMS: { href: string; label: string; icon: LucideIcon; desc: string
 export function BottomTabBar() {
   const pathname = usePathname();
   const session = useSession();
+  const isLoading = useSessionLoading();
   const [sheetOpen, setSheetOpen] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
 
@@ -128,7 +129,7 @@ export function BottomTabBar() {
                     );
                   })}
 
-                  {!session ? (
+                  {isLoading ? null : !session ? (
                     <Link
                       href="/masuk"
                       onClick={closeSheet}

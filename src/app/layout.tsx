@@ -119,14 +119,7 @@ export default async function RootLayout({
         className={`${bricolageGrotesque.variable} ${inter.variable} ${amiri.variable} ${jetbrainsMono.variable} h-full antialiased`}
       >
       <body className="min-h-full flex flex-col font-body">
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link
-          rel="preload"
-          href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600..800&display=swap"
-          as="style"
-        />
         <Script
           id="schema-web"
           type="application/ld+json"

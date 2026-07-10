@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { getSession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { siswaKursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
-import { apiError, apiRateLimit } from "@/lib/api-response";
+import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
 
 const EnrollSchema = z.object({
   kursusId: z.string().min(1),
@@ -14,15 +13,11 @@ const EnrollSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) {
-      return apiError("Silakan login terlebih dahulu", 401);
-    }
-    const _ar = await verifySession(sessionCookie.value);
-    if (!_ar.success || _ar.data.role !== "murid") {
+    const session = await getSession();
+    if (!session) return apiUnauthorized();
+    if (session.role !== "murid") {
       return apiError("Hanya siswa yang dapat mendaftar kursus", 403);
     }
-    const session = _ar.data;
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`enroll:${ip}`, 5, 30000);

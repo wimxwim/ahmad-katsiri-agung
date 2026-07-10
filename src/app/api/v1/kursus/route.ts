@@ -2,12 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { getSession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { kursus } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
-import { apiError, apiRateLimit } from "@/lib/api-response";
+import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
 
 const KursusSchema = z.object({
   judul: z.string().min(1).max(200),
@@ -27,12 +26,10 @@ export async function GET(request: NextRequest) {
     const rl = await checkRateLimit(`kursus-list:${ip}`, 30, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-    const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
-    const session = _ar && _ar.success ? _ar.data : null;
+    const session = await getSession();
 
     if (!session) {
-      return apiError("Silakan login terlebih dahulu", 401);
+      return apiUnauthorized();
     }
 
     const isOwner = session.role === "owner";
@@ -65,15 +62,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!sessionCookie?.value) {
-      return apiError("Silakan login terlebih dahulu", 401);
-    }
-    const _ar2 = await verifySession(sessionCookie.value);
-    if (!_ar2.success || (_ar2.data.role !== "guru" && _ar2.data.role !== "owner")) {
+    const session = await getSession();
+    if (!session) return apiUnauthorized();
+    if (session.role !== "guru" && session.role !== "owner") {
       return apiError("Hanya guru yang dapat membuat kursus", 403);
     }
-    const session = _ar2.data;
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`kursus-create:${ip}`, 5, 60000);

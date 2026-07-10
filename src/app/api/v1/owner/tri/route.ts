@@ -1,6 +1,4 @@
-import { cookies } from "next/headers";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { getSession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import {
   users,
@@ -18,10 +16,7 @@ import { NextResponse } from "next/server";
 import { calculateTRI, getTRILabel } from "@/lib/analytics/calculateTRI";
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
-  const _ar = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
-  const session = _ar && _ar.success ? _ar.data : null;
+  const session = await getSession();
   if (!session || session.role !== "owner") {
     return NextResponse.json({ data: null, error: "Hanya owner" }, { status: 403 });
   }

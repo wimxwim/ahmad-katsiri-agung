@@ -1,32 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySession } from "@/lib/auth";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit, checkConcurrentLimit, releaseConcurrent } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { aiGeneration } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
+import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const cookieStore = request.cookies.get(SESSION_COOKIE_NAME);
-    if (!cookieStore?.value) return apiError("Sesi tidak valid", 401);
-    const _ar = await verifySession(cookieStore.value);
-    if (!_ar.success || (_ar.data.role !== "guru" && _ar.data.role !== "owner")) {
-      return apiError("Hanya guru yang dapat meregenerasi", 403);
-    }
-    const session = _ar.data;
+    const session = await requireGuru(request);
 
     const { id } = await params;
 
     const [row] = await db
       .select()
       .from(aiGeneration)
-      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)))
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)))
       .limit(1);
     if (!row) return apiError("Draft tidak ditemukan", 404);
     if (!row.fileMateriId) {
@@ -46,7 +39,7 @@ export async function POST(
     await db
       .update(aiGeneration)
       .set({ materiStatus: "not_generated", updatedAt: new Date() })
-      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)));
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)));
 
     regenerateMateriOnly(id)
       .catch((e) => {
@@ -60,6 +53,7 @@ export async function POST(
 
     return NextResponse.json({ success: true });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Regen materi error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

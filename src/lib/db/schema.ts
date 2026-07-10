@@ -1042,3 +1042,95 @@ export const teacherReadinessSnapshotRelations = relations(teacherReadinessSnaps
     references: [users.id],
   }),
 }));
+
+// ============================================================
+// FASE BISNIS — Kuota, AI Tracking, Taksonomi, Payment, Onboarding
+// ============================================================
+
+export const quotas = pgTable("quotas", {
+  id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+  role: varchar("role", { length: 32 }).notNull(),
+  resourceType: varchar("resource_type", { length: 64 }).notNull(),
+  limitValue: integer("limit_value").notNull(),
+  windowSeconds: integer("window_seconds").notNull().default(0),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const quotaUsages = pgTable("quota_usages", {
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  quotaId: uuid("quota_id").notNull().references(() => quotas.id, { onDelete: "cascade" }),
+  currentUsage: integer("current_usage").notNull().default(0),
+  windowStart: timestamp("window_start", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  pk: unique().on(t.userId, t.quotaId, t.windowStart),
+}));
+
+export const aiRequests = pgTable("ai_requests", {
+  id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  model: varchar("model", { length: 64 }).notNull(),
+  provider: varchar("provider", { length: 32 }).notNull().default("nararouter"),
+  promptTokens: integer("prompt_tokens").notNull().default(0),
+  completionTokens: integer("completion_tokens").notNull().default(0),
+  totalTokens: integer("total_tokens").notNull().default(0),
+  costIdrCents: bigint("cost_idr_cents", { mode: "number" }).notNull().default(0),
+  requestType: varchar("request_type", { length: 32 }).notNull(),
+  status: varchar("status", { length: 16 }).notNull().default("completed"),
+  durationMs: integer("duration_ms"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  userIdDateIdx: index("idx_ai_requests_user_date").on(t.userId, t.createdAt),
+  dateIdx: index("idx_ai_requests_date").on(t.createdAt),
+}));
+
+export const mataPelajaran = pgTable("mata_pelajaran", {
+  id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+  nama: varchar("nama", { length: 100 }).notNull().unique(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  kategori: varchar("kategori", { length: 50 }).notNull().default("wajib"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const jenjang = pgTable("jenjang", {
+  id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+  nama: varchar("nama", { length: 50 }).notNull().unique(),
+  slug: varchar("slug", { length: 50 }).notNull().unique(),
+  urutan: integer("urutan").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const payments = pgTable("payments", {
+  id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  amount: integer("amount").notNull(),
+  paymentType: varchar("payment_type", { length: 30 }).notNull().default("qris_static"),
+  status: varchar("status", { length: 20 }).notNull().default("pending"),
+  proofImageUrl: text("proof_image_url"),
+  verifiedBy: uuid("verified_by").references(() => users.id),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }),
+  notes: text("notes"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => ({
+  userStatusIdx: index("idx_payments_user_status").on(t.userId, t.status),
+  statusIdx: index("idx_payments_status").on(t.status, t.createdAt),
+}));
+
+export const onboardingProgress = pgTable("onboarding_progress", {
+  userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  emailVerified: boolean("email_verified").notNull().default(false),
+  profileCompleted: boolean("profile_completed").notNull().default(false),
+  tourCompleted: boolean("tour_completed").notNull().default(false),
+  firstCourseCreated: boolean("first_course_created").notNull().default(false),
+  firstMaterialUploaded: boolean("first_material_uploaded").notNull().default(false),
+  firstAiGenerated: boolean("first_ai_generated").notNull().default(false),
+  firstCoursePublished: boolean("first_course_published").notNull().default(false),
+  currentStep: varchar("current_step", { length: 32 }).notNull().default("registration"),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
