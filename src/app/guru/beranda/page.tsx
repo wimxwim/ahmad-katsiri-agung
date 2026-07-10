@@ -21,6 +21,8 @@ interface DashboardData {
   weakTopics: { pertanyaan: string; errorRate: number; totalJawab: number }[];
   aiQuotaUsed: number;
   aiQuotaLimit: number;
+  siswaBerisiko: number;
+  siswaKritis: number;
 }
 
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
@@ -287,6 +289,38 @@ export default function GuruBerandaPage() {
                 <span className="shrink-0 text-sm font-bold text-red-700">{t.errorRate}% salah</span>
               </div>
             ))}
+          </div>
+        </motion.div>
+      )}
+
+      {(data.siswaBerisiko > 0 || data.siswaKritis > 0) && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE_CURVE, delay: 0.25 }}
+          className="mb-6 p-5 rounded-2xl border border-red-200 bg-red-50/60 shadow-glass"
+        >
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 rounded-xl bg-red-100 text-red-700 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5" />
+            </span>
+            <div className="flex-1">
+              <p className="font-heading font-semibold text-red-900">
+                {data.siswaBerisiko + data.siswaKritis} siswa perlu perhatian
+              </p>
+              <p className="text-sm text-red-700">
+                {data.siswaKritis > 0 && `${data.siswaKritis} kritis, `}
+                {data.siswaBerisiko > 0 && `${data.siswaBerisiko} berisiko`}
+                {" — "}berdasarkan performa kuis dan aktivitas terakhir.
+              </p>
+            </div>
+            <Link
+              href="/guru/siswa"
+              className="shrink-0 inline-flex items-center gap-1.5 bg-red-700 text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 transition-all"
+            >
+              Lihat Siswa
+              <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
         </motion.div>
       )}

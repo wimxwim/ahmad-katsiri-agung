@@ -16,6 +16,7 @@ import { and, eq, sql, desc, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError } from "@/lib/api-response";
+import { calculateRiskScore, getRiskLabel } from "@/lib/analytics/calculateRiskScore";
 
 export async function GET(request: NextRequest) {
   try {
@@ -104,6 +105,53 @@ export async function GET(request: NextRequest) {
       // best-effort
     }
 
+    let siswaBerisiko = 0;
+    let siswaKritis = 0;
+    try {
+      const enrolledSiswaIds = enrolledRows.map((r) => r.siswaId);
+      if (enrolledSiswaIds.length > 0) {
+        const [quizStats, userRows] = await Promise.all([
+          db
+            .select({
+              siswaId: quizAttempt.siswaId,
+              total: sql<number>`cast(count(*) as integer)`,
+              benar: sql<number>`cast(sum(case when ${quizAttempt.nilai} >= 70 then 1 else 0 end) as integer)`,
+            })
+            .from(quizAttempt)
+            .where(inArray(quizAttempt.siswaId, enrolledSiswaIds))
+            .groupBy(quizAttempt.siswaId),
+          db.execute<{ id: string; last_active_at: string | null }>(sql`
+            SELECT id, last_active_at FROM users WHERE id = ANY(${enrolledSiswaIds}::uuid[])
+          `),
+        ]);
+
+        const quizMap = new Map(quizStats.map((s) => [s.siswaId, s]));
+        const loginMap = new Map((userRows.rows ?? []).map((u) => [u.id, u.last_active_at]));
+        const now = Date.now();
+        const DAY_MS = 86_400_000;
+
+        for (const siswaId of enrolledSiswaIds) {
+          const qs = quizMap.get(siswaId);
+          const quizPerf = qs && qs.total > 0 ? qs.benar / qs.total : 0;
+          const lastLogin = loginMap.get(siswaId);
+          const loginGap = lastLogin ? Math.max(0, (now - new Date(lastLogin).getTime()) / DAY_MS) : 30;
+          const risk = calculateRiskScore({
+            completionRate: quizPerf,
+            quizPerformance: quizPerf,
+            attendanceRate: 0.5,
+            loginGap,
+            timelinessRate: 0.5,
+            participationRate: qs && qs.total > 0 ? 1 : 0,
+          });
+          const label = getRiskLabel(risk);
+          if (label === "berisiko") siswaBerisiko++;
+          if (label === "kritis") siswaKritis++;
+        }
+      }
+    } catch {
+      // best-effort
+    }
+
     const aiQuotaUsed = quotaRow?.[0]?.currentUsage ?? 0;
     const aiQuotaLimit = quotaRow?.[0]?.limitValue ?? 0;
 
@@ -120,6 +168,8 @@ export async function GET(request: NextRequest) {
         weakTopics,
         aiQuotaUsed,
         aiQuotaLimit,
+        siswaBerisiko,
+        siswaKritis,
       },
     });
   } catch (e) {

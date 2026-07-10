@@ -34,7 +34,7 @@ function getApiKey(): string {
 }
 
 export function getModelName(): string {
-  return process.env.AI_MODEL || "mimo-v2.5";
+  return process.env.AI_MODEL || "deepseek-v4-pro";
 }
 
 export function getFlashModel(): string {

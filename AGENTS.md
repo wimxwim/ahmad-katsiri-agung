@@ -39,8 +39,11 @@
   <decision id="D-009">Auth harus memisahkan intent guru vs siswa secara tegas</decision>
   <decision id="D-010">Live lama tidak wajib dipertahankan UX-nya; boleh dirombak total</decision>
   <decision id="D-011">Data lama Bang Agung (materi hardcode, Google Sheets, kuis/refleksi/diskusi legacy) DIHAPUS TOTAL — klien memutuskan tidak perlu migrasi, Bang Agung upload ulang sendiri via fitur baru sebagai testing platform (9 Juli 2026)</decision>
-  <decision id="D-012">Branch main (production Vercel) dan master (dev) disamakan lewat merge commit resmi — riwayat main lama tetap ada di git log, working tree ikut master (9 Juli 2026)</decision>
-</locked-decisions>
+  <decision id="D-013">Revenue model: teacher free forever (capacity-limited), revenue from schools (BOS funds), waqf/donors, parents. AI token upgrades as optional top-up.</decision>
+  <decision id="D-014">AI model strategy: DeepSeek V4 Flash (Rp9/gen) for 80% tasks, DeepSeek V4 Pro (Rp87/gen) for 20% heavy tasks. Average Rp22/gen — sustainable at scale.</decision>
+  <decision id="D-015">Owner monitoring via owner_metrics_daily table + pg_cron — metrics refreshed daily at 3 AM. Real-time queries for lightweight metrics.</decision>
+  <decision id="D-016">Payment: QRIS static (GoPay) for now — Midtrans pending approval. Payment page at /pembayaran with manual verification by owner.</decision>
+  <decision id="D-017">PSE Registration identified as legal requirement — must register akalcenter.my.id with Komdigi before public launch.</decision></locked-decisions>
 
 ## STACK TEKNIS RESMI SAAT INI
 
@@ -71,10 +74,15 @@
     <item>Semua konten legacy single-guru (materi.ts, soal.ts, google-sheets.ts, rute /materi /evaluasi /refleksi /diskusi /hafalan /video /dalil) dihapus total</item>
     <item>Register & Login (password + Google OAuth) sudah diverifikasi jalan di production</item>
     <item>Database Supabase Postgres: semua 14 file migrasi sudah diterapkan manual (kolom google_id, refresh_tokens, ai_generation, dsb sudah ada)</item>
-    <item>Environment variables production lengkap tersimpan di Vercel (AI, Supabase, ImageKit, Redis, Google OAuth, Encryption Secret)</item>
-    <item>Root cause build gagal (_global-error prerender) ditemukan & diperbaiki: NODE_ENV="development" di .env.local tidak boleh di-hardcode</item>
+    <item>Environment variables production lengkap tersimpan di Vercel (AI, Supabase, ImageKit, Redis, Google OAuth, Encryption)</item>
     <item>Google Analytics Bang Agung (G-FKHV466K10) tetap terpasang di layout.tsx & content/site-config</item>
     <item>Landing page publik, /masuk, /daftar, /kursus (katalog DB-driven), dashboard guru/siswa/owner/admin-sekolah/orang-tua sudah live</item>
+    <item>NaraRouter audit selesai — deepseek-v4-flash (Rp9/gen) dan deepseek-v4-pro (Rp87/gen) terverifikasi. deepseek-chat TIDAK ADA.</item>
+    <item>AI model default diubah: heavy tasks → deepseek-v4-pro, light tasks → deepseek-v4-flash</item>
+    <item>Owner monitoring: owner_metrics_daily table + last_active_at + migration 0017 applied</item>
+    <item>QRIS payment page restored: /pembayaran + /api/v1/payment/qris</item>
+    <item>FormMasuk fix: default ke pemilihan portal (bukan siswa), deskripsi kursus netral</item>
+    <item>Phase 0-3 TODO items complete (31 items), grand final audit done (97 total items)</item>
   </done>
   <in-progress>
     <item>Bang Agung sebagai guru pertama — belum mulai upload materi/kursus (database kosong by design)</item>

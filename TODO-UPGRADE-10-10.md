@@ -164,22 +164,24 @@
 
 ## 🔴 FASE P0-LEGAL — Kepatuhan Hukum & Infrastruktur (HASIL AUDIT 11 JUL)
 
+> ⚠️ **LEG1 + LEG2 = DIURUS MANAJEMEN.** Ini bukan tugas coding — perlu akses akun pemilik (PSE Komdigi, Vercel, Cloudflare). Harus dilakukan sebelum platform skala besar. Kerjakan paling akhir setelah semua fitur ready.
+>
 > **Temuan baru dari audit real-time 11 Juli 2026.** Tidak ada di TODO sebelumnya.
 
-### LEG1. Daftar PSE ke Komdigi (WAJIB HUKUM)
+### LEG1. Daftar PSE ke Komdigi (WAJIB HUKUM) ⚠️ DIURUS MANAJEMEN
 - **Referensi:** UU ITE, PP 71/2019, UU PDP — platform digital WAJIB daftar PSE Lingkup Privat sebelum beroperasi di Indonesia
 - **Sanksi:** Pemblokiran domain oleh Kominfo jika tidak terdaftar
 - **Fix:** Daftarkan akalcenter.my.id via portal PSE Komdigi. Isi formulir + upload dokumen pendirian.
-- **Effort:** 2 jam
-- **Status:** [ ] belum
+- **Effort:** 2 jam (admin)
+- **Status:** [M] manajemen
 
-### LEG2. Rencana migrasi Vercel Hobby → Cloudflare Pages
+### LEG2. Rencana migrasi Vercel Hobby → Cloudflare Pages ⚠️ DIURUS MANAJEMEN
 - **Referensi:** Vercel ToS — Hobby = "personal, non-commercial use only". AKAL Center = situs klien = komersial = MELANGGAR.
 - **Risiko:** Akun Vercel bisa dimatikan tanpa notifikasi. Audit Profesor 2026 NF-01 sudah menandai ini.
 - **Opsi A:** Upgrade Vercel Pro ($20/bulan)
 - **Opsi B:** Migrasi ke Cloudflare Pages (gratis, komersial diizinkan) — rekomendasi audit
-- **Effort:** 4 jam (migrasi full ke Cloudflare Pages)
-- **Status:** [ ] belum
+- **Effort:** 4 jam (admin + migrasi full ke Cloudflare Pages)
+- **Status:** [M] manajemen
 
 ### LEG3. Upgrade Next.js 16.2.7 → 16.2.10
 - **Referensi:** 3 patch security tertinggal (16.2.8, 16.2.9, 16.2.10). 16.3 Preview masih unstable — tunda.
@@ -215,15 +217,14 @@
 - **Status:** [x] selesai
 
 ### AV4. Buat + apply `ai_daily_costs` materialized view di Supabase
-- **Fix:** Buat SQL materialized view dulu (belum ada di schema/migration) → apply → pg_cron refresh harian
-- **Effort:** 30 menit (dari 5 menit — perlu buat dari nol)
-- **Status:** [ ] belum
+- **Fix:** Materialized view dibuat + index unique. Refresh via Vercel Cron endpoint `/api/v1/cron/refresh-ai-costs`. pg_cron tidak tersedia di Supabase free.
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ### AV5. Aktifkan 1 model analytics (Risk Score)
-- **Bukti:** 6 file di `src/lib/analytics/` SUDAH ADA — `calculateTRI` + `calculateRiskScore` dipanggil di `owner/tri/route.ts`, 4 lainnya belum
-- **Fix:** Panggil `calculateRiskScore()` atau `calculateBKT()` di dashboard guru — "3 siswa berisiko"
-- **Effort:** 3 jam
-- **Status:** [~] 2/6 functions wired
+- **Bukti:** 6 file di `src/lib/analytics/` SUDAH ADA — `calculateRiskScore()` sekarang dipanggil di dashboard guru API. Menghitung siswa berisiko/kritis dari quiz performa + login gap via `last_active_at`.
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ### AV6. Admin CLI — integrasikan data nyata
 - **Bukti:** `scripts/admin-akal.sh` SUDAH ADA

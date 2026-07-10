@@ -57,7 +57,7 @@ export default function KatalogKursusPage() {
             Katalog Kursus
           </h1>
           <p className="text-on-surface-variant max-w-lg mx-auto">
-            Jelajahi kursus Akidah Akhlak untuk SMP/MTs. Belajar dengan model Deep Learning yang mindful, meaningful, dan joyful.
+            Jelajahi kursus yang tersedia. Setiap kursus dibuat dan dipublikasikan oleh guru secara mandiri.
           </p>
         </div>
 

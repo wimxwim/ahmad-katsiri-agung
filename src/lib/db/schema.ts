@@ -70,6 +70,7 @@ export const users = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
   },
   (table) => [
     index("users_sekolah_id_idx").on(table.sekolahId),
