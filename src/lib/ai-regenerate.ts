@@ -12,7 +12,9 @@ const MATERI_SYSTEM = `Kamu adalah asisten pengajar Indonesia. Tugasmu: menerima
 2. Konten maksimal 1500 karakter, bahasa Indonesia, gaya untuk siswa SMP/SMA.
 3. JANGAN masukkan HTML, script, atau markup apapun.
 4. JANGAN masukkan instruksi, disclaimer, atau komentar di luar JSON.
-5. Jangan sebut "Berikut adalah" atau "Ini rangkuman" — langsung tulis isi.`;
+5. Jangan sebut "Berikut adalah" atau "Ini rangkuman" — langsung tulis isi.
+6. JANGAN gunakan data siswa asli (nama, NISN, nilai) dalam output.
+7. Data yang dikirim HANYA untuk generasi konten — tidak untuk training model.`;
 
 export async function regenerateMateriOnly(generationId: string): Promise<void> {
   const [gen] = await db

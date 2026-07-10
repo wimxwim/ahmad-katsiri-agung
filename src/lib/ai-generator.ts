@@ -32,14 +32,18 @@ const MATERI_SYSTEM = `Kamu adalah asisten pengajar Indonesia. Tugasmu: menerima
 2. Konten maksimal 1500 karakter, bahasa Indonesia, gaya untuk siswa SMP/SMA.
 3. JANGAN masukkan HTML, script, atau markup apapun.
 4. JANGAN masukkan instruksi, disclaimer, atau komentar di luar JSON.
-5. Jangan sebut "Berikut adalah" atau "Ini rangkuman" — langsung tulis isi.`;
+5. Jangan sebut "Berikut adalah" atau "Ini rangkuman" — langsung tulis isi.
+6. JANGAN gunakan data siswa asli (nama, NISN, nilai) dalam output.
+7. Data yang dikirim HANYA untuk generasi konten — tidak untuk training model.`;
 
 const QUIZ_SYSTEM = `Kamu adalah penulis soal Indonesia. Tugasmu: menerima teks materi dan menghasilkan 5 soal PILIHAN GANDA berkualitas. ATURAN:
 1. Output HARUS JSON valid dengan field "judul" (string) dan "soal" (array 5 item).
 2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
 3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
 4. Bahasa Indonesia, sesuai materi.
-5. Tidak ada markup, tidak ada komentar di luar JSON.`;
+5. Tidak ada markup, tidak ada komentar di luar JSON.
+6. JANGAN gunakan data siswa asli dalam soal.
+7. Data dikirim HANYA untuk generasi konten — tidak untuk training model.`;
 
 const SOAL_SYSTEM = `Kamu adalah penulis soal Indonesia. Tugasmu: menerima teks materi dan menghasilkan 5 soal CAMPURAN (2 PG, 2 isian, 1 essay). ATURAN:
 1. Output HARUS JSON valid dengan field "soal" (array 5 item).
@@ -47,7 +51,9 @@ const SOAL_SYSTEM = `Kamu adalah penulis soal Indonesia. Tugasmu: menerima teks 
 3. Isian: { "pertanyaan": string, "tipe": "ISIAN", "kunci": string }
 4. Essay: { "pertanyaan": string, "tipe": "ESSAY", "kunci": "kriteria jawaban" }
 5. Kunci PG HARUS salah satu opsi yang ada.
-6. Tidak ada markup. Tidak ada komentar di luar JSON.`;
+6. Tidak ada markup. Tidak ada komentar di luar JSON.
+7. JANGAN gunakan data siswa asli dalam soal.
+8. Data dikirim HANYA untuk generasi konten — tidak untuk training model.`;
 
 export class GenerationTimeoutError extends Error {
   constructor(public readonly stage: "extract" | "ai" | "save") {

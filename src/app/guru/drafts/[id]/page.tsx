@@ -208,6 +208,11 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
             {draft.tokenInput != null && draft.tokenOutput != null && (
               <span> · {draft.tokenInput + draft.tokenOutput} token</span>
             )}
+            {(draft.materiStatus === "draft" || draft.quizStatus === "draft" || draft.soalStatus === "draft") && (
+              <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                AI-Generated · Perlu Review
+              </span>
+            )}
           </p>
         </div>
       </div>

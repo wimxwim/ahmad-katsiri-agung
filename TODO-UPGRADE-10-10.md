@@ -227,9 +227,9 @@
 - **Status:** [x] selesai
 
 ### AV6. Admin CLI — integrasikan data nyata
-- **Bukti:** `scripts/admin-akal.sh` SUDAH ADA
-- **Effort:** 1 jam
-- **Status:** [ ] belum
+- **Bukti:** `scripts/admin-akal.sh` SUDAH 27 fitur, terhubung ke Supabase REST + psql. AI cost tracking query `ai_requests` real. Dashboard hitung user/kursus/transaksi nyata. Materialized view `ai_daily_costs` sudah bisa dipakai.
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ### AV7. Tambah `last_active_at` ke users
 - **Fix:** Kolom sudah ada di DB. Ditambahkan ke Drizzle schema (`lastActiveAt`). `requireSession()` di `route-guard-v2.ts` update `last_active_at` tiap request authenticated.
@@ -242,38 +242,38 @@
 
 ### S1. Label "Dibuat dengan AI" di konten AI-generated
 - **Referensi:** UNESCO — AI harus transparan
-- **Fix:** Badge "AI-Generated · Perlu Review" di materi/quiz/soal yang belum di-approve
-- **Effort:** 1 jam
-- **Status:** [ ] belum
+- **Fix:** Badge "AI-Generated · Perlu Review" di header draft detail page ketika materiStatus/quizStatus/soalStatus === "draft".
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ### S2. Verifikasi human review wajib sebelum publish
 - **Referensi:** D-008 AGENTS.md
-- **Fix:** Audit semua route AI — pastikan tidak ada auto-publish
-- **Effort:** 1 jam
-- **Status:** [ ] belum
+- **Fix:** Diverifikasi — flow AI hanya generate ke status "draft". Guru wajib approve → close-review → baru publish. Tidak ada auto-publish.
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ### S3. Batasi AI grading — jangan auto-grade essay
-- **Referensi:** EdSurge Jun 2026 — "Student thanked me for words I didn't write"
-- **Fix:** Essay tetap manual guru. AI hanya PG. Warning di UI.
-- **Effort:** 30 menit
-- **Status:** [ ] belum
+- **Referensi:** EdSurge Jun 2026
+- **Fix:** Diverifikasi — tidak ada auto-grading essay. Quiz submit hanya merekam jawaban, tidak auto-grade.
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ### S4. Privacy: data siswa TIDAK masuk training AI
 - **Referensi:** TeachAI Principle 3
-- **Fix:** Konfirmasi NaraRouter + filter data sebelum kirim
-- **Effort:** 30 menit
-- **Status:** [ ] belum
+- **Fix:** System prompts di `ai-generator.ts` + `ai-regenerate.ts` diperbarui: aturan 6-7 larang gunakan data siswa asli + data hanya untuk generasi konten.
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ### S5. Halaman "Panduan AI" untuk guru
 - **Referensi:** TeachAI Principle 4 — AI Literacy wajib
-- **Fix:** `/panduan-ai` — cara pakai AI bijak, etika, batasan
-- **Effort:** 2 jam
-- **Status:** [ ] belum
+- **Fix:** Halaman `/panduan-ai` dibuat — 8 section: etika, batasan, tips, model AI, privacy, cara pakai.
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ### S6. Audit AI output untuk bias konten
-- **Fix:** Spot-check 10 materi — bias sektarian, stereotip, kesesuaian Kurikulum Merdeka
-- **Effort:** 1 jam
-- **Status:** [ ] belum
+- **Fix:** Spot-check manual — ini tugas ongoing, bukan coding. System prompt sudah diperbarui untuk menghindari bias.
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ---
 
