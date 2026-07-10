@@ -190,19 +190,18 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 ### D1. Aktifkan RLS di semua tabel — via migration SQL
 
 - **Bukti:** `schema.ts` — 32 `pgTable`, 0 `withRLS`/`pgPolicy`
-- **Fix:** Buat migration SQL `0015_rls_policies.sql` — enable RLS 18 tabel + 12 policy + 20 FK index. RLS TIDAK enforced karena app connect sebagai postgres (bypass role). Policy siap diaktifkan saat app beralih ke role non-bypass.
+- **Fix:** Apply migration SQL via Supabase CLI — 31 tabel RLS enabled, 22 auth.uid() policies dihapus, 40+ policy baru pakai `app.current_user_id`, 21 FK index. RLS TIDAK enforced karena app connect sebagai postgres (bypass role). Policy siap diaktifkan saat app beralih ke role non-bypass.
 - **Effort:** 1 jam
 - **Referensi:** Drizzle ORM 2026 — "Use pgTable.withRLS to enable Row-Level Security"
-- **Catatan:** Migration belum di-apply ke Supabase production. Perlu dijalankan manual via SQL Editor.
-- **Status:** [~] parsial — migration SQL selesai, belum diapply ke DB. RLS belum enforced karena postgres role.
+- **Status:** [x] selesai — migration applied 10 Jul 2026 via psql CLI
 
 ### D2. Definisikan policy untuk setiap tabel — via migration SQL
 
 - **Bukti:** Tidak ada policy di schema
-- **Fix:** 12 policy didefinisikan di `0015_rls_policies.sql` (users, kursus, siswa_kursus, ai_generation, materi_published, quiz_attempt). Menggunakan `current_setting('app.current_user_id', true)` untuk multi-tenant.
+- **Fix:** 40+ policy didefinisikan + diapply ke Supabase (31 tabel). Menggunakan `current_setting('app.current_user_id', true)` untuk multi-tenant. 22 policy `auth.uid()` lama (broken) dihapus.
 - **Effort:** 2 jam
 - **Referensi:** Supabase — "RLS policy pattern untuk custom JWT auth"
-- **Status:** [~] parsial — policy SQL selesai, pgPolicy() di Drizzle schema belum
+- **Status:** [x] selesai — applied 10 Jul 2026
 
 ### D3. Setup tenant context via `set_config()`
 
@@ -215,10 +214,10 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 ### D4. Index semua kolom foreign key untuk RLS
 
 - **Bukti:** RLS policy akan filter by `guru_id`, `siswa_id` — perlu index
-- **Fix:** 20 index CREATE IF NOT EXISTS di `0015_rls_policies.sql`
+- **Fix:** 21 index CREATE IF NOT EXISTS diapply ke Supabase
 - **Effort:** 30 menit
 - **Referensi:** Supabase — "RLS performance: index wajib untuk policy columns"
-- **Status:** [~] parsial — SQL selesai, belum diapply ke DB
+- **Status:** [x] selesai — applied 10 Jul 2026
 
 ### D5. Apply migrasi + uji RLS isolation
 
@@ -706,7 +705,7 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 |------|:---:|:---:|:---:|:---:|
 | 0 | Quick Wins | 1.1 jam | 6/6 ✅ | 0 |
 | 1 | Auth & Guard | 8.5 jam | 6/6 ✅ | Selesai |
-| 2 | Database & RLS | 10 jam | 4/5 [~] (D3✅ unified+integrated) | D1 apply, D5 test |
+| 2 | Database & RLS | 10 jam | 4/5 ✅ (D1-D4 done) | D5 uji isolation |
 | 3 | Frontend & UX | 10.5 jam | 3/7 [~] | F2, F5, F6, F7 |
 | 🔥 | **BISNIS — Persiapan 80 Guru** | **14 jam** | **0/7** | **Semua** |
 | 4 | Design System | 3.5 jam | 0/4 | Semua |
@@ -717,7 +716,7 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 | 9 | Dokumentasi | 5.5 jam | 0/4 | Semua |
 | 10 | DevOps | 5 jam | 0/5 | Semua |
 | 11 | Upgrade (bonus) | 12 jam | 0/5 | Semua |
-| **TOTAL** | **69 item** | **~97 jam** | **19 selesai** | **50 pending** |
+| **TOTAL** | **69 item** | **~97 jam** | **21 selesai** | **48 pending** |
 
 ---
 
