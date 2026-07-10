@@ -29,7 +29,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 export function FormMasuk({
   redirectTo,
-  initialPortal = "siswa",
+  initialPortal,
   initialTab = "masuk",
   errorCode,
 }: FormMasukProps) {

@@ -1,7 +1,7 @@
 # TODO UPGRADE — AKAL Center 6.5/10 → 10/10
 
 > **Dibuat:** 10 Juli 2026
-> **Terakhir diupdate:** 10 Juli 2026 (Fase 0-3 selesai + Fase BISNIS start)
+> **Terakhir diupdate:** 10 Juli 2026 (Fase 2: naming unified + tenant-context integrated ke route-guard-v2 + /masuk fix portal selection)
 > **Metode:** Verifikasi 15/15 temuan audit + riset 2026 + diskusi owner (CATATAN DISKUSI OWNER.md)
 > **Prinsip:** UPGRADE kapabilitas, siapkan PINTU TEKNIS sebelum PINTU PEMASARAN
 > **Status:** Aktif — Fase 0-3 selesai, Fase BISNIS in progress
@@ -16,7 +16,7 @@
 | Session Provider | No loading state | ✅ Loading state + useSessionLoading() | Flash state fixed |
 | Auth Guard | 55 route inline boilerplate | ✅ 29/29 route direfactor ke route-guard-v2 | Selesai — hanya logout sengaja dikecualikan |
 | Dead Code | 106 baris | ✅ Dihapus | 0 dead code |
-| RLS | Tidak ada | ✅ Migration SQL + tenant context ready | Apply ke DB |
+| RLS | Tidak ada | ✅ Migration SQL + tenant context unified + integrated ke route-guard-v2 | Apply migration ke DB |
 | Dashboard Layout | 85% duplikasi | ✅ Shared component | -260 baris |
 | Error Handling | quran silent, profil weak | ✅ Fixed both | Proper states |
 | FormMasuk | 635 baris God Component | [ ] Belum | Split to 5 components |
@@ -207,7 +207,7 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 ### D3. Setup tenant context via `set_config()`
 
 - **Bukti:** Tidak ada mekanisme set tenant context
-- **Fix:** Buat `src/lib/tenant-context.ts` — `setSessionContext(userId, role)` + `resetSessionContext()`
+- **Fix:** Buat `src/lib/db/tenant-context.ts` — `setRlsContext(userId, role, sekolahId)` + `withTenant()` wrapper. Naming convention di-unify ke `app.current_user_id`, `app.current_role`, `app.current_tenant_id`. File redundan `src/lib/tenant-context.ts` dihapus. Diintegrasikan ke `route-guard-v2.ts` `requireSession()` — setiap guarded route otomatis set RLS context.
 - **Effort:** 1 jam
 - **Referensi:** Supabase — "Multi-tenant: set_config('app.current_sekolah_id', id, TRUE)"
 - **Status:** [x] selesai
@@ -706,7 +706,7 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 |------|:---:|:---:|:---:|:---:|
 | 0 | Quick Wins | 1.1 jam | 6/6 ✅ | 0 |
 | 1 | Auth & Guard | 8.5 jam | 6/6 ✅ | Selesai |
-| 2 | Database & RLS | 10 jam | 3/5 [~] | D1 apply, D5 test |
+| 2 | Database & RLS | 10 jam | 4/5 [~] (D3✅ unified+integrated) | D1 apply, D5 test |
 | 3 | Frontend & UX | 10.5 jam | 3/7 [~] | F2, F5, F6, F7 |
 | 🔥 | **BISNIS — Persiapan 80 Guru** | **14 jam** | **0/7** | **Semua** |
 | 4 | Design System | 3.5 jam | 0/4 | Semua |
@@ -717,7 +717,7 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 | 9 | Dokumentasi | 5.5 jam | 0/4 | Semua |
 | 10 | DevOps | 5 jam | 0/5 | Semua |
 | 11 | Upgrade (bonus) | 12 jam | 0/5 | Semua |
-| **TOTAL** | **69 item** | **~97 jam** | **18 selesai** | **51 pending** |
+| **TOTAL** | **69 item** | **~97 jam** | **19 selesai** | **50 pending** |
 
 ---
 
@@ -736,10 +736,10 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 
 ### Prioritas Next Step
 
-1. **Deploy ke production** — semua perubahan Fase 0-3 sudah build hijau, siap deploy
-2. **Apply RLS migration** ke Supabase via SQL Editor (file `0015_rls_policies.sql`)
-3. **Lanjut refactor 52 route handler** — pattern sudah terbukti di 3 route
-4. **Split FormMasuk** — 635 baris God Component
+1. **Apply RLS migration** ke Supabase via SQL Editor (file `drizzle/0015_rls_policies.sql`)
+2. **Deploy ke production** — semua perubahan build hijau, siap deploy
+3. **Split FormMasuk** — 635 baris God Component
+4. **Lanjut Fase 3** — F5 (loading.tsx), F6 (error.tsx), F7 (EmptyState)
 
 ---
 

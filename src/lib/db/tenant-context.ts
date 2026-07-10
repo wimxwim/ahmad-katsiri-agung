@@ -12,7 +12,7 @@ type DrizzleDb = NodePgDatabase<typeof schema>;
  * Sets app-level session variables for RLS policies to function.
  *
  * Usage:
- *   const result = await withTenant(userId, sekolahId, role, async (tx) => {
+ *   const result = await withTenant(userId, role, sekolahId, async (tx) => {
  *     return tx.select().from(kursus).where(eq(kursus.id, kursusId));
  *   });
  */
@@ -24,9 +24,9 @@ export async function withTenant<T>(
 ): Promise<T> {
   return db.transaction(async (tx) => {
     await tx.execute(sql`
-      SELECT set_config('app.user_id', ${userId}, TRUE);
-      SELECT set_config('app.role', ${role}, TRUE);
-      SELECT set_config('app.tenant_id', ${sekolahId ?? ''}, TRUE);
+      SELECT set_config('app.current_user_id', ${userId}, TRUE);
+      SELECT set_config('app.current_role', ${role}, TRUE);
+      SELECT set_config('app.current_tenant_id', ${sekolahId ?? ''}, TRUE);
     `);
     return fn(tx as DrizzleDb);
   });
@@ -42,8 +42,8 @@ export async function setRlsContext(
   sekolahId: string | null,
 ): Promise<void> {
   await db.execute(sql`
-    SELECT set_config('app.user_id', ${userId}, TRUE);
-    SELECT set_config('app.role', ${role}, TRUE);
-    SELECT set_config('app.tenant_id', ${sekolahId ?? ''}, TRUE);
+    SELECT set_config('app.current_user_id', ${userId}, TRUE);
+    SELECT set_config('app.current_role', ${role}, TRUE);
+    SELECT set_config('app.current_tenant_id', ${sekolahId ?? ''}, TRUE);
   `);
 }

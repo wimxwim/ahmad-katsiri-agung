@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME, type SesiRole } from "@/lib/session";
 import type { SesiPayload } from "@/lib/session";
+import { setRlsContext } from "@/lib/db/tenant-context";
 
 export type { SesiPayload, SesiRole };
 
@@ -25,6 +26,7 @@ async function readSession(request: NextRequest): Promise<SesiPayload | null> {
 export async function requireSession(request: NextRequest): Promise<SesiPayload> {
   const session = await readSession(request);
   if (!session) throw new GuardError("Harap login terlebih dahulu", 401, "UNAUTHORIZED");
+  await setRlsContext(session.userId, session.role, null);
   return session;
 }
 
