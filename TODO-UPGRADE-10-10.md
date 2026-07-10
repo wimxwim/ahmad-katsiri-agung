@@ -232,9 +232,9 @@
 - **Status:** [ ] belum
 
 ### AV7. Tambah `last_active_at` ke users
-- **Fix:** ALTER TABLE migration + kolom di schema.ts (belum ada) + middleware update tiap request authenticated
-- **Effort:** 1.5 jam
-- **Status:** [ ] belum
+- **Fix:** Kolom sudah ada di DB. Ditambahkan ke Drizzle schema (`lastActiveAt`). `requireSession()` di `route-guard-v2.ts` update `last_active_at` tiap request authenticated.
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ---
 

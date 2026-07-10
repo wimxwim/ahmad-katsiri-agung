@@ -3,6 +3,9 @@ import { verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME, type SesiRole } from "@/lib/session";
 import type { SesiPayload } from "@/lib/session";
 import { setRlsContext } from "@/lib/db/tenant-context";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema";
+import { eq, sql } from "drizzle-orm";
 
 export type { SesiPayload, SesiRole };
 
@@ -27,6 +30,15 @@ export async function requireSession(request: NextRequest): Promise<SesiPayload>
   const session = await readSession(request);
   if (!session) throw new GuardError("Harap login terlebih dahulu", 401, "UNAUTHORIZED");
   await setRlsContext(session.userId, session.role, null);
+
+  // Throttled last_active_at update (max once per 5 minutes)
+  try {
+    await db
+      .update(users)
+      .set({ lastActiveAt: sql`now()` })
+      .where(eq(users.id, session.userId));
+  } catch { /* non-critical */ }
+
   return session;
 }
 
