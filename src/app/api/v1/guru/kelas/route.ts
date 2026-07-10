@@ -4,9 +4,9 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
-import { db } from "@/lib/db";
 import { kelas } from "@/lib/db/schema";
 import { apiError, apiRateLimit } from "@/lib/api-response";
+import { db } from "@/lib/db";
 
 const CreateKelasSchema = z.object({
   nama: z.string().min(1).max(50),
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const data = await db
       .select()
       .from(kelas)
-      .where(and(eq(kelas.guruId, session.userId!), isNull(kelas.deletedAt)))
+      .where(and(eq(kelas.guruId, session.userId), isNull(kelas.deletedAt)))
       .orderBy(desc(kelas.createdAt));
 
     return NextResponse.json({ data });
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       .values({
         nama: sanitizeText(parsed.data.nama, 50),
         tingkat: parsed.data.tingkat,
-        guruId: session.userId!,
+        guruId: session.userId,
       })
       .returning();
 

@@ -1,4 +1,3 @@
-import { db } from "@/lib/db";
 import {
   kursus,
   siswaKursus,
@@ -14,6 +13,7 @@ import { and, desc, eq, gte, sql, like, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError } from "@/lib/api-response";
+import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {

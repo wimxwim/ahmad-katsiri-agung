@@ -24,26 +24,11 @@ export async function withTenant<T>(
 ): Promise<T> {
   return db.transaction(async (tx) => {
     await tx.execute(sql`
-      SELECT set_config('app.user_id', ${userId}, TRUE);
-      SELECT set_config('app.role', ${role}, TRUE);
-      SELECT set_config('app.tenant_id', ${sekolahId ?? ''}, TRUE);
+      SELECT set_config('app.current_user_id', ${userId}, TRUE);
+      SELECT set_config('app.current_role', ${role}, TRUE);
+      SELECT set_config('app.current_tenant_id', ${sekolahId ?? ''}, TRUE);
+      SET LOCAL ROLE authenticated;
     `);
     return fn(tx as DrizzleDb);
   });
-}
-
-/**
- * Set RLS context for raw queries.
- * Must be called at the start of each request handler.
- */
-export async function setRlsContext(
-  userId: string,
-  role: SesiRole,
-  sekolahId: string | null,
-): Promise<void> {
-  await db.execute(sql`
-    SELECT set_config('app.user_id', ${userId}, TRUE);
-    SELECT set_config('app.role', ${role}, TRUE);
-    SELECT set_config('app.tenant_id', ${sekolahId ?? ''}, TRUE);
-  `);
 }

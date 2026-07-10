@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
         judul: sanitizeText(parsed.data.judul, 200),
         slug: generatedSlug,
         deskripsi: sanitizeText(parsed.data.deskripsi || "", 500),
-        guruId: session.userId || "",
+        guruId: session.userId,
         harga: 0,
         isPublic: true,
       })

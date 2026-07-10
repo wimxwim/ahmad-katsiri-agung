@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-import { db } from "@/lib/db";
 import {
   kursus,
   siswaKursus,
@@ -17,6 +16,7 @@ import { NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError } from "@/lib/api-response";
 import { calculateRiskScore, getRiskLabel } from "@/lib/analytics/calculateRiskScore";
+import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {
