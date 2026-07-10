@@ -128,6 +128,9 @@
   <rule priority="CRITICAL">JANGAN ubah ease curve animasi dari [0.16, 1, 0.3, 1] as const</rule>
   <rule priority="CRITICAL">JANGAN tambah library baru tanpa alasan kuat dan tanpa cek package.json dulu</rule>
   <rule priority="CRITICAL">JANGAN pernah hardcode NODE_ENV di .env.local atau .env manapun — biarkan Next.js yang mengatur (dev vs build otomatis beda). Ini pernah menyebabkan seluruh production build gagal (lihat GOTCHAS).</rule>
+  <rule priority="CRITICAL">JANGAN PERNAH commit, push, atau tulis file yang mengandung API key, password, token, atau credential dalam bentuk apapun. Repo ini PUBLIC. Kalau perlu catat credential, simpan di Bitwarden atau .env.local (yang sudah di-gitignore).</rule>
+  <rule priority="CRITICAL">JANGAN PERNAH membuat file dokumentasi environment (.md/.txt) yang berisi nilai credential asli. Untuk dokumentasi environment, gunakan .env.example DENGAN NILAI DUMMY/PLACEHOLDER.</rule>
+  <rule priority="CRITICAL">Sebelum commit, WAJIB jalankan `git diff --cached` dan periksa TIDAK ADA credential (pola: DATABASE_URL dengan password, SUPABASE_SERVICE_ROLE_KEY, JWT_SECRET, ENCRYPTION_SECRET, GOOGLE_CLIENT_SECRET, IMAGEKIT_PRIVATE_KEY, RESEND_API_KEY, REDIS_URL dengan password, NARAROUTER_API_KEY, SMTP_PASSWORD, OIDC token).</rule>
   <rule priority="HIGH">Semua type/interface explicit, jangan pakai any</rule>
   <rule priority="HIGH">Gunakan cn() dari src/lib/utils.ts untuk className kondisional</rule>
   <rule priority="HIGH">Semua desain tetap mobile-first: px-3 sm:px-5 lg:px-8</rule>
@@ -151,6 +154,43 @@
   <rule priority="MEDIUM">Ikuti naming convention file tetangga kecuali memang sedang membuat arsitektur baru yang lebih rapi</rule>
   <rule priority="MEDIUM">Refactor besar boleh dilakukan jika memang menghapus alur legacy yang kacau, asalkan build tetap hijau</rule>
 </rules>
+
+## DAFTAR FILE YANG DILARANG KERAS DI-PUSH (REPO PUBLIC)
+
+<forbidden-files>
+  <category name="ENVIRONMENT FILES">
+    <file pattern=".env">File environment lokal — berisi kredensial asli</file>
+    <file pattern=".env.local">File environment lokal Next.js — berisi kredensial asli</file>
+    <file pattern=".env.*">Semua varian .env (kecuali .env.example dan .env.production.example)</file>
+    <file pattern="*[Ee]nvironment*.md">File dokumentasi environment dalam format markdown</file>
+    <file pattern="*[Ee]nvironment*.txt">File dokumentasi environment dalam format teks</file>
+    <file pattern="*[Ee]nv*.md">File markdown yang membahas environment variables</file>
+  </category>
+  <category name="CREDENTIAL FILES">
+    <file pattern="*credential*">File apapun mengandung kata credential</file>
+    <file pattern="*secret*">File apapun mengandung kata secret (kecuali src/lib/ auth code)</file>
+    <file pattern="*password*">File apapun mengandung kata password</file>
+    <file pattern="*token*">File apapun mengandung kata token (kecuali src/lib/ code)</file>
+    <file pattern="*.pem">Private key / certificate</file>
+    <file pattern="*.key">Private key</file>
+    <file pattern="id_rsa*">SSH private key</file>
+    <file pattern="*.pfx">PKCS#12 certificate bundle</file>
+    <file pattern="*.p12">PKCS#12 certificate</file>
+    <file pattern="*.crt">Certificate (kecuali kalau public cert)</file>
+  </category>
+  <category name="BACKUP / TEMP FILES">
+    <file pattern="*.bak">File backup</file>
+    <file pattern="*.backup">File backup</file>
+    <file pattern="*~">File temporary editor</file>
+    <file pattern="*.swp">File swap vim</file>
+    <file pattern="*.swo">File swap vim</file>
+  </category>
+  <category name="HANYA DIIZINKAN">
+    <file pattern=".env.example">✅ BOLEH — template tanpa nilai asli</file>
+    <file pattern=".env.production.example">✅ BOLEH — template tanpa nilai asli</file>
+    <file pattern="src/lib/*.ts">✅ BOLEH — kode yang pakai process.env (bukan nilai asli)</file>
+  </category>
+</forbidden-files>
 
 ## PROTOKOL SAAT MENEMUKAN ERROR BERULANG
 
@@ -333,6 +373,7 @@
   <item>JANGAN set env var lewat echo "$value" | vercel env add KEY production di shell kalau value mengandung $, backtick, atau karakter shell-sensitive lain — akan ke-interpolasi jadi salah/kosong. Tulis value ke file dulu dengan Node (fs.writeFileSync), baru pipe file itu, atau pakai REST API Vercel langsung dengan JSON payload.</item>
   <item>Vercel API GET /v9/projects/{id}/env TIDAK mengembalikan plaintext value untuk env bertipe sensitive/encrypted (selalu tampil string terenkripsi/kosong) — itu normal, bukan tanda env-nya kosong. Verifikasi env benar-benar terpasang lewat efek nyatanya (redeploy + curl /api/health atau endpoint terkait), bukan dari isi response API.</item>
   <item>Production branch Vercel untuk project ini = main (bukan master). Kalau develop di branch lain, harus di-merge ke main supaya ter-deploy ke akalcenter.my.id.</item>
+  <item>INSIDEN 11 JULI 2026: File "AKAL CENTER Environment.md" berisi 12 credential asli (DATABASE_URL, SUPABASE_SERVICE_ROLE_KEY, JWT_SECRET, ENCRYPTION_SECRET, GOOGLE_CLIENT_SECRET, IMAGEKIT_PRIVATE_KEY, RESEND_API_KEY, SMTP_PASSWORD, REDIS_URL, NARAROUTER_API_KEY, dll) ter-commit ke repo publik. Sudah dibersihkan dari history (git filter-branch 343 commit) + key di-rotate. JANGAN PERNAH buat file dokumentasi environment dengan nilai asli lagi — gunakan .env.example dengan placeholder.</item>
 </gotchas>
 
 ## CARA BERPIKIR AGENT

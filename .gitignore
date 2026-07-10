@@ -12,4 +12,17 @@ dist/
 *environment*
 *credential*
 *secret*
+*password*
+*token*
+*.pem
+*.key
+id_rsa*
+*.pfx
+*.p12
+*.crt
+*.bak
+*.backup
+*~
+*.swp
+*.swo
 .agents/
