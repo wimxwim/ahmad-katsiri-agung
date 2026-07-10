@@ -9,6 +9,7 @@ import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { readFile } from "fs/promises";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
+import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 
 export async function POST(
   request: NextRequest,
@@ -71,6 +72,18 @@ export async function POST(
       return apiError("Sudah ada 2 job AI aktif. Tunggu selesai sebelum regenerate.", 429);
     }
 
+    try {
+      await checkQuota(session.userId, session.role, "ai_generation");
+    } catch (e) {
+      if (e instanceof QuotaExceededError) {
+        return NextResponse.json(
+          { success: false, error: e.message, quota: { limit: e.limitValue, used: e.currentUsage } },
+          { status: 429 },
+        );
+      }
+      throw e;
+    }
+
     runGeneration(id, bytes, ext)
       .catch((e) => {
         console.error("Regenerate async error:", e);
@@ -82,6 +95,12 @@ export async function POST(
     return NextResponse.json({ success: true, status: "queued" });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
+    if (e instanceof QuotaExceededError) {
+      return NextResponse.json(
+        { success: false, error: e.message, quota: { limit: e.limitValue, used: e.currentUsage } },
+        { status: 429 },
+      );
+    }
     console.error("Regenerate error:", e);
     const msg = e instanceof Error ? e.message : "Terjadi kesalahan server";
     return apiError(msg, 500);

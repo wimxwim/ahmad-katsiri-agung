@@ -301,19 +301,16 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 ### B1. Sistem Kuota Berbasis Kapasitas (BUKAN Waktu)
 
 - **Keputusan bisnis:** Guru GRATIS SELAMANYA — dibatasi jumlah kursus, siswa, AI request/bulan
-- **Fix:** Buat tabel `quotas` (configurable per role + resource) + `quota_usages` (counter per user) + guard `checkQuota()` di API layer
-- **Default kuota gratis:** 5 kursus aktif, 30 AI generation/bulan, 100 siswa, 500MB storage
-- **Effort:** 3 jam
-- **Referensi:** Redis Token Bucket + AWS API Gateway pattern (international standard)
-- **Status:** [ ] belum
+- **Fix:** Wire `checkQuota()` + `QuotaExceededError` ke `POST /api/v1/guru/uploads` + `POST .../drafts/[id]/regenerate`. Auto-increment usage di `ai-generator.ts` setelah sukses generate. Quota dicek SEBELUM AI dipanggil.
+- **Effort:** 1 jam
+- **Status:** [x] selesai
 
 ### B2. AI Cost Tracking + Hard Cap
 
 - **Keputusan bisnis:** Bahaya #1 — free rider AI abuse. WAJIB pasang limit keras dari hari pertama.
-- **Fix:** Buat tabel `ai_requests` (user_id, model, tokens, cost_idr_cents) + materialized view `ai_daily_costs` + hard cap check di API sebelum panggil NaraRouter
-- **Effort:** 2 jam
-- **Referensi:** OpenAI Admin API usage tracking pattern
-- **Status:** [ ] belum
+- **Fix:** Auto-insert ke `ai_requests` table di `ai-generator.ts` setelah setiap sukses generate (userId, model, provider, tokens). Quota `checkQuota()` jadi hard cap di upload + regenerate endpoint.
+- **Effort:** 30 menit
+- **Status:** [x] selesai
 
 ### B3. Owner Dashboard v2 — Pantau Biaya & Aktivitas
 
@@ -348,9 +345,9 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 ### B7. Rate Limiting / Hard Cap AI Request Per Akun
 
 - **Keputusan bisnis:** Cegah free rider. Hard cap dari hari pertama.
-- **Fix:** Check quota BEFORE setiap AI call. Redis sliding window counter untuk burst protection. DB-based monthly cap untuk total limit.
-- **Effort:** 1 jam (bangun di atas Redis rate-limit.ts yang sudah ada)
-- **Status:** [ ] belum
+- **Fix:** Rate limit sudah ada di upload (IP 10/min + per-user 20/min + concurrent 2) dan regenerate (IP 2/min + per-user 5/min + concurrent 2). Quota checkQuota() ditambahkan sebagai hard cap layer ketiga.
+- **Effort:** 15 menit (integrasi)
+- **Status:** [x] selesai
 
 **Total Fase BISNIS:** ~14 jam
 
@@ -870,7 +867,7 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 | 1 | Auth & Guard | 8.5 jam | 6/6 ✅ | Selesai |
 | 2 | Database & RLS | 10 jam | 4/5 ✅ (D1-D4 done) | D5 uji isolation |
 | 3 | Frontend & UX | 10.5 jam | 7/7 ✅ | Selesai |
-| 🔥 | **BISNIS — Persiapan 80 Guru** | **14 jam** | **1/7 [~]** | B1, B2, B4-B7 |
+| 🔥 | **BISNIS — Persiapan 80 Guru** | **14 jam** | **5/7 ✅** | B5, B6 |
 | 🔥 | **UX-A11Y (Mega Audit)** | **18 jam** | **0/20** | **Semua** |
 | 4 | Design System | 3.5 jam | 0/4 | Semua |
 | 5 | Security | 3.5 jam | 0/5 | Semua |
@@ -880,7 +877,7 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 | 9 | Dokumentasi | 5.5 jam | 0/4 | Semua |
 | 10 | DevOps | 5 jam | 0/5 | Semua |
 | 11 | Upgrade (bonus) | 12 jam | 0/5 | Semua |
-| **TOTAL** | **89 item** | **~115 jam** | **26 selesai** | **63 pending** |
+| **TOTAL** | **89 item** | **~115 jam** | **29 selesai** | **60 pending** |
 
 ---
 

@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
-import { aiGeneration, fileMateri } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { aiGeneration, fileMateri, aiRequests, quotas, users } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
 import { extractText } from "@/lib/text-extractor";
 import { chat, getModelName } from "@/lib/ai";
 import { appendEvent } from "@/lib/event-store";
@@ -10,6 +10,7 @@ import {
   parseSoalSafe,
   type ValidatedSoal,
 } from "@/lib/ai-sanitizer";
+import { incrementUsage } from "@/lib/quota-guard";
 
 export type GeneratedSoal = ValidatedSoal;
 export type GeneratedQuiz = ValidatedSoal;
@@ -213,6 +214,25 @@ export async function runGeneration(
       tokensOut,
       model: getModelName(),
     });
+
+    // AI cost tracking + quota increment (best-effort)
+    try {
+      await db.insert(aiRequests).values({
+        userId: gen.guruId,
+        model: getModelName(),
+        provider: "nararouter",
+        requestType: "generation",
+        promptTokens: tokensIn,
+        completionTokens: tokensOut,
+        totalTokens: tokensIn + tokensOut,
+      });
+      const guru = await db.query.users.findFirst({ where: eq(users.id, gen.guruId) });
+      const guruRole = guru?.role ?? "GURU";
+      const quota = await db.query.quotas.findFirst({
+        where: and(eq(quotas.role, guruRole), eq(quotas.resourceType, "ai_generation"), eq(quotas.isActive, true)),
+      });
+      if (quota) await incrementUsage(gen.guruId, quota.id);
+    } catch { /* non-critical */ }
 
     const u = updated[0];
     return {

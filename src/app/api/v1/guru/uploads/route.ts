@@ -14,6 +14,7 @@ import { fileMateri, aiGeneration, kursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { runGeneration, GenerationTimeoutError, GenerationSchemaError } from "@/lib/ai-generator";
+import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 
 const ALLOWED_EXT = new Set(["pdf", "docx"]);
 const ALLOWED_MIME = new Set([
@@ -154,6 +155,22 @@ export async function POST(request: NextRequest) {
     );
 
     if (concRl.allowed) {
+      try {
+        await checkQuota(session.userId!, session.role, "ai_generation");
+      } catch (e) {
+        if (e instanceof QuotaExceededError) {
+          await db
+            .update(aiGeneration)
+            .set({ status: "failed", errorMessage: e.message })
+            .where(eq(aiGeneration.id, generation.id));
+          return NextResponse.json(
+            { success: false, error: e.message, quota: { limit: e.limitValue, used: e.currentUsage } },
+            { status: 429 },
+          );
+        }
+        throw e;
+      }
+
       runGeneration(generation.id, bytes, detected)
         .catch(async (e) => {
           console.error("Generation async error:", e);
@@ -197,6 +214,12 @@ export async function POST(request: NextRequest) {
         : "File tersimpan, tapi AI generation di-queue (job lain masih aktif).",
     });
   } catch (e) {
+    if (e instanceof QuotaExceededError) {
+      return NextResponse.json(
+        { success: false, error: e.message, quota: { limit: e.limitValue, used: e.currentUsage } },
+        { status: 429 },
+      );
+    }
     console.error("Upload error:", e);
     const msg = e instanceof Error ? e.message : "Terjadi kesalahan server";
     return apiError(msg, 500);
