@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "motion/react";
@@ -15,6 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { handleLogout } from "@/lib/logout";
+import { useSession } from "@/components/providers/SessionProvider";
 
 export interface SidebarItem {
   href: string;
@@ -41,21 +42,8 @@ export function DashboardLayoutClient({
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [nama, setNama] = useState(defaultNama);
-
-  useEffect(() => {
-    let mounted = true;
-    fetch("/api/v1/account/me", { credentials: "include" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => {
-        if (!mounted) return;
-        if (j?.data?.nama) setNama(j.data.nama);
-      })
-      .catch(() => {});
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const session = useSession();
+  const nama = session?.nama || defaultNama;
 
   return (
     <div className="min-h-screen bg-surface flex">
@@ -96,7 +84,7 @@ export function DashboardLayoutClient({
                   active && !item.primary
                     ? "bg-primary/10 text-primary"
                     : item.primary
-                    ? "bg-primary text-white hover:brightness-110"
+                    ? "bg-primary text-on-primary hover:brightness-110"
                     : "text-on-surface-variant hover:bg-surface hover:text-on-surface",
                 )}
               >

@@ -49,7 +49,7 @@ export default function GuruDraftsPage() {
       setDrafts(data || []);
       setLoading(false);
     } catch (error) {
-      console.error("[guru/drafts] load failed:", error);
+      if (process.env.NODE_ENV !== "production") console.error("[guru/drafts] load failed:", error);
       setError("Terjadi kesalahan saat memuat draft.");
       setLoading(false);
     }
@@ -126,7 +126,7 @@ export default function GuruDraftsPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari draft..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/40 focus:outline-hidden focus:border-primary/40 text-sm"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/70 focus:outline-hidden focus:border-primary/40 text-sm"
               />
             </div>
             <div className="relative">
@@ -184,7 +184,7 @@ export default function GuruDraftsPage() {
                     )}
                   </p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap ${meta.color}`}>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${meta.color}`}>
                   {meta.label}
                 </span>
                 {d.status === "ready" && (

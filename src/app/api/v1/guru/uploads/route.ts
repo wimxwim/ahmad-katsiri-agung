@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/dal";
+import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import {
   checkRateLimit,
   checkRateLimitPerUser,
@@ -7,7 +7,7 @@ import {
   releaseConcurrent,
   ipFromRequest,
 } from "@/lib/rate-limit";
-import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { fileMateri, aiGeneration, kursus } from "@/lib/db/schema";
@@ -38,11 +38,7 @@ function detectExtension(buf: Buffer): string | null {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) return apiUnauthorized();
-    if (session.role !== "guru" && session.role !== "owner") {
-      return apiError("Hanya guru yang dapat upload dokumen", 403);
-    }
+    const session = await requireGuru(request);
 
     const ip = ipFromRequest(request);
     const ipRl = await checkRateLimit(`upload-doc-ip:${ip}`, 10, 60_000);
@@ -157,7 +153,8 @@ export async function POST(request: NextRequest) {
     if (concRl.allowed) {
       try {
         await checkQuota(session.userId!, session.role, "ai_generation");
-      } catch (e) {
+} catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
         if (e instanceof QuotaExceededError) {
           await db
             .update(aiGeneration)
@@ -228,11 +225,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) return apiUnauthorized();
-    if (session.role !== "guru" && session.role !== "owner") {
-      return apiError("Hanya guru yang dapat melihat file", 403);
-    }
+    const session = await requireGuru(request);
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`upload-list:${ip}`, 30, 15000);
@@ -251,6 +244,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data: sanitized });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Upload list error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

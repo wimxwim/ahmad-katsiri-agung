@@ -60,7 +60,7 @@ export default function SiswaKursusPage() {
         <div className="text-center py-12 bg-glass rounded-2xl border border-border-precision">
           <BookOpen className="w-10 h-10 text-on-surface-variant/30 mx-auto mb-3" />
           <p className="text-on-surface-variant">Belum terdaftar di kursus manapun</p>
-          <Link href="/materi" className="text-primary text-sm mt-2 inline-block hover:underline">
+          <Link href="/siswa/materi" className="text-primary text-sm mt-2 inline-block hover:underline">
             Jelajahi materi
           </Link>
         </div>

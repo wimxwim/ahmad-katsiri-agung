@@ -93,7 +93,7 @@ export async function rotateRefreshToken(
 
   const accessToken = await signSession({
     userId: userRow.id,
-    role: roleToSesiRole(userRow.role),
+    role: roleToSessionRole(userRow.role),
     nama: userRow.nama,
     email: userRow.email,
   });
@@ -101,13 +101,7 @@ export async function rotateRefreshToken(
   return { accessToken, refreshToken: rawRefreshToken };
 }
 
-function roleToSesiRole(role: string): "murid" | "guru" | "owner" | "admin_sekolah" | "orang_tua" {
-  if (role === "GURU" || role === "ASISTEN_GURU") return "guru";
-  if (role === "OWNER") return "owner";
-  if (role === "ADMIN_SEKOLAH") return "admin_sekolah";
-  if (role === "ORANG_TUA") return "orang_tua";
-  return "murid";
-}
+import { roleToSessionRole } from "@/lib/session";
 
 export async function revokeUserRefreshTokens(userId: string, family?: string): Promise<void> {
   const conditions = [eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)];

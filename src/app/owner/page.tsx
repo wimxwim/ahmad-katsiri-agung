@@ -43,7 +43,7 @@ function TRILabelBadge({ label }: { label: string }) {
   const c = config[label] ?? config.butuh_dukungan;
   const Icon = c.icon;
   return (
-    <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide", c.bg, c.text)}>
+    <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold tracking-wide", c.bg, c.text)}>
       <Icon className="w-3 h-3" />
       {label === "expert" ? "Expert"
         : label === "baik" ? "Baik"
@@ -63,7 +63,7 @@ function MiniBar({ value }: { value: number }) {
       <div className="flex-1 h-1.5 bg-black/5 rounded-full overflow-hidden">
         <div className={cn("h-full rounded-full transition-all duration-700", barColor)} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[11px] font-mono text-on-surface-variant w-7 text-right">{pct}%</span>
+      <span className="text-xs font-mono text-on-surface-variant w-7 text-right">{pct}%</span>
     </div>
   );
 }
@@ -137,7 +137,7 @@ export default function OwnerIndex() {
     <div>
       {/* header */}
       <div className="mb-8">
-        <span className="inline-flex items-center gap-2 rounded-full bg-tertiary/10 px-3 py-1 text-[10px] font-bold tracking-[0.18em] text-tertiary">
+        <span className="inline-flex items-center gap-2 rounded-full bg-tertiary/10 px-3 py-1 text-xs font-bold tracking-[0.18em] text-tertiary">
           <ShieldCheck className="w-3 h-3" />
           OWNER CONSOLE
         </span>
@@ -261,7 +261,7 @@ export default function OwnerIndex() {
                     </div>
                     <div>
                       <p className="font-heading font-semibold text-sm text-on-surface">{guru.nama}</p>
-                      <p className="text-[11px] text-on-surface-variant">{guru.email}</p>
+                      <p className="text-xs text-on-surface-variant">{guru.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -284,7 +284,7 @@ export default function OwnerIndex() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2">
                   {(Object.keys(KOMPONEN_LABELS) as (keyof KomponenTRI)[]).map((k) => (
                     <div key={k} className="flex items-center gap-2">
-                      <span className="text-[11px] text-on-surface-variant w-28 shrink-0">{KOMPONEN_LABELS[k]}</span>
+                      <span className="text-xs text-on-surface-variant w-28 shrink-0">{KOMPONEN_LABELS[k]}</span>
                       <MiniBar value={guru.komponen[k]} />
                     </div>
                   ))}

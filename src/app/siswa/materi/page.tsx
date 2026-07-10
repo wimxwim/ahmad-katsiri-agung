@@ -101,7 +101,7 @@ export default function SiswaMateriListPage() {
                           />
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-primary tabular-nums">
+                      <span className="text-xs font-bold text-primary tabular-nums">
                         {m.progressPersen}%
                       </span>
                     </div>

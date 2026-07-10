@@ -251,8 +251,8 @@ CREATE POLICY file_materi_guru_policy ON file_materi
   );
 
 -- studentAbility — Siswa lihat ability sendiri
-ALTER TABLE studentAbility ENABLE ROW LEVEL SECURITY;
-CREATE POLICY studentAbility_siswa_policy ON studentAbility
+ALTER TABLE student_ability ENABLE ROW LEVEL SECURITY;
+CREATE POLICY student_ability_siswa_policy ON student_ability
   FOR SELECT
   TO public
   USING (
@@ -261,8 +261,8 @@ CREATE POLICY studentAbility_siswa_policy ON studentAbility
   );
 
 -- skillMastery — Siswa lihat mastery sendiri
-ALTER TABLE skillMastery ENABLE ROW LEVEL SECURITY;
-CREATE POLICY skillMastery_siswa_policy ON skillMastery
+ALTER TABLE skill_mastery ENABLE ROW LEVEL SECURITY;
+CREATE POLICY skill_mastery_siswa_policy ON skill_mastery
   FOR SELECT
   TO public
   USING (
@@ -271,8 +271,8 @@ CREATE POLICY skillMastery_siswa_policy ON skillMastery
   );
 
 -- riskSnapshot — Siswa lihat risk sendiri
-ALTER TABLE riskSnapshot ENABLE ROW LEVEL SECURITY;
-CREATE POLICY riskSnapshot_siswa_policy ON riskSnapshot
+ALTER TABLE risk_snapshot ENABLE ROW LEVEL SECURITY;
+CREATE POLICY risk_snapshot_siswa_policy ON risk_snapshot
   FOR SELECT
   TO public
   USING (
@@ -281,8 +281,8 @@ CREATE POLICY riskSnapshot_siswa_policy ON riskSnapshot
   );
 
 -- remedialRecommendation — Siswa lihat rekomendasi sendiri
-ALTER TABLE remedialRecommendation ENABLE ROW LEVEL SECURITY;
-CREATE POLICY remedialRecommendation_siswa_policy ON remedialRecommendation
+ALTER TABLE remedial_recommendation ENABLE ROW LEVEL SECURITY;
+CREATE POLICY remedial_recommendation_siswa_policy ON remedial_recommendation
   FOR SELECT
   TO public
   USING (
@@ -305,8 +305,8 @@ CREATE POLICY quiz_session_guru_policy ON quiz_session
   );
 
 -- google_drive_auth — Guru lihat auth mereka sendiri
-ALTER TABLE googleDriveAuth ENABLE ROW LEVEL SECURITY;
-CREATE POLICY google_drive_auth_guru_policy ON googleDriveAuth
+ALTER TABLE google_drive_auth ENABLE ROW LEVEL SECURITY;
+CREATE POLICY google_drive_auth_guru_policy ON google_drive_auth
   FOR ALL
   TO public
   USING (
@@ -315,8 +315,8 @@ CREATE POLICY google_drive_auth_guru_policy ON googleDriveAuth
   );
 
 -- teacher_readiness_snapshot — Guru lihat snapshot sendiri
-ALTER TABLE teacherReadinessSnapshot ENABLE ROW LEVEL SECURITY;
-CREATE POLICY teacher_readiness_snapshot_guru_policy ON teacherReadinessSnapshot
+ALTER TABLE teacher_readiness_snapshot ENABLE ROW LEVEL SECURITY;
+CREATE POLICY teacher_readiness_snapshot_guru_policy ON teacher_readiness_snapshot
   FOR SELECT
   TO public
   USING (

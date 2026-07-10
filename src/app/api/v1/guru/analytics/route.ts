@@ -47,27 +47,31 @@ export async function GET(request: NextRequest) {
       .where(and(eq(kursus.guruId, guruId), eq(quizSession.isActive, true))),
   ]);
 
-  const trend: { minggu: string; total: number }[] = [];
   const now = new Date();
-  for (let i = 3; i >= 0; i--) {
-    const start = new Date(now);
-    start.setDate(now.getDate() - 7 * (i + 1));
-    const end = new Date(now);
-    end.setDate(now.getDate() - 7 * i);
+  const fourWeeksAgo = new Date(now);
+  fourWeeksAgo.setDate(now.getDate() - 28);
 
-    const weekEvents = await db
-      .select({ id: eventStore.id })
-      .from(eventStore)
-      .where(
-        and(
-          eq(eventStore.streamId, `upload:${guruId}`),
-          gte(eventStore.createdAt, start),
-          sql`${eventStore.createdAt} < ${end}`,
-        ),
-      );
+  const weekData = await db
+    .select({
+      week: sql<string>`to_char(date_trunc('week', ${eventStore.createdAt}), 'YYYY-MM-DD')`,
+      total: sql<number>`cast(count(*) as integer)`,
+    })
+    .from(eventStore)
+    .where(
+      and(
+        eq(eventStore.streamId, `upload:${guruId}`),
+        gte(eventStore.createdAt, fourWeeksAgo),
+      ),
+    )
+    .groupBy(sql`date_trunc('week', ${eventStore.createdAt})`)
+    .orderBy(sql`date_trunc('week', ${eventStore.createdAt})`);
 
-    const label = `Minggu ${4 - i}`;
-    trend.push({ minggu: label, total: weekEvents.length });
+  const trend: { minggu: string; total: number }[] = [];
+  for (let i = 0; i < 4; i++) {
+    trend.push({
+      minggu: `Minggu ${i + 1}`,
+      total: i < weekData.length ? weekData[i].total : 0,
+    });
   }
 
   const kursusIds = kursusList.map((k) => k.id);

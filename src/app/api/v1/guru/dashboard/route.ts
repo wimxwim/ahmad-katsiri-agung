@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
         totalKursus: kursusRows.length,
         totalSiswa,
         draftMenunggu: draftRows.length,
-        totalKuisDikerjakan: 0,
+        totalKuisDikerjakan: quizAttemptRows.length,
         siswaBelumMengerjakan: totalSiswa - siswaYangPunyaAttempt,
         totalMateriPublished: materiPubRows.length,
         totalQuizPublished: quizPubRows.length,

@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import {
   ArrowRight,
   Bot,
@@ -206,7 +207,7 @@ export default function FiturPage() {
             Siswa masuk dari portal yang memang untuk mereka. Materi, quiz, dan progres semuanya di satu tempat yang rapi.
           </p>
         </motion.div>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           {siswaFeatures.map((item, i) => {
             const Icon = item.icon;
             return (
@@ -216,7 +217,10 @@ export default function FiturPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1, ease: EASE_CURVE }}
-                className="rounded-[28px] border border-border-precision bg-white p-5 shadow-glass sm:p-6"
+                className={cn(
+                  "rounded-[28px] border border-border-precision bg-white p-5 shadow-glass sm:p-6",
+                  i === 0 && "sm:col-span-2"
+                )}
               >
                 <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <Icon className="h-6 w-6" />
@@ -245,7 +249,7 @@ export default function FiturPage() {
             Sekolah dan yayasan butuh visibilitas lintas guru. Dashboard admin dan arsitektur multi-tenant sudah siap sejak awal.
           </p>
         </motion.div>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           {sekolahFeatures.map((item, i) => {
             const Icon = item.icon;
             return (
@@ -255,7 +259,10 @@ export default function FiturPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1, ease: EASE_CURVE }}
-                className="rounded-[28px] border border-border-precision bg-glass p-5 shadow-glass backdrop-blur-2xl sm:p-6"
+                className={cn(
+                  "rounded-[28px] border border-border-precision bg-glass p-5 shadow-glass backdrop-blur-2xl sm:p-6",
+                  i === 0 && "sm:col-span-2"
+                )}
               >
                 <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <Icon className="h-6 w-6" />
@@ -282,7 +289,7 @@ export default function FiturPage() {
         >
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[10px] font-bold tracking-[0.18em] text-white/80">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold tracking-[0.18em] text-white/80">
                 KILLER FEATURE
               </span>
               <div className="mt-4 flex items-center gap-3">
@@ -328,7 +335,7 @@ export default function FiturPage() {
             </div>
 
             <div className="space-y-3">
-              <p className="text-[11px] font-bold tracking-[0.18em] text-white/50">
+              <p className="text-xs font-bold tracking-[0.18em] text-white/50">
                 ALUR KERJA AI DOCUMENT GENERATOR
               </p>
               {pipelineSteps.map((item) => {
@@ -347,7 +354,7 @@ export default function FiturPage() {
                         <Icon className="h-5 w-5" />
                       </span>
                       <div className="flex-1">
-                        <p className="text-[11px] font-bold tracking-[0.18em] text-white/50">
+                        <p className="text-xs font-bold tracking-[0.18em] text-white/50">
                           STEP {item.step}
                         </p>
                         <p className="mt-1 font-heading text-base font-semibold text-white">
@@ -396,7 +403,7 @@ export default function FiturPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
-                  href="https://wa.me/628518795502?text=Halo%2C%20saya%20tertarik%20dengan%20AKAL%20Center%20untuk%20sekolah"
+                  href="https://wa.me/6285158795502?text=Halo%2C%20saya%20tertarik%20dengan%20AKAL%20Center%20untuk%20sekolah"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"

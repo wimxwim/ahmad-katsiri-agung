@@ -132,7 +132,7 @@ export default function GuruSiswaDetailPage() {
             </p>
           </div>
           {data.tuntas !== null && (
-            <span className={`text-[10px] font-bold tracking-wider px-2.5 py-1 rounded-full shrink-0 ${
+            <span className={`text-xs font-bold tracking-wider px-2.5 py-1 rounded-full shrink-0 ${
               data.tuntas ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
             }`}>
               {data.tuntas ? "TUNTAS" : "BELUM TUNTAS"}
@@ -157,15 +157,15 @@ export default function GuruSiswaDetailPage() {
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">ATTEMPT</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">ATTEMPT</p>
           <p className="font-heading text-2xl font-bold text-on-surface mt-1">{data.totalAttempt}</p>
         </div>
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">SELESAI</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">SELESAI</p>
           <p className="font-heading text-2xl font-bold text-emerald-700 mt-1">{data.totalSelesai}</p>
         </div>
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">RATA-RATA</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">RATA-RATA</p>
           <p className={`font-heading text-2xl font-bold mt-1 ${
             data.rataNilai !== null
               ? data.rataNilai >= 70 ? "text-emerald-700" : "text-red-600"
@@ -224,12 +224,12 @@ export default function GuruSiswaDetailPage() {
                     <span>·</span>
                     <span>{Math.floor(a.durasiDetik / 60)}m {a.durasiDetik % 60}s</span>
                     {a.modeEvaluasi !== "BELAJAR" && (
-                      <span className="text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                      <span className="text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded text-xs font-bold">
                         {a.modeEvaluasi}
                       </span>
                     )}
                   </p>
-                  <p className="text-[10px] text-on-surface-variant/60 mt-0.5">
+                  <p className="text-xs text-on-surface-variant/60 mt-0.5">
                     {new Date(a.waktuMulai).toLocaleString("id-ID")}
                   </p>
                 </div>

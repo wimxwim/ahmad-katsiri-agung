@@ -112,7 +112,7 @@ export default function SertifikatPage() {
                     <p className="text-xs text-amber-700 font-heading font-semibold">
                       Segera Hadir
                     </p>
-                    <p className="text-[10px] text-amber-600/60">
+                    <p className="text-xs text-amber-600/60">
                       Fitur dalam pengembangan
                     </p>
                   </div>

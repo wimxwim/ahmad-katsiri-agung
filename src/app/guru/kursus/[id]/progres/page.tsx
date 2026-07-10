@@ -121,23 +121,23 @@ export default function KursusProgresPage() {
 
       <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-6">
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">SISWA</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">SISWA</p>
           <p className="font-heading text-2xl font-bold text-on-surface mt-1">{data.totalSiswa}</p>
         </div>
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">QUIZ</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">QUIZ</p>
           <p className="font-heading text-2xl font-bold text-on-surface mt-1">{data.totalQuiz}</p>
         </div>
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">ATTEMPT</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">ATTEMPT</p>
           <p className="font-heading text-2xl font-bold text-on-surface mt-1">{data.totalAttempt}</p>
         </div>
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">TUNTAS</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">TUNTAS</p>
           <p className="font-heading text-2xl font-bold text-emerald-700 mt-1">{tuntasCount}</p>
         </div>
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">REMEDIAL</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">REMEDIAL</p>
           <p className="font-heading text-2xl font-bold text-red-600 mt-1">{belumTuntasCount}</p>
         </div>
       </div>
@@ -148,7 +148,7 @@ export default function KursusProgresPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari siswa..."
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/40 focus:outline-hidden focus:border-primary/40 text-sm"
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/70 focus:outline-hidden focus:border-primary/40 text-sm"
         />
       </div>
 
@@ -177,14 +177,14 @@ export default function KursusProgresPage() {
                   <td className="px-4 py-3">
                     <div>
                       <p className="font-semibold text-on-surface">{s.nama}</p>
-                      <p className="text-[10px] text-on-surface-variant mt-0.5">
+                      <p className="text-xs text-on-surface-variant mt-0.5">
                         {[s.kelas, s.noAbsen ? `No. ${s.noAbsen}` : ""].filter(Boolean).join(" · ") || "—"}
                       </p>
                     </div>
                   </td>
                   <td className="px-3 py-3 text-center">
                     <span className="text-on-surface font-medium">{s.totalAttempt}</span>
-                    <span className="text-[10px] text-on-surface-variant ml-1">
+                    <span className="text-xs text-on-surface-variant ml-1">
                       / {s.totalSelesai} selesai
                     </span>
                   </td>
@@ -203,16 +203,16 @@ export default function KursusProgresPage() {
                   </td>
                   <td className="px-3 py-3 text-center">
                     {s.totalAttempt === 0 ? (
-                      <span className="text-[10px] font-bold tracking-wider text-on-surface-variant/50 bg-surface px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-bold tracking-wider text-on-surface-variant/50 bg-surface px-2 py-0.5 rounded-full">
                         BARU
                       </span>
                     ) : s.tuntas ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-xs font-bold tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
                         <CheckCircle2 className="w-3 h-3" />
                         TUNTAS
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-xs font-bold tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
                         REMEDIAL
                       </span>
                     )}

@@ -2,7 +2,8 @@
 
 import { motion } from "motion/react";
 import Link from "next/link";
-import { BookHeart, ArrowRight, Sparkles, GraduationCap, Users, FileText, Target } from "lucide-react";
+import Image from "next/image";
+import { BookHeart, ArrowRight, Sparkles, GraduationCap, Users, FileText, Target, MessageCircle } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
 import { EASE_CURVE } from "@/lib/constants";
 
@@ -11,7 +12,7 @@ export default function TentangPage() {
 
   const filosofi = about?.filosofi ?? "AKAL Center percaya bahwa pembelajaran Aqidah Akhlaq harus relevan dengan kehidupan digital siswa. Kami menerapkan model Deep Learning — sadar, bermakna, dan menyenangkan — untuk membentuk karakter Islami generasi muda.";
   const pendiriNama = about?.pendiriNama ?? "Ahmad Katsiri Agung, S.Pd.";
-  const pendiriFoto = about?.pendiriFoto ?? "/images/tentang/ahmad-katsiri.jpg?v=3";
+  const pendiriFoto = about?.pendiriFoto ?? "/images/tentang/ahmad-katsiri.jpg";
   const visi = about?.visi ?? "Menjadi platform pembelajaran PAI nomor satu di Indonesia yang membuat setiap siswa jatuh cinta pada pelajaran agama Islam.";
   const misiList = about?.misi ?? [];
 
@@ -145,12 +146,19 @@ export default function TentangPage() {
               Tim AKAL Center
             </h2>
             <div className="flex flex-col sm:flex-row gap-6 items-start mb-8 pb-8 border-b border-glass-stroke">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 bg-primary/10">
-                <img
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 bg-primary/10 grid place-items-center relative">
+                <Image
                   src={pendiriFoto}
                   alt={pendiriNama}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, 400px"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                    e.currentTarget.nextElementSibling?.classList.remove("hidden");
+                  }}
                 />
+                <GraduationCap className="hidden w-8 h-8 text-primary" aria-hidden="true" />
               </div>
               <div>
                 <h3 className="font-heading text-base sm:text-lg text-on-surface mb-1">
@@ -162,6 +170,15 @@ export default function TentangPage() {
                 <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed">
                   Pendidik PAI yang berdedikasi menghadirkan pengalaman belajar agama yang bermakna. AKAL Center lahir dari pengalaman langsung mengajar di kelas — melihat kebutuhan guru akan alat bantu digital yang praktis dan sesuai Kurikulum Merdeka.
                 </p>
+                <a
+                  href="https://wa.me/6285158795502?text=Halo%20Pak%20Ahmad%2C%20saya%20ingin%20berdiskusi%20tentang%20AKAL%20Center"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-primary hover:underline"
+                >
+                  <MessageCircle className="w-4 h-4" aria-hidden="true" />
+                  Hubungi via WhatsApp
+                </a>
               </div>
             </div>
             <div className="flex items-start gap-4">

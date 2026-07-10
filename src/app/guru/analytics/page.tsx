@@ -145,7 +145,7 @@ export default function GuruAnalyticsPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
             <div className="bg-glass border border-border-precision rounded-2xl p-5 shadow-glass">
-              <p className="text-[10px] font-bold tracking-wider text-on-surface-variant mb-1">
+              <p className="text-xs font-bold tracking-wider text-on-surface-variant mb-1">
                 ATTEMPT QUIZ
               </p>
               <p className="font-heading text-2xl font-bold text-on-surface">{data.totalAttempt}</p>
@@ -154,7 +154,7 @@ export default function GuruAnalyticsPage() {
               </p>
             </div>
             <div className="bg-glass border border-border-precision rounded-2xl p-5 shadow-glass">
-              <p className="text-[10px] font-bold tracking-wider text-on-surface-variant mb-1">
+              <p className="text-xs font-bold tracking-wider text-on-surface-variant mb-1">
                 SISWA TUNTAS
               </p>
               <p className="font-heading text-2xl font-bold text-emerald-700">{data.totalSiswaTuntas}</p>
@@ -163,7 +163,7 @@ export default function GuruAnalyticsPage() {
               </p>
             </div>
             <div className="bg-glass border border-border-precision rounded-2xl p-5 shadow-glass">
-              <p className="text-[10px] font-bold tracking-wider text-on-surface-variant mb-1">
+              <p className="text-xs font-bold tracking-wider text-on-surface-variant mb-1">
                 DRAFT MENUNGGU
               </p>
               <p className="font-heading text-2xl font-bold text-tertiary">{data.totalDraft}</p>
@@ -288,7 +288,7 @@ export default function GuruAnalyticsPage() {
                 </h2>
                 <Link
                   href="/guru/kursus"
-                  className="text-[10px] font-bold tracking-wider text-primary hover:underline flex items-center gap-1 shrink-0"
+                  className="text-xs font-bold tracking-wider text-primary hover:underline flex items-center gap-1 shrink-0"
                 >
                   <FileEdit className="w-3 h-3" />
                   Buat Quiz Baru
@@ -307,7 +307,7 @@ export default function GuruAnalyticsPage() {
                     <div className="flex items-start justify-between gap-3 mb-1">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {i < 3 && (
-                          <span className={`w-5 h-5 rounded-md text-[10px] font-bold grid place-items-center shrink-0 ${
+                          <span className={`w-5 h-5 rounded-md text-xs font-bold grid place-items-center shrink-0 ${
                             i === 0 ? "bg-red-500 text-white" :
                             i === 1 ? "bg-orange-400 text-white" :
                             "bg-amber-400 text-white"
@@ -337,7 +337,7 @@ export default function GuruAnalyticsPage() {
                         style={{ width: `${t.errorRate}%` }}
                       />
                     </div>
-                    <p className="text-[10px] text-on-surface-variant mt-0.5 ml-7">
+                    <p className="text-xs text-on-surface-variant mt-0.5 ml-7">
                       {t.totalSalah} salah · {t.totalBenar} benar · {t.totalJawab} total jawaban
                     </p>
                   </div>
@@ -375,13 +375,13 @@ export default function GuruAnalyticsPage() {
                           {r.nama}
                         </Link>
                       </p>
-                      <p className="text-[10px] text-on-surface-variant mt-0.5">
+                      <p className="text-xs text-on-surface-variant mt-0.5">
                         {r.totalAttempt} kali quiz · {r.kursus.join(", ")}
                       </p>
                     </div>
                     <Link
                       href={`/guru/siswa/${r.siswaId}`}
-                      className="text-[10px] font-bold tracking-wider text-primary hover:underline shrink-0 flex items-center gap-1"
+                      className="text-xs font-bold tracking-wider text-primary hover:underline shrink-0 flex items-center gap-1"
                     >
                       <Send className="w-3 h-3" />
                       Detail
@@ -435,7 +435,7 @@ export default function GuruAnalyticsPage() {
                     >
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-on-surface text-sm truncate">{k.judul}</p>
-                        <p className="text-[10px] text-on-surface-variant mt-0.5">
+                        <p className="text-xs text-on-surface-variant mt-0.5">
                           {k.totalSiswa} siswa · {k.totalAttempt} attempt
                         </p>
                       </div>
@@ -443,7 +443,7 @@ export default function GuruAnalyticsPage() {
                         <p className={`font-heading font-bold text-sm ${k.rataNilai >= 70 ? "text-emerald-700" : "text-red-600"}`}>
                           {k.rataNilai}
                         </p>
-                        <p className="text-[10px] text-on-surface-variant">rata-rata</p>
+                        <p className="text-xs text-on-surface-variant">rata-rata</p>
                       </div>
                       <ChevronRight className="w-4 h-4 text-on-surface-variant/40 ml-2 shrink-0" />
                     </Link>
@@ -466,7 +466,7 @@ export default function GuruAnalyticsPage() {
                     const height = Math.max((t.total / maxVal) * 100, 6);
                     return (
                       <div key={t.minggu} className="flex-1 flex flex-col items-center">
-                        <span className="text-[10px] font-bold text-primary tabular-nums mb-1">
+                        <span className="text-xs font-bold text-primary tabular-nums mb-1">
                           {t.total}
                         </span>
                         <div
@@ -484,7 +484,7 @@ export default function GuruAnalyticsPage() {
                 </div>
                 <div className="grid grid-cols-4 gap-2 text-center">
                   {data.trend.map((t) => (
-                    <p key={t.minggu} className="text-[11px] text-on-surface-variant">{t.minggu}</p>
+                    <p key={t.minggu} className="text-xs text-on-surface-variant">{t.minggu}</p>
                   ))}
                 </div>
               </>

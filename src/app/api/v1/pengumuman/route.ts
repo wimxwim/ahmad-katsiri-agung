@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/lib/dal";
-import { checkRateLimitSync, ipFromRequest } from "@/lib/rate-limit";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { pengumuman } from "@/lib/db/schema";
 import { desc, eq, or, and, gte, sql } from "drizzle-orm";
@@ -18,7 +18,7 @@ const CreateSchema = z.object({
 
 export async function GET(request: NextRequest) {
   const ip = ipFromRequest(request);
-  const rl = checkRateLimitSync(`pengumuman-list:${ip}`, 30, 15000);
+  const rl = await checkRateLimit(`pengumuman-list:${ip}`, 30, 15000);
   if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
   const session = await getSession();
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
   }
 
   const ip = ipFromRequest(request);
-  const rl = checkRateLimitSync(`pengumuman-create:${ip}`, 10, 60000);
+  const rl = await checkRateLimit(`pengumuman-create:${ip}`, 10, 60000);
   if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
   const body = await request.json();

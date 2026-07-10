@@ -24,9 +24,9 @@ export async function withTenant<T>(
 ): Promise<T> {
   return db.transaction(async (tx) => {
     await tx.execute(sql`
-      SELECT set_config('app.current_user_id', ${userId}, TRUE);
-      SELECT set_config('app.current_role', ${role}, TRUE);
-      SELECT set_config('app.current_tenant_id', ${sekolahId ?? ''}, TRUE);
+      SELECT set_config('app.user_id', ${userId}, TRUE);
+      SELECT set_config('app.role', ${role}, TRUE);
+      SELECT set_config('app.tenant_id', ${sekolahId ?? ''}, TRUE);
     `);
     return fn(tx as DrizzleDb);
   });

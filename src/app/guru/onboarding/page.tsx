@@ -43,7 +43,7 @@ export default function OnboardingPage() {
         if (Array.isArray(parsed)) setCompleted(new Set(parsed));
       }
     } catch (error) {
-      console.error("[onboarding] read localStorage failed:", error);
+      if (process.env.NODE_ENV !== "production") console.error("[onboarding] read localStorage failed:", error);
     }
   }, []);
 
@@ -79,7 +79,7 @@ export default function OnboardingPage() {
     <div>
       <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold tracking-[0.18em] text-primary">
+          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tracking-[0.18em] text-primary">
             ONBOARDING
           </span>
           <h1 className="font-heading font-bold text-2xl text-on-surface mt-3">
@@ -120,11 +120,11 @@ export default function OnboardingPage() {
               </span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">
+                  <p className="text-xs font-bold tracking-wider text-on-surface-variant">
                     LANGKAH {i + 1}
                   </p>
                   {done && (
-                    <span className="text-[10px] font-bold tracking-wider text-emerald-700">
+                    <span className="text-xs font-bold tracking-wider text-emerald-700">
                       SELESAI
                     </span>
                   )}

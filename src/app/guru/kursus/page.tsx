@@ -86,7 +86,7 @@ export default function KursusListPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cari kursus..."
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/40 focus:outline-hidden focus:border-primary/40 text-sm"
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/70 focus:outline-hidden focus:border-primary/40 text-sm"
         />
       </div>
 
@@ -113,7 +113,7 @@ export default function KursusListPage() {
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="w-full h-1 bg-primary rounded-full flex-1 mr-3" />
-                <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider ${STATUS_BADGE[k.statusPublikasi]?.color || STATUS_BADGE.DRAFT.color}`}>
+                <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-bold tracking-wider ${STATUS_BADGE[k.statusPublikasi]?.color || STATUS_BADGE.DRAFT.color}`}>
                   {STATUS_BADGE[k.statusPublikasi]?.label || "Draft"}
                 </span>
               </div>

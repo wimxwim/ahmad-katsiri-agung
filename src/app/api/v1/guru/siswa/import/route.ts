@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     const defaultPassword =
-      Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-2).toUpperCase() + "!";
+      crypto.randomUUID().replace(/-/g, "").slice(0, 16) + "!Aa1";
 
     const emails = parsed.data.rows.map((r) => r.email.toLowerCase());
     const existing = await db

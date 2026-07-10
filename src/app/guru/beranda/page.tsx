@@ -1,7 +1,7 @@
 "use client";
 
 import { StatCard } from "@/components/dashboard/StatCard";
-import { BookOpen, Users, Sparkles, ArrowRight, Upload, FileCheck, Layers, GraduationCap, Clock, AlertCircle, ClipboardList, UserPlus, CheckCircle2, Circle, Zap } from "lucide-react";
+import { BookOpen, Users, Sparkles, ArrowRight, Upload, FileCheck, Layers, GraduationCap, Clock, AlertCircle, ClipboardList, UserPlus, CheckCircle2, Circle, Zap, Rocket } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -146,8 +146,9 @@ export default function GuruBerandaPage() {
           className="mb-6 p-4 rounded-2xl border border-primary/15 bg-primary/5"
         >
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-semibold text-on-surface">
-              🚀 Onboarding — {onboarding.completedSteps}/{onboarding.totalSteps} langkah
+            <p className="text-sm font-semibold text-on-surface flex items-center gap-1.5">
+              <Rocket className="w-4 h-4" />
+              Onboarding — {onboarding.completedSteps}/{onboarding.totalSteps} langkah
             </p>
             <span className="text-xs text-on-surface-variant">
               {onboarding.totalSteps - onboarding.completedSteps} tersisa
@@ -167,12 +168,19 @@ export default function GuruBerandaPage() {
                 ) : (
                   <Circle className="w-3.5 h-3.5 text-on-surface-variant/30 shrink-0" />
                 )}
-                <span className={`text-[11px] ${s.done ? "text-emerald-700" : "text-on-surface-variant"}`}>
+                <span className={`text-xs ${s.done ? "text-emerald-700" : "text-on-surface-variant"}`}>
                   {s.label}
                 </span>
               </div>
             ))}
           </div>
+          <Link
+            href="/guru/onboarding"
+            className="inline-flex items-center gap-1.5 mt-3 text-sm font-semibold text-primary hover:underline"
+          >
+            Lanjutkan Onboarding
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </motion.div>
       )}
 
@@ -359,7 +367,7 @@ export default function GuruBerandaPage() {
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="w-full h-1 bg-primary rounded-full flex-1 mr-3" />
-                <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider ${badge.color}`}>
+                <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-bold tracking-wider ${badge.color}`}>
                   {badge.label}
                 </span>
               </div>

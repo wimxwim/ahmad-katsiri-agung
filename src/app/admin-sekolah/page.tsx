@@ -4,7 +4,7 @@ export default function AdminSekolahIndex() {
   return (
     <div>
       <div className="mb-8">
-        <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold tracking-[0.18em] text-primary">
+        <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tracking-[0.18em] text-primary">
           <Building2 className="w-3 h-3" />
           ADMIN SEKOLAH
         </span>
@@ -27,7 +27,7 @@ export default function AdminSekolahIndex() {
           <p className="text-sm text-on-surface-variant">
             Lihat dan kelola guru yang terdaftar di sekolah Anda.
           </p>
-          <span className="inline-flex items-center mt-4 text-[10px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
+          <span className="inline-flex items-center mt-4 text-xs font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
             SEGERA
           </span>
         </div>
@@ -42,7 +42,7 @@ export default function AdminSekolahIndex() {
           <p className="text-sm text-on-surface-variant">
             Ringkasan progres dan risiko belajar siswa per kelas.
           </p>
-          <span className="inline-flex items-center mt-4 text-[10px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
+          <span className="inline-flex items-center mt-4 text-xs font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
             SEGERA
           </span>
         </div>
@@ -57,7 +57,7 @@ export default function AdminSekolahIndex() {
           <p className="text-sm text-on-surface-variant">
             Pantau penggunaan AI generator dan atur kuota per sekolah.
           </p>
-          <span className="inline-flex items-center mt-4 text-[10px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
+          <span className="inline-flex items-center mt-4 text-xs font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
             SEGERA
           </span>
         </div>

@@ -158,7 +158,7 @@ export default function ProfilPage() {
                   </p>
                 </div>
               </div>
-              <span className={`text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full ${
+              <span className={`text-xs font-bold tracking-wider px-2 py-0.5 rounded-full ${
                 me.hasPassword ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
               }`}>
                 {me.hasPassword ? "AKTIF" : "BELUM"}
@@ -180,7 +180,7 @@ export default function ProfilPage() {
                   </p>
                 </div>
               </div>
-              <span className={`text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full ${
+              <span className={`text-xs font-bold tracking-wider px-2 py-0.5 rounded-full ${
                 me.hasGoogle ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
               }`}>
                 {me.hasGoogle ? "TERHUBUNG" : "BELUM"}

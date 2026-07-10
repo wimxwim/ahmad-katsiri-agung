@@ -5,7 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWA } from "@/components/layout/FloatingWA";
-import type { CmsData } from "@/components/providers/CmsProvider";
+import type { CmsData } from "@/lib/cms-types";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -102,6 +102,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// Keystatic FROZEN per D-011 (9 Juli 2026) — CMS reader dihapus total, selalu return {}.
+// Semua konsumer (Navbar, Footer, /tentang, /game) punya fallback hardcoded sendiri.
 async function loadCmsData(): Promise<CmsData> {
   return {};
 }
@@ -169,10 +171,16 @@ export default async function RootLayout({
             }),
           }}
         />
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-full focus:text-sm focus:font-semibold"
+        >
+          Lewati ke konten
+        </a>
         <Providers cmsData={cmsData}>
           <Navbar />
           <BottomTabBar />
-          <main className="flex-1 pt-24 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-x-hidden">{children}</main>
+          <main id="main" className="flex-1 pt-24 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-x-hidden">{children}</main>
           <Footer navigation={cmsData.navigation} pendiriNama={cmsData.about?.pendiriNama} />
           <FloatingWA waNumber={cmsData.navigation?.waNumber} />
         </Providers>

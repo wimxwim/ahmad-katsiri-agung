@@ -98,7 +98,7 @@ export default async function RoleMismatchPage({ searchParams }: PageProps) {
         <p className="mt-6 text-center text-xs text-on-surface-variant">
           Butuh bantuan? Hubungi{" "}
           <a
-            href="https://wa.me/628518795502"
+            href="https://wa.me/6285158795502"
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-primary hover:underline"

@@ -34,6 +34,10 @@ async function checkSupabase(): Promise<{ status: string; latencyMs: number }> {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     if (!url) return { status: "not_configured", latencyMs: 0 };
     const res = await fetch(`${url}/rest/v1/`, {
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""}`,
+      },
       signal: AbortSignal.timeout(5000),
     });
     return { status: res.ok || res.status === 401 || res.status === 404 ? "connected" : `error_${res.status}`, latencyMs: Math.round(performance.now() - t0) };

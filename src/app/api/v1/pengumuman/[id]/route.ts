@@ -19,6 +19,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const session = await getSession();
+  if (!session) return apiUnauthorized();
+
   const { id } = await params;
   const [row] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
   if (!row) return apiError("Pengumuman tidak ditemukan", 404);

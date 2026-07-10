@@ -139,7 +139,7 @@ export function FormMasuk({
 
           {mode === "murid" && (
             <div>
-              <span className="inline-block text-[11px] font-bold tracking-wider text-primary bg-primary/5 px-3 py-1.5 rounded-full mb-4">
+              <span className="inline-block text-xs font-bold tracking-wider text-primary bg-primary/5 px-3 py-1.5 rounded-full mb-4">
                 SISWA
               </span>
               <h2 className="font-heading text-2xl text-on-surface mb-1">
@@ -155,7 +155,7 @@ export function FormMasuk({
                 <button
                   onClick={() => { setTabMurid("masuk"); setError(""); }}
                   className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${
-                    tabMurid === "masuk" ? "bg-white text-on-surface shadow-sm" : "text-on-surface-variant hover:text-on-surface"
+                    tabMurid === "masuk" ? "bg-white text-on-surface shadow-glass" : "text-on-surface-variant hover:text-on-surface"
                   }`}
                 >
                   Masuk
@@ -163,7 +163,7 @@ export function FormMasuk({
                 <button
                   onClick={() => { setTabMurid("daftar"); setError(""); }}
                   className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${
-                    tabMurid === "daftar" ? "bg-white text-on-surface shadow-sm" : "text-on-surface-variant hover:text-on-surface"
+                    tabMurid === "daftar" ? "bg-white text-on-surface shadow-glass" : "text-on-surface-variant hover:text-on-surface"
                   }`}
                 >
                   Daftar
@@ -192,7 +192,7 @@ export function FormMasuk({
 
           {mode === "guru" && (
             <div>
-              <span className="inline-block text-[11px] font-bold tracking-wider text-primary bg-primary/5 px-3 py-1.5 rounded-full mb-4">
+              <span className="inline-block text-xs font-bold tracking-wider text-primary bg-primary/5 px-3 py-1.5 rounded-full mb-4">
                 GURU
               </span>
               <h2 className="font-heading text-2xl text-on-surface mb-1">Masuk sebagai Guru</h2>

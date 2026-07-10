@@ -128,11 +128,14 @@ export default function HargaPage() {
           </div>
 
           <p className="text-3xl sm:text-4xl font-heading text-on-surface mb-2">
-            Hubungi Kami
+            Mulai dari
+            <br />
+            <span className="text-tertiary">Rp499.000</span>
+            <span className="text-base font-body text-on-surface-variant font-normal">/bulan</span>
           </p>
 
           <p className="text-xs sm:text-sm text-on-surface-variant mb-8">
-            Harga khusus untuk sekolah — diskon tersedia
+            Harga untuk sekolah — diskon tersedia untuk yayasan & pesantren
           </p>
 
           <ul className="space-y-3 mb-10" role="list">

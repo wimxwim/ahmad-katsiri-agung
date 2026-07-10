@@ -19,7 +19,7 @@ export function FormDaftarSiswa({ onSubmit, onBack, error, loading }: Props) {
           name="nama"
           required
           placeholder="Nama kamu"
-          className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/50 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
+          className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/70 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
         />
       </div>
       <div>
@@ -29,7 +29,7 @@ export function FormDaftarSiswa({ onSubmit, onBack, error, loading }: Props) {
           type="email"
           required
           placeholder="kamu@email.com"
-          className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/50 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
+          className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/70 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
         />
       </div>
       <div>
@@ -46,7 +46,7 @@ export function FormDaftarSiswa({ onSubmit, onBack, error, loading }: Props) {
           <input
             name="kelas"
             placeholder="mis. 8A"
-            className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/50 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
+            className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/70 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
           />
         </div>
         <div>
@@ -57,7 +57,7 @@ export function FormDaftarSiswa({ onSubmit, onBack, error, loading }: Props) {
             name="noAbsen"
             inputMode="numeric"
             placeholder="mis. 14"
-            className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/50 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
+            className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/70 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
           />
         </div>
       </div>

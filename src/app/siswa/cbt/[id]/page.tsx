@@ -133,7 +133,7 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
             )}
           </div>
           <h1 className="font-heading font-bold text-2xl sm:text-3xl text-on-surface">
-            {result.tampilkanNilai ? "✅ Kuis Selesai" : "✅ Jawaban sudah terkirim"}
+            {result.tampilkanNilai ? "Kuis Selesai" : "Jawaban Sudah Terkirim"}
           </h1>
           <p className="text-sm text-on-surface-variant mt-2 max-w-md mx-auto">
             {result.ringkasan}
@@ -142,17 +142,17 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
           {result.tampilkanNilai && (
             <div className="mt-6 grid grid-cols-3 gap-3 max-w-md mx-auto">
               <div className="p-4 rounded-2xl bg-white border border-border-precision">
-                <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">NILAI</p>
+                <p className="text-xs font-bold tracking-wider text-on-surface-variant">NILAI</p>
                 <p className="font-heading text-3xl font-bold text-primary mt-1">{result.nilai}</p>
               </div>
               <div className="p-4 rounded-2xl bg-white border border-border-precision">
-                <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">BENAR</p>
+                <p className="text-xs font-bold tracking-wider text-on-surface-variant">BENAR</p>
                 <p className="font-heading text-3xl font-bold text-emerald-700 mt-1">
                   {result.jumlahBenar}
                 </p>
               </div>
               <div className="p-4 rounded-2xl bg-white border border-border-precision">
-                <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">SALAH</p>
+                <p className="text-xs font-bold tracking-wider text-on-surface-variant">SALAH</p>
                 <p className="font-heading text-3xl font-bold text-red-600 mt-1">
                   {result.jumlahSalah}
                 </p>
@@ -205,11 +205,11 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
           <h1 className="font-heading font-bold text-xl text-on-surface">{quiz.judul}</h1>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[10px] font-bold tracking-wider bg-surface text-on-surface-variant px-2 py-1 rounded-full flex items-center gap-1">
+          <span className="text-xs font-bold tracking-wider bg-surface text-on-surface-variant px-2 py-1 rounded-full flex items-center gap-1">
             <Clock className="w-3 h-3" />
             {menit}:{detik.toString().padStart(2, "0")} / {quiz.durasiMenit}:00
           </span>
-          <span className="text-[10px] font-bold tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-full">
+          <span className="text-xs font-bold tracking-wider bg-primary/10 text-primary px-2 py-1 rounded-full">
             {answered}/{total} terjawab
           </span>
         </div>

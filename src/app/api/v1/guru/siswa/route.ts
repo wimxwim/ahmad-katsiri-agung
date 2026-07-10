@@ -1,18 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { getSession } from "@/lib/dal";
+import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
 import { siswaKursus, kursus, users } from "@/lib/db/schema";
 import { and, eq, inArray, isNull } from "drizzle-orm";
-import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) return apiUnauthorized();
-    if (session.role !== "guru" && session.role !== "owner") {
-      return apiError("Hanya guru yang dapat mengakses daftar siswa", 403);
-    }
+    const session = await requireGuru(request);
 
     const rl = await checkRateLimit(`guru-siswa:${session.userId}`, 20, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
@@ -75,6 +71,7 @@ export async function GET(request: NextRequest) {
       kursusOptions: allKursus,
     });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Guru siswa error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

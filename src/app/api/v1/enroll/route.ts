@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
-import { getSession } from "@/lib/dal";
+import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
 import { siswaKursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
-import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 
 const EnrollSchema = z.object({
   kursusId: z.string().min(1),
@@ -13,11 +13,7 @@ const EnrollSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) return apiUnauthorized();
-    if (session.role !== "murid") {
-      return apiError("Hanya siswa yang dapat mendaftar kursus", 403);
-    }
+    const session = await requireSiswa(request);
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`enroll:${ip}`, 5, 30000);
@@ -46,6 +42,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, enrolled: true, data: enrollment });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Enroll error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

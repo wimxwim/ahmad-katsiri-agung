@@ -33,7 +33,7 @@ export function FormLoginGuru({ redirectTo, onSubmit, onBack, error, loading, no
           type="email"
           required
           placeholder="email@guru.com"
-          className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/50 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
+          className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/70 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
         />
       </div>
       <div>
@@ -70,7 +70,7 @@ export function FormLoginGuru({ redirectTo, onSubmit, onBack, error, loading, no
       </button>
       <div className="flex items-center gap-3 my-2">
         <div className="flex-1 h-px bg-border-precision" />
-        <span className="text-[11px] uppercase tracking-wider text-on-surface-variant/60">atau</span>
+        <span className="text-xs uppercase tracking-wider text-on-surface-variant/60">atau</span>
         <div className="flex-1 h-px bg-border-precision" />
       </div>
       <button

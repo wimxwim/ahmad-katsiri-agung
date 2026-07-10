@@ -1,3 +1,5 @@
+import { Check, Sparkles, FileText, GraduationCap, BarChart3, ShieldCheck } from "lucide-react";
+
 export function FormMasukLeftPanel() {
   return (
     <aside className="relative bg-gradient-to-br from-primary to-[#003d24] text-white px-6 py-6 md:px-11 md:py-12 flex flex-col justify-between overflow-hidden md:min-h-0">
@@ -23,15 +25,16 @@ export function FormMasukLeftPanel() {
       </div>
       <ul className="relative z-10 space-y-3 mt-6 hidden md:block">
         {[
-          "Materi PAI lengkap per bab",
-          "Video pembelajaran & PPT",
-          "Game edukasi interaktif",
+          "AI ubah PDF/DOCX jadi materi, quiz, dan soal",
+          "Semua hasil AI wajib direview guru sebelum publish",
+          "Workspace guru: kelas, siswa, analitik pembelajaran",
           "Kuis dinilai otomatis — hasil langsung ke guru",
-          "Hafalan hadits",
-          "Perangkat ajar guru: ATP, Prosem, Prota, PDF",
+          "Setiap siswa punya ruang belajar sendiri",
         ].map((item) => (
           <li key={item} className="flex items-start gap-2.5 text-sm text-white/90">
-            <span className="w-5 h-5 rounded-full bg-white/20 text-white grid place-items-center text-[10px] shrink-0 mt-0.5">✓</span>
+            <span className="w-5 h-5 rounded-full bg-white/20 text-white grid place-items-center shrink-0 mt-0.5">
+              <Check className="w-3 h-3" aria-hidden="true" />
+            </span>
             {item}
           </li>
         ))}
@@ -40,9 +43,16 @@ export function FormMasukLeftPanel() {
         Bisa dibuka lewat HP maupun komputer.
       </p>
       <div className="relative z-10 flex flex-wrap gap-2 mt-4 md:hidden">
-        {["📘 Materi", "🎬 Video", "🎮 Game", "📝 Kuis", "📿 Hafalan"].map((chip) => (
-          <span key={chip} className="text-[11px] font-semibold text-white bg-white/15 border border-white/20 px-3 py-1.5 rounded-full">
-            {chip}
+        {[
+          { icon: Sparkles, label: "AI Generator" },
+          { icon: FileText, label: "Materi" },
+          { icon: GraduationCap, label: "Kelas" },
+          { icon: BarChart3, label: "Analitik" },
+          { icon: ShieldCheck, label: "Draft Aman" },
+        ].map(({ icon: Icon, label }) => (
+          <span key={label} className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-white/15 border border-white/20 px-3 py-1.5 rounded-full">
+            <Icon className="w-3.5 h-3.5" aria-hidden="true" />
+            {label}
           </span>
         ))}
       </div>

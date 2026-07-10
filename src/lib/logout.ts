@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * Logout client helper — pakai endpoint final /api/v1/auth/logout.
  *

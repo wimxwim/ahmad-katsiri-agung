@@ -1,5 +1,3 @@
-"use client";
-
 import { cn } from "@/lib/utils";
 import { FileText, type LucideIcon } from "lucide-react";
 import Link from "next/link";
@@ -43,7 +41,7 @@ function EmptyState({
       {action && (
         <Link
           href={action.href}
-          className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
+          className="inline-flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
         >
           {action.label}
         </Link>

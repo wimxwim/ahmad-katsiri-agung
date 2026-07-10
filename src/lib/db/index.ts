@@ -10,7 +10,9 @@ function createDb(): DrizzleDb {
     connectionString: process.env.DATABASE_URL,
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 5000,
+    connectionTimeoutMillis: 15000,
+    statement_timeout: 30000,
+    idle_in_transaction_session_timeout: 60000,
   });
   pool.on("error", (err) => console.error("DB pool error:", err));
   return drizzle(pool, { schema });

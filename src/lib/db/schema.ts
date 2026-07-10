@@ -110,6 +110,10 @@ export const kursus = pgTable(
   },
   (table) => [
     unique("kursus_slug_sekolah_unique").on(table.slug, table.sekolahId),
+    // NOTE: PostgreSQL treats NULL as distinct in unique constraints. Two courses
+    // with the same slug and sekolahId=NULL will both insert successfully. This is
+    // acceptable since kursus can be created before a sekolah is assigned. When a
+    // sekolah is set later, the constraint will enforce uniqueness within that sekolah.
     index("kursus_guru_id_idx").on(table.guruId),
     index("kursus_status_publikasi_idx").on(table.statusPublikasi),
   ],
@@ -565,7 +569,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   jawabanLogs: many(jawabanLog),
   skillMasteries: many(skillMastery),
   riskSnapshots: many(riskSnapshot),
-  studentAbility: one(studentAbility),
+  studentAbility: many(studentAbility),
   driveAuth: one(googleDriveAuth),
   pengumuman: many(pengumuman, { relationName: "guruPengumuman" }),
 }));

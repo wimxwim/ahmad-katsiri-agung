@@ -89,7 +89,7 @@ const faqs = [
 
 export default function Home() {
   return (
-    <main className="bg-surface pb-20 pt-12 sm:pt-16">
+    <main className="bg-surface pb-20 py-24 sm:py-28">
       <section className="mx-auto max-w-[1280px] px-3 sm:px-5 lg:px-8">
         <div className="grid gap-8 rounded-[32px] border border-border-precision bg-white p-6 shadow-glass-lg md:grid-cols-[1.1fr_0.9fr] md:p-10 lg:p-14">
           <div>
@@ -155,7 +155,7 @@ export default function Home() {
                         <Icon className="h-5 w-5" />
                       </span>
                       <div className="flex-1">
-                        <p className="text-[11px] font-bold tracking-[0.18em] text-white/50">STEP {item.step}</p>
+                        <p className="text-xs font-bold tracking-[0.18em] text-white/50">STEP {item.step}</p>
                         <p className="mt-1 font-heading text-lg font-semibold">{item.title}</p>
                         <p className="mt-1 text-sm leading-relaxed text-white/70">{item.desc}</p>
                       </div>
@@ -206,7 +206,7 @@ export default function Home() {
         <div className="rounded-[32px] border border-border-precision bg-gradient-to-br from-primary to-[#003d24] p-6 text-white shadow-glass-xl sm:p-10 lg:p-14">
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[10px] font-bold tracking-[0.18em] text-white/80">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold tracking-[0.18em] text-white/80">
                 HARGA & PEMBAYARAN
               </span>
               <h2 className="mt-4 font-heading text-3xl font-bold tracking-tight sm:text-4xl">
@@ -243,7 +243,7 @@ export default function Home() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
-                  href="https://wa.me/628518795502?text=Halo%2C%20saya%20tertarik%20dengan%20AKAL%20Center%20untuk%20sekolah"
+                  href="https://wa.me/6285158795502?text=Halo%2C%20saya%20tertarik%20dengan%20AKAL%20Center%20untuk%20sekolah"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
@@ -288,7 +288,7 @@ export default function Home() {
               </h2>
             </div>
             <a
-              href="https://wa.me/628518795502"
+              href="https://wa.me/6285158795502"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 self-start text-sm font-semibold text-primary hover:underline sm:self-auto"
@@ -314,6 +314,22 @@ export default function Home() {
           </div>
         </div>
       </section>
+    <section className="mx-auto mt-16 max-w-[1280px] px-3 sm:px-5 lg:px-8">
+        <div className="rounded-[32px] border border-border-precision bg-white p-6 shadow-glass-lg sm:p-10 text-center">
+          <p className="text-xs font-bold tracking-[0.18em] text-primary">DIPERCAYA</p>
+          <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight text-on-surface">
+            Dipercaya oleh Guru PAI di Indonesia
+          </h2>
+          <p className="mt-4 text-sm leading-relaxed text-on-surface-variant max-w-xl mx-auto">
+            Platform ini dibangun bersama dan didukung oleh para akademisi pendidikan Islam untuk menghadirkan pembelajaran yang lebih terstruktur.
+          </p>
+          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-border-precision bg-glass px-5 py-2.5">
+            <ShieldCheck className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold text-on-surface">Didukung oleh Akademisi Pendidikan Islam</span>
+          </div>
+        </div>
+      </section>
+
     </main>
   );
 }

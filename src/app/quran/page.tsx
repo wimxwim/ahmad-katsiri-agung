@@ -235,7 +235,7 @@ export default function QuranPage() {
                   placeholder="Cari surah..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-full bg-glass backdrop-blur-2xl border border-border-precision text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition-shadow"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-full bg-glass backdrop-blur-2xl border border-border-precision text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition-shadow"
                 />
               </div>
 
@@ -261,7 +261,7 @@ export default function QuranPage() {
                     <button
                       key={surah.nomor}
                       onClick={() => openSurah(surah.nomor)}
-                      className="group text-left bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[28px] p-5 shadow-glass hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                      className="group text-left bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[28px] p-5 shadow-glass hover:shadow-glass-lg hover:-translate-y-1 transition-all duration-300"
                     >
                       <div className="flex items-start justify-between mb-3">
                         <span className="w-9 h-9 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
@@ -280,7 +280,7 @@ export default function QuranPage() {
                       <p className="text-xs text-on-surface-variant mb-3">
                         {surah.arti}
                       </p>
-                      <div className="flex items-center gap-2 text-[10px] text-on-surface-variant">
+                      <div className="flex items-center gap-2 text-xs text-on-surface-variant">
                         <span className="px-2.5 py-1 rounded-full bg-primary/5 text-primary/80 font-semibold capitalize">
                           {surah.tempat_turun === "mekah" ? "Makkiyah" : "Madaniyah"}
                         </span>

@@ -43,7 +43,7 @@ export async function verifyQuizToken(token: string): Promise<AuthResult<QuizTok
 export async function signSession(payload: Omit<SesiPayload, "iss" | "exp" | "iat">): Promise<string> {
   const key = await getSigningKey();
   const alg = hasES256Keys() ? "ES256" : "HS256";
-  return new SignJWT(payload as unknown as JWTPayload)
+  return new SignJWT({ ...payload } as JWTPayload)
     .setProtectedHeader({ alg })
     .setIssuedAt()
     .setExpirationTime("8h")
@@ -65,6 +65,7 @@ export const verifySession = cache(async (token: string): Promise<AuthResult<Ses
       if (!(err instanceof errors.JWSSignatureVerificationFailed)) {
         console.error("[verifySession] ES256 verification error:", err);
       }
+      return { success: false, code: "invalid" };
     }
   }
   try {

@@ -52,15 +52,19 @@ const LEGACY_PUBLIC_TO_HOME: { prefix: string; target: string }[] = [
 ];
 
 function getJwtSecret(): Uint8Array {
+  const MIN_JWT_SECRET_LENGTH = 32;
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error("JWT_SECRET tidak dikonfigurasi");
+  if (secret.length < MIN_JWT_SECRET_LENGTH) {
+    throw new Error(`JWT_SECRET terlalu pendek (minimal ${MIN_JWT_SECRET_LENGTH} karakter)`);
+  }
   return new TextEncoder().encode(secret);
 }
 
 let cachedPublicKey: CryptoKey | null = null;
 
 function hasES256Keys(): boolean {
-  return !!process.env.JWT_PUBLIC_KEY;
+  return !!process.env.JWT_PRIVATE_KEY && !!process.env.JWT_PUBLIC_KEY;
 }
 
 async function getES256PublicKey(): Promise<CryptoKey> {
@@ -82,11 +86,16 @@ async function getRoleFromSession(
       const key = await getES256PublicKey();
       const { payload } = await jwtVerify(token, key);
       const p = payload as Record<string, unknown>;
-      headers.set("x-user-id", p.userId as string);
-      headers.set("x-user-role", p.role as string);
-      headers.set("x-user-nama", (p.nama as string) || "");
-      headers.set("x-user-email", (p.email as string) || "");
-      return p.role as string | null;
+      const userId = typeof p.userId === "string" ? p.userId : null;
+      const role = typeof p.role === "string" ? p.role : null;
+      const nama = typeof p.nama === "string" ? p.nama : "";
+      const email = typeof p.email === "string" ? p.email : "";
+      if (!userId || !role) return null;
+      headers.set("x-user-id", userId);
+      headers.set("x-user-role", role);
+      headers.set("x-user-nama", nama);
+      headers.set("x-user-email", email);
+      return role;
     } catch {
       // fall through to HS256 fallback
     }
@@ -94,11 +103,16 @@ async function getRoleFromSession(
   try {
     const { payload } = await jwtVerify(token, secret);
     const p = payload as Record<string, unknown>;
-    headers.set("x-user-id", p.userId as string);
-    headers.set("x-user-role", p.role as string);
-    headers.set("x-user-nama", (p.nama as string) || "");
-    headers.set("x-user-email", (p.email as string) || "");
-    return p.role as string | null;
+    const userId = typeof p.userId === "string" ? p.userId : null;
+    const role = typeof p.role === "string" ? p.role : null;
+    const nama = typeof p.nama === "string" ? p.nama : "";
+    const email = typeof p.email === "string" ? p.email : "";
+    if (!userId || !role) return null;
+    headers.set("x-user-id", userId);
+    headers.set("x-user-role", role);
+    headers.set("x-user-nama", nama);
+    headers.set("x-user-email", email);
+    return role;
   } catch {
     return null;
   }

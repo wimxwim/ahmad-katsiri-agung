@@ -147,15 +147,15 @@ export default function SiswaBerandaPage() {
 
       <div className="grid grid-cols-3 gap-3 mb-6">
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">KURSUS</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">KURSUS</p>
           <p className="font-heading text-2xl font-bold text-on-surface mt-1">{stats.kursus}</p>
         </div>
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">MATERI</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">MATERI</p>
           <p className="font-heading text-2xl font-bold text-on-surface mt-1">{stats.materi}</p>
         </div>
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">SELESAI</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">SELESAI</p>
           <p className="font-heading text-2xl font-bold text-primary mt-1">
             {stats.selesai}
             <span className="text-sm text-on-surface-variant ml-1">({progressPct}%)</span>
@@ -173,7 +173,7 @@ export default function SiswaBerandaPage() {
               <Sparkles className="w-6 h-6" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold tracking-wider text-white/60">LANJUTKAN BELAJAR</p>
+              <p className="text-xs font-bold tracking-wider text-white/60">LANJUTKAN BELAJAR</p>
               <p className="font-heading text-lg font-bold mt-1 truncate">
                 {feed.continueLearning.judul}
               </p>
@@ -217,7 +217,7 @@ export default function SiswaBerandaPage() {
                       <Sparkles className="w-5 h-5" />
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">
+                      <p className="text-xs font-bold tracking-wider text-on-surface-variant">
                         KUIS TERSEDIA
                       </p>
                       <p className="font-semibold text-on-surface truncate mt-0.5">
@@ -226,7 +226,7 @@ export default function SiswaBerandaPage() {
                       <p className="text-xs text-on-surface-variant mt-0.5">
                         {pendingQuiz.totalSoal} soal · {pendingQuiz.durasiMenit} menit
                         {pendingQuiz.modeEvaluasi !== "BELAJAR" && (
-                          <span className="ml-2 text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                          <span className="ml-2 text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded text-xs font-bold">
                             {pendingQuiz.modeEvaluasi}
                           </span>
                         )}
@@ -247,7 +247,7 @@ export default function SiswaBerandaPage() {
                       <BookOpen className="w-5 h-5" />
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">
+                      <p className="text-xs font-bold tracking-wider text-on-surface-variant">
                         MATERI BARU
                       </p>
                       <p className="font-semibold text-on-surface truncate mt-0.5">
@@ -279,7 +279,7 @@ export default function SiswaBerandaPage() {
               >
                 <div className="flex items-start gap-3">
                   {p.isPinned && (
-                    <span className="text-[10px] font-bold tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-bold tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">
                       PINNED
                     </span>
                   )}
@@ -288,7 +288,7 @@ export default function SiswaBerandaPage() {
                     <p className="text-xs text-on-surface-variant mt-1 line-clamp-2">
                       {p.konten}
                     </p>
-                    <p className="text-[10px] text-on-surface-variant/60 mt-2">
+                    <p className="text-xs text-on-surface-variant/60 mt-2">
                       {p.guruNama || "Guru"} · {new Date(p.publishedAt).toLocaleDateString("id-ID")}
                     </p>
                   </div>
@@ -332,12 +332,12 @@ export default function SiswaBerandaPage() {
                             />
                           </div>
                         </div>
-                        <span className="text-[10px] font-bold text-primary tabular-nums">
+                        <span className="text-xs font-bold text-primary tabular-nums">
                           {m.progress}%
                         </span>
                       </>
                     )}
-                    <span className="text-[10px] text-on-surface-variant flex items-center gap-1 ml-auto">
+                    <span className="text-xs text-on-surface-variant flex items-center gap-1 ml-auto">
                       {m.selesai ? (
                         <><CheckCircle2 className="w-3 h-3 text-emerald-600" /> Selesai</>
                       ) : m.lastReadAt ? (

@@ -4,7 +4,7 @@ export default function OrangTuaIndex() {
   return (
     <div>
       <div className="mb-8">
-        <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-[10px] font-bold tracking-[0.18em] text-primary">
+        <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tracking-[0.18em] text-primary">
           <Heart className="w-3 h-3" />
           ORANG TUA
         </span>
@@ -27,7 +27,7 @@ export default function OrangTuaIndex() {
           <p className="text-sm text-on-surface-variant">
             Lihat ringkasan materi, kuis, dan skill yang sudah dikuasai.
           </p>
-          <span className="inline-flex items-center mt-4 text-[10px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
+          <span className="inline-flex items-center mt-4 text-xs font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
             SEGERA
           </span>
         </div>
@@ -42,7 +42,7 @@ export default function OrangTuaIndex() {
           <p className="text-sm text-on-surface-variant">
             Rekap nilai, tren kemampuan, dan rekomendasi remedial.
           </p>
-          <span className="inline-flex items-center mt-4 text-[10px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
+          <span className="inline-flex items-center mt-4 text-xs font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
             SEGERA
           </span>
         </div>
@@ -57,7 +57,7 @@ export default function OrangTuaIndex() {
           <p className="text-sm text-on-surface-variant">
             Pemberitahuan dari guru dan sekolah yang ditujukan untuk orang tua.
           </p>
-          <span className="inline-flex items-center mt-4 text-[10px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
+          <span className="inline-flex items-center mt-4 text-xs font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
             SEGERA
           </span>
         </div>

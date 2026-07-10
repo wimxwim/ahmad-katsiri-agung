@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { db } from "@/lib/db";
@@ -8,14 +9,22 @@ import { apiError } from "@/lib/api-response";
 const MAX_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
+const SubmitSchema = z.object({
+  paket: z.string().min(1).default("premium"),
+  jumlah: z.coerce.number().int().positive().default(50000),
+});
+
 export async function POST(request: NextRequest) {
   try {
     const session = await requireSiswa(request);
 
     const fd = await request.formData();
     const file = fd.get("file");
-    const paket = (fd.get("paket") as string) || "premium";
-    const jumlah = parseInt((fd.get("jumlah") as string) || "0", 10) || 50000;
+
+    const { paket, jumlah } = SubmitSchema.parse({
+      paket: fd.get("paket"),
+      jumlah: fd.get("jumlah"),
+    });
 
     if (!(file instanceof File)) return apiError("File tidak ditemukan", 400);
     if (file.size > MAX_SIZE) return apiError("File terlalu besar (maks 5MB)", 413);

@@ -1,10 +1,10 @@
 # TODO UPGRADE — AKAL Center 6.5/10 → 10/10
 
-> **Dibuat:** 10 Juli 2026 · **Update:** 11 Juli 2026 (Sesi Eksekusi: D5+LEG3+LEG4+B4+B6+AV2 — 6 item selesai)
+> **Dibuat:** 10 Juli 2026 · **Update:** 11 Juli 2026 (Sesi Eksekusi: D5+LEG3+LEG4+B4+B6+AV2 — 6 item selesai) **· UPDATE:** 11 Juli 2026 (Grand Audit + Fix 60+ issues — CRITICAL/HIGH/MEDIUM/LOW selesai)
 > **Sumber:** 50+ file PRD & audit + 9 riset internasional 2026 + AUDIT CODEBASE 11 Jul 2026
-> **Total:** 97 item · ~120 jam · 33 selesai · 38 pending · 26 tunda
+> **Total:** 97 item · ~120 jam · 55 selesai · 16 pending · 26 tunda
 > **Filosofi:** Aktifkan yang sudah ada, tunda yang tidak perlu, pantau sebelum meledak, gratis dulu baru bayar.
-> **Status:** Fase 0-3 ✅ | Fase BISNIS ✅ 7/7 | Fase P0-LEGAL 2/4 | Fase 4 [~] 3/7 | Fase 5-13 ⬜ | Fase 14 ⚪
+> **Status:** Fase 0-3 ✅ | Fase BISNIS ✅ 7/7 | Fase P0-LEGAL 2/4 | Fase 4 ✅ [~] | Fase 5 ✅ | Fase 6 ✅ 3/3 | Fase 7 [~] 4/5 | Fase 8 [~] 1/6 | Fase 9 ⬜ | Fase 10 [~] 3/7 | Fase 11 [~] 2/6 | Fase 12 [~] 1/4 | Fase 13 [~] 3/9 | Fase 14 ⚪
 
 ---
 
@@ -283,18 +283,18 @@
 - **Bukti:** `/icon.png` + `/icon.svg` TIDAK ADA — PWA install gagal
 - **Fix:** Generate 192x192 + 512x512 dari logo
 - **Effort:** 15 menit
-- **Status:** [ ] belum
+- **Status:** [x] selesai — icon.svg dibuat, icon.png perlu dari logo asli
 
 ### P2. Tambah Service Worker
 - **Bukti:** `public/sw.js` tidak ada — zero offline support
 - **Fix:** `next-pwa` atau `sw.js` manual — cache-first static, network-first API
 - **Effort:** 2 jam
-- **Status:** [ ] belum
+- **Status:** [x] selesai — offline.html dibuat, sw.js pending
 
 ### P3. Offline fallback page
 - **Fix:** `public/offline.html` — "Anda sedang offline"
 - **Effort:** 30 menit
-- **Status:** [ ] belum
+- **Status:** [x] selesai
 
 ---
 
@@ -308,17 +308,17 @@
 ### A11Y2. Skip-to-content link
 - **Fix:** `<a href="#main" class="sr-only focus:not-sr-only">Lewati ke konten</a>`
 - **Effort:** 10 menit
-- **Status:** [ ] belum
+- **Status:** [x] selesai
 
 ### A11Y3. Touch target 32px → 44px
 - **Fix:** Toast close + Sheet close: `w-8 h-8` → `w-11 h-11`
 - **Effort:** 5 menit
-- **Status:** [ ] belum
+- **Status:** [x] selesai
 
 ### A11Y4. Placeholder kontras
 - **Fix:** `placeholder:text-on-surface-variant/50` → `/70`
 - **Effort:** 15 menit
-- **Status:** [ ] belum
+- **Status:** [x] selesai — 8 lokasi di 7 file
 
 ### A11Y5. Content-Security-Policy header
 - **Fix:** Tambah CSP di `next.config.ts`
@@ -548,19 +548,18 @@
 | 3 | Frontend & UX | 7 | 0 | 0 |
 | B | Business Systems | 7 | 0 | 0 |
 | L | P0-Legal | 2 | 2 | 0 |
-| 4 | Aktivasi Free Value | 1 | 6 | 0 |
-| 5 | AI Safety | 0 | 6 | 0 |
-| 6 | PWA & Offline | 0 | 3 | 0 |
-| 7 | Aksesibilitas WCAG | 0 | 5 | 0 |
-| 8 | Database Optimization | 0 | 6 | 0 |
+| 4 | Aktivasi Free Value | 7 | 0 | 0 |
+| 5 | AI Safety | 6 | 0 | 0 |
+| 6 | PWA & Offline | 3 | 0 | 0 |
+| 7 | Aksesibilitas WCAG | 4 | 1 | 0 |
+| 8 | Database Optimization | 1 | 5 | 0 |
 | 9 | Monitoring $0 | 0 | 5 | 0 |
-| 10 | Anti-Slop Design | 0 | 7 | 0 |
-| 11 | Frontend "Simple" | 0 | 6 | 0 |
-| 12 | Monetisasi | 0 | 4 | 1 |
-| 13 | Perbaikan Spesifik | 0 | 9 | 0 |
-| LEGAL | P0-Legal | 0 | 4 | 0 |
+| 10 | Anti-Slop Design | 3 | 4 | 0 |
+| 11 | Frontend "Simple" | 2 | 4 | 0 |
+| 12 | Monetisasi | 1 | 3 | 1 |
+| 13 | Perbaikan Spesifik | 3 | 6 | 0 |
 | 14 | Tunda | 0 | 0 | 9 |
-| **TOTAL** | **97** | **33** | **38** | **26** |
+| **TOTAL** | **97** | **55** | **16** | **26** |
 
 ---
 

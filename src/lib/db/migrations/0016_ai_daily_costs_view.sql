@@ -19,6 +19,11 @@ GROUP BY user_id, date_trunc('day', created_at)::date, model, request_type;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_ai_daily_costs_unique
   ON ai_daily_costs (user_id, day, model, request_type);
 
--- Schedule daily refresh via Vercel Cron (pg_cron not available on Supabase free)
--- Cron endpoint: GET /api/v1/cron/refresh-ai-costs
--- Vercel cron config (vercel.json): {"crons":[{"path":"/api/v1/cron/refresh-ai-costs","schedule":"0 3 * * *"}]}
+-- Schedule daily refresh. Two options:
+--
+-- Option A — Vercel Cron (used in production):
+--   Cron endpoint: GET /api/v1/cron/refresh-ai-costs
+--   vercel.json: {"crons":[{"path":"/api/v1/cron/refresh-ai-costs","schedule":"0 3 * * *"}]}
+--
+-- Option B — pg_cron (available on Supabase free tier, alternative if not using Vercel Cron):
+--   SELECT cron.schedule('refresh-ai-costs', '0 3 * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY ai_daily_costs');

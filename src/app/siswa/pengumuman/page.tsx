@@ -83,7 +83,7 @@ export default function SiswaPengumumanPage() {
             >
               <div className="flex items-start gap-3">
                 {p.isPinned && (
-                  <span className="text-[10px] font-bold tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                  <span className="text-xs font-bold tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
                     <Pin className="w-3 h-3" />
                     PINNED
                   </span>
@@ -93,7 +93,7 @@ export default function SiswaPengumumanPage() {
                   <p className="text-sm text-on-surface-variant mt-2 whitespace-pre-wrap leading-relaxed">
                     {p.konten}
                   </p>
-                  <p className="text-[10px] text-on-surface-variant/70 mt-3">
+                  <p className="text-xs text-on-surface-variant/70 mt-3">
                     {p.guruNama || "Guru"} · {new Date(p.publishedAt).toLocaleString("id-ID")}
                   </p>
                 </div>

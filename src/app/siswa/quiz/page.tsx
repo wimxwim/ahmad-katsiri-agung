@@ -88,7 +88,7 @@ export default function SiswaQuizListPage() {
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-on-surface">{q.judul}</p>
-                  <div className="flex items-center gap-3 mt-1 text-[10px] font-bold tracking-wider">
+                  <div className="flex items-center gap-3 mt-1 text-xs font-bold tracking-wider">
                     {q.modeEvaluasi === "CBT" && (
                       <span className="text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full">CBT</span>
                     )}

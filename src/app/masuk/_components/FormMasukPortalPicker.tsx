@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, GraduationCap, ShieldCheck } from "lucide-react";
 import type { Mode } from "./shared";
 
 export function FormMasukPortalPicker({ onSelect }: { onSelect: (mode: Mode) => void }) {
@@ -16,7 +16,9 @@ export function FormMasukPortalPicker({ onSelect }: { onSelect: (mode: Mode) => 
           onClick={() => onSelect("murid")}
           className="group flex items-center gap-4 w-full text-left border border-border-precision bg-white rounded-[18px] p-[18px] transition-all duration-200 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-glass cursor-pointer"
         >
-          <span className="w-[50px] h-[50px] rounded-[14px] bg-surface grid place-items-center text-[26px] shrink-0">🧑🎓</span>
+          <span className="w-[50px] h-[50px] rounded-[14px] bg-primary/10 text-primary grid place-items-center shrink-0">
+            <GraduationCap className="h-6 w-6" aria-hidden="true" />
+          </span>
           <span className="flex-1">
             <b className="block text-[16px] text-on-surface">Ruang Siswa</b>
             <span className="text-[13px] text-on-surface-variant">Belajar materi, kerjakan kuis, dan pantau progres.</span>
@@ -27,7 +29,9 @@ export function FormMasukPortalPicker({ onSelect }: { onSelect: (mode: Mode) => 
           onClick={() => onSelect("guru")}
           className="group flex items-center gap-4 w-full text-left border border-border-precision bg-white rounded-[18px] p-[18px] transition-all duration-200 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-glass cursor-pointer"
         >
-          <span className="w-[50px] h-[50px] rounded-[14px] bg-surface grid place-items-center text-[26px] shrink-0">🧑🏫</span>
+          <span className="w-[50px] h-[50px] rounded-[14px] bg-primary/10 text-primary grid place-items-center shrink-0">
+            <ShieldCheck className="h-6 w-6" aria-hidden="true" />
+          </span>
           <span className="flex-1">
             <b className="block text-[16px] text-on-surface">Ruang Guru</b>
             <span className="text-[13px] text-on-surface-variant">Kelola materi, kuis, siswa, dan analitik pembelajaran.</span>

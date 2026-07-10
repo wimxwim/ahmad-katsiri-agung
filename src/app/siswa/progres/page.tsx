@@ -119,25 +119,25 @@ export default function SiswaProgresPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">KURSUS</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">KURSUS</p>
           <p className="font-heading text-2xl font-bold text-on-surface mt-1">
             {data?.totalKursus ?? 0}
           </p>
         </div>
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">ATTEMPT</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">ATTEMPT</p>
           <p className="font-heading text-2xl font-bold text-on-surface mt-1">
             {data?.totalAttempt ?? 0}
           </p>
         </div>
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">SELESAI</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">SELESAI</p>
           <p className="font-heading text-2xl font-bold text-emerald-700 mt-1">
             {data?.totalSelesai ?? 0}
           </p>
         </div>
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">RATA-RATA</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">RATA-RATA</p>
           <p className="font-heading text-2xl font-bold text-primary mt-1">
             {data?.rataNilai ?? 0}
           </p>
@@ -214,7 +214,7 @@ export default function SiswaProgresPage() {
                           <span>·</span>
                           <span>{Math.floor(a.durasiDetik / 60)}m {a.durasiDetik % 60}s</span>
                           {a.modeEvaluasi !== "BELAJAR" && (
-                            <span className="text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                            <span className="text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded text-xs font-bold">
                               {a.modeEvaluasi}
                             </span>
                           )}

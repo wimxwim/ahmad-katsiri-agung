@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import { Gamepad2, ExternalLink, ArrowRight, AlertTriangle, RefreshCw } from "lucide-react";
+import Image from "next/image";
+import { Gamepad2, ExternalLink, ArrowRight, AlertTriangle, RefreshCw, Clock } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
 import { EASE_CURVE } from "@/lib/constants";
 
@@ -134,17 +135,20 @@ export default function GamePage() {
                 <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider">
                   {game.badge}
                 </span>
-                <span className="inline-block px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-[11px] font-semibold tracking-wide border border-amber-200/50">
-                  ⏱ ±10 menit
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold tracking-wide border border-amber-200/50">
+                  <Clock className="w-3 h-3" aria-hidden="true" />
+                  ±10 menit
                 </span>
               </div>
 
                 <div className="aspect-[16/9] rounded-2xl bg-primary/5 border border-white/40 mb-6 overflow-hidden relative">
                   {game.image ? (
-                    <img
+                    <Image
                       src={game.image}
                       alt={game.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      sizes="(max-width: 640px) 100vw, 400px"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center p-4">

@@ -78,7 +78,7 @@ function UploadProgress({ status, message, fileName }: UploadProgressProps) {
               </div>
               <span
                 className={cn(
-                  "text-[11px] font-semibold whitespace-nowrap",
+                  "text-xs font-semibold whitespace-nowrap",
                   isCompleted && "text-emerald-700",
                   isCurrent && !isFailed && "text-primary",
                   isPending && "text-gray-300",
@@ -195,7 +195,7 @@ function DashboardGuruKosong({ namaGuru }: DashboardGuruKosongProps) {
       <div className="text-center">
         <Link
           href="/guru/upload"
-          className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
+          className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
         >
           Upload Dokumen Pertama
         </Link>
@@ -221,7 +221,7 @@ function DashboardSiswaKosong() {
         href="https://wa.me/6285158795502"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 bg-tertiary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
+        className="inline-flex items-center gap-2 bg-tertiary text-on-tertiary px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
       >
         <MessageSquare className="w-4 h-4" />
         Hubungi Guru
@@ -273,7 +273,7 @@ function RoleMismatchError({ currentPortal, actualRole }: RoleMismatchErrorProps
       <div className="flex flex-col gap-3">
         <Link
           href={correctHref}
-          className="inline-flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
+          className="inline-flex items-center justify-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
         >
           <ArrowRight className="w-4 h-4" />
           Buka {roleLabel}
@@ -314,7 +314,7 @@ function ProcessingStatusBadge({ status, className }: ProcessingStatusBadgeProps
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap",
+        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap",
         cfg.color,
         className
       )}

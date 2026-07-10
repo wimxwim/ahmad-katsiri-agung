@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
 import { useSession, useSessionLoading } from "@/components/providers/SessionProvider";
 import { handleLogout } from "@/lib/logout";
@@ -50,7 +51,7 @@ export function Navbar() {
           href="/"
           className="flex items-center gap-2 font-heading font-bold text-primary text-lg tracking-tight"
         >
-          <img src="/logo.webp" alt="Logo PAI" className="w-7 h-7 object-contain" />
+          <Image src="/logo.webp" alt="Logo PAI" width={28} height={28} className="object-contain" />
           <span className="truncate md:max-w-none">AKAL Center</span>
         </Link>
 
@@ -173,7 +174,7 @@ function LogoutButton({ role }: { role: string }) {
       className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-red-500 transition-colors px-2 py-1 cursor-pointer"
       title={`${role === "guru" ? "Guru" : "Siswa"} — Keluar`}
     >
-      <span>✕</span>
+      <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
       <span className="hidden sm:inline">Keluar</span>
     </button>
   );

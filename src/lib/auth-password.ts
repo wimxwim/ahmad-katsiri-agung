@@ -2,10 +2,12 @@ import "server-only";
 import { hash, verify } from "@node-rs/argon2";
 import bcrypt from "bcryptjs";
 
+const ARGON2_ALGORITHM = 2;
+
 export async function hashPassword(password: string): Promise<string> {
   try {
     return await hash(password, {
-      algorithm: 2,
+      algorithm: ARGON2_ALGORITHM,
       memoryCost: 19456,
       timeCost: 2,
       outputLen: 32,
@@ -16,6 +18,8 @@ export async function hashPassword(password: string): Promise<string> {
   }
 }
 
+
+// NOTE: isLegacyHash hanya mendeteksi prefix bcrypt ($2a$, $2b$, $2y$).
 export function isLegacyHash(storedHash: string): boolean {
   return storedHash.startsWith("$2a$") || storedHash.startsWith("$2b$") || storedHash.startsWith("$2y$");
 }
@@ -37,11 +41,10 @@ export async function verifyPassword(
     }
   }
   try {
-    const valid = await verify(storedHash, password, { algorithm: 2 });
+    const valid = await verify(storedHash, password, { algorithm: ARGON2_ALGORITHM });
     return { valid, needsRehash: false };
   } catch (error) {
     console.error("[auth-password] argon2 verify failed:", error);
-    const msg = error instanceof Error ? error.message : String(error);
-    return { valid: false, needsRehash: false, error: `Sistem verifikasi kata sandi bermasalah (${msg.slice(0, 80)}). Coba lagi nanti atau hubungi dukungan.` };
+    return { valid: false, needsRehash: false, error: "Sistem verifikasi kata sandi bermasalah. Coba lagi nanti atau hubungi dukungan." };
   }
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Upload, FileText, Sparkles, Loader2, AlertCircle, X, History, FilePlus, Layers } from "lucide-react";
+import { Upload, FileText, Sparkles, Loader2, AlertCircle, X, History, FilePlus, Layers, CheckCircle2 } from "lucide-react";
 import { UploadProgress } from "@/components/ui/ScreenContracts";
 import { useToast } from "@/components/ui/Toast";
 
@@ -52,7 +52,7 @@ export default function GuruUploadPage() {
         setHistory(data || []);
       }
     } catch (error) {
-      console.error("[guru/upload] loadHistory failed:", error);
+      if (process.env.NODE_ENV !== "production") console.error("[guru/upload] loadHistory failed:", error);
     } finally {
       setLoadingHistory(false);
     }
@@ -305,7 +305,10 @@ export default function GuruUploadPage() {
 
       {successFileName && job.state === "ready" && (
         <div className="mt-4 p-4 rounded-2xl border border-emerald-300 bg-emerald-50/40 text-emerald-900">
-          <p className="font-heading font-semibold mb-1">✅ Dokumen berhasil diproses</p>
+          <p className="font-heading font-semibold mb-1 flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 shrink-0" aria-hidden="true" />
+            Dokumen berhasil diproses
+          </p>
           <p className="text-sm">
             Draft materi, kuis, dan soal sudah siap untuk ditinjau untuk{" "}
             <b>{successFileName}</b>.
@@ -396,7 +399,7 @@ export default function GuruUploadPage() {
                       {(h.sizeBytes / 1024).toFixed(1)} KB · {new Date(h.createdAt).toLocaleString("id-ID")}
                     </p>
                   </div>
-                  <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap ${m.color}`}>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap ${m.color}`}>
                     {m.label}
                   </span>
                   {h.generationId && (gen === "ready" || gen === "approved") && (

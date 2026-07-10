@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
-import { ArrowLeft, BookOpen, CheckCircle, ArrowRight, GraduationCap, FileText, Users } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle, ArrowRight, GraduationCap } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface KursusItem {
@@ -138,48 +138,6 @@ export default function KursusDetailPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                { label: "Siswa Terdaftar", value: "-", icon: Users },
-                { label: "Materi", value: "-", icon: FileText },
-                { label: "Status", value: kursus.isPublic ? "Aktif" : "Privat", icon: CheckCircle },
-              ].map((s) => (
-                <div
-                  key={s.label}
-                  className="bg-white rounded-2xl p-4 border border-border-precision text-center"
-                >
-                  <s.icon className="w-5 h-5 text-primary mx-auto mb-2" />
-                  <p className="text-xl font-bold text-on-surface font-heading">{s.value}</p>
-                  <p className="text-xs text-on-surface-variant">{s.label}</p>
-                </div>
-              ))}
-            </div>
-
-            <div>
-              <h2 className="font-heading font-bold text-lg text-on-surface mb-4">
-                Yang Akan Dipelajari
-              </h2>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {[
-                  "Konsep Aqidah Akhlak dalam Islam",
-                  "Dalil-dalil dari Al-Qur'an dan Hadits",
-                  "Penerapan dalam kehidupan sehari-hari",
-                  "Quiz interaktif berbasis deep learning",
-                  "Analisis kasus dan studi moral",
-                  "Sertifikat setelah menyelesaikan kursus",
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-start gap-3 bg-white rounded-xl p-4 border border-border-precision"
-                  >
-                    <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle className="w-3 h-3 text-primary" />
-                    </div>
-                    <p className="text-sm text-on-surface">{item}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
           <div className="lg:col-span-1">

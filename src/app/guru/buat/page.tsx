@@ -77,7 +77,7 @@ export default function BuatKursusPage() {
               name="judul"
               required
               maxLength={200}
-              className="w-full px-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/40 focus:outline-hidden focus:border-primary/40 text-sm"
+              className="w-full px-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/70 focus:outline-hidden focus:border-primary/40 text-sm"
               placeholder="Contoh: Akidah Akhlak Kelas 7"
             />
           </div>
@@ -90,7 +90,7 @@ export default function BuatKursusPage() {
               name="deskripsi"
               rows={3}
               maxLength={500}
-              className="w-full px-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/40 focus:outline-hidden focus:border-primary/40 text-sm resize-none"
+              className="w-full px-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/70 focus:outline-hidden focus:border-primary/40 text-sm resize-none"
               placeholder="Deskripsi singkat kursus"
             />
           </div>

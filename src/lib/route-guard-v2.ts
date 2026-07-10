@@ -5,7 +5,7 @@ import type { SesiPayload } from "@/lib/session";
 import { setRlsContext } from "@/lib/db/tenant-context";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and, lt } from "drizzle-orm";
 
 export type { SesiPayload, SesiRole };
 
@@ -31,12 +31,12 @@ export async function requireSession(request: NextRequest): Promise<SesiPayload>
   if (!session) throw new GuardError("Harap login terlebih dahulu", 401, "UNAUTHORIZED");
   await setRlsContext(session.userId, session.role, null);
 
-  // Throttled last_active_at update (max once per 5 minutes)
   try {
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
     await db
       .update(users)
       .set({ lastActiveAt: sql`now()` })
-      .where(eq(users.id, session.userId));
+      .where(and(eq(users.id, session.userId), lt(users.lastActiveAt, fiveMinAgo)));
   } catch { /* non-critical */ }
 
   return session;

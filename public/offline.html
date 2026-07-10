@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Anda sedang offline — AKAL Center</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f2fcf7;color:#1b1b1b;min-height:100dvh;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px}
+    .card{background:white;border-radius:28px;padding:48px 32px;max-width:420px;width:100%;box-shadow:0 1px 3px rgba(0,0,0,.06),0 8px 40px rgba(0,0,0,.06)}
+    h1{font-size:20px;font-weight:700;color:#005231;margin-bottom:12px}
+    p{font-size:15px;color:#5a5a5a;line-height:1.6;margin-bottom:28px}
+    button{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border:none;border-radius:999px;background:#005231;color:white;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s}
+    button:hover{background:#003d23}
+    .icon{margin-bottom:20px;font-size:48px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon" aria-hidden="true">&#x1F4E1;</div>
+    <h1>Anda sedang offline</h1>
+    <p>Tidak ada koneksi internet. Periksa jaringan Anda dan coba lagi.</p>
+    <button onclick="location.reload()">Coba lagi</button>
+  </div>
+</body>
+</html>

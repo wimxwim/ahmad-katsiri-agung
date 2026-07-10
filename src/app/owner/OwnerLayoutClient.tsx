@@ -93,7 +93,7 @@ export function OwnerLayoutClient({ children }: { children: React.ReactNode }) {
                 <item.icon className="w-4.5 h-4.5 shrink-0" />
                 <span className="truncate flex-1">{item.label}</span>
                 {item.soon && (
-                  <span className="text-[10px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full">
                     SEGERA
                   </span>
                 )}

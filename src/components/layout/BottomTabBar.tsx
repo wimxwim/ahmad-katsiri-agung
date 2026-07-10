@@ -95,7 +95,7 @@ export function BottomTabBar() {
                 <h3 className="font-heading font-bold text-lg text-primary">Menu Lainnya</h3>
                 <button
                   onClick={closeSheet}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-colors"
+                  className="w-11 h-11 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-colors"
                   aria-label="Tutup menu"
                 >
                   <X className="w-4 h-4" />
@@ -184,7 +184,7 @@ export function BottomTabBar() {
                   <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary" />
                 )}
                 <Icon className="w-5 h-5" aria-hidden="true" fill={active ? "currentColor" : "none"} />
-                <span className={`text-[10px] font-semibold leading-none ${active ? "opacity-100" : "opacity-70"}`}>
+                <span className={`text-xs font-semibold leading-none ${active ? "opacity-100" : "opacity-70"}`}>
                   {tab.label}
                 </span>
               </Link>
@@ -197,7 +197,7 @@ export function BottomTabBar() {
             aria-label="Menu lainnya"
           >
             <Grid3x3 className="w-5 h-5" aria-hidden="true" />
-            <span className="text-[10px] font-semibold leading-none opacity-70">Lainnya</span>
+            <span className="text-xs font-semibold leading-none opacity-70">Lainnya</span>
           </button>
         </div>
       </nav>

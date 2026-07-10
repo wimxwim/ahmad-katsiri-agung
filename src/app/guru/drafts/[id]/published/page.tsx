@@ -64,7 +64,7 @@ export default async function DraftPublishedPage({
           <CheckCircle2 className="w-9 h-9" />
         </div>
         <h1 className="font-heading font-bold text-2xl sm:text-3xl text-on-surface">
-          ✅ Draft siap dipakai
+          Draft Siap Dipakai
         </h1>
         <p className="text-sm text-on-surface-variant mt-2 max-w-xl mx-auto">
           Anda sudah menutup siklus review untuk draft ini. Materi, kuis, dan/atau soal yang Anda
@@ -73,7 +73,7 @@ export default async function DraftPublishedPage({
 
         <div className="mt-6 grid gap-3 sm:grid-cols-2 max-w-2xl mx-auto text-left">
           <div className="p-4 rounded-2xl bg-white border border-border-precision">
-            <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">SUMBER</p>
+            <p className="text-xs font-bold tracking-wider text-on-surface-variant">SUMBER</p>
             <p className="font-semibold text-on-surface text-sm mt-1 truncate flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5" />
               {row.sourceFileName}
@@ -83,11 +83,11 @@ export default async function DraftPublishedPage({
             )}
           </div>
           <div className="p-4 rounded-2xl bg-white border border-border-precision">
-            <p className="text-[10px] font-bold tracking-wider text-on-surface-variant">BAGIAN DISETUJUI</p>
+            <p className="text-xs font-bold tracking-wider text-on-surface-variant">BAGIAN DISETUJUI</p>
             <p className="font-semibold text-on-surface text-2xl mt-1">
               {approvedCount}/3
             </p>
-            <div className="flex gap-2 mt-1 text-[10px] font-bold tracking-wider">
+            <div className="flex gap-2 mt-1 text-xs font-bold tracking-wider">
               <span className={row.materiStatus === "approved" ? "text-emerald-700" : "text-on-surface-variant/40"}>
                 MATERI
               </span>

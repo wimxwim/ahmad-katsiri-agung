@@ -84,7 +84,7 @@ export default function SiswaListPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari nama atau kursus..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/40 focus:outline-hidden focus:border-primary/40 text-sm"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/70 focus:outline-hidden focus:border-primary/40 text-sm"
           />
         </div>
         <div className="relative">

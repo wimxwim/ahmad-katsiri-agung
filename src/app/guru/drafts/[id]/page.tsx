@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, RefreshCw, XCircle, Loader2, FileText, BookOpen, ClipboardList, Edit3, Save } from "lucide-react";
+import { ArrowLeft, CheckCircle2, RefreshCw, XCircle, Loader2, FileText, BookOpen, ClipboardList, Edit3, Save, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 
@@ -209,7 +209,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
               <span> · {draft.tokenInput + draft.tokenOutput} token</span>
             )}
             {(draft.materiStatus === "draft" || draft.quizStatus === "draft" || draft.soalStatus === "draft") && (
-              <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+              <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
                 AI-Generated · Perlu Review
               </span>
             )}
@@ -257,7 +257,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                 >
                   {t === "materi" ? <BookOpen className="w-4 h-4" /> : <ClipboardList className="w-4 h-4" />}
                   {t === "materi" ? "Materi" : t === "quiz" ? "Kuis" : "Soal"}
-                  <span className={`text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded-full ${m.color}`}>
+                  <span className={`text-xs font-bold tracking-wider px-1.5 py-0.5 rounded-full ${m.color}`}>
                     {m.label}
                   </span>
                 </button>
@@ -365,7 +365,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                           <ul className="text-xs mt-1 space-y-0.5 list-none pl-0">
                             {Object.entries(s.opsi).map(([k, v]) => (
                               <li key={k} className={s.kunci === k ? "font-semibold text-emerald-700" : ""}>
-                                {k}. {v} {s.kunci === k && "✓"}
+                                {k}. {v} {s.kunci === k && <Check className="w-3 h-3 inline shrink-0" />}
                               </li>
                             ))}
                           </ul>
@@ -408,12 +408,12 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                           <ul className="text-xs mt-1 space-y-0.5 list-none pl-0">
                             {Object.entries(s.opsi).map(([k, v]) => (
                               <li key={k} className={s.kunci === k ? "font-semibold text-emerald-700" : ""}>
-                                {k}. {v} {s.kunci === k && "✓"}
+                                {k}. {v} {s.kunci === k && <Check className="w-3 h-3 inline shrink-0" />}
                               </li>
                             ))}
                           </ul>
                         )}
-                        <p className="text-[10px] uppercase tracking-wider text-tertiary mt-0.5">
+                        <p className="text-xs uppercase tracking-wider text-tertiary mt-0.5">
                           {s.tipe} · kunci: {s.kunci}
                         </p>
                       </li>

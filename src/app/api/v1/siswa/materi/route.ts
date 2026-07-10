@@ -1,18 +1,14 @@
-import { NextResponse } from "next/server";
-import { getSession } from "@/lib/dal";
+import { NextRequest, NextResponse } from "next/server";
+import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { materiPublished, siswaKursus, materiRead } from "@/lib/db/schema";
 import { and, asc, eq, inArray } from "drizzle-orm";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) return apiUnauthorized();
-    if (session.role !== "murid" && session.role !== "orang_tua") {
-      return apiError("Hanya siswa yang dapat melihat materi", 403);
-    }
+    const session = await requireSiswa(request);
 
     const rl = await checkRateLimit(`siswa-materi-list:${session.userId}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
@@ -53,6 +49,7 @@ export async function GET() {
 
     return NextResponse.json({ data });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Siswa materi list error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }
