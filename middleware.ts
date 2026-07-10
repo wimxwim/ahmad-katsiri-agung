@@ -225,9 +225,18 @@ export async function middleware(request: NextRequest) {
   if (shouldSkipCsrf(pathname)) return response;
 
   const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-  if (origin && host && !origin.endsWith(host)) {
-    return new NextResponse(null, { status: 403 });
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const host = forwardedHost?.split(",")[0]?.trim() || request.headers.get("host");
+  if (origin && host) {
+    let originHost: string;
+    try {
+      originHost = new URL(origin).host;
+    } catch {
+      return new NextResponse(null, { status: 403 });
+    }
+    if (originHost !== host) {
+      return new NextResponse(null, { status: 403 });
+    }
   }
 
   if (pathname.startsWith("/api/")) {

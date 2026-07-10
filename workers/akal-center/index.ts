@@ -1,4 +1,4 @@
-const ALLOWED_METHODS = ['GET', 'HEAD', 'POST', 'OPTIONS'];
+const ALLOWED_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
 const ORIGIN = process.env.ORIGIN_URL;
 const TIMEOUT_MS = 15_000;
 
@@ -118,6 +118,8 @@ export default {
     const upstreamUrl = ORIGIN + url.pathname + url.search;
     const headers = new Headers(request.headers);
     headers.set('X-From-Worker', 'akal-center');
+    headers.set('X-Forwarded-Host', url.host);
+    headers.set('X-Forwarded-Proto', url.protocol.slice(0, -1));
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
