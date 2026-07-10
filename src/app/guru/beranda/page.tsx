@@ -8,6 +8,7 @@ import { EASE_CURVE } from "@/lib/constants";
 import { useEffect, useState } from "react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonDashboardGuru } from "@/components/ui/SkeletonBlocks";
+import { apiFetch } from "@/lib/api-helpers";
 
 interface DashboardData {
   totalKursus: number;
@@ -57,23 +58,20 @@ export default function GuruBerandaPage() {
   useEffect(() => {
     let alive = true;
     async function fetchData() {
-      try {
-        const [dashRes, onboardRes] = await Promise.all([
-          fetch("/api/v1/guru/dashboard", { credentials: "include" }),
-          fetch("/api/v1/guru/onboarding", { credentials: "include" }),
-        ]);
-        if (!dashRes.ok) throw new Error("Gagal memuat data");
-        const { data: d } = await dashRes.json();
-        if (alive) setData(d || null);
-        if (onboardRes.ok) {
-          const { data: o } = await onboardRes.json();
-          if (alive) setOnboarding(o);
-        }
-      } catch (err) {
-        if (alive) setError(err instanceof Error ? err.message : "Gagal memuat data");
-      } finally {
-        if (alive) setLoading(false);
+      const [dashResult, onboardResult] = await Promise.all([
+        apiFetch<DashboardData>("/api/v1/guru/dashboard"),
+        apiFetch<OnboardingData>("/api/v1/guru/onboarding"),
+      ]);
+      if (!alive) return;
+      if (!dashResult.ok) {
+        setError(dashResult.error);
+      } else {
+        setData(dashResult.data ?? null);
       }
+      if (onboardResult.ok && onboardResult.data) {
+        setOnboarding(onboardResult.data);
+      }
+      setLoading(false);
     }
     fetchData();
     return () => { alive = false; };

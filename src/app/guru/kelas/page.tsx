@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Users, Loader2, Edit3, GraduationCap, X, Check } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { csrfHeaders } from "@/lib/csrf";
+import { apiFetch } from "@/lib/api-helpers";
 
 interface KelasItem {
   id: string;
@@ -25,18 +25,15 @@ export default function GuruKelasPage() {
   const [editTingkat, setEditTingkat] = useState(7);
 
   async function load() {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/v1/guru/kelas", { credentials: "include" });
-      if (!res.ok) throw new Error("Gagal memuat");
-      const { data } = await res.json();
-      setItems(data || []);
-      setError("");
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal memuat");
-    } finally {
-      setLoading(false);
+    setLoading(true);
+    setError("");
+    const result = await apiFetch<KelasItem[]>("/api/v1/guru/kelas");
+    if (!result.ok) {
+      setError(result.error);
+    } else {
+      setItems(result.data ?? []);
     }
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -47,62 +44,43 @@ export default function GuruKelasPage() {
     e.preventDefault();
     setSubmitting(true);
     setError("");
-    try {
-      const res = await fetch("/api/v1/guru/kelas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...csrfHeaders() },
-        credentials: "include",
-        body: JSON.stringify({ nama, tingkat }),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.error || "Gagal membuat kelas");
-      }
+    const result = await apiFetch<KelasItem>("/api/v1/guru/kelas", {
+      method: "POST",
+      body: JSON.stringify({ nama, tingkat }),
+    });
+    if (!result.ok) {
+      setError(result.error);
+    } else {
       setNama("");
       setTingkat(7);
       setShowForm(false);
       await load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal membuat kelas");
-    } finally {
-      setSubmitting(false);
     }
+    setSubmitting(false);
   }
 
   async function handleDelete(id: string) {
     if (!confirm("Hapus kelas ini? Siswa di dalamnya tidak akan terhapus, hanya relasi yang diputus.")) return;
-    try {
-      const res = await fetch(`/api/v1/guru/kelas/${id}`, {
-        method: "DELETE",
-        headers: csrfHeaders(),
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.error || "Gagal menghapus");
-      }
+    setError("");
+    const result = await apiFetch(`/api/v1/guru/kelas/${id}`, { method: "DELETE" });
+    if (!result.ok) {
+      setError(result.error);
+    } else {
       await load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal menghapus");
     }
   }
 
   async function handleUpdate(id: string) {
-    try {
-      const res = await fetch(`/api/v1/guru/kelas/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", ...csrfHeaders() },
-        credentials: "include",
-        body: JSON.stringify({ nama: editNama, tingkat: editTingkat }),
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j.error || "Gagal memperbarui");
-      }
+    setError("");
+    const result = await apiFetch<KelasItem>(`/api/v1/guru/kelas/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ nama: editNama, tingkat: editTingkat }),
+    });
+    if (!result.ok) {
+      setError(result.error);
+    } else {
       setEditing(null);
       await load();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal memperbarui");
     }
   }
 
@@ -125,8 +103,14 @@ export default function GuruKelasPage() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
-          {error}
+        <div className="mb-4 p-4 rounded-2xl bg-red-50 border border-red-200">
+          <p className="text-sm text-red-700 mb-2">{error}</p>
+          <button
+            onClick={load}
+            className="text-sm font-semibold text-red-700 hover:underline"
+          >
+            Coba lagi
+          </button>
         </div>
       )}
 
@@ -192,7 +176,7 @@ export default function GuruKelasPage() {
             <div key={i} className="bg-glass rounded-2xl p-5 h-20 animate-pulse" />
           ))}
         </div>
-      ) : items.length === 0 ? (
+      ) : error ? null : items.length === 0 ? (
         <div className="text-center py-12">
           <EmptyState
             icon={GraduationCap}
