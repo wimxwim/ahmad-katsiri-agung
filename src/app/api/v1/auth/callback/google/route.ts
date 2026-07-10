@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
       resp.cookies.set(SESSION_COOKIE_NAME, token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
         maxAge: SESSION_DURATION_SECONDS,
       });
