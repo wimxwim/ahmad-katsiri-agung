@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import {
   checkRateLimit,
@@ -168,7 +169,8 @@ export async function POST(request: NextRequest) {
         throw e;
       }
 
-      runGeneration(generation.id, bytes, detected)
+      waitUntil(
+        runGeneration(generation.id, bytes, detected)
         .catch(async (e) => {
           console.error("Generation async error:", e);
           const isTimeout = e instanceof GenerationTimeoutError;
@@ -187,7 +189,8 @@ export async function POST(request: NextRequest) {
         })
         .finally(() => {
           releaseConcurrent(`gen:${session.userId}`);
-        });
+        }),
+      );
     } else {
       await db
         .update(aiGeneration)
