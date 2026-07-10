@@ -201,8 +201,7 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(loginUrl, 307);
       }
       if (!allowed.includes(role)) {
-        const home = ROLE_HOME[role] || "/";
-        return NextResponse.redirect(new URL(home, request.url), 307);
+        return new NextResponse("Akses ditolak — role tidak sesuai", { status: 403 });
       }
       break;
     }

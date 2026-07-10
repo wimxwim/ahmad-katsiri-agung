@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { verifySession } from "@/lib/auth";
+import { SESSION_COOKIE_NAME, ROLE_HOME_PATHS } from "@/lib/session";
 import { DaftarPicker } from "./DaftarPicker";
 
 export const metadata: Metadata = {
@@ -13,7 +17,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function DaftarPage() {
+export default async function DaftarPage() {
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
+  if (sessionCookie?.value) {
+    const _ar = await verifySession(sessionCookie.value);
+    if (_ar.success) {
+      const home = ROLE_HOME_PATHS[_ar.data.role] || "/";
+      redirect(home);
+    }
+  }
   return (
     <div className="min-h-screen bg-surface px-3 py-10 sm:px-5 lg:px-8">
       <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl items-center">
