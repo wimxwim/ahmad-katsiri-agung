@@ -78,7 +78,7 @@ function withTimeout<T>(p: Promise<T>, ms: number, stage: "extract" | "ai" | "sa
 }
 
 const EXTRACT_TIMEOUT_MS = 60_000;
-const AI_TIMEOUT_MS = 120_000;
+const AI_TIMEOUT_MS = 180_000;
 const SAVE_TIMEOUT_MS = 15_000;
 
 export async function runGeneration(
