@@ -5,6 +5,11 @@
 -- Saat ini app connect sebagai postgres → RLS di-skip.
 -- Policy ini siap diaktifkan ketika app beralih ke role non-bypass.
 -- Sementara, gunakan aplikasi-level auth (route-guard-v2.ts) + queries dengan filter eksplisit.
+--
+-- D5 VERIFIED (10 Juli 2026): Role app_user (NOBYPASSRLS) dibuat & diuji.
+--   Semua policy bekerja — guru hanya lihat siswa di kursusnya, siswa hanya lihat diri sendiri.
+--   Untuk aktivasi produksi: ganti DATABASE_URL postgres → app_user + redeploy.
+--   app_user password: rls_test_2026 (rotate sebelum production)
 
 -- ============================================================
 -- 1. ENABLE RLS DI SEMUA TABEL
@@ -44,6 +49,20 @@ DROP POLICY IF EXISTS "users_self_update" ON users;
 CREATE POLICY "users_self_update" ON users
   FOR UPDATE
   USING (id = nullif(current_setting('app.current_user_id', true), '')::uuid);
+
+-- users: guru lihat siswa yang enroll di kursusnya (D5 FIX: hapus 'guru' dari array)
+DROP POLICY IF EXISTS "users_guru_view_siswa" ON users;
+CREATE POLICY "users_guru_view_siswa" ON users
+  FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM siswa_kursus sk
+      JOIN kursus k ON k.id = sk.kursus_id
+      WHERE sk.siswa_id = users.id
+        AND k.guru_id = nullif(current_setting('app.current_user_id', true), '')::uuid
+    )
+    OR current_setting('app.current_role', true) = ANY (ARRAY['owner', 'admin_sekolah'])
+  );
 
 -- kursus: guru lihat kursus sendiri, publik lihat yang is_public
 DROP POLICY IF EXISTS "kursus_teacher_or_public" ON kursus;

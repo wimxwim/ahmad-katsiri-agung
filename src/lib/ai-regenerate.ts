@@ -1,10 +1,11 @@
 import { db } from "@/lib/db";
-import { aiGeneration, fileMateri } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { aiGeneration, fileMateri, aiRequests, quotas, users } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
 import { extractText } from "@/lib/text-extractor";
-import { chat, getModelName } from "@/lib/ai";
+import { chat, getModelName, getModelForTask } from "@/lib/ai";
 import { parseMateriSafe } from "@/lib/ai-sanitizer";
 import { appendEvent } from "@/lib/event-store";
+import { incrementUsage } from "@/lib/quota-guard";
 
 const MATERI_SYSTEM = `Kamu adalah asisten pengajar Indonesia. Tugasmu: menerima teks materi mentah dan menghasilkan rangkuman MATERI untuk siswa. ATURAN:
 1. Output HARUS JSON valid dengan field "judul" (string) dan "konten" (string).
@@ -71,7 +72,7 @@ export async function regenerateMateriOnly(generationId: string): Promise<void> 
       { role: "system", content: MATERI_SYSTEM },
       { role: "user", content: `Materi:\n\n${truncatedSource}` },
     ],
-    { temperature: 0.4, maxTokens: 1800 },
+    { model: getModelForTask("heavy"), temperature: 0.4, maxTokens: 1800 },
   );
   const materiParsed = parseMateriSafe(materiRes.content);
   if (!materiParsed) {
@@ -97,6 +98,24 @@ export async function regenerateMateriOnly(generationId: string): Promise<void> 
       updatedAt: new Date(),
     })
     .where(eq(aiGeneration.id, generationId));
+
+  try {
+    await db.insert(aiRequests).values({
+      userId: gen.guruId,
+      model: getModelName(),
+      provider: "nararouter",
+      requestType: "regenerate_materi",
+      promptTokens: materiRes.tokensIn,
+      completionTokens: materiRes.tokensOut,
+      totalTokens: materiRes.tokensIn + materiRes.tokensOut,
+    });
+    const guru = await db.query.users.findFirst({ where: eq(users.id, gen.guruId) });
+    const guruRole = guru?.role ?? "GURU";
+    const quota = await db.query.quotas.findFirst({
+      where: and(eq(quotas.role, guruRole), eq(quotas.resourceType, "ai_generation"), eq(quotas.isActive, true)),
+    });
+    if (quota) await incrementUsage(gen.guruId, quota.id);
+  } catch { /* non-critical */ }
 
   await appendEvent(`gen:${gen.guruId}`, "gen.materi_regenerated", {
     generationId,

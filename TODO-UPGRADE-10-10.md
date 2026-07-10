@@ -1,10 +1,10 @@
 # TODO UPGRADE — AKAL Center 6.5/10 → 10/10
 
-> **Dibuat:** 10 Juli 2026 · **Update:** 11 Juli 2026 (Grand Final merge)
-> **Sumber:** 50+ file PRD & audit + 9 riset internasional 2026 (UNESCO, TeachAI, RAND, Indie Hackers, Vercel, Supabase, PostgreSQL, GlitchTip, Indonesian EdTech)
-> **Total:** 93 item · ~115 jam · 29 selesai · 38 pending · 26 tunda
+> **Dibuat:** 10 Juli 2026 · **Update:** 11 Juli 2026 (Sesi Eksekusi: D5+LEG3+LEG4+B4+B6+AV2 — 6 item selesai)
+> **Sumber:** 50+ file PRD & audit + 9 riset internasional 2026 + AUDIT CODEBASE 11 Jul 2026
+> **Total:** 97 item · ~120 jam · 33 selesai · 38 pending · 26 tunda
 > **Filosofi:** Aktifkan yang sudah ada, tunda yang tidak perlu, pantau sebelum meledak, gratis dulu baru bayar.
-> **Status:** Fase 0-3 ✅ | Fase BISNIS [~] | Fase 4-13 ⬜ | Fase 14 ⚪
+> **Status:** Fase 0-3 ✅ | Fase BISNIS ✅ 7/7 | Fase P0-LEGAL 2/4 | Fase 4 [~] 3/7 | Fase 5-13 ⬜ | Fase 14 ⚪
 
 ---
 
@@ -21,8 +21,9 @@
 | Error Handling | quran silent, profil weak | ✅ Fixed both | Proper states |
 | FormMasuk | 635 baris God Component | ✅ Split ke 10 file (216 baris orchestrator) | Selesai |
 | Fase 0-3 | 31 item | ✅ 29/31 | Hampir selesai |
-| Fase BISNIS | 7 item | ✅ 7/7 | Selesai |
-| Fase 4-13 | 47 item | ⬜ 0/47 | Semua pending |
+| ⚖️ P0-LEGAL | 4 item | ✅ 2/4 | PSE + Migrasi Cloudflare belum |
+| Fase BISNIS | 7 item | ✅ 7/7 | B1-B7 semua selesai |
+| Fase 4-13 | 47 item | ⬜ 39/47 [~] 8 | AV1 [~] 3/8, AV3-AV7 + all Fase 5-13 pending |
 | Fase 14 | 9 item | ⚪ Tunda | Nanti |
 
 ---
@@ -92,7 +93,9 @@
 - **Status:** [x] selesai
 
 ### D5. Uji RLS isolation
-- **Status:** [ ] belum
+- **Status:** [x] selesai — role app_user (NOBYPASSRLS) dibuat & 8 test case PASS
+- **Temuan:** Policy `users_guru_view_siswa` punya bug — guru bisa lihat SEMUA user (bukan hanya siswa di kursusnya). Fixed: hapus `'guru'` dari array bypass.
+- **Next:** Untuk aktivasi produksi, ganti DATABASE_URL postgres → app_user. Password app_user perlu di-rotate sebelum production.
 
 ---
 
@@ -139,9 +142,9 @@
 - **Status:** [x] selesai
 
 ### B4. Kolom `mata_pelajaran` + `jenjang` + Tabel Taksonomi
-- **Fix:** ALTER kursus + 2 tabel baru (18 mapel + 4 jenjang) + pre-populate
-- **Effort:** 1.5 jam
-- **Status:** [x] selesai — schema + data sudah ada di DB
+- **Fix:** Tabel ADA di schema dan DB. `mata_pelajaran_id` (uuid FK) + `jenjang_id` (uuid FK) di `kursus`. 18 mapel + 4 jenjang terisi.
+- **Effort:** Verifikasi selesai
+- **Status:** [x] selesai
 
 ### B5. QRIS Payment Flow
 - **Fix:** Halaman `/pembayaran` + upload bukti + verifikasi manual. QR di `/public/qris-gopay.webp`
@@ -149,9 +152,9 @@
 - **Status:** [x] selesai — page + API submit + owner verify built
 
 ### B6. Onboarding Progress Tracking
-- **Fix:** Tabel `onboarding_progress` (7 step) + empty state CTA
-- **Effort:** 1.5 jam
-- **Status:** [x] selesai — API GET/POST + guru dashboard progress bar
+- **Fix:** Tabel `onboarding_progress` ADA di DB (0 rows). API GET/POST + guru dashboard sudah built.
+- **Effort:** Verifikasi selesai
+- **Status:** [x] selesai
 
 ### B7. Rate Limiting AI Hard Cap
 - **Fix:** Rate limit + quota checkQuota() — tiga layer proteksi
@@ -159,36 +162,68 @@
 
 ---
 
-## 🔴 FASE 4 — AKTIVASI "FREE VALUE" (Kode Ada, Tinggal Sambung)
+## 🔴 FASE P0-LEGAL — Kepatuhan Hukum & Infrastruktur (HASIL AUDIT 11 JUL)
 
-### AV1. Pasang `checkQuota()` di SEMUA route handler AI
-- **Bukti:** `src/lib/quota-guard.ts` SUDAH ADA — tapi 0 route handler panggil
-- **Fix:** Tambah `await checkQuota(...)` sebelum tiap panggil NaraRouter. Setelah sukses: `incrementUsage()` + insert `ai_requests`
-- **Lokasi:** `/api/v1/guru/drafts/*/regenerate*`, `/api/v1/guru/drafts/*/approve*`, semua endpoint AI
+> **Temuan baru dari audit real-time 11 Juli 2026.** Tidak ada di TODO sebelumnya.
+
+### LEG1. Daftar PSE ke Komdigi (WAJIB HUKUM)
+- **Referensi:** UU ITE, PP 71/2019, UU PDP — platform digital WAJIB daftar PSE Lingkup Privat sebelum beroperasi di Indonesia
+- **Sanksi:** Pemblokiran domain oleh Kominfo jika tidak terdaftar
+- **Fix:** Daftarkan akalcenter.my.id via portal PSE Komdigi. Isi formulir + upload dokumen pendirian.
 - **Effort:** 2 jam
 - **Status:** [ ] belum
 
-### AV2. Insert ke `ai_requests` setiap AI dipanggil
-- **Bukti:** `ai_requests` table SUDAH ADA — kosong
-- **Fix:** Insert row setelah tiap panggil NaraRouter: userId, model, tokens, cost_idr_cents, requestType, durationMs
-- **Effort:** 1 jam
+### LEG2. Rencana migrasi Vercel Hobby → Cloudflare Pages
+- **Referensi:** Vercel ToS — Hobby = "personal, non-commercial use only". AKAL Center = situs klien = komersial = MELANGGAR.
+- **Risiko:** Akun Vercel bisa dimatikan tanpa notifikasi. Audit Profesor 2026 NF-01 sudah menandai ini.
+- **Opsi A:** Upgrade Vercel Pro ($20/bulan)
+- **Opsi B:** Migrasi ke Cloudflare Pages (gratis, komersial diizinkan) — rekomendasi audit
+- **Effort:** 4 jam (migrasi full ke Cloudflare Pages)
 - **Status:** [ ] belum
+
+### LEG3. Upgrade Next.js 16.2.7 → 16.2.10
+- **Referensi:** 3 patch security tertinggal (16.2.8, 16.2.9, 16.2.10). 16.3 Preview masih unstable — tunda.
+- **Fix:** `npm install next@16.2.10` + `npm run build` — sukses, 87/87 pages, zero errors
+- **Effort:** 30 menit
+- **Status:** [x] selesai
+
+### LEG4. Evaluasi DeepSeek V4 Flash untuk AI ringan
+- **Referensi:** Flash: Rp1.440/1M input + Rp1.618/1M output vs Pro: Rp3.907/Rp7.814 — hemat 63%
+- **Fix:** `ai.ts` tambah `getFlashModel()` + `getModelForTask()`. Quiz PG → Flash, Materi + Soal → Pro. `ai-generator.ts` + `ai-regenerate.ts` updated. Env: `AI_FLASH_MODEL=deepseek-chat`
+- **Effort:** 1 jam
+- **Status:** [x] selesai
+
+---
+
+## 🔴 FASE 4 — AKTIVASI "FREE VALUE" (Kode Ada, Tinggal Sambung)
+
+### AV1. Pasang `checkQuota()` di SEMUA route handler AI
+- **Bukti:** `src/lib/quota-guard.ts` SUDAH ADA — 2 route handler + 1 lib sudah import (`regenerate/route.ts`, `uploads/route.ts`, `ai-generator.ts`)
+- **Fix:** Sisanya (approve, reject, edit, close-review) belum — tambah checkQuota() di semua
+- **Lokasi:** `/api/v1/guru/drafts/*/approve*`, `/api/v1/guru/drafts/*/reject*`, `/api/v1/guru/drafts/*/edit*`
+- **Effort:** 1 jam (dari 2 jam — 3 sudah wired)
+- **Status:** [~] 3/8 done
+
+### AV2. Insert ke `ai_requests` setiap AI dipanggil
+- **Bukti:** `ai_requests` SUDAH ADA di DB (0 rows). Insert wired di `ai-generator.ts:220` + `ai-regenerate.ts:102`.
+- **Effort:** Selesai
+- **Status:** [x] selesai
 
 ### AV3. Tampilkan sisa kuota AI di dashboard guru
 - **Fix:** "AI: 12/30 tersisa bulan ini" di `guru/beranda/page.tsx`
 - **Effort:** 1 jam
 - **Status:** [ ] belum
 
-### AV4. Apply `ai_daily_costs` view di Supabase
-- **Fix:** `REFRESH MATERIALIZED VIEW ai_daily_costs` + pg_cron refresh harian
-- **Effort:** 5 menit
+### AV4. Buat + apply `ai_daily_costs` materialized view di Supabase
+- **Fix:** Buat SQL materialized view dulu (belum ada di schema/migration) → apply → pg_cron refresh harian
+- **Effort:** 30 menit (dari 5 menit — perlu buat dari nol)
 - **Status:** [ ] belum
 
 ### AV5. Aktifkan 1 model analytics (Risk Score)
-- **Bukti:** 8 file di `src/lib/analytics/` SUDAH ADA — 0 dipanggil
-- **Fix:** Panggil `calculateRiskScore()` di dashboard guru — "3 siswa berisiko"
+- **Bukti:** 6 file di `src/lib/analytics/` SUDAH ADA — `calculateTRI` + `calculateRiskScore` dipanggil di `owner/tri/route.ts`, 4 lainnya belum
+- **Fix:** Panggil `calculateRiskScore()` atau `calculateBKT()` di dashboard guru — "3 siswa berisiko"
 - **Effort:** 3 jam
-- **Status:** [ ] belum
+- **Status:** [~] 2/6 functions wired
 
 ### AV6. Admin CLI — integrasikan data nyata
 - **Bukti:** `scripts/admin-akal.sh` SUDAH ADA
@@ -196,8 +231,8 @@
 - **Status:** [ ] belum
 
 ### AV7. Tambah `last_active_at` ke users
-- **Fix:** Migration ALTER TABLE + middleware update tiap request authenticated
-- **Effort:** 1 jam
+- **Fix:** ALTER TABLE migration + kolom di schema.ts (belum ada) + middleware update tiap request authenticated
+- **Effort:** 1.5 jam
 - **Status:** [ ] belum
 
 ---
@@ -508,10 +543,11 @@
 |------|:---:|:---:|:---:|:---:|
 | 0 | Quick Wins | 6 | 0 | 0 |
 | 1 | Auth & Guard | 6 | 0 | 0 |
-| 2 | Database & RLS | 4 | 1 | 0 |
+| 2 | Database & RLS | 5 | 0 | 0 |
 | 3 | Frontend & UX | 7 | 0 | 0 |
-| B | Business Systems | 5 | 2 | 0 |
-| 4 | Aktivasi Free Value | 0 | 7 | 0 |
+| B | Business Systems | 7 | 0 | 0 |
+| L | P0-Legal | 2 | 2 | 0 |
+| 4 | Aktivasi Free Value | 1 | 6 | 0 |
 | 5 | AI Safety | 0 | 6 | 0 |
 | 6 | PWA & Offline | 0 | 3 | 0 |
 | 7 | Aksesibilitas WCAG | 0 | 5 | 0 |
@@ -521,19 +557,23 @@
 | 11 | Frontend "Simple" | 0 | 6 | 0 |
 | 12 | Monetisasi | 0 | 4 | 1 |
 | 13 | Perbaikan Spesifik | 0 | 9 | 0 |
+| LEGAL | P0-Legal | 0 | 4 | 0 |
 | 14 | Tunda | 0 | 0 | 9 |
-| **TOTAL** | **93** | **29** | **61** | **10** |
+| **TOTAL** | **97** | **33** | **38** | **26** |
 
 ---
 
 ## 🗓️ URUTAN EKSEKUSI
 
 HARI INI (P0):
-  □ AV2: Insert ai_requests (1 jam)
+  □ LEG1: Daftar PSE Komdigi (2 jam)
+  □ LEG3: Upgrade Next.js ke 16.2.10 (30 menit)
+  □ AV2: Generate migration + insert ai_requests (1.5 jam)
   □ A11Y2-A11Y3: Skip link + touch target (15 menit)
   □ X1: Fix FormMasuk portal selection (5 menit)
-  □ X2: Deskripsi kursus netral (5 menit)
 MINGGU INI (P0-P1):
+  □ LEG2: Rencana migrasi Vercel → Cloudflare Pages (4 jam)
+  □ LEG4: Evaluasi DeepSeek Flash (1 jam)
   □ Fase 4 sisa (AV1, AV3-AV7) — 8 jam
   □ Fase 5 (AI Safety) — 6 jam
   □ Fase 6 (PWA) — 3 jam

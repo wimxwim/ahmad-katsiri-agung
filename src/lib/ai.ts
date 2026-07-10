@@ -37,6 +37,17 @@ export function getModelName(): string {
   return process.env.AI_MODEL || "mimo-v2.5";
 }
 
+export function getFlashModel(): string {
+  return process.env.AI_FLASH_MODEL || "deepseek-chat";
+}
+
+export type AiTaskComplexity = "heavy" | "light";
+
+export function getModelForTask(complexity: AiTaskComplexity): string {
+  if (complexity === "light") return getFlashModel();
+  return getModelName();
+}
+
 export async function chat(
   messages: ChatMessage[],
   options: ChatOptions = {},

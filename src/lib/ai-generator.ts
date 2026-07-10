@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { aiGeneration, fileMateri, aiRequests, quotas, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { extractText } from "@/lib/text-extractor";
-import { chat, getModelName } from "@/lib/ai";
+import { chat, getModelName, getModelForTask } from "@/lib/ai";
 import { appendEvent } from "@/lib/event-store";
 import {
   parseMateriSafe,
@@ -141,21 +141,21 @@ export async function runGeneration(
             { role: "system", content: MATERI_SYSTEM },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
-          { temperature: 0.3, maxTokens: 1800 },
+          { model: getModelForTask("heavy"), temperature: 0.3, maxTokens: 1800 },
         ),
         chat(
           [
             { role: "system", content: QUIZ_SYSTEM },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
-          { temperature: 0.5, maxTokens: 2000 },
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: 2000 },
         ),
         chat(
           [
             { role: "system", content: SOAL_SYSTEM },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
-          { temperature: 0.6, maxTokens: 2000 },
+          { model: getModelForTask("heavy"), temperature: 0.6, maxTokens: 2000 },
         ),
       ]),
       AI_TIMEOUT_MS,
