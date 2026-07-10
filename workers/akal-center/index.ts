@@ -121,6 +121,7 @@ export default {
     const upstreamUrl = getOrigin() + url.pathname + url.search;
     const headers = new Headers(request.headers);
     headers.set('X-From-Worker', 'akal-center');
+    headers.set('Host', targetUrl.host);
     headers.set('X-Forwarded-Host', url.host);
     headers.set('X-Forwarded-Proto', url.protocol.slice(0, -1));
 
