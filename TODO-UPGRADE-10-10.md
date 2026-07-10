@@ -318,9 +318,9 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 ### B3. Owner Dashboard v2 — Pantau Biaya & Aktivitas
 
 - **Keputusan bisnis:** "Dashboard sederhana untuk owner pantau: berapa guru aktif, berapa AI request terpakai, biaya AI harian"
-- **Fix:** Expand `GET /api/v1/owner/tri` dengan metrics: total guru, siswa, kursus, AI cost today/month, AI requests today, active teachers 7d
-- **Effort:** 2 jam
-- **Status:** [ ] belum
+- **Fix:** Expand `GET /api/v1/owner/tri` — tambah 7 aggregate metrics (total guru, siswa, kursus, AI tokens today/month, AI requests today, active gurus 7d). Update owner page: 4 stat cards real-time menggantikan 3 placeholder "SEGERA".
+- **Effort:** 1 jam
+- **Status:** [x] selesai
 
 ### B4. Kolom `mata_pelajaran` + `jenjang` + Tabel Taksonomi
 
@@ -870,7 +870,7 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 | 1 | Auth & Guard | 8.5 jam | 6/6 ✅ | Selesai |
 | 2 | Database & RLS | 10 jam | 4/5 ✅ (D1-D4 done) | D5 uji isolation |
 | 3 | Frontend & UX | 10.5 jam | 7/7 ✅ | Selesai |
-| 🔥 | **BISNIS — Persiapan 80 Guru** | **14 jam** | **0/7** | **Semua** |
+| 🔥 | **BISNIS — Persiapan 80 Guru** | **14 jam** | **1/7 [~]** | B1, B2, B4-B7 |
 | 🔥 | **UX-A11Y (Mega Audit)** | **18 jam** | **0/20** | **Semua** |
 | 4 | Design System | 3.5 jam | 0/4 | Semua |
 | 5 | Security | 3.5 jam | 0/5 | Semua |
@@ -880,7 +880,7 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 | 9 | Dokumentasi | 5.5 jam | 0/4 | Semua |
 | 10 | DevOps | 5 jam | 0/5 | Semua |
 | 11 | Upgrade (bonus) | 12 jam | 0/5 | Semua |
-| **TOTAL** | **89 item** | **~115 jam** | **25 selesai** | **64 pending** |
+| **TOTAL** | **89 item** | **~115 jam** | **26 selesai** | **63 pending** |
 
 ---
 

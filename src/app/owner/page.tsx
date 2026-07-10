@@ -68,8 +68,19 @@ function MiniBar({ value }: { value: number }) {
   );
 }
 
+interface OwnerMetrics {
+  totalGuru: number;
+  totalSiswa: number;
+  totalKursus: number;
+  aiTokensToday: number;
+  aiTokensMonth: number;
+  aiRequestsToday: number;
+  activeGurus7d: number;
+}
+
 export default function OwnerIndex() {
   const [triData, setTriData] = useState<TRIResult[] | null>(null);
+  const [metrics, setMetrics] = useState<OwnerMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,7 +90,10 @@ export default function OwnerIndex() {
       .then((r) => r.json())
       .then((d) => {
         if (d.error) setError(d.error);
-        else setTriData(d.data);
+        else {
+          setTriData(d.data);
+          setMetrics(d.metrics ?? null);
+        }
       })
       .catch(() => setError("Gagal mengambil data TRI"))
       .finally(() => setLoading(false));
@@ -101,51 +115,64 @@ export default function OwnerIndex() {
         </p>
       </div>
 
-      {/* placeholder cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <div className="bg-glass border border-border-precision rounded-[24px] p-6 shadow-glass">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <School className="w-5 h-5 text-primary" />
-            </div>
-            <h3 className="font-heading font-semibold text-on-surface">Manajemen Sekolah</h3>
-          </div>
-          <p className="text-sm text-on-surface-variant">
-            Onboarding sekolah, paket langganan, dan konfigurasi subdomain.
-          </p>
-          <span className="inline-flex items-center mt-4 text-[10px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
-            SEGERA
-          </span>
-        </div>
-
+      {/* stat cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-glass border border-border-precision rounded-[24px] p-6 shadow-glass">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Users className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="font-heading font-semibold text-on-surface">Pengguna & Role</h3>
+            <h3 className="font-heading font-semibold text-on-surface text-sm">Guru Aktif</h3>
           </div>
-          <p className="text-sm text-on-surface-variant">
-            Lihat semua pengguna, ubah role, dan audit aktivitas mencurigakan.
+          <p className="font-heading font-bold text-3xl text-on-surface tabular-nums">
+            {metrics ? metrics.totalGuru : "—"}
           </p>
-          <span className="inline-flex items-center mt-4 text-[10px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
-            SEGERA
-          </span>
+          <p className="text-xs text-on-surface-variant mt-1">
+            {metrics ? `${metrics.activeGurus7d} aktif 7 hari terakhir` : "Memuat..."}
+          </p>
         </div>
 
         <div className="bg-glass border border-border-precision rounded-[24px] p-6 shadow-glass">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary" />
+              <School className="w-5 h-5 text-primary" />
             </div>
-            <h3 className="font-heading font-semibold text-on-surface">AI Cost & Quota</h3>
+            <h3 className="font-heading font-semibold text-on-surface text-sm">Siswa & Kursus</h3>
           </div>
-          <p className="text-sm text-on-surface-variant">
-            Pantau penggunaan token per sekolah dan setel rate limit global.
+          <p className="font-heading font-bold text-3xl text-on-surface tabular-nums">
+            {metrics ? metrics.totalSiswa : "—"}
           </p>
-          <span className="inline-flex items-center mt-4 text-[10px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-1 rounded-full">
-            SEGERA
-          </span>
+          <p className="text-xs text-on-surface-variant mt-1">
+            {metrics ? `${metrics.totalKursus} kursus` : "Memuat..."}
+          </p>
+        </div>
+
+        <div className="bg-glass border border-border-precision rounded-[24px] p-6 shadow-glass">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-amber-600" />
+            </div>
+            <h3 className="font-heading font-semibold text-on-surface text-sm">AI Hari Ini</h3>
+          </div>
+          <p className="font-heading font-bold text-3xl text-on-surface tabular-nums">
+            {metrics ? metrics.aiRequestsToday : "—"}
+          </p>
+          <p className="text-xs text-on-surface-variant mt-1">
+            {metrics ? `${(metrics.aiTokensToday / 1000).toFixed(1)}K token` : "Memuat..."}
+          </p>
+        </div>
+
+        <div className="bg-glass border border-border-precision rounded-[24px] p-6 shadow-glass">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+              <Activity className="w-5 h-5 text-emerald-600" />
+            </div>
+            <h3 className="font-heading font-semibold text-on-surface text-sm">AI Bulan Ini</h3>
+          </div>
+          <p className="font-heading font-bold text-3xl text-on-surface tabular-nums">
+            {metrics ? `${(metrics.aiTokensMonth / 1000).toFixed(0)}K` : "—"}
+          </p>
+          <p className="text-xs text-on-surface-variant mt-1">total token</p>
         </div>
       </div>
 

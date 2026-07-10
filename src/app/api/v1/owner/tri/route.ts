@@ -10,6 +10,7 @@ import {
   eventStore,
   fileMateri,
   teacherReadinessSnapshot,
+  aiRequests,
 } from "@/lib/db/schema";
 import { and, eq, sql, gte, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
@@ -21,86 +22,55 @@ export async function GET() {
     return NextResponse.json({ data: null, error: "Hanya owner" }, { status: 403 });
   }
 
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000);
+  const ninetyDaysAgo = new Date(now.getTime() - 90 * 86400000);
+
   const allGurus = await db
     .select({ id: users.id, nama: users.nama, email: users.email })
     .from(users)
     .where(eq(users.role, "GURU"));
 
-  if (allGurus.length === 0) {
-    return NextResponse.json({ data: [] });
-  }
-
   const guruIds = allGurus.map((g) => g.id);
-  const now = new Date();
-  const ninetyDaysAgo = new Date(now.getTime() - 90 * 86400000);
 
-  const [materiCounts, quizCounts, courseCounts, enrollCounts, attemptCounts, eventWeeks, fileCounts] =
-    await Promise.all([
-      db
-        .select({
-          guruId: materiPublished.guruId,
-          cnt: sql<number>`cast(count(*) as integer)`,
-        })
-        .from(materiPublished)
-        .where(inArray(materiPublished.guruId, guruIds))
-        .groupBy(materiPublished.guruId),
-      db
-        .select({
-          guruId: quizPublished.guruId,
-          cnt: sql<number>`cast(count(*) as integer)`,
-        })
-        .from(quizPublished)
-        .where(inArray(quizPublished.guruId, guruIds))
-        .groupBy(quizPublished.guruId),
-      db
-        .select({
-          guruId: kursus.guruId,
-          cnt: sql<number>`cast(count(*) as integer)`,
-        })
-        .from(kursus)
-        .where(inArray(kursus.guruId, guruIds))
-        .groupBy(kursus.guruId),
-      db
-        .select({
-          guruId: kursus.guruId,
-          enrollCnt: sql<number>`cast(count(${siswaKursus.id}) as integer)`,
-        })
-        .from(kursus)
-        .leftJoin(siswaKursus, eq(kursus.id, siswaKursus.kursusId))
-        .where(inArray(kursus.guruId, guruIds))
-        .groupBy(kursus.guruId),
-      db
-        .select({
-          guruId: kursus.guruId,
-          attemptCnt: sql<number>`cast(count(${quizAttempt.id}) as integer)`,
-        })
-        .from(kursus)
-        .leftJoin(quizPublished, eq(kursus.id, quizPublished.kursusId))
-        .leftJoin(quizAttempt, and(eq(quizPublished.id, quizAttempt.quizPublishedId), eq(quizAttempt.status, "SELESAI")))
-        .where(inArray(kursus.guruId, guruIds))
-        .groupBy(kursus.guruId),
-      db
-        .select({
-          guruId: sql<string>`split_part(${eventStore.streamId}, ':', 2)`,
-          weekCount: sql<number>`cast(count(distinct date_trunc('week', ${eventStore.createdAt})) as integer)`,
-        })
-        .from(eventStore)
-        .where(
-          and(
-            sql`${eventStore.streamId} like 'upload:%'`,
-            gte(eventStore.createdAt, ninetyDaysAgo),
-          ),
-        )
-        .groupBy(sql`split_part(${eventStore.streamId}, ':', 2)`),
-      db
-        .select({
-          guruId: fileMateri.guruId,
-          cnt: sql<number>`cast(count(*) as integer)`,
-        })
-        .from(fileMateri)
-        .where(inArray(fileMateri.guruId, guruIds))
-        .groupBy(fileMateri.guruId),
-    ]);
+  const [
+    materiCounts, quizCounts, courseCounts, enrollCounts, attemptCounts, eventWeeks, fileCounts,
+    totalSiswa, totalKursus, aiCostToday, aiCostMonth, aiRequestsToday, activeGurus7d,
+  ] = await Promise.all([
+    db.select({ guruId: materiPublished.guruId, cnt: sql<number>`cast(count(*) as integer)` })
+      .from(materiPublished).where(inArray(materiPublished.guruId, guruIds)).groupBy(materiPublished.guruId),
+    db.select({ guruId: quizPublished.guruId, cnt: sql<number>`cast(count(*) as integer)` })
+      .from(quizPublished).where(inArray(quizPublished.guruId, guruIds)).groupBy(quizPublished.guruId),
+    db.select({ guruId: kursus.guruId, cnt: sql<number>`cast(count(*) as integer)` })
+      .from(kursus).where(inArray(kursus.guruId, guruIds)).groupBy(kursus.guruId),
+    db.select({ guruId: kursus.guruId, enrollCnt: sql<number>`cast(count(${siswaKursus.id}) as integer)` })
+      .from(kursus).leftJoin(siswaKursus, eq(kursus.id, siswaKursus.kursusId))
+      .where(inArray(kursus.guruId, guruIds)).groupBy(kursus.guruId),
+    db.select({ guruId: kursus.guruId, attemptCnt: sql<number>`cast(count(${quizAttempt.id}) as integer)` })
+      .from(kursus).leftJoin(quizPublished, eq(kursus.id, quizPublished.kursusId))
+      .leftJoin(quizAttempt, and(eq(quizPublished.id, quizAttempt.quizPublishedId), eq(quizAttempt.status, "SELESAI")))
+      .where(inArray(kursus.guruId, guruIds)).groupBy(kursus.guruId),
+    db.select({ guruId: sql<string>`split_part(${eventStore.streamId}, ':', 2)`,
+      weekCount: sql<number>`cast(count(distinct date_trunc('week', ${eventStore.createdAt})) as integer)` })
+      .from(eventStore).where(and(sql`${eventStore.streamId} like 'upload:%'`, gte(eventStore.createdAt, ninetyDaysAgo)))
+      .groupBy(sql`split_part(${eventStore.streamId}, ':', 2)`),
+    db.select({ guruId: fileMateri.guruId, cnt: sql<number>`cast(count(*) as integer)` })
+      .from(fileMateri).where(inArray(fileMateri.guruId, guruIds)).groupBy(fileMateri.guruId),
+
+    db.select({ cnt: sql<number>`cast(count(*) as integer)` }).from(users).where(eq(users.role, "SISWA")),
+    db.select({ cnt: sql<number>`cast(count(*) as integer)` }).from(kursus),
+    db.select({ cost: sql<number>`cast(coalesce(sum(${aiRequests.totalTokens}), 0) as integer)` })
+      .from(aiRequests).where(gte(aiRequests.createdAt, todayStart)),
+    db.select({ cost: sql<number>`cast(coalesce(sum(${aiRequests.totalTokens}), 0) as integer)` })
+      .from(aiRequests).where(gte(aiRequests.createdAt, monthStart)),
+    db.select({ cnt: sql<number>`cast(count(*) as integer)` })
+      .from(aiRequests).where(gte(aiRequests.createdAt, todayStart)),
+    db.select({ guruId: eventStore.streamId })
+      .from(eventStore).where(and(sql`${eventStore.streamId} like 'upload:%'`, gte(eventStore.createdAt, sevenDaysAgo)))
+      .groupBy(eventStore.streamId),
+  ]);
 
   const toMap = (arr: { guruId: string | null }[], key: string): Map<string, number> => {
     const m = new Map<string, number>();
@@ -184,5 +154,16 @@ export async function GET() {
     }
   }
 
-  return NextResponse.json({ data: results });
+  return NextResponse.json({
+    metrics: {
+      totalGuru: allGurus.length,
+      totalSiswa: totalSiswa[0]?.cnt ?? 0,
+      totalKursus: totalKursus[0]?.cnt ?? 0,
+      aiTokensToday: aiCostToday[0]?.cost ?? 0,
+      aiTokensMonth: aiCostMonth[0]?.cost ?? 0,
+      aiRequestsToday: aiRequestsToday[0]?.cnt ?? 0,
+      activeGurus7d: activeGurus7d.length,
+    },
+    data: results,
+  });
 }
