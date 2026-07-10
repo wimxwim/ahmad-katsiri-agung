@@ -19,7 +19,7 @@
 | RLS | Tidak ada | ✅ Migration SQL + tenant context unified + integrated ke route-guard-v2 | Apply migration ke DB |
 | Dashboard Layout | 85% duplikasi | ✅ Shared component | -260 baris |
 | Error Handling | quran silent, profil weak | ✅ Fixed both | Proper states |
-| FormMasuk | 635 baris God Component | [ ] Belum | Split to 5 components |
+| FormMasuk | 635 baris God Component | ✅ Split ke 10 file (216 baris orchestrator) | Selesai — 9 komponen di `_components/` |
 | **Design System** | 7/10 | [ ] Belum | [ ] Pending Fase 4+
 
 ---
@@ -245,10 +245,11 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 ### F2. Split `FormMasuk.tsx` (635 baris) — God Component
 
 - **Bukti:** `wc -l src/app/masuk/FormMasuk.tsx` = 635 baris
-- **Fix:** Pecah jadi `FormMasukPicker`, `FormLoginSiswa`, `FormDaftarSiswa`, `FormLoginGuru`, `FormDaftarGuru` (maks 150 baris per komponen)
-- **Effort:** 4 jam
+- **Fix:** Pecah jadi 10 file: `FormMasuk.tsx` (216 baris orchestrator) + `_components/` (9 file): `shared.ts`, `GoogleIcon`, `ErrorAlert`, `PasswordInput`, `FormMasukLeftPanel`, `FormMasukPortalPicker`, `FormLoginSiswa`, `FormDaftarSiswa`, `FormLoginGuru`. Semua komponen < 120 baris. Shared UI atoms (Google icon 4x duplikasi, password input, error alert) diekstrak.
+- **Effort:** 2 jam
+- **Hemat:** -419 baris di main file, +reusability, +maintainability
 - **Referensi:** React — "Keep components small and focused"
-- **Status:** [ ] belum
+- **Status:** [x] selesai
 
 ### F3. Fix `/quran` error handling (silent fail)
 
@@ -868,7 +869,7 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 | 0 | Quick Wins | 1.1 jam | 6/6 ✅ | 0 |
 | 1 | Auth & Guard | 8.5 jam | 6/6 ✅ | Selesai |
 | 2 | Database & RLS | 10 jam | 4/5 ✅ (D1-D4 done) | D5 uji isolation |
-| 3 | Frontend & UX | 10.5 jam | 6/7 ✅ (F5-F7 done) | F2 FormMasuk split |
+| 3 | Frontend & UX | 10.5 jam | 7/7 ✅ | Selesai |
 | 🔥 | **BISNIS — Persiapan 80 Guru** | **14 jam** | **0/7** | **Semua** |
 | 🔥 | **UX-A11Y (Mega Audit)** | **18 jam** | **0/20** | **Semua** |
 | 4 | Design System | 3.5 jam | 0/4 | Semua |
@@ -879,7 +880,7 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 | 9 | Dokumentasi | 5.5 jam | 0/4 | Semua |
 | 10 | DevOps | 5 jam | 0/5 | Semua |
 | 11 | Upgrade (bonus) | 12 jam | 0/5 | Semua |
-| **TOTAL** | **89 item** | **~115 jam** | **24 selesai** | **65 pending** |
+| **TOTAL** | **89 item** | **~115 jam** | **25 selesai** | **64 pending** |
 
 ---
 
