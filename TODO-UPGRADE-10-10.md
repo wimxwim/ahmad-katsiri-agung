@@ -21,7 +21,7 @@
 | Error Handling | quran silent, profil weak | ✅ Fixed both | Proper states |
 | FormMasuk | 635 baris God Component | ✅ Split ke 10 file (216 baris orchestrator) | Selesai |
 | Fase 0-3 | 31 item | ✅ 29/31 | Hampir selesai |
-| Fase BISNIS | 7 item | ✅ 5/7 | B4 taksonomi, B5 QRIS, B6 onboarding |
+| Fase BISNIS | 7 item | ✅ 7/7 | Selesai |
 | Fase 4-13 | 47 item | ⬜ 0/47 | Semua pending |
 | Fase 14 | 9 item | ⚪ Tunda | Nanti |
 
@@ -141,17 +141,17 @@
 ### B4. Kolom `mata_pelajaran` + `jenjang` + Tabel Taksonomi
 - **Fix:** ALTER kursus + 2 tabel baru (18 mapel + 4 jenjang) + pre-populate
 - **Effort:** 1.5 jam
-- **Status:** [ ] belum
+- **Status:** [x] selesai — schema + data sudah ada di DB
 
 ### B5. QRIS Payment Flow
 - **Fix:** Halaman `/pembayaran` + upload bukti + verifikasi manual. QR di `/public/qris-gopay.webp`
 - **Effort:** 3 jam
-- **Status:** [ ] belum
+- **Status:** [x] selesai — page + API submit + owner verify built
 
 ### B6. Onboarding Progress Tracking
 - **Fix:** Tabel `onboarding_progress` (7 step) + empty state CTA
 - **Effort:** 1.5 jam
-- **Status:** [ ] belum
+- **Status:** [x] selesai — API GET/POST + guru dashboard progress bar
 
 ### B7. Rate Limiting AI Hard Cap
 - **Fix:** Rate limit + quota checkQuota() — tiga layer proteksi

@@ -1,7 +1,7 @@
 "use client";
 
 import { StatCard } from "@/components/dashboard/StatCard";
-import { BookOpen, Users, Sparkles, ArrowRight, Upload, FileCheck, Layers, GraduationCap, Clock, AlertCircle, ClipboardList, UserPlus } from "lucide-react";
+import { BookOpen, Users, Sparkles, ArrowRight, Upload, FileCheck, Layers, GraduationCap, Clock, AlertCircle, ClipboardList, UserPlus, CheckCircle2, Circle } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -36,8 +36,17 @@ const QUICK_ACTIONS = [
   { label: "Undang Siswa", href: "/guru/kelas", icon: UserPlus, desc: "Kelola keanggotaan kelas" },
 ];
 
+interface OnboardingData {
+  completedSteps: number;
+  totalSteps: number;
+  isComplete: boolean;
+  steps: { key: string; label: string; done: boolean }[];
+  currentStep: string;
+}
+
 export default function GuruBerandaPage() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [onboarding, setOnboarding] = useState<OnboardingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -45,10 +54,17 @@ export default function GuruBerandaPage() {
     let alive = true;
     async function fetchData() {
       try {
-        const res = await fetch("/api/v1/guru/dashboard", { credentials: "include" });
-        if (!res.ok) throw new Error("Gagal memuat data");
-        const { data: d } = await res.json();
+        const [dashRes, onboardRes] = await Promise.all([
+          fetch("/api/v1/guru/dashboard", { credentials: "include" }),
+          fetch("/api/v1/guru/onboarding", { credentials: "include" }),
+        ]);
+        if (!dashRes.ok) throw new Error("Gagal memuat data");
+        const { data: d } = await dashRes.json();
         if (alive) setData(d || null);
+        if (onboardRes.ok) {
+          const { data: o } = await onboardRes.json();
+          if (alive) setOnboarding(o);
+        }
       } catch (err) {
         if (alive) setError(err instanceof Error ? err.message : "Gagal memuat data");
       } finally {
@@ -104,6 +120,43 @@ export default function GuruBerandaPage() {
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
+
+      {onboarding && !onboarding.isComplete && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 rounded-2xl border border-primary/15 bg-primary/5"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-semibold text-on-surface">
+              🚀 Onboarding — {onboarding.completedSteps}/{onboarding.totalSteps} langkah
+            </p>
+            <span className="text-xs text-on-surface-variant">
+              {onboarding.totalSteps - onboarding.completedSteps} tersisa
+            </span>
+          </div>
+          <div className="h-2 bg-black/5 rounded-full overflow-hidden mb-3">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-700"
+              style={{ width: `${(onboarding.completedSteps / onboarding.totalSteps) * 100}%` }}
+            />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {onboarding.steps.map((s) => (
+              <div key={s.key} className="flex items-center gap-1.5">
+                {s.done ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                ) : (
+                  <Circle className="w-3.5 h-3.5 text-on-surface-variant/30 shrink-0" />
+                )}
+                <span className={`text-[11px] ${s.done ? "text-emerald-700" : "text-on-surface-variant"}`}>
+                  {s.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
