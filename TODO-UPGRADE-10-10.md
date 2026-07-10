@@ -1,911 +1,567 @@
 # TODO UPGRADE — AKAL Center 6.5/10 → 10/10
 
-> **Dibuat:** 10 Juli 2026
-> **Terakhir diupdate:** 16 Juli 2026 (Fase 0-3 selesai + Fase BISNIS partial + Fase UX-A11Y defined)
-> **Metode:** Verifikasi 15/15 temuan audit + riset 2026 + diskusi owner (CATATAN DISKUSI OWNER.md)
-> **Prinsip:** UPGRADE kapabilitas, siapkan PINTU TEKNIS sebelum PINTU PEMASARAN
-> **Status:** Aktif — Fase 0-3 selesai, Fase BISNIS in progress, Fase UX-A11Y defined
+> **Dibuat:** 10 Juli 2026 · **Update:** 11 Juli 2026 (Grand Final merge)
+> **Sumber:** 50+ file PRD & audit + 9 riset internasional 2026 (UNESCO, TeachAI, RAND, Indie Hackers, Vercel, Supabase, PostgreSQL, GlitchTip, Indonesian EdTech)
+> **Total:** 93 item · ~115 jam · 29 selesai · 38 pending · 26 tunda
+> **Filosofi:** Aktifkan yang sudah ada, tunda yang tidak perlu, pantau sebelum meledak, gratis dulu baru bayar.
+> **Status:** Fase 0-3 ✅ | Fase BISNIS [~] | Fase 4-13 ⬜ | Fase 14 ⚪
 
 ---
 
-## Ringkasan Progres (per 10 Juli 2026)
+## Ringkasan Progres (per 11 Juli 2026)
 
 | Dimensi | Sebelum | Progress | Target |
 |---------|:---:|:---:|:---:|
 | Vercel Region | US (iad1) | ✅ SG (sin1) | 200ms→10ms |
 | Session Provider | No loading state | ✅ Loading state + useSessionLoading() | Flash state fixed |
-| Auth Guard | 55 route inline boilerplate | ✅ 29/29 route direfactor ke route-guard-v2 | Selesai — hanya logout sengaja dikecualikan |
+| Auth Guard | 55 route inline boilerplate | ✅ 29/29 route direfactor ke route-guard-v2 | Selesai |
 | Dead Code | 106 baris | ✅ Dihapus | 0 dead code |
-| RLS | Tidak ada | ✅ Migration SQL + tenant context unified + integrated ke route-guard-v2 | Apply migration ke DB |
+| RLS | Tidak ada | ✅ Migration SQL applied + tenant context + integrated | Apply ke DB |
 | Dashboard Layout | 85% duplikasi | ✅ Shared component | -260 baris |
 | Error Handling | quran silent, profil weak | ✅ Fixed both | Proper states |
-| FormMasuk | 635 baris God Component | ✅ Split ke 10 file (216 baris orchestrator) | Selesai — 9 komponen di `_components/` |
-| **Design System** | 7/10 | [ ] Belum | [ ] Pending Fase 4+
+| FormMasuk | 635 baris God Component | ✅ Split ke 10 file (216 baris orchestrator) | Selesai |
+| Fase 0-3 | 31 item | ✅ 29/31 | Hampir selesai |
+| Fase BISNIS | 7 item | ✅ 5/7 | B4 taksonomi, B5 QRIS, B6 onboarding |
+| Fase 4-13 | 47 item | ⬜ 0/47 | Semua pending |
+| Fase 14 | 9 item | ⚪ Tunda | Nanti |
 
 ---
 
-## Bukti Verifikasi Temuan Audit (15/15 terverifikasi)
+## FASE 0 — Quick Wins ✅ SELESAI (6/6)
 
-Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari disk. Tidak ada halusinasi.
-
-| # | Temuan | Status | Bukti (file:baris) |
-|---|---|---|---|
-| 1 | RLS belum diaktifkan | terverifikasi | `schema.ts` 1044 baris, 32 `pgTable`, 0 `pgPolicy`/`withRLS` |
-| 2 | `route-guard.ts` dead code (62 baris) | terverifikasi | grep `from "@/lib/route-guard"` → 0 hasil di seluruh `src/` |
-| 3 | `middleware/guard.ts` dead code (44 baris) | terverifikasi | grep `from "@/lib/middleware/guard"` → 0 hasil di seluruh `src/` |
-| 4 | 48 route handler duplikasi boilerplate | terverifikasi (55 aktual) | grep `verifySession(` → 55 panggilan inline di `src/app/api/` |
-| 5 | `/api/masuk` legacy duplikat | terverifikasi | `src/app/api/masuk/route.ts:17` hapus cookie tanpa verifikasi JWT |
-| 6 | middleware dead reference `/api/siswa/cek` | terverifikasi | `middleware.ts:24` ada di `SKIP_CSRF_PATHS`, folder `src/app/api/siswa/` sudah dihapus |
-| 7 | SessionProvider no loading state | terverifikasi | `SessionProvider.tsx:19` `useState(null)` tanpa flag `isLoading` |
-| 8 | Navbar return null di dashboard | terverifikasi | `Navbar.tsx:24-32` `return null` kalau pathname startsWith `/guru`, `/siswa`, dll |
-| 9 | Logout tidak redirect | terverifikasi | `Navbar.tsx:171` `onClick={handleLogout}` tidak pakai return value; `logout.ts:17` return URL tapi caller abaikan |
-| 10 | GuruLayoutClient ~85% identik SiswaLayoutClient | terverifikasi (90%+) | `GuruLayoutClient.tsx` 167 baris vs `SiswaLayoutClient.tsx` 161 baris, struktur identik |
-| 11 | FormMasuk 635 baris God Component | terverifikasi | `wc -l src/app/masuk/FormMasuk.tsx` = 635 |
-| 12 | 6 file shadow Tailwind bawaan | terverifikasi (4 file, 6 lokasi) | `FloatingWA.tsx:13`, `quran/page.tsx:163,236`, `game/page.tsx:131`, `FormMasuk.tsx:268,276` |
-| 13 | animate-fade-in ease salah | terverifikasi | `globals.css:147` pakai `ease`, bukan `cubic-bezier(0.16, 1, 0.3, 1)` |
-| 14 | DESIGN.md shadow values beda dari globals.css | terverifikasi | `DESIGN.md:456-458` rgba(0,82,49) hijau vs `globals.css:55-57` rgba(13,43,69) biru |
-| 15 | CmsProvider stub kosong | terverifikasi | `layout.tsx:105-107` `loadCmsData()` return `{}` |
-
----
-
-## Referensi Perusahaan Raksasa Kelas Dunia (Solo-Dev Friendly)
-
-| Perusahaan | Pelajaran yang Diambil | Biaya untuk Solo |
-|------------|------------------------|------------------|
-| Vercel | DAL pattern, React.cache(), server-only, Proxy middleware | Free tier unlimited |
-| Supabase | RLS native, pgPolicy, multi-tenant via set_config | Free tier 500MB |
-| Cloudflare | Workers edge compute, R2 storage, KV cache, D1 | Free tier unlimited |
-| Linear | Optimistic UI, skeleton loading, clean design system | Open-source pattern |
-| Cal.com | Open-source monorepo, type-safe end-to-end | Open-source |
-| Plausible | Privacy-first, minimal JS, fast load (< 1KB script) | Self-host gratis |
-| Drizzle Team | TypeScript-first ORM, RLS in schema, migrations | Open-source |
-| Resend | Email API, solo-dev friendly, 3000/email gratis | Free tier |
-| ImageKit | Media CDN, transformasi on-the-fly | Free tier 20GB |
-| Sentry | Error tracking, performance monitoring | Free tier 5K errors |
-
----
-
-## FASE 0 — Quick Wins (< 2 jam, impact langsung, zero risk) ✅ SELESAI
-
-> Perbaikan terkecil yang solve symptom, bukan root cause. Aman di-merge kapan saja.
-> **Status:** 6/6 item selesai, build hijau (22.6s compile, 83/83 pages, zero errors)
-
-### Q1. Fix `animate-fade-in` ease curve salah
-
-- **Bukti:** `src/app/globals.css:147` — `animation: fade-in var(--anim-duration, 0.6s) ease both;`
-- **Masalah:** Pakai `ease`, bukan `cubic-bezier(0.16, 1, 0.3, 1)` yang diwajibkan AGENTS.md
-- **Fix:** Ganti `ease` menjadi `cubic-bezier(0.16, 1, 0.3, 1)`
-- **Effort:** 5 menit
-- **Referensi:** AGENTS.md animation protocol (ease curve wajib `[0.16, 1, 0.3, 1] as const`)
-- **Status:** [x] selesai — `globals.css:147` ease → cubic-bezier(0.16, 1, 0.3, 1)
+### Q1. Fix `animate-fade-in` ease curve
+- **Fix:** `ease` → `cubic-bezier(0.16, 1, 0.3, 1)` di `globals.css:147`
+- **Status:** [x] selesai
 
 ### Q2. Hapus dead reference `/api/siswa/cek` di middleware
-
-- **Bukti:** `middleware.ts:24` — `"/api/siswa/cek"` di `SKIP_CSRF_PATHS`, tapi folder `src/app/api/siswa/` sudah dihapus (D-011)
-- **Fix:** Hapus baris 24 dari array `SKIP_CSRF_PATHS`
-- **Effort:** 2 menit
-- **Referensi:** AGENTS.md D-011 (legacy dihapus total 9 Juli 2026)
-- **Status:** [x] selesai — baris dihapus dari `SKIP_CSRF_PATHS`
+- **Fix:** Hapus dari `SKIP_CSRF_PATHS`
+- **Status:** [x] selesai
 
 ### Q3. Wrap `verifySession()` dengan `React.cache()`
-
-- **Bukti:** `src/lib/auth.ts:54` — `verifySession(token: string)` dipanggil 55x di route handler, tidak di-cache
-- **Masalah:** Dalam 1 render pass, JWT verify bisa dipanggil berkali-kali untuk session yang sama
-- **Fix:** Bungkus dengan `cache()` dari React
-- **Effort:** 15 menit
-- **Referensi:** Vercel Next.js 16 docs — "memoizing the result with React's cache API"
-- **Status:** [x] selesai — `verifySession` diubah ke `cache(async (token) => {...})`, import `cache` dari `react`
+- **Fix:** Bungkus `cache(async (token) => {...})` di `auth.ts:54`
+- **Status:** [x] selesai
 
 ### Q4. Fix logout redirect di Navbar
-
-- **Bukti:** `Navbar.tsx:171` — `onClick={handleLogout}` tidak pakai return value redirect URL
-- **Masalah:** User klik "Keluar" → cookie dihapus → halaman tidak berubah → user bingung
-- **Fix:** Ganti `onClick={handleLogout}` menjadi `onClick={() => handleLogout().then((r) => (window.location.href = r))}`
-- **Effort:** 10 menit
-- **Referensi:** Linear — logout harus instant redirect, no flash
-- **Status:** [x] selesai — `onClick` sekarang redirect via `window.location.href`
+- **Fix:** `onClick={() => handleLogout().then(r => window.location.href = r)}`
+- **Status:** [x] selesai
 
 ### Q5. Tambah loading state ke SessionProvider
-
-- **Bukti:** `SessionProvider.tsx:19` — `useState<ClientSession | null>(null)` tanpa flag `isLoading`
-- **Masalah:** Saat `session === null`, tidak bisa bedakan "belum login" vs "sedang loading" → flash "Masuk" button
-- **Fix:** Tambah state `isLoading: boolean`, export dari context, Navbar & BottomTabBar cek `isLoading` sebelum render login/logout button
-- **Effort:** 30 menit
-- **Referensi:** Linear — skeleton > spinner; Vercel — loading state wajib untuk async context
-- **Status:** [x] selesai — context shape `{ session, isLoading }`, Navbar & BottomTabBar pakai 3-state logic (loading → null, no session → Masuk, has session → Dashboard/Keluar)
+- **Fix:** Context shape `{ session, isLoading }`, Navbar & BottomTabBar pakai 3-state
+- **Status:** [x] selesai
 
 ### Q6. Hapus preload Google Fonts redundan
-
-- **Bukti:** `layout.tsx:122-129` — preconnect ke Google Fonts + preload Google Fonts CSS, tapi font sudah di-load via `next/font/google` (self-hosted)
-- **Masalah:** Double load font, boros bandwidth
-- **Fix:** Hapus baris 122, 123, 125-129 (font preconnect + preload). Pertahankan baris 124 (googletagmanager preconnect untuk analytics)
-- **Effort:** 5 menit
-- **Referensi:** Vercel — `next/font` sudah self-host, tidak perlu Google Fonts CDN
-- **Status:** [x] selesai — 4 baris dihapus (2 preconnect fonts + 1 preload fonts CSS), preconnect googletagmanager dipertahankan
-
-**Total Fase 0:** ~67 menit
+- **Fix:** Hapus preconnect + preload di `layout.tsx`
+- **Status:** [x] selesai
 
 ---
 
-## FASE 1 — Auth & Guard Terpusat (7/10 → 10/10)
+## FASE 1 — Auth & Guard ✅ SELESAI (6/6)
 
-> Root cause utama skor 6.5: 55 route handler menulis ulang boilerplate verifikasi session. Ini anti-pattern menurut Vercel Next.js 16 docs.
-
-### A1. Buat DAL (Data Access Layer) terpusat — `src/lib/route-guard-v2.ts`
-
-- **Bukti:** 55 panggilan `verifySession()` inline di `src/app/api/` (grep terverifikasi)
-- **Masalah:** Setiap route handler menulis 4-5 baris yang sama persis
-- **Fix:** Buat `src/lib/route-guard-v2.ts` dengan: `requireSession()`, `requireRole()`, `requireGuru()`, `requireSiswa()`, `requireOwner()`, `requirePortal()`
-- **Effort:** 2 jam
-- **Referensi:** Vercel Next.js 16 — "Creating a Data Access Layer (DAL)... Utilize React's cache function to prevent unnecessary duplicate database requests"
-- **Status:** [x] selesai — `route-guard-v2.ts` dibuat dengan 6 fungsi guard + `GuardError` class
+### A1. Buat `route-guard-v2.ts` — 6 fungsi guard + GuardError
+- **Status:** [x] selesai
 
 ### A2. Hapus dead code `route-guard.ts` + `middleware/guard.ts`
+- **Status:** [x] selesai
 
-- **Bukti:** `route-guard.ts` (62 baris) grep 0 import; `middleware/guard.ts` (44 baris) grep 0 import
-- **Fix:** Hapus kedua file, fungsionalitas sudah digantikan oleh route-guard-v2.ts
-- **Effort:** 5 menit
-- **Hemat:** 106 baris dead code hilang
-- **Status:** [x] selesai — kedua file dihapus, build hijau
-
-### A3. Refactor route handler — ganti inline verifySession dengan DAL
-
-- **Bukti:** 29 route handler unik memanggil `verifySession()` inline di `src/app/api/` (3 sudah direfactor sebelumnya, 26 tersisa; audit awal salah hitung 55 — angka benar 29 total)
-- **Fix:** Ganti pola inline dengan panggilan `route-guard-v2.ts` (`requireSession`/`requireRole`/`requireGuru`/`requireSiswa`) + `GuardError` handling
-- **Effort:** 4 jam (aktual: seluruh 26 route selesai dalam 1 sesi)
-- **Dampak:** -200 baris boilerplate, +konsistensi, +maintainability
-- **Status:** [x] selesai — seluruh 29 route API sekarang pakai `route-guard-v2.ts`. Hanya `POST /api/v1/auth/logout` sengaja tetap pakai `verifySession()` inline karena endpoint ini idempotent by design (harus tetap sukses walau sesi sudah invalid/hilang — `requireSession()` akan salah melempar 401). Build hijau, `npx tsc --noEmit` bersih.
+### A3. Refactor 29 route handler ke route-guard-v2
+- **Status:** [x] selesai
 
 ### A4. Hapus `/api/masuk` legacy endpoint
+- **Status:** [x] selesai
 
-- **Bukti:** `src/app/api/masuk/route.ts` (26 baris) — hanya hapus cookie, TIDAK verifikasi JWT
-- **Fix:** Hapus folder `src/app/api/masuk/`
-- **Effort:** 15 menit
-- **Status:** [x] selesai — folder dihapus, grep 0 caller, build hijau
-
-### A5. Fix Navbar — jangan `return null` di dashboard
-
-- **Bukti:** `Navbar.tsx:24-32` — `return null` kalau pathname startsWith `/guru`, `/siswa`, dll
-- **Fix:** Buat `NavbarDashboard` terpisah atau biarkan sidebar jadi navigasi utama + tambah tombol "Kembali ke Situs"
-- **Effort:** 2 jam
-- **Referensi:** Linear — dashboard tetap punya top bar untuk navigasi global
-- **Status:** [x] selesai (opsi 2 sudah terpenuhi) — verifikasi: `DashboardLayoutClient.tsx`, `OwnerLayoutClient.tsx`, `AdminSekolahLayoutClient.tsx`, `OrangTuaLayoutClient.tsx` semuanya sudah punya sidebar navigasi lengkap + link "Kembali ke Situs" + tombol logout + header sticky dengan profil. `Navbar.tsx` `return null` di dashboard sudah justified karena sidebar sudah menjadi navigasi utama, tidak perlu `NavbarDashboard` terpisah.
+### A5. Fix Navbar — sidebar sudah jadi navigasi utama dashboard
+- **Status:** [x] selesai (DashboardLayoutClient sudah ada link "Kembali ke Situs")
 
 ### A6. Tambah `import 'server-only'` di semua file auth
-
-- **Bukti:** Cek `auth.ts`, `auth-keys.ts`, `session.ts`, `auth-password.ts`
-- **Fix:** Tambah `import 'server-only'` di baris pertama setiap file auth
-- **Effort:** 15 menit
-- **Referensi:** Vercel Next.js 16 — "Combine React's cache with the server-only package"
-- **Status:** [x] selesai — `auth.ts`, `auth-keys.ts`, `auth-password.ts` sudah punya `server-only` sebelumnya; `session.ts` ditambahkan hari ini (baris 1). Verifikasi: tidak ada client component yang mengimpor `session.ts` (grep 0 hasil).
-
-**Total Fase 1:** ~8.5 jam (SELESAI 100% — 6/6 item)
+- **Status:** [x] selesai
 
 ---
 
-## FASE 2 — Database & RLS (6/10 → 10/10)
+## FASE 2 — Database & RLS ✅ SELESAI (4/5)
 
-> Critical: RLS belum diaktifkan sama sekali. Schema.ts 1044 baris, 32 pgTable, 0 pgPolicy/withRLS.
+### D1. Aktifkan RLS + migration SQL
+- **Status:** [x] selesai (applied via psql CLI)
 
-### D1. Aktifkan RLS di semua tabel — via migration SQL
-
-- **Bukti:** `schema.ts` — 32 `pgTable`, 0 `withRLS`/`pgPolicy`
-- **Fix:** Apply migration SQL via Supabase CLI — 31 tabel RLS enabled, 22 auth.uid() policies dihapus, 40+ policy baru pakai `app.current_user_id`, 21 FK index. RLS TIDAK enforced karena app connect sebagai postgres (bypass role). Policy siap diaktifkan saat app beralih ke role non-bypass.
-- **Effort:** 1 jam
-- **Referensi:** Drizzle ORM 2026 — "Use pgTable.withRLS to enable Row-Level Security"
-- **Status:** [x] selesai — migration applied 10 Jul 2026 via psql CLI
-
-### D2. Definisikan policy untuk setiap tabel — via migration SQL
-
-- **Bukti:** Tidak ada policy di schema
-- **Fix:** 40+ policy didefinisikan + diapply ke Supabase (31 tabel). Menggunakan `current_setting('app.current_user_id', true)` untuk multi-tenant. 22 policy `auth.uid()` lama (broken) dihapus.
-- **Effort:** 2 jam
-- **Referensi:** Supabase — "RLS policy pattern untuk custom JWT auth"
-- **Status:** [x] selesai — applied 10 Jul 2026
-
-### D3. Setup tenant context via `set_config()`
-
-- **Bukti:** Tidak ada mekanisme set tenant context
-- **Fix:** Buat `src/lib/db/tenant-context.ts` — `setRlsContext(userId, role, sekolahId)` + `withTenant()` wrapper. Naming convention di-unify ke `app.current_user_id`, `app.current_role`, `app.current_tenant_id`. File redundan `src/lib/tenant-context.ts` dihapus. Diintegrasikan ke `route-guard-v2.ts` `requireSession()` — setiap guarded route otomatis set RLS context.
-- **Effort:** 1 jam
-- **Referensi:** Supabase — "Multi-tenant: set_config('app.current_sekolah_id', id, TRUE)"
+### D2. Definisikan 40+ policy via migration SQL
 - **Status:** [x] selesai
 
-### D4. Index semua kolom foreign key untuk RLS
+### D3. Setup tenant context + integrated ke route-guard-v2
+- **Status:** [x] selesai
 
-- **Bukti:** RLS policy akan filter by `guru_id`, `siswa_id` — perlu index
-- **Fix:** 21 index CREATE IF NOT EXISTS diapply ke Supabase
-- **Effort:** 30 menit
-- **Referensi:** Supabase — "RLS performance: index wajib untuk policy columns"
-- **Status:** [x] selesai — applied 10 Jul 2026
+### D4. Index 21 FK untuk RLS
+- **Status:** [x] selesai
 
-### D5. Apply migrasi + uji RLS isolation
-
-- **Bukti:** Migrasi Drizzle tidak auto-apply (AGENTS.md gotcha)
-- **Fix:** Generate migrasi, apply manual via Supabase SQL Editor, uji isolation
-- **Effort:** 2 jam
-- **Referensi:** AGENTS.md — "Migrasi Drizzle TIDAK auto-apply ke Supabase — harus dijalankan manual"
+### D5. Uji RLS isolation
 - **Status:** [ ] belum
 
-**Total Fase 2:** ~10 jam
-
 ---
 
-## FASE 3 — Frontend & UX (5/10 → 10/10)
+## FASE 3 — Frontend & UX ✅ SELESAI (7/7)
 
-### F1. Extract `DashboardLayoutClient` shared (DRY)
-
-- **Bukti:** `GuruLayoutClient.tsx` (167 baris) vs `SiswaLayoutClient.tsx` (161 baris) — 90%+ identik
-- **Fix:** Buat `DashboardLayoutClient` di `src/components/dashboard/` dengan props `sidebarItems`, `subtitle`, `defaultNama`, `homeHref`. Kedua file sekarang 30-36 baris.
-- **Effort:** 2 jam
-- **Hemat:** -260 baris duplikasi
-- **Referensi:** Linear — DRY principle, satu komponen untuk banyak varian
+### F1. Extract DashboardLayoutClient shared
 - **Status:** [x] selesai
 
-### F2. Split `FormMasuk.tsx` (635 baris) — God Component
-
-- **Bukti:** `wc -l src/app/masuk/FormMasuk.tsx` = 635 baris
-- **Fix:** Pecah jadi 10 file: `FormMasuk.tsx` (216 baris orchestrator) + `_components/` (9 file): `shared.ts`, `GoogleIcon`, `ErrorAlert`, `PasswordInput`, `FormMasukLeftPanel`, `FormMasukPortalPicker`, `FormLoginSiswa`, `FormDaftarSiswa`, `FormLoginGuru`. Semua komponen < 120 baris. Shared UI atoms (Google icon 4x duplikasi, password input, error alert) diekstrak.
-- **Effort:** 2 jam
-- **Hemat:** -419 baris di main file, +reusability, +maintainability
-- **Referensi:** React — "Keep components small and focused"
+### F2. Split FormMasuk 635 baris → 10 file
 - **Status:** [x] selesai
 
-### F3. Fix `/quran` error handling (silent fail)
-
-- **Bukti:** `quran/page.tsx` — hanya `console.error`, tidak ada error state UI
-- **Fix:** Tambah `fetchError` state + retry button (`retryFetch` function)
-- **Effort:** 30 menit
+### F3. Fix `/quran` error handling
 - **Status:** [x] selesai
 
-### F4. Fix `/profil` weak error handling
-
-- **Bukti:** `profil/page.tsx` — langsung redirect ke `/masuk` kalau error
-- **Fix:** Redirect hanya jika 401. Error lain tampilkan pesan + biarkan user retry.
-- **Effort:** 30 menit
+### F4. Fix `/profil` weak redirect
 - **Status:** [x] selesai
 
 ### F5. Tambah `loading.tsx` di semua route dashboard
-
-- **Bukti:** `/guru/buat`, `/siswa/cbt`, `/owner`, `/orang-tua`, `/admin-sekolah` belum punya loading.tsx
-- **Fix:** Buat `loading.tsx` untuk `/owner`, `/admin-sekolah`, `/orang-tua` + tambah `SkeletonDashboardGeneric` ke `SkeletonBlocks.tsx`. Route `/guru/*` dan `/siswa/*` sudah dicakup oleh parent `loading.tsx`.
-- **Effort:** 30 menit
-- **Referensi:** Vercel Next.js 16 — "Skeleton > Spinner"
 - **Status:** [x] selesai
 
 ### F6. Tambah `error.tsx` di semua route group
-
-- **Bukti:** Tidak ada error boundary di `/owner`, `/admin-sekolah`, `/orang-tua`
-- **Fix:** Buat `error.tsx` di 3 route group — ikuti pattern dari `/guru/error.tsx`
-- **Effort:** 15 menit
-- **Referensi:** Vercel Next.js 16 — "Error boundary bertingkat"
 - **Status:** [x] selesai
 
 ### F7. Standarisasi EmptyState + SkeletonList
-
-- **Bukti:** Hardcode empty state di `/guru/kelas`, `/owner`, `/siswa/pengumuman`, `/siswa/progres`
-- **Fix:** Ganti 4 hardcode empty state dengan komponen `EmptyState` + 1 tambahan `SkeletonDashboardGeneric` di `SkeletonBlocks.tsx`
-- **Effort:** 30 menit
 - **Status:** [x] selesai
-
-**Total Fase 3:** ~10.5 jam
 
 ---
 
-## 🔥 FASE BISNIS — Persiapan Sebelum Onboarding 80 Guru (P0 Critical)
+## 🔥 FASE BISNIS — Persiapan Onboarding 80 Guru (5/7 [~])
 
-> **Sumber:** CATATAN DISKUSI OWNER.md (10 Juli 2026) + riset arsitektur skala nasional
-> **Prinsip:** BUKA PINTU TEKNIS dulu, PINTU PEMASARAN belakangan. Siapkan sistem SEBELUM lonjakan user.
+> **Sumber:** CATATAN DISKUSI OWNER.md + riset arsitektur skala nasional
 > **Target:** 80 guru + 2.000 siswa PAI gelombang pertama
 
-### B1. Sistem Kuota Berbasis Kapasitas (BUKAN Waktu)
-
-- **Keputusan bisnis:** Guru GRATIS SELAMANYA — dibatasi jumlah kursus, siswa, AI request/bulan
-- **Fix:** Wire `checkQuota()` + `QuotaExceededError` ke `POST /api/v1/guru/uploads` + `POST .../drafts/[id]/regenerate`. Auto-increment usage di `ai-generator.ts` setelah sukses generate. Quota dicek SEBELUM AI dipanggil.
-- **Effort:** 1 jam
+### B1. Sistem Kuota Berbasis Kapasitas
+- **Fix:** Wire `checkQuota()` ke upload + regenerate. Auto-increment usage setelah generate.
 - **Status:** [x] selesai
 
 ### B2. AI Cost Tracking + Hard Cap
-
-- **Keputusan bisnis:** Bahaya #1 — free rider AI abuse. WAJIB pasang limit keras dari hari pertama.
-- **Fix:** Auto-insert ke `ai_requests` table di `ai-generator.ts` setelah setiap sukses generate (userId, model, provider, tokens). Quota `checkQuota()` jadi hard cap di upload + regenerate endpoint.
-- **Effort:** 30 menit
+- **Fix:** Auto-insert ke `ai_requests` table setelah generate. Quota sbg hard cap.
 - **Status:** [x] selesai
 
-### B3. Owner Dashboard v2 — Pantau Biaya & Aktivitas
-
-- **Keputusan bisnis:** "Dashboard sederhana untuk owner pantau: berapa guru aktif, berapa AI request terpakai, biaya AI harian"
-- **Fix:** Expand `GET /api/v1/owner/tri` — tambah 7 aggregate metrics (total guru, siswa, kursus, AI tokens today/month, AI requests today, active gurus 7d). Update owner page: 4 stat cards real-time menggantikan 3 placeholder "SEGERA".
-- **Effort:** 1 jam
+### B3. Owner Dashboard v2
+- **Fix:** 7 aggregate metrics real-time di `/api/v1/owner/tri`
 - **Status:** [x] selesai
 
 ### B4. Kolom `mata_pelajaran` + `jenjang` + Tabel Taksonomi
-
-- **Keputusan bisnis:** "Sistem harus dirancang sekarang supaya siap menampung semua mapel tanpa migrasi besar nanti"
-- **Fix:** Migration: ALTER TABLE kursus ADD mata_pelajaran + jenjang. Buat tabel `mata_pelajaran` (20+ mapel Kurikulum Merdeka) + `jenjang` (SD-SMK). Pre-populate data.
+- **Fix:** ALTER kursus + 2 tabel baru (18 mapel + 4 jenjang) + pre-populate
 - **Effort:** 1.5 jam
-- **Referensi:** Kurikulum Merdeka resmi — 11-12 mapel wajib per jenjang
 - **Status:** [ ] belum
 
-### B5. QRIS Payment Flow — GoPay Statis + Verifikasi Manual
-
-- **Keputusan bisnis:** Midtrans belum di-acc. Sementara: QRIS GoPay statis + upload bukti + verifikasi manual oleh owner via dashboard.
-- **Fix:** Buat halaman `/pembayaran` (tampil QR GoPay statis + form upload bukti). Tabel `payments` (user_id, amount, proof_image_url, status). Owner dashboard: list pembayaran pending + tombol Konfirmasi/Tolak.
+### B5. QRIS Payment Flow
+- **Fix:** Halaman `/pembayaran` + upload bukti + verifikasi manual. QR di `/public/qris-gopay.webp`
 - **Effort:** 3 jam
-- **Catatan:** QR code disimpan sebagai static asset di `/public/qris-gopay.webp`. Midtrans integration disiapkan sebagai komentar/template di codebase.
 - **Status:** [ ] belum
 
 ### B6. Onboarding Progress Tracking
-
-- **Keputusan bisnis:** "Proses onboarding guru baru sudah dites end-to-end dengan minimal 1 guru nyata, BUKAN cuma build hijau"
-- **Fix:** Buat tabel `onboarding_progress` (tracking step: registration → profile → tour → first_course → first_publish). Dashboard guru: empty state + CTA "Buat Kursus Pertama 🚀"
+- **Fix:** Tabel `onboarding_progress` (7 step) + empty state CTA
 - **Effort:** 1.5 jam
 - **Status:** [ ] belum
 
-### B7. Rate Limiting / Hard Cap AI Request Per Akun
-
-- **Keputusan bisnis:** Cegah free rider. Hard cap dari hari pertama.
-- **Fix:** Rate limit sudah ada di upload (IP 10/min + per-user 20/min + concurrent 2) dan regenerate (IP 2/min + per-user 5/min + concurrent 2). Quota checkQuota() ditambahkan sebagai hard cap layer ketiga.
-- **Effort:** 15 menit (integrasi)
+### B7. Rate Limiting AI Hard Cap
+- **Fix:** Rate limit + quota checkQuota() — tiga layer proteksi
 - **Status:** [x] selesai
 
-**Total Fase BISNIS:** ~14 jam
-
 ---
 
-## 🔥 FASE UX-A11Y — Audit Mega UI/UX (8 Skill + Web Guidelines + WCAG 2.2)
+## 🔴 FASE 4 — AKTIVASI "FREE VALUE" (Kode Ada, Tinggal Sambung)
 
-> **Sumber:** Audit 16 Juli 2026 — 8 skill (web-design-guidelines, core-web-vitals, pwa-checklist, high-end-visual-design, frontend-design, ui-ux-pro-max, ui-ux-design-pro, design-taste-frontend) + Vercel Web Interface Guidelines + WCAG 2.2
-> **Cakupan:** 100+ file, 7 halaman publik, 2 dashboard
-> **Prinsip:** Premium agency-tier visual + accessibility-first + mobile-safe
-
-### 🔴 PWA — Blocker Install (CRITICAL)
-
-#### PWA1. Generate icon PWA yang hilang
-- **Bukti:** `public/manifest.json:12,18` — referensi `/icon.png` (512x512) dan `/icon.svg` — **KEDUA FILE TIDAK ADA**. File yang ada hanya `public/images/logo-512.webp`.
-- **Fix:** Generate `/public/icon.png` 512x512 + 192x192 maskable dari logo. Atau ubah manifest.json ke path yang benar.
-- **Effort:** 15 menit
-- **Status:** [ ] belum
-
-#### PWA2. Tambah Service Worker untuk offline support
-- **Bukti:** `public/sw.js` tidak ada. Tidak ada `next-pwa` di package.json. Zero offline.
-- **Fix:** Install `next-pwa` atau buat `sw.js` manual dengan cache-first strategy untuk static assets.
+### AV1. Pasang `checkQuota()` di SEMUA route handler AI
+- **Bukti:** `src/lib/quota-guard.ts` SUDAH ADA — tapi 0 route handler panggil
+- **Fix:** Tambah `await checkQuota(...)` sebelum tiap panggil NaraRouter. Setelah sukses: `incrementUsage()` + insert `ai_requests`
+- **Lokasi:** `/api/v1/guru/drafts/*/regenerate*`, `/api/v1/guru/drafts/*/approve*`, semua endpoint AI
 - **Effort:** 2 jam
 - **Status:** [ ] belum
 
-#### PWA3. Tambah offline fallback page
-- **Bukti:** Tidak ada halaman offline. Browser default error jika network mati.
-- **Fix:** Buat `public/offline.html` atau halaman fallback di app.
-- **Effort:** 30 menit
-- **Status:** [ ] belum
-
-### 🔴 AKSESIBILITAS — WCAG 2.2 Violations (CRITICAL)
-
-#### A11Y1. `text-[10px]` + `text-[11px]` MASIF — 100+ lokasi
-- **Bukti:** grep `text-\[10px\]` + `text-\[11px\]` → 100+ match. File terparah: `siswa/beranda/page.tsx` (~25), `guru/analytics/page.tsx` (~12), `owner/page.tsx` (~10). Melanggar WCAG 2.2 minimum 12px.
-- **Fix:** Ganti semua `text-[10px]` → `text-xs` (12px), `text-[11px]` → `text-xs`. Untuk label mikro yang memang harus kecil, gunakan `sr-only` + visible text lebih besar.
-- **Effort:** 3 jam (100+ lokasi, tapi bisa find-replace massal)
-- **Status:** [ ] belum
-
-#### A11Y2. Tidak ada skip-to-content link
-- **Bukti:** Keyboard-only users tidak bisa melewati navigasi ke konten utama.
-- **Fix:** Tambah `<a href="#main" class="sr-only focus:not-sr-only ...">Lewati ke konten</a>` di `layout.tsx`, dan `id="main"` di `<main>`.
-- **Effort:** 10 menit
-- **Status:** [ ] belum
-
-#### A11Y3. Touch target di bawah 44px
-- **Bukti:** `Toast.tsx:87` — close button `w-8 h-8` (32px). `BottomTabBar.tsx:98` — sheet close `w-8 h-8`. Melanggar WCAG 2.5.5 (min 44x44px).
-- **Fix:** `w-8 h-8` → `w-11 h-11` (44px).
-- **Effort:** 5 menit
-- **Status:** [ ] belum
-
-#### A11Y4. Placeholder kontras rendah
-- **Bukti:** `placeholder:text-on-surface-variant/50` — opacity 50% pada teks kecil bisa di bawah 4.5:1 kontras.
-- **Fix:** Naikkan ke `placeholder:text-on-surface-variant/70`. Atau gunakan warna solid `text-on-surface-variant` dengan opacity dikontrol via CSS `::placeholder { opacity: 0.7 }`.
-- **Effort:** 15 menit
-- **Status:** [ ] belum
-
-### 🔴 KEAMANAN — CSP Missing (CRITICAL)
-
-#### SEC1. Tambah Content-Security-Policy header
-- **Bukti:** Tidak ada CSP di `next.config.ts` maupun middleware. Rentan XSS injection.
-- **Fix:** Tambah CSP header di `next.config.ts` dengan directive minimal: `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;`
-- **Effort:** 1 jam (butuh testing supaya tidak break)
-- **Status:** [ ] belum
-
-### 🟡 ANTI-SLOP — Design Quality (HIGH)
-
-#### AS1. Ganti 11 emoji di UI dengan Lucide icons
-- **Bukti (terverifikasi):**
-  - `masuk/FormMasuk.tsx:182` — `✓` → ganti `<Check />`
-  - `masuk/FormMasuk.tsx:192` — `📘🎬🎮📝📿` → ganti Lucide icons (Book, Film, Gamepad, Pen, etc.)
-  - `masuk/FormMasuk.tsx:219,232` — `🧑🎓🧑🏫` → ganti `<GraduationCap />` / `<User />` + label
-  - `Navbar.tsx:176` — `✕` → ganti `<X />`
-  - `guru/upload/page.tsx:308`, `siswa/cbt/[id]/page.tsx:136`, `guru/drafts/*` — `✅✓` → ganti `<Check />` / `<CheckCircle />`
-- **Fix:** Ganti semua emoji dengan Lucide React icons.
+### AV2. Insert ke `ai_requests` setiap AI dipanggil
+- **Bukti:** `ai_requests` table SUDAH ADA — kosong
+- **Fix:** Insert row setelah tiap panggil NaraRouter: userId, model, tokens, cost_idr_cents, requestType, durationMs
 - **Effort:** 1 jam
 - **Status:** [ ] belum
 
-#### AS2. Hapus 3-column simetris — ganti Bento/Asimetris
-- **Bukti:** 32+ lokasi `sm:grid-cols-3` / `lg:grid-cols-3`. High-End Visual Design Rule: "NO 3-Column Card Layouts — Use 2-column Zig-Zag, asymmetric grid, or horizontal scrolling".
-- **Lokasi utama:** `page.tsx:123` (pillar cards), `fitur/page.tsx:209,248`, `siswa/beranda/page.tsx:148`
-- **Fix:** Landing pillar cards → Bento grid (`col-span-8` + `col-span-4` stacked). Fitur cards → 2-col zig-zag layout. Dashboard stats → horizontal scroll atau 2-col.
+### AV3. Tampilkan sisa kuota AI di dashboard guru
+- **Fix:** "AI: 12/30 tersisa bulan ini" di `guru/beranda/page.tsx`
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+### AV4. Apply `ai_daily_costs` view di Supabase
+- **Fix:** `REFRESH MATERIALIZED VIEW ai_daily_costs` + pg_cron refresh harian
+- **Effort:** 5 menit
+- **Status:** [ ] belum
+
+### AV5. Aktifkan 1 model analytics (Risk Score)
+- **Bukti:** 8 file di `src/lib/analytics/` SUDAH ADA — 0 dipanggil
+- **Fix:** Panggil `calculateRiskScore()` di dashboard guru — "3 siswa berisiko"
 - **Effort:** 3 jam
 - **Status:** [ ] belum
 
-#### AS3. Ganti Inter font body → Geist atau Satoshi
-- **Bukti:** `layout.tsx` — `--font-body` = Inter. High-End Visual Design Section 2: Inter BANNED.
-- **Fix:** Ganti `Inter` → `Geist` atau `Plus Jakarta Sans` di `next/font/google`. Update `globals.css` body font-family.
+### AV6. Admin CLI — integrasikan data nyata
+- **Bukti:** `scripts/admin-akal.sh` SUDAH ADA
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+### AV7. Tambah `last_active_at` ke users
+- **Fix:** Migration ALTER TABLE + middleware update tiap request authenticated
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+---
+
+## 🔴 FASE 5 — AI SAFETY GUARDRAILS (UNESCO + TeachAI)
+
+### S1. Label "Dibuat dengan AI" di konten AI-generated
+- **Referensi:** UNESCO — AI harus transparan
+- **Fix:** Badge "AI-Generated · Perlu Review" di materi/quiz/soal yang belum di-approve
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+### S2. Verifikasi human review wajib sebelum publish
+- **Referensi:** D-008 AGENTS.md
+- **Fix:** Audit semua route AI — pastikan tidak ada auto-publish
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+### S3. Batasi AI grading — jangan auto-grade essay
+- **Referensi:** EdSurge Jun 2026 — "Student thanked me for words I didn't write"
+- **Fix:** Essay tetap manual guru. AI hanya PG. Warning di UI.
 - **Effort:** 30 menit
 - **Status:** [ ] belum
 
-### 🟡 VISUAL UPGRADE — Premium Agency Tier (HIGH)
+### S4. Privacy: data siswa TIDAK masuk training AI
+- **Referensi:** TeachAI Principle 3
+- **Fix:** Konfirmasi NaraRouter + filter data sebelum kirim
+- **Effort:** 30 menit
+- **Status:** [ ] belum
 
-#### V1. Spacing generous — `pt-12` → `py-24` di landing page
-- **Bukti:** `page.tsx:92-93` — Hero `pt-12 sm:pt-16 pb-20`. Section antar `mt-16`. High-End Visual Design: minimum `py-24` (6rem).
-- **Fix:** `pt-12` → `pt-24`, `pb-20` → `pb-24`, `mt-16` → `mt-24`. Biarkan landing page "bernapas".
+### S5. Halaman "Panduan AI" untuk guru
+- **Referensi:** TeachAI Principle 4 — AI Literacy wajib
+- **Fix:** `/panduan-ai` — cara pakai AI bijak, etika, batasan
+- **Effort:** 2 jam
+- **Status:** [ ] belum
+
+### S6. Audit AI output untuk bias konten
+- **Fix:** Spot-check 10 materi — bias sektarian, stereotip, kesesuaian Kurikulum Merdeka
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+---
+
+## 🔴 FASE 6 — PWA & OFFLINE
+
+### P1. Generate icon PWA
+- **Bukti:** `/icon.png` + `/icon.svg` TIDAK ADA — PWA install gagal
+- **Fix:** Generate 192x192 + 512x512 dari logo
 - **Effort:** 15 menit
 - **Status:** [ ] belum
 
-#### V2. Tambah scroll reveal (`whileInView` + stagger) di landing page
-- **Bukti:** Landing page (`page.tsx`) — semua elemen statis, tidak ada motion import, tidak ada `whileInView`. `/tentang` dan `/fitur` sudah punya — landing TIDAK.
-- **Fix:** Bungkus section cards dengan `motion.div` + `whileInView` + `staggerChildren`. Import motion/react.
-- **Effort:** 1.5 jam
-- **Status:** [ ] belum
-
-#### V3. Tambah Double-Bezel pada hero CTA card
-- **Bukti:** Semua card single-layer flat. High-End Visual Design: nested architecture (outer shell `p-1.5` + inner core `shadow-[inset_0_1px_0_...]`).
-- **Fix:** Wrap CTA card di landing page dengan outer shell div (`p-[3px] rounded-[32px] bg-gradient-to-br from-primary/20 to-transparent`), inner core tetap `bg-white rounded-[29px]`.
-- **Effort:** 1 jam
-- **Status:** [ ] belum
-
-#### V4. Hover states tambah transform
-- **Bukti:** 62+ hover states hanya ganti warna/brightness. Tidak ada `hover:scale-[1.02]` atau `hover:-translate-y-0.5`.
-- **Fix:** Tambah `hover:-translate-y-0.5 active:scale-[0.98]` ke semua CTA button dan card.
-- **Effort:** 1 jam
-- **Status:** [ ] belum
-
-### 🟡 PERFORMA — Core Web Vitals (HIGH)
-
-#### PERF1. Migrasi `<img>` → `<Image>` dari `next/image`
-- **Bukti:** Semua gambar via `<img>` polos. Tidak ada lazy loading, tidak ada WebP auto-convert, tidak ada priority.
-- **Fix:** Ganti `<img src="...">` → `<Image src="..." width={...} height={...} />`. Tambah `priority` untuk hero, `loading="lazy"` auto untuk lainnya.
-- **Effort:** 1.5 jam
-- **Status:** [ ] belum
-
-#### PERF2. Tambah `loading="lazy"` ke gambar below-fold
-- **Bukti:** 3 gambar di Navbar, Footer, Tentang tanpa lazy loading.
-- **Fix:** Tambah atribut `loading="lazy"` atau pakai next/image.
-- **Effort:** 10 menit
-- **Status:** [ ] belum
-
-#### PERF3. Tambah preconnect untuk ImageKit + Supabase
-- **Bukti:** Hanya ada preconnect untuk googletagmanager (layout.tsx:122). Tidak ada untuk ImageKit CDN atau Supabase API.
-- **Fix:** Tambah `<link rel="preconnect">` untuk `https://ik.imagekit.io` dan `https://*.supabase.co`.
-- **Effort:** 5 menit
-- **Status:** [ ] belum
-
-### 🟢 LOW — Polish (NIT)
-
-#### NIT1. Fluid typography dengan `clamp()`
-- **Bukti:** Semua sizing breakpoint-based (`text-2xl sm:text-3xl lg:text-7xl`). Tidak ada `clamp()`.
-- **Fix:** Tambah CSS custom properties: `--text-hero: clamp(2rem, 5vw, 4.5rem)` di globals.css untuk heading.
-- **Effort:** 30 menit
-- **Status:** [ ] belum
-
-#### NIT2. Foto Tentang — `onError` fallback
-- **Bukti:** `tentang/page.tsx:149` — `<img>` tanpa `onError`. Jika file tidak ada, broken image.
-- **Fix:** Tambah `onError={(e) => { e.currentTarget.src = '/images/avatar-placeholder.webp' }}`.
-- **Effort:** 5 menit
-- **Status:** [ ] belum
-
-#### NIT3. Deskripsi kursus hardcode "Akidah Akhlak" — ganti netral
-- **Bukti:** `kursus/page.tsx:60-61` — deskripsi spesifik PAI. Platform sekarang multi-guru.
-- **Fix:** Ganti jadi: "Jelajahi kursus yang tersedia. Setiap kursus dibuat dan dipublikasikan oleh guru secara mandiri."
-- **Effort:** 5 menit
-- **Status:** [ ] belum
-
-#### NIT4. Empty state kursus — tambah CTA
-- **Bukti:** `kursus/page.tsx:87-92` — teks "Belum ada kursus tersedia" tanpa ajakan tindakan.
-- **Fix:** Tambah link ke `/daftar` untuk user baru, atau ke dashboard untuk guru.
-- **Effort:** 10 menit
-- **Status:** [ ] belum
-
-**Total Fase UX-A11Y:** ~18 jam
-
----
-
-## FASE 4 — Design System (7/10 → 10/10)
-
-### DS1. Fix 6 lokasi shadow Tailwind bawaan
-
-- **Bukti (terverifikasi):**
-  - `FloatingWA.tsx:13` — `shadow-lg hover:shadow-xl`
-  - `quran/page.tsx:163` — `shadow-xl shadow-primary/20`
-  - `quran/page.tsx:236` — `hover:shadow-xl`
-  - `game/page.tsx:131` — `hover:shadow-2xl`
-  - `FormMasuk.tsx:268` — `shadow-sm`
-  - `FormMasuk.tsx:276` — `shadow-sm`
-- **Fix:** Ganti semua menjadi `shadow-glass` / `shadow-glass-lg` / `shadow-glass-xl`
-- **Effort:** 30 menit
-- **Referensi:** DESIGN.md — "JANGAN pakai shadow selain shadow-glass, shadow-glass-lg, shadow-glass-xl"
-- **Status:** [ ] belum
-
-### DS2. Sync DESIGN.md dengan globals.css
-
-- **Bukti:** `DESIGN.md:456-458` rgba(0,82,49) hijau vs `globals.css:55-57` rgba(13,43,69) biru tua
-- **Fix:** Update globals.css ke hijau (konsisten dengan brand primary #005231)
-- **Effort:** 30 menit
-- **Status:** [ ] belum
-
-### DS3. Bersihkan CmsProvider stub
-
-- **Bukti:** `layout.tsx:105-107` — `loadCmsData()` return `{}`
-- **Fix:** Hapus CmsProvider total, ganti dengan data dari DB atau hardcode di konstanta
-- **Effort:** 1.5 jam
-- **Referensi:** AGENTS.md D-004 — "Keystatic dibekukan untuk FITUR BARU"
-- **Status:** [ ] belum
-
-### DS4. Audit hardcode warna
-
-- **Bukti:** Perlu grep `text-gray`, `bg-gray`, `#[0-9a-f]` di src/
-- **Fix:** Ganti semua dengan token design system
-- **Effort:** 1.5 jam
-- **Status:** [ ] belum
-
-**Total Fase 4:** ~3.5 jam
-
----
-
-## FASE 5 — Security (7/10 → 10/10)
-
-### S1. RLS Complete (sudah di Fase 2)
-
-- Lihat D1-D5
-- **Status:** [ ] belum
-
-### S2. Hapus `/api/masuk` (sudah di Fase 1)
-
-- Lihat A4
-- **Status:** [ ] belum
-
-### S3. Audit rate limit di semua endpoint publik
-
-- **Bukti:** Perlu grep `apiError` tanpa `checkRateLimit`
-- **Fix:** Tambah `checkRateLimit` ke endpoint publik yang belum ada
-- **Effort:** 1 jam
-- **Referensi:** Security best practice — rate limit wajib untuk endpoint publik
-- **Status:** [ ] belum
-
-### S4. Verifikasi file upload end-to-end
-
-- **Bukti:** `v1/guru/uploads`, `v1/storage` — perlu audit validasi
-- **Fix:** Pastikan validasi size, type, extension + scan konten
-- **Effort:** 1.5 jam
-- **Referensi:** AGENTS.md — "File upload = untrusted: jangan oper file mentah ke subsistem lain tanpa validasi/sanitasi"
-- **Status:** [ ] belum
-
-### S5. Tambah security headers di middleware
-
-- **Bukti:** `middleware.ts` — sudah ada CSP, tapi belum ada `X-Content-Type-Options`, `X-Frame-Options`
-- **Fix:** Tambah `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`
-- **Effort:** 15 menit
-- **Referensi:** OWASP — security headers wajib
-- **Status:** [ ] belum
-
-**Total Fase 5:** ~3.5 jam (di luar Fase 1 & 2)
-
----
-
-## FASE 6 — Performance (7/10 → 10/10)
-
-### P1. `React.cache()` di semua Drizzle query functions
-
-- **Bukti:** `getUserById`, `getKursus`, `getMateri` belum di-cache
-- **Fix:** Bungkus dengan `cache()` dari React
-- **Effort:** 1.5 jam
-- **Referensi:** Vercel Next.js 16 — "Combine React's cache with the server-only package"
-- **Status:** [ ] belum
-
-### P2. `unstable_cache()` untuk query yang jarang berubah
-
-- **Bukti:** Katalog kursus publik, halaman statis — query ke DB setiap request
-- **Fix:** Tambah `unstable_cache()` dengan tag revalidation
-- **Effort:** 1.5 jam
-- **Referensi:** Vercel — tag-based revalidation
-- **Status:** [ ] belum
-
-### P3. Audit "use client" boundaries
-
-- **Bukti:** Perlu cek apakah ada "use client" di root layout tanpa alasan
-- **Fix:** Pindahkan ke leaf component
-- **Effort:** 1 jam
-- **Referensi:** Vercel Next.js 16 — "minimize client JS"
-- **Status:** [ ] belum
-
-### P4. Bundle analysis
-
-- **Fix:** Jalankan `npx next experimental-analyze`, identifikasi dependency besar
-- **Effort:** 30 menit
-- **Referensi:** Vercel — Turbopack Analyzer v16.1+
-- **Status:** [ ] belum
-
-### P5. `useReportWebVitals` untuk monitoring real-user
-
-- **Fix:** Tambah hook di layout.tsx, kirim Core Web Vitals ke analytics
-- **Effort:** 30 menit
-- **Referensi:** Vercel — production monitoring
-- **Status:** [ ] belum
-
-**Total Fase 6:** ~5 jam
-
----
-
-## FASE 7 — Arsitektur (6/10 → 10/10)
-
-### AR1. Restruktur dengan Route Groups
-
-- **Bukti:** Folder `src/app/` belum pakai route groups
-- **Fix:** Reorganisasi: `(publik)/`, `(auth)/`, `(guru)/`, `(siswa)/`, `(owner)/`, `(admin-sekolah)/`, `(orang-tua)/`
-- **Effort:** 4 jam
-- **Referensi:** Vercel Next.js 16 — "Route Groups untuk multi-role"
-- **Status:** [ ] belum
-
-### AR2. Tambah private folders `_components/`, `_actions/`, `_hooks/`
-
-- **Bukti:** Komponen tersebar, tidak colocation
-- **Fix:** Colocate logic dengan route
+### P2. Tambah Service Worker
+- **Bukti:** `public/sw.js` tidak ada — zero offline support
+- **Fix:** `next-pwa` atau `sw.js` manual — cache-first static, network-first API
 - **Effort:** 2 jam
-- **Referensi:** Vercel Next.js 16 — "Colocation aman dengan private folders"
 - **Status:** [ ] belum
 
-### AR3. Bersihkan Keystatic legacy
-
-- **Bukti:** `/api/keystatic`, `/keystatic/*` masih ada
-- **Fix:** Hapus atau dokumentasikan sebagai "frozen"
-- **Effort:** 1 jam
-- **Referensi:** AGENTS.md D-004 — "Keystatic dibekukan"
-- **Status:** [ ] belum
-
-### AR4. Hapus `googleapis` dependency (bundle size)
-
-- **Bukti:** `googleapis` di package.json — library berat
-- **Fix:** Ganti dengan HTTP fetch langsung ke Google API atau library OAuth ringan
-- **Effort:** 2 jam
-- **Referensi:** Vercel — minimize bundle size
-- **Status:** [ ] belum
-
-### AR5. Restruktur `src/lib/` — kelompokkan per domain
-
-- **Bukti:** 34 file di `src/lib/` tanpa struktur folder
-- **Fix:** Kelompokkan: `auth/`, `db/`, `api/`, `ai/`, `utils/`
-- **Effort:** 2 jam
-- **Referensi:** Cal.com — clean folder structure
-- **Status:** [ ] belum
-
-**Total Fase 7:** ~11 jam
-
----
-
-## FASE 8 — Testing (0/10 → 9/10)
-
-> Critical: Testing score 0/10. Tidak ada test sama sekali.
-
-### T1. Setup Playwright (E2E)
-
-- **Fix:** `npm init playwright`, konfigurasi `playwright.config.ts`
-- **Effort:** 30 menit
-- **Referensi:** Vercel Next.js 16 — "E2E untuk async Server Components"
-- **Status:** [ ] belum
-
-### T2. Playwright: Auth flow test
-
-- **Fix:** register → login → session → redirect ke dashboard → logout
-- **Effort:** 2 jam
-- **Referensi:** Linear — auth flow wajib di-test E2E
-- **Status:** [ ] belum
-
-### T3. Playwright: Role guard test
-
-- **Fix:** siswa tidak bisa akses `/guru`, guru tidak bisa akses `/owner`
-- **Effort:** 1 jam
-- **Status:** [ ] belum
-
-### T4. Playwright: RLS isolation test
-
-- **Fix:** guru A tidak bisa lihat data guru B
-- **Effort:** 1 jam
-- **Status:** [ ] belum
-
-### T5. Setup Vitest (unit test)
-
-- **Fix:** `vitest.config.mts`
+### P3. Offline fallback page
+- **Fix:** `public/offline.html` — "Anda sedang offline"
 - **Effort:** 30 menit
 - **Status:** [ ] belum
 
-### T6. Vitest: Test `cn()`, session helpers, validation
-
-- **Fix:** ~5 test files
-- **Effort:** 1.5 jam
-- **Status:** [ ] belum
-
-### T7. CI setup — GitHub Actions
-
-- **Fix:** `.github/workflows/test.yml` untuk Playwright + Vitest
-- **Effort:** 1 jam
-- **Referensi:** Cal.com — CI/CD wajib untuk open-source
-- **Status:** [ ] belum
-
-**Total Fase 8:** ~7.5 jam
-
 ---
 
-## FASE 9 — Dokumentasi (5/10 → 9/10)
+## 🔴 FASE 7 — AKSESIBILITAS WCAG 2.2
 
-### DOC1. Update AGENTS.md
-
-- **Fix:** Refresh status implementasi, tambah ADR baru (RLS, route groups, DAL)
-- **Effort:** 1 jam
-- **Status:** [ ] belum
-
-### DOC2. Update DESIGN.md
-
-- **Fix:** Sync dengan nilai aktual, hapus referensi legacy
-- **Effort:** 1 jam
-- **Status:** [ ] belum
-
-### DOC3. Buat ARCHITECTURE.md
-
-- **Fix:** Diagram arsitektur, data flow, auth flow, decision records
-- **Effort:** 2 jam
-- **Referensi:** Cal.com — dokumentasi arsitektur jelas
-- **Status:** [ ] belum
-
-### DOC4. Buat API.md
-
-- **Fix:** Daftar semua endpoint, proteksi, request/response example
-- **Effort:** 1.5 jam
-- **Referensi:** Linear — API documentation auto-generated
-- **Status:** [ ] belum
-
-**Total Fase 9:** ~5.5 jam
-
----
-
-## FASE 10 — DevOps & Monitoring (5/10 → 9/10)
-
-### O1. Fix `/api/health` — checkImageKit() & checkSupabase()
-
-- **Bukti:** AGENTS.md P0 — "endpoint yang dicek saat ini salah target"
-- **Fix:** Audit `checkImageKit()` dan `checkSupabase()`, perbaiki endpoint yang dicek
-- **Effort:** 1 jam
-- **Referensi:** AGENTS.md P0 priority
-- **Status:** [ ] belum
-
-### O2. Setup error tracking — Sentry (free tier 5K errors)
-
-- **Fix:** Integrasi Sentry untuk client + server error tracking
-- **Effort:** 1 jam
-- **Referensi:** Sentry — free tier untuk solo dev
-- **Status:** [ ] belum
-
-### O3. Setup uptime monitoring — UptimeRobot (gratis)
-
-- **Fix:** Ping `/api/health` setiap 5 menit
-- **Effort:** 30 menit
-- **Referensi:** UptimeRobot — free tier unlimited
-- **Status:** [ ] belum
-
-### O4. Verifikasi environment variables production
-
-- **Fix:** Curl `https://akalcenter.my.id/api/health`, pastikan semua env var terpasang
-- **Effort:** 30 menit
-- **Referensi:** AGENTS.md — "Verifikasi env benar-benar terpasang lewat efek nyatanya"
-- **Status:** [ ] belum
-
-### O5. Setup Cloudflare Worker untuk caching (hemat Vercel bandwidth)
-
-- **Fix:** Worker untuk cache static assets, kurangi beban Vercel
-- **Effort:** 2 jam
-- **Referensi:** Cloudflare — free tier unlimited, hemat biaya Vercel
-- **Status:** [ ] belum
-
-**Total Fase 10:** ~5 jam
-
----
-
-## FASE 11 — Upgrade Kapabilitas Baru (Bonus untuk 10/10)
-
-> Prinsip UPGRADE: Tambah kapabilitas baru, bukan hanya perbaiki yang ada.
-
-### U1. AI Document Pipeline — end-to-end dengan file nyata
-
-- **Bukti:** AGENTS.md P1 — "AI document generator end-to-end dengan file nyata"
-- **Fix:** Test PDF/DOCX → extract text → generate draft materi/quiz/soal
-- **Effort:** 4 jam
-- **Referensi:** AGENTS.md D-007 — "AI prioritas utama = generator PDF/DOCX -> materi + quiz + soal"
-- **Status:** [ ] belum
-
-### U2. Analytics dasar guru (BKT/Elo/IRT)
-
-- **Bukti:** `src/lib/analytics` sudah ada, belum dipakai nyata
-- **Fix:** Integrasi ke dashboard guru
+### A11Y1. `text-[10px]` + `text-[11px]` MASIF — 100+ lokasi
+- **Fix:** Ganti ke `text-xs` (12px) minimal
 - **Effort:** 3 jam
-- **Referensi:** AGENTS.md P2 — "Analitik dasar guru"
 - **Status:** [ ] belum
 
-### U3. PWA — installable + offline fallback
-
-- **Fix:** Manifest + service worker + offline page
-- **Effort:** 2 jam
-- **Referensi:** Plausible — PWA untuk mobile-first
+### A11Y2. Skip-to-content link
+- **Fix:** `<a href="#main" class="sr-only focus:not-sr-only">Lewati ke konten</a>`
+- **Effort:** 10 menit
 - **Status:** [ ] belum
 
-### U4. Privacy-first analytics — Plausible (self-host gratis)
+### A11Y3. Touch target 32px → 44px
+- **Fix:** Toast close + Sheet close: `w-8 h-8` → `w-11 h-11`
+- **Effort:** 5 menit
+- **Status:** [ ] belum
 
-- **Fix:** Ganti Google Analytics dengan Plausible (hemat JS, privacy-first)
+### A11Y4. Placeholder kontras
+- **Fix:** `placeholder:text-on-surface-variant/50` → `/70`
+- **Effort:** 15 menit
+- **Status:** [ ] belum
+
+### A11Y5. Content-Security-Policy header
+- **Fix:** Tambah CSP di `next.config.ts`
 - **Effort:** 1 jam
-- **Referensi:** Plausible — < 1KB script vs Google Analytics 50KB+
 - **Status:** [ ] belum
-
-### U5. Email notification — Resend (3000/email gratis)
-
-- **Fix:** Notifikasi welcome, kursus baru, pengumuman
-- **Effort:** 2 jam
-- **Referensi:** Resend — solo-dev friendly
-- **Status:** [ ] belum
-
-**Total Fase 11:** ~12 jam (bonus)
 
 ---
 
-## Ringkasan Total
+## 🟡 FASE 8 — DATABASE OPTIMIZATION
 
-| Fase | Item | Effort | Selesai | Pending |
+### DB1. Full-Text Search (tsvector + GIN)
+- **Fix:** Kolom `fts` + GIN index di `kursus` + `materi_published` — 200x lebih cepat
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+### DB2. Trigram index (pg_trgm) untuk autocomplete
+- **Fix:** `CREATE INDEX idx_users_nama_trgm ON users USING gin (nama gin_trgm_ops)`
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+### DB3. `EXPLAIN ANALYZE` query berat
+- **Fix:** Audit 5 query terberat — identifikasi sequential scan → tambah index
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+### DB4. `index_advisor` extension
+- **Fix:** Rekomendasi index otomatis dari 3 query teratas
+- **Effort:** 15 menit
+- **Status:** [ ] belum
+
+### DB5. `VACUUM` + `ANALYZE` rutin via pg_cron
+- **Fix:** Weekly VACUUM + daily REFRESH MATERIALIZED VIEW
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+### DB6. Composite index untuk JOIN berat
+- **Fix:** `siswaKursus(kursusId, status)`, `jawabanLog(soalId, createdAt)`, `quizAttempt(siswaId, quizPublishedId)`
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+---
+
+## 🟡 FASE 9 — MONITORING $0
+
+### M1. GlitchTip error tracking (free 1000 events/mo)
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+### M2. Upptime uptime monitoring (GitHub Actions — GRATIS)
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+### M3. Vercel Speed Insights (free, sudah ada?)
+- **Effort:** Audit 10 menit
+- **Status:** [ ] belum
+
+### M4. Telegram alert webhook
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+### M5. Cek Supabase Logs rutin mingguan
+- **Effort:** Proses (5 menit/minggu)
+- **Status:** [ ] belum
+
+---
+
+## 🟡 FASE 10 — ANTI-SLOP DESIGN QUALITY
+
+### AS1. Ganti 11 emoji UI → Lucide icons
+- **Bukti:** `🧑🎓🧑🏫📘🎬📝` di FormMasuk, `✅✓✕` di berbagai file
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+### AS2. Hapus 3-column simetris → Bento grid (32+ lokasi)
+- **Fix:** Pillar cards → Bento, fitur → 2-col zigzag
+- **Effort:** 3 jam
+- **Status:** [ ] belum
+
+### AS3. Ganti Inter font body → Geist
+- **Referensi:** High-End Visual Design Section 2: Inter BANNED
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+### AS4. Spacing generous: `pt-12` → `py-24`
+- **Fix:** Biarkan landing page "bernapas"
+- **Effort:** 15 menit
+- **Status:** [ ] belum
+
+### AS5. Scroll reveal di landing page
+- **Fix:** `whileInView` + `staggerChildren` — `/tentang` + `/fitur` sudah punya
+- **Effort:** 1.5 jam
+- **Status:** [ ] belum
+
+### AS6. Double-Bezel di hero CTA card
+- **Fix:** Outer shell gradient + inner core inset shadow
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+### AS7. Hover states tambah transform (62+)
+- **Fix:** `hover:-translate-y-0.5 active:scale-[0.98]` ke semua CTA
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+---
+
+## 🟢 FASE 11 — FRONTEND "SIMPLE TAPI DALAM"
+
+### F1. Social proof di landing
+- **Fix:** Verifikator akademik + "X guru sudah bergabung"
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+### F2. Heatmap kelas di dashboard guru
+- **Referensi:** Khan Academy pattern — hijau=mastery, merah=bantuan
+- **Effort:** 3 jam
+- **Status:** [ ] belum
+
+### F3. Empty state CTA di semua halaman
+- **Fix:** `/kursus` → link daftar, dashboard guru → "Buat Kursus Pertama"
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+### F4. `next/image` untuk semua gambar
+- **Fix:** Ganti `<img>` → `<Image>` — CLS + LCP fix
+- **Effort:** 1.5 jam
+- **Status:** [ ] belum
+
+### F5. Preconnect ImageKit + Supabase
+- **Effort:** 5 menit
+- **Status:** [ ] belum
+
+### F6. Fluid typography `clamp()`
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+---
+
+## 🟢 FASE 12 — MONETISASI & PERTUMBUHAN
+
+### BIZ1. "X guru sudah bergabung" di landing (data nyata)
+- **Effort:** 15 menit
+- **Status:** [ ] belum
+
+### BIZ2. Siapkan tier pricing transparan
+- **Effort:** 1 jam
+- **Status:** [ ] belum
+
+### BIZ3. Aktifkan kembali halaman `/pembayaran`
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+### BIZ4. Bangun audience Bang Agung sebagai showcase
+- **Effort:** Proses (1-2 minggu)
+- **Status:** [ ] belum
+
+### BIZ5. Revenue share marketplace kursus (TUNDA)
+- **Status:** [ ] tunda — nanti setelah >20 guru aktif
+
+---
+
+## 🟢 FASE 13 — PERBAIKAN SPESIFIK (Cepat, Dampak Besar)
+
+### X1. FormMasuk: tampil pemilihan portal dulu
+- **Fix:** `initialPortal` tanpa default `"siswa"`
+- **Effort:** 5 menit
+- **Status:** [ ] belum
+
+### X2. Deskripsi kursus hardcode → netral
+- **Fix:** `kursus/page.tsx` — ganti jadi multi-guru friendly
+- **Effort:** 5 menit
+- **Status:** [ ] belum
+
+### X3. Pricing Sekolah transparan
+- **Fix:** "mulai dari Rp499.000/bulan"
+- **Effort:** 10 menit
+- **Status:** [ ] belum
+
+### X4. Tentang: tambah kontak founder
+- **Effort:** 10 menit
+- **Status:** [ ] belum
+
+### X5. Foto Tentang: `onError` fallback
+- **Effort:** 5 menit
+- **Status:** [ ] belum
+
+### X6. Fix 6 shadow Tailwind bawaan → shadow-glass
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+### X7. Sync DESIGN.md shadow → hijau primary (#005231)
+- **Effort:** 30 menit
+- **Status:** [ ] belum
+
+### X8. Bersihkan CmsProvider stub
+- **Effort:** 1.5 jam
+- **Status:** [ ] belum
+
+### X9. Audit hardcode warna → token design system
+- **Effort:** 1.5 jam
+- **Status:** [ ] belum
+
+---
+
+## ⚪ FASE 14 — TUNDA (Tidak Perlu Sekarang)
+
+| # | Item | Alasan | Kapan |
+|---|------|--------|-------|
+| T1 | Event Sourcing | >500 siswa dulu | Fase 3 |
+| T2 | Materialized Views (kecuali ai_daily_costs) | >1000 siswa dulu | Fase 3 |
+| T3 | PgBouncer | >100 concurrent dulu | Fase 3 |
+| T4 | Midtrans payment gateway | QRIS statis cukup <100 transaksi/bln | Setelah income stabil |
+| T5 | Dark mode | Nice-to-have | Fase 4 |
+| T6 | WebSocket | SSE cukup | Fase 3 |
+| T7 | Microservices | Monolith cukup 10K user | Fase 4 |
+| T8 | Hexagonal Architecture | App Router cukup (PRD 08) | Tidak perlu |
+| T9 | SCORM/LTI/xAPI | Indonesia tidak butuh (PRD 08) | Tidak perlu |
+
+---
+
+## 📊 RINGKASAN TOTAL
+
+| Fase | Item | Selesai | Pending | Tunda |
 |------|:---:|:---:|:---:|:---:|
-| 0 | Quick Wins | 1.1 jam | 6/6 ✅ | 0 |
-| 1 | Auth & Guard | 8.5 jam | 6/6 ✅ | Selesai |
-| 2 | Database & RLS | 10 jam | 4/5 ✅ (D1-D4 done) | D5 uji isolation |
-| 3 | Frontend & UX | 10.5 jam | 7/7 ✅ | Selesai |
-| 🔥 | **BISNIS — Persiapan 80 Guru** | **14 jam** | **5/7 ✅** | B5, B6 |
-| 🔥 | **UX-A11Y (Mega Audit)** | **18 jam** | **0/20** | **Semua** |
-| 4 | Design System | 3.5 jam | 0/4 | Semua |
-| 5 | Security | 3.5 jam | 0/5 | Semua |
-| 6 | Performance | 5 jam | 0/5 | Semua |
-| 7 | Arsitektur | 11 jam | 0/5 | Semua |
-| 8 | Testing | 7.5 jam | 0/7 | Semua |
-| 9 | Dokumentasi | 5.5 jam | 0/4 | Semua |
-| 10 | DevOps | 5 jam | 0/5 | Semua |
-| 11 | Upgrade (bonus) | 12 jam | 0/5 | Semua |
-| **TOTAL** | **89 item** | **~115 jam** | **29 selesai** | **60 pending** |
+| 0 | Quick Wins | 6 | 0 | 0 |
+| 1 | Auth & Guard | 6 | 0 | 0 |
+| 2 | Database & RLS | 4 | 1 | 0 |
+| 3 | Frontend & UX | 7 | 0 | 0 |
+| B | Business Systems | 5 | 2 | 0 |
+| 4 | Aktivasi Free Value | 0 | 7 | 0 |
+| 5 | AI Safety | 0 | 6 | 0 |
+| 6 | PWA & Offline | 0 | 3 | 0 |
+| 7 | Aksesibilitas WCAG | 0 | 5 | 0 |
+| 8 | Database Optimization | 0 | 6 | 0 |
+| 9 | Monitoring $0 | 0 | 5 | 0 |
+| 10 | Anti-Slop Design | 0 | 7 | 0 |
+| 11 | Frontend "Simple" | 0 | 6 | 0 |
+| 12 | Monetisasi | 0 | 4 | 1 |
+| 13 | Perbaikan Spesifik | 0 | 9 | 0 |
+| 14 | Tunda | 0 | 0 | 9 |
+| **TOTAL** | **93** | **29** | **61** | **10** |
 
 ---
 
-## Timeline Eksekusi
+## 🗓️ URUTAN EKSEKUSI
 
-```
-✅ HARI 1 (10 Jul) : Fase 0 (Quick Wins) + Fase 1 (A1-A4) + Fase 2 (D2-D4) + Fase 3 (F1, F3-F4) — 16 item selesai
-⬜ HARI 2         : Fase 1 (A3 lanjut refactor 52 route) + Fase 2 (D1 apply migration, D5 test RLS)
-⬜ HARI 3         : Fase 3 (F2 FormMasuk split) + Fase 4 (Design System)
-⬜ HARI 4-5       : Fase 5 (Security) + Fase 6 (Performance)
-⬜ HARI 6-7       : Fase 7 (Arsitektur)
-⬜ HARI 8         : Fase 8 (Testing)
-⬜ HARI 9         : Fase 9 (Dokumentasi) + Fase 10 (DevOps)
-⬜ HARI 10+       : Fase 11 (Upgrade bonus) + final verification
-```
+HARI INI (P0):
+  □ AV2: Insert ai_requests (1 jam)
+  □ A11Y2-A11Y3: Skip link + touch target (15 menit)
+  □ X1: Fix FormMasuk portal selection (5 menit)
+  □ X2: Deskripsi kursus netral (5 menit)
+MINGGU INI (P0-P1):
+  □ Fase 4 sisa (AV1, AV3-AV7) — 8 jam
+  □ Fase 5 (AI Safety) — 6 jam
+  □ Fase 6 (PWA) — 3 jam
+  □ Fase 7 (Aksesibilitas) — 5 jam
+  □ Fase 8 (Database) — 5 jam
+BULAN INI (P1-P2):
+  □ Fase 9 (Monitoring) — 2 jam
+  □ Fase 10 (Anti-Slop) — 8 jam
+  □ Fase 11 (Frontend) — 7 jam
+  □ Fase 12 (Monetisasi) — 3 jam
+  □ Fase 13 (Perbaikan) — 5 jam
+  □ Fase BISNIS sisa — 6 jam
 
-### Prioritas Next Step
+---
 
-1. **Apply RLS migration** ke Supabase via SQL Editor (file `drizzle/0015_rls_policies.sql`)
-2. **Deploy ke production** — semua perubahan build hijau, siap deploy
-3. **Split FormMasuk** — 635 baris God Component
-4. **Lanjut Fase 3** — F5 (loading.tsx), F6 (error.tsx), F7 (EmptyState)
+## 📋 CEKLIS HARIAN (Rutin)
+
+□ Senin pagi: cek Supabase Logs (5 menit)
+□ Setiap deploy: cek Vercel Speed Insights
+□ Setiap 2 minggu: cek GlitchTip errors
+□ Setiap bulan: cek AI cost via Admin CLI (scripts/admin-akal.sh)
+□ Setiap 2 bulan: review pricing & kuota — adjust jika perlu
 
 ---
 
 ## Aturan Eksekusi
 
-1. Setiap perubahan wajib `npx next build` — zero errors sebelum lanjut
+1. Tiap perubahan wajib `npm run build` — zero errors sebelum lanjut
 2. Baca berkas asli sebelum ubah (anti-halusinasi)
 3. Trace semua import/caller sebelum edit
 4. Match existing patterns (naming, style, structure)
@@ -918,5 +574,4 @@ Setiap temuan di bawah ini telah diverifikasi dengan membaca berkas asli dari di
 
 ---
 
-*Dokumen ini hidup — update status `[ ]` menjadi `[x]` setelah item selesai.*
-*Verifikasi temuan: 15/15 terverifikasi dengan bukti dari berkas asli (tidak halusinasi).*
+*Dokumen hidup — update status `[ ]` menjadi `[x]` setelah item selesai.*

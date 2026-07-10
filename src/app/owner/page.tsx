@@ -1,8 +1,8 @@
 "use client";
 
-import { ShieldCheck, School, Users, Sparkles, AlertTriangle, CheckCircle, Info, Activity } from "lucide-react";
+import { ShieldCheck, School, Users, Sparkles, AlertTriangle, CheckCircle, Info, Activity, CreditCard, Check, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/ui/EmptyState";
 
@@ -68,6 +68,19 @@ function MiniBar({ value }: { value: number }) {
   );
 }
 
+interface PaymentItem {
+  id: string;
+  amount: number;
+  paymentType: string;
+  status: string;
+  proofImageUrl: string | null;
+  notes: string | null;
+  verifiedAt: string | null;
+  createdAt: string;
+  userName: string | null;
+  userEmail: string | null;
+}
+
 interface OwnerMetrics {
   totalGuru: number;
   totalSiswa: number;
@@ -81,8 +94,19 @@ interface OwnerMetrics {
 export default function OwnerIndex() {
   const [triData, setTriData] = useState<TRIResult[] | null>(null);
   const [metrics, setMetrics] = useState<OwnerMetrics | null>(null);
+  const [payments, setPayments] = useState<PaymentItem[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const fetchPayments = useCallback(() => {
+    setPaymentsLoading(true);
+    fetch("/api/v1/owner/payments?status=pending")
+      .then((r) => r.json())
+      .then((d) => setPayments(d.data || []))
+      .catch(() => {})
+      .finally(() => setPaymentsLoading(false));
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -97,7 +121,17 @@ export default function OwnerIndex() {
       })
       .catch(() => setError("Gagal mengambil data TRI"))
       .finally(() => setLoading(false));
-  }, []);
+    fetchPayments();
+  }, [fetchPayments]);
+
+  async function handleVerify(paymentId: string, action: "confirm" | "reject") {
+    await fetch("/api/v1/owner/payments/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentId, action }),
+    });
+    fetchPayments();
+  }
 
   return (
     <div>
@@ -254,6 +288,68 @@ export default function OwnerIndex() {
                       <MiniBar value={guru.komponen[k]} />
                     </div>
                   ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Payments Verification */}
+      <div className="mt-8 bg-glass border border-border-precision rounded-[32px] p-6 sm:p-8 shadow-glass-lg">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+            <CreditCard className="w-5 h-5 text-amber-600" />
+          </div>
+          <div>
+            <h2 className="font-heading font-bold text-lg text-on-surface">Verifikasi Pembayaran</h2>
+            <p className="text-xs text-on-surface-variant">Konfirmasi atau tolak bukti pembayaran siswa</p>
+          </div>
+        </div>
+
+        {paymentsLoading ? (
+          <div className="mt-6 py-8 flex items-center justify-center">
+            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : payments.length === 0 ? (
+          <div className="mt-6">
+            <EmptyState icon={CreditCard} title="Tidak ada pembayaran pending" description="Semua pembayaran sudah diverifikasi." />
+          </div>
+        ) : (
+          <div className="mt-6 space-y-3">
+            {payments.map((p) => (
+              <div key={p.id} className="rounded-[20px] border border-border-precision bg-white/40 p-5 flex flex-wrap items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold text-sm text-on-surface">{p.userName || "—"}</span>
+                    <span className="text-xs text-on-surface-variant">{p.userEmail}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-on-surface-variant">
+                    <span>Rp {p.amount.toLocaleString("id-ID")}</span>
+                    <span>•</span>
+                    <span>{p.notes || "—"}</span>
+                    <span>•</span>
+                    <span>{new Date(p.createdAt).toLocaleDateString("id-ID")}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {p.proofImageUrl && (
+                    <a href={p.proofImageUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline mr-2">
+                      Lihat Bukti
+                    </a>
+                  )}
+                  <button
+                    onClick={() => handleVerify(p.id, "confirm")}
+                    className="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:brightness-110 transition-all"
+                  >
+                    <Check className="w-3.5 h-3.5" /> Konfirmasi
+                  </button>
+                  <button
+                    onClick={() => handleVerify(p.id, "reject")}
+                    className="inline-flex items-center gap-1.5 bg-red-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:brightness-110 transition-all"
+                  >
+                    <X className="w-3.5 h-3.5" /> Tolak
+                  </button>
                 </div>
               </div>
             ))}

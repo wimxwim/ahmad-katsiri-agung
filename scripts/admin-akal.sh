@@ -310,7 +310,13 @@ manajemen_kursus() {
     *) warn "Pilihan tidak valid."; pause; return ;;
   esac
 
-  api_call GET "$QUERY"
+  if ! api_call GET "$QUERY"; then
+    local ERR_MSG; ERR_MSG=$(echo "$API_BODY" | jq -r '.message // "Unknown"')
+    err "API error (${HTTP_STATUS}): ${ERR_MSG}"; pause; return
+  fi
+  if ! echo "$API_BODY" | jq -e '. | type == "array"' >/dev/null 2>&1; then
+    err "Respons API bukan array (mungkin tabel belum ada)"; pause; return
+  fi
   local COUNT; COUNT=$(echo "$API_BODY" | jq 'length')
   if [ "$COUNT" -eq 0 ]; then warn "Tidak ada kursus."; pause; return; fi
 
@@ -805,8 +811,8 @@ export_data() {
       ok "Users: $EXPORT_DIR/users_${DT}.csv"
       ;;
     2)
-      api_call GET "${REST_URL}/kursus?select=id,judul,slug,statusPublikasi,harga,created_at&order=created_at.desc"
-      echo "$API_BODY" | jq -r '["id","judul","slug","status","harga","created_at"], (.[] | [.id,.judul,.slug,.statusPublikasi,.harga,.created_at[:10]]) | @csv' > "$EXPORT_DIR/kursus_${DT}.csv"
+      api_call GET "${REST_URL}/kursus?select=id,judul,slug,is_public,harga,created_at&order=created_at.desc"
+      echo "$API_BODY" | jq -r '["id","judul","slug","status","harga","created_at"], (.[] | [.id,.judul,.slug,(if .is_public then "PUBLIK" else "DRAFT" end),.harga,.created_at[:10]]) | @csv' > "$EXPORT_DIR/kursus_${DT}.csv"
       ok "Kursus: $EXPORT_DIR/kursus_${DT}.csv"
       ;;
     3)
