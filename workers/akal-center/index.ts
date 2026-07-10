@@ -1,9 +1,12 @@
 const ALLOWED_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
-const ORIGIN = process.env.ORIGIN_URL;
 const TIMEOUT_MS = 15_000;
 
-if (!ORIGIN) {
-  throw new Error("ORIGIN_URL environment variable wajib diset. Contoh: https://origin.akalcenter.my.id");
+function getOrigin(): string {
+  const origin = process.env.ORIGIN_URL;
+  if (!origin) {
+    throw new Error("ORIGIN_URL environment variable wajib diset. Contoh: https://origin.akalcenter.my.id");
+  }
+  return origin;
 }
 
 // ── Rate limiter ──
@@ -108,14 +111,14 @@ export default {
     const page = isHtmlPage(url.pathname);
 
     // ── Fetch from Vercel origin ──
-    const targetUrl = new URL(ORIGIN);
+    const targetUrl = new URL(getOrigin());
     if (url.hostname === targetUrl.hostname) {
       return new Response(JSON.stringify({ error: 'Proxy loop detected: ORIGIN_URL tidak boleh sama dengan domain publik' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    const upstreamUrl = ORIGIN + url.pathname + url.search;
+    const upstreamUrl = getOrigin() + url.pathname + url.search;
     const headers = new Headers(request.headers);
     headers.set('X-From-Worker', 'akal-center');
     headers.set('X-Forwarded-Host', url.host);
@@ -155,9 +158,10 @@ export default {
       const location = response.headers.get('location');
       if (location) {
         const actualOrigin = `${url.protocol}//${url.host}`;
-        for (const originVariant of [ORIGIN, encodeURIComponent(ORIGIN)]) {
-          if (location.includes(originVariant)) {
-            const fixed = location.replaceAll(originVariant, originVariant === ORIGIN ? actualOrigin : encodeURIComponent(actualOrigin));
+        const originStr = getOrigin();
+for (const originVariant of [originStr, encodeURIComponent(originStr)]) {
+  if (location.includes(originVariant)) {
+    const fixed = location.replaceAll(originVariant, originVariant === originStr ? actualOrigin : encodeURIComponent(actualOrigin));
             response = new Response(response.body, response);
             response.headers.set('location', fixed);
             break;
