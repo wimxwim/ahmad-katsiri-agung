@@ -1,8 +1,10 @@
 "use client";
 
-import { Building2, BookOpen, Sparkles, Users, GraduationCap, AlertCircle, RefreshCw } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Building2, BookOpen, Sparkles, Users, GraduationCap, AlertCircle, RefreshCw, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
+
+const PAGE_SIZE = 8;
 
 interface AdminData {
   totalGuru: number;
@@ -17,6 +19,10 @@ export default function AdminSekolahIndex() {
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(0);
+  const [sortKey, setSortKey] = useState<"nama" | "totalKursus" | "totalSiswa">("totalKursus");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const fetchData = async () => {
     setLoading(true);
@@ -83,6 +89,36 @@ export default function AdminSekolahIndex() {
     );
   }
 
+  const filtered = useMemo(() => {
+    if (!data) return [];
+    const q = search.toLowerCase();
+    return data.guruList.filter(
+      (g) => g.nama.toLowerCase().includes(q) || g.email.toLowerCase().includes(q)
+    );
+  }, [data, search]);
+
+  const sorted = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      const va = a[sortKey];
+      const vb = b[sortKey];
+      const cmp = typeof va === "number" && typeof vb === "number" ? va - vb : String(va).localeCompare(String(vb));
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [filtered, sortKey, sortDir]);
+
+  const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
+  const paginated = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  function toggleSort(key: typeof sortKey) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+    setPage(0);
+  }
+
   const stats = data ? [
     { label: "Guru", value: data.totalGuru, icon: Users, color: "bg-blue-50 text-blue-600" },
     { label: "Kursus", value: data.totalKursus, icon: BookOpen, color: "bg-emerald-50 text-emerald-600" },
@@ -122,29 +158,94 @@ export default function AdminSekolahIndex() {
 
       {data && data.guruList.length > 0 ? (
         <div className="bg-glass border border-border-precision rounded-xl p-6 shadow-glass">
-          <h3 className="font-heading font-semibold text-on-surface mb-4">Daftar Guru</h3>
+          <div className="flex items-center gap-4 mb-4">
+            <h3 className="font-heading font-semibold text-on-surface">Daftar Guru</h3>
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant/40" />
+              <input
+                type="text"
+                placeholder="Cari nama atau email..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+                className="w-full pl-9 pr-3 py-2 rounded-lg border border-border-precision text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border-precision text-left">
-                  <th className="pb-3 font-semibold text-on-surface-variant">Nama</th>
+                  <th className="pb-3 font-semibold text-on-surface-variant cursor-pointer hover:text-primary select-none" onClick={() => toggleSort("nama")}>
+                    Nama {sortKey === "nama" ? (sortDir === "asc" ? "↑" : "↓") : ""}
+                  </th>
                   <th className="pb-3 font-semibold text-on-surface-variant">Email</th>
-                  <th className="pb-3 font-semibold text-on-surface-variant text-center">Kursus</th>
-                  <th className="pb-3 font-semibold text-on-surface-variant text-center">Siswa</th>
+                  <th className="pb-3 font-semibold text-on-surface-variant text-center cursor-pointer hover:text-primary select-none" onClick={() => toggleSort("totalKursus")}>
+                    Kursus {sortKey === "totalKursus" ? (sortDir === "asc" ? "↑" : "↓") : ""}
+                  </th>
+                  <th className="pb-3 font-semibold text-on-surface-variant text-center cursor-pointer hover:text-primary select-none" onClick={() => toggleSort("totalSiswa")}>
+                    Siswa {sortKey === "totalSiswa" ? (sortDir === "asc" ? "↑" : "↓") : ""}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {data.guruList.map((guru) => (
-                  <tr key={guru.id} className="border-b border-border-precision/50 last:border-0">
-                    <td className="py-3 font-medium text-on-surface">{guru.nama}</td>
-                    <td className="py-3 text-on-surface-variant truncate max-w-[120px] sm:max-w-none">{guru.email}</td>
-                    <td className="py-3 text-center text-on-surface-variant">{guru.totalKursus}</td>
-                    <td className="py-3 text-center text-on-surface-variant">{guru.totalSiswa}</td>
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-on-surface-variant text-sm">
+                      Tidak ada guru ditemukan
+                    </td>
                   </tr>
-                ))}
+                ) : (
+                  paginated.map((guru) => (
+                    <tr key={guru.id} className="border-b border-border-precision/50 last:border-0">
+                      <td className="py-3 font-medium text-on-surface">{guru.nama}</td>
+                      <td className="py-3 text-on-surface-variant truncate max-w-[120px] sm:max-w-none">{guru.email}</td>
+                      <td className="py-3 text-center text-on-surface-variant">{guru.totalKursus}</td>
+                      <td className="py-3 text-center text-on-surface-variant">{guru.totalSiswa}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-border-precision/50">
+              <p className="text-xs text-on-surface-variant">
+                {sorted.length} guru · Halaman {page + 1} dari {totalPages}
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface disabled:opacity-30 transition-colors"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  const start = Math.max(0, Math.min(page - 2, totalPages - 5));
+                  const p = start + i;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={cn(
+                        "w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-colors",
+                        p === page ? "bg-primary text-white" : "hover:bg-surface text-on-surface-variant"
+                      )}
+                    >
+                      {p + 1}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface disabled:opacity-30 transition-colors"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="bg-glass border border-border-precision rounded-xl p-6 shadow-glass text-center">
