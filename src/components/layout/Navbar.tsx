@@ -15,6 +15,7 @@ const NAV_ITEMS_FALLBACK = [
   { href: "/fitur", label: "Fitur" },
   { href: "/harga", label: "Harga" },
   { href: "/tentang", label: "Tentang" },
+  { href: "/quran", label: "Quran" },
 ];
 
 export function Navbar() {

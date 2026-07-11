@@ -5,7 +5,6 @@ import type { CmsNavigation } from "@/components/providers/CmsProvider";
 const FOOTER_LINKS_FALLBACK = [
   { href: "/", label: "Beranda" },
   { href: "/kursus", label: "Katalog Kursus" },
-  { href: "/game", label: "Game Edukasi" },
   { href: "/quran", label: "Qur'an" },
   { href: "/fitur", label: "Fitur" },
   { href: "/harga", label: "Harga" },
