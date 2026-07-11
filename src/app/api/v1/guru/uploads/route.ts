@@ -154,12 +154,6 @@ export async function POST(request: NextRequest) {
       message: "File tersimpan. Klik 'Generate AI' untuk memulai.",
     });
   } catch (e) {
-    if (e instanceof QuotaExceededError) {
-      return NextResponse.json(
-        { success: false, error: e.message, quota: { limit: e.limitValue, used: e.currentUsage } },
-        { status: 429 },
-      );
-    }
     console.error("Upload error:", e);
     const msg = e instanceof Error ? e.message : "Terjadi kesalahan server";
     return apiError(msg, 500);
