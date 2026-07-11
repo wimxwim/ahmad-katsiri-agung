@@ -140,7 +140,7 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
           </p>
 
           {result.tampilkanNilai && (
-            <div className="mt-6 grid grid-cols-3 gap-3 max-w-md mx-auto">
+            <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3 max-w-md mx-auto">
               <div className="p-4 rounded-2xl bg-white border border-border-precision">
                 <p className="text-xs font-bold tracking-wider text-on-surface-variant">NILAI</p>
                 <p className="font-heading text-3xl font-bold text-primary mt-1">{result.nilai}</p>
@@ -162,7 +162,7 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
 
           {!result.tampilkanNilai && (
             <p className="mt-6 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-sm">
-              ⏳ Nilai diumumkan oleh guru. Cek lagi nanti atau hubungi guru.
+              <Clock className="w-4 h-4 inline mr-1.5 -mt-0.5" />Nilai diumumkan oleh guru. Cek lagi nanti atau hubungi guru.
             </p>
           )}
 
