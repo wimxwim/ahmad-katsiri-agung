@@ -91,7 +91,7 @@ export default function OrangTuaIndex() {
         <div className="flex flex-col items-center justify-center py-16 bg-glass rounded-2xl border border-border-precision">
           <Heart className="w-10 h-10 text-on-surface-variant/30 mb-3" />
           <p className="text-on-surface-variant text-sm">Belum ada data progres tersedia.</p>
-          <p className="text-on-surface-variant/60 text-xs mt-1 max-w-sm text-center">
+          <p className="text-on-surface-variant/70 text-xs mt-1 max-w-sm text-center">
             Hubungi guru atau admin sekolah untuk menghubungkan akun orang tua dengan akun siswa.
           </p>
         </div>
@@ -125,7 +125,7 @@ export default function OrangTuaIndex() {
             <span className="text-xs font-medium text-on-surface-variant">Progres Materi</span>
           </div>
           <p className="font-heading font-bold text-2xl text-on-surface">{progressPercent}%</p>
-          <div className="w-full bg-primary/5 rounded-full h-1.5 mt-3">
+          <div className="w-full bg-primary/10 rounded-full h-1.5 mt-3">
             <div className="bg-emerald-500 h-1.5 rounded-full transition-all" style={{ width: `${progressPercent}%` }} />
           </div>
           <p className="text-xs text-on-surface-variant mt-2">{data.totalSelesai} dari {data.totalMateri} materi selesai</p>
@@ -172,7 +172,7 @@ export default function OrangTuaIndex() {
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-sm text-on-surface">{p.judul}</p>
                   <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-2">{p.ringkasan}</p>
-                  <p className="text-xs text-on-surface-variant/60 mt-1">{new Date(p.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
+                  <p className="text-xs text-on-surface-variant/70 mt-1">{new Date(p.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</p>
                 </div>
               </div>
             ))}
@@ -185,7 +185,7 @@ export default function OrangTuaIndex() {
           <h3 className="font-heading font-semibold text-on-surface mb-4">Kuis Terakhir</h3>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-sm text-on-surface">{data.quizTerakhir.judul}</p>
+              <p className="font-medium text-sm text-on-surface truncate max-w-[200px] sm:max-w-xs">{data.quizTerakhir.judul}</p>
               <p className="text-xs text-on-surface-variant mt-1">
                 {new Date(data.quizTerakhir.tanggal).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
               </p>

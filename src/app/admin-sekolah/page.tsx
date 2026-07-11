@@ -137,7 +137,7 @@ export default function AdminSekolahIndex() {
                 {data.guruList.map((guru) => (
                   <tr key={guru.id} className="border-b border-border-precision/50 last:border-0">
                     <td className="py-3 font-medium text-on-surface">{guru.nama}</td>
-                    <td className="py-3 text-on-surface-variant">{guru.email}</td>
+                    <td className="py-3 text-on-surface-variant truncate max-w-[120px] sm:max-w-none">{guru.email}</td>
                     <td className="py-3 text-center text-on-surface-variant">{guru.totalKursus}</td>
                     <td className="py-3 text-center text-on-surface-variant">{guru.totalSiswa}</td>
                   </tr>
@@ -150,7 +150,7 @@ export default function AdminSekolahIndex() {
         <div className="bg-glass border border-border-precision rounded-xl p-6 shadow-glass text-center">
           <Users className="w-10 h-10 text-on-surface-variant/30 mx-auto mb-3" />
           <p className="text-on-surface-variant text-sm">Belum ada guru terdaftar di sekolah ini.</p>
-          <p className="text-on-surface-variant/60 text-xs mt-1">
+          <p className="text-on-surface-variant/70 text-xs mt-1">
             Guru akan mendaftar dengan kode sekolah yang diberikan admin.
           </p>
         </div>

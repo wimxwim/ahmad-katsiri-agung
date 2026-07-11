@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Users, Loader2, Edit3, GraduationCap, X, Check } from "lucide-react";
+import { Plus, Trash2, Users, Loader2, Edit3, GraduationCap, X, Check, Share2, Copy, Link } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { apiFetch } from "@/lib/api-helpers";
 
@@ -23,6 +23,24 @@ export default function GuruKelasPage() {
   const [editing, setEditing] = useState<KelasItem | null>(null);
   const [editNama, setEditNama] = useState("");
   const [editTingkat, setEditTingkat] = useState(7);
+  const [inviteKode, setInviteKode] = useState<Record<string, string>>({});
+  const [copied, setCopied] = useState<string | null>(null);
+
+  async function generateInvite(kelasId: string) {
+    const result = await apiFetch<{ kode: string }>(`/api/v1/guru/kelas/${kelasId}/invite`, {
+      method: "POST",
+    });
+    if (result.ok && result.data) {
+      setInviteKode((prev) => ({ ...prev, [kelasId]: (result.data as { kode: string }).kode }));
+    }
+  }
+
+  async function copyInvite(kelasId: string, kode: string) {
+    const link = `${window.location.origin}/masuk?portal=siswa&kode=${kode}`;
+    await navigator.clipboard.writeText(link);
+    setCopied(kelasId);
+    setTimeout(() => setCopied(null), 2000);
+  }
 
   async function load() {
     setLoading(true);
@@ -252,12 +270,42 @@ export default function GuruKelasPage() {
                     </button>
                     <span className="text-on-surface-variant/20">|</span>
                     <button
+                      onClick={() => generateInvite(k.id)}
+                      className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+                    >
+                      <Share2 className="w-3 h-3" /> Undang
+                    </button>
+                    <span className="text-on-surface-variant/20">|</span>
+                    <button
                       onClick={() => handleDelete(k.id)}
                       className="inline-flex items-center gap-1 font-semibold text-red-600 hover:underline"
                     >
                       <Trash2 className="w-3 h-3" /> Hapus
                     </button>
                   </div>
+                  {inviteKode[k.id] && (
+                    <div className="mt-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                      <p className="text-xs font-semibold text-primary mb-1">Kode Undangan</p>
+                      <div className="flex items-center gap-2">
+                        <code className="bg-white px-2.5 py-1 rounded-lg text-sm font-bold tracking-wider text-primary border border-primary/10">
+                          {inviteKode[k.id]}
+                        </code>
+                        <button
+                          onClick={() => copyInvite(k.id, inviteKode[k.id])}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                        >
+                          {copied === k.id ? (
+                            <><Check className="w-3 h-3" /> Tersalin</>
+                          ) : (
+                            <><Copy className="w-3 h-3" /> Salin Link</>
+                          )}
+                        </button>
+                      </div>
+                      <p className="text-xs text-on-surface-variant/60 mt-2">
+                        Siswa bisa masuk dengan kode ini di halaman <Link href="/masuk?portal=siswa" className="text-primary hover:underline">Masuk Siswa</Link>
+                      </p>
+                    </div>
+                  )}
                 </>
               )}
             </div>

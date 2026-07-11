@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { FormMasukLeftPanel } from "./_components/FormMasukLeftPanel";
-import { FormMasukPortalPicker } from "./_components/FormMasukPortalPicker";
 import { FormLoginSiswa } from "./_components/FormLoginSiswa";
 import { FormDaftarSiswa } from "./_components/FormDaftarSiswa";
 import { FormLoginGuru } from "./_components/FormLoginGuru";
@@ -26,7 +25,7 @@ export function FormMasuk({
       ? "guru"
       : initialPortal === "siswa"
       ? "murid"
-      : "pilih"
+      : "guru"
   );
   const [tabMurid, setTabMurid] = useState<TabMurid>(initialTab);
   const [error, setError] = useState(
@@ -53,12 +52,6 @@ export function FormMasuk({
   useEffect(() => {
     setNoPassword(false);
   }, [mode, tabMurid]);
-
-  function selectMode(m: Mode) {
-    setMode(m);
-    setError("");
-    if (m === "murid") setTabMurid("masuk");
-  }
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -160,7 +153,28 @@ export function FormMasuk({
         <FormMasukLeftPanel />
 
         <main className="px-5 py-8 sm:px-11 sm:py-12 flex flex-col justify-center">
-          {mode === "pilih" && <FormMasukPortalPicker onSelect={selectMode} />}
+          <div className="flex gap-1 mb-6 bg-surface rounded-xl p-1">
+            <button
+              onClick={() => { setMode("guru"); setError(""); }}
+              className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all cursor-pointer active:scale-[0.98] ${
+                mode === "guru"
+                  ? "bg-white text-on-surface shadow-glass"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }`}
+            >
+              Guru
+            </button>
+            <button
+              onClick={() => { setMode("murid"); setError(""); setTabMurid("masuk"); }}
+              className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all cursor-pointer active:scale-[0.98] ${
+                mode === "murid"
+                  ? "bg-white text-on-surface shadow-glass"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }`}
+            >
+              Siswa
+            </button>
+          </div>
 
           {mode === "murid" && (
             <div>
@@ -209,7 +223,7 @@ export function FormMasuk({
                 <FormLoginSiswa
                   redirectTo={redirectTo}
                   onSubmit={handleLogin}
-                  onBack={() => selectMode("pilih")}
+                  onBack={() => { setMode("guru"); }}
                   error={error}
                   loading={loading}
                   noPassword={noPassword}
@@ -217,7 +231,7 @@ export function FormMasuk({
               ) : (
                 <FormDaftarSiswa
                   onSubmit={handleRegister}
-                  onBack={() => selectMode("pilih")}
+                  onBack={() => { setMode("guru"); }}
                   error={error}
                   loading={loading}
                 />
@@ -239,7 +253,7 @@ export function FormMasuk({
               <FormLoginGuru
                 redirectTo={redirectTo}
                 onSubmit={handleLogin}
-                onBack={() => selectMode("pilih")}
+                onBack={() => { setMode("murid"); }}
                 error={error}
                 loading={loading}
                 noPassword={noPassword}

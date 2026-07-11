@@ -63,7 +63,7 @@ export function OwnerLayoutClient({ children }: { children: React.ReactNode }) {
           </div>
           <div className="min-w-0">
             <p className="font-heading font-bold text-sm text-on-surface truncate">AKAL Center</p>
-            <p className="text-xs text-on-surface-variant/60">Owner Console</p>
+            <p className="text-xs text-on-surface-variant/70">Owner Console</p>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -90,7 +90,7 @@ export function OwnerLayoutClient({ children }: { children: React.ReactNode }) {
                   item.soon && "opacity-60",
                 )}
               >
-                <item.icon className="w-4.5 h-4.5 shrink-0" />
+                <item.icon className="w-4 h-4 shrink-0" />
                 <span className="truncate flex-1">{item.label}</span>
                 {item.soon && (
                   <span className="text-xs font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full">
@@ -107,7 +107,7 @@ export function OwnerLayoutClient({ children }: { children: React.ReactNode }) {
             href="/"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-on-surface-variant hover:bg-surface transition-colors"
           >
-            <ChevronLeft className="w-4.5 h-4.5" />
+            <ChevronLeft className="w-4 h-4" />
             Kembali ke Situs
           </Link>
           <button
@@ -116,7 +116,7 @@ export function OwnerLayoutClient({ children }: { children: React.ReactNode }) {
             }}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer"
           >
-            <LogOut className="w-4.5 h-4.5" />
+            <LogOut className="w-4 h-4" />
             Keluar
           </button>
         </div>

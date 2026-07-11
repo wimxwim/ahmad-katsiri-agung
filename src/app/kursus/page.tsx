@@ -86,7 +86,7 @@ export default function KatalogKursusPage() {
         </div>
 
         <div className="relative mb-8">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-on-surface-variant/40" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant/40" />
           <input
             type="text"
             placeholder="Cari kursus..."

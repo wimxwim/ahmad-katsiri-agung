@@ -217,8 +217,8 @@ export function BottomTabBar() {
                   />
                 </span>
                 <span
-                  className={`relative z-10 text-[10px] font-semibold leading-none transition-colors duration-200 ${
-                    active ? "text-on-primary" : "text-on-surface-variant/60"
+                  className={`relative z-10 text-[11px] font-semibold leading-none transition-colors duration-200 ${
+                    active ? "text-on-primary" : "text-on-surface-variant"
                   }`}
                 >
                   {tab.label}
@@ -229,11 +229,11 @@ export function BottomTabBar() {
 
           <button
             onClick={() => setSheetOpen(true)}
-            className="relative flex flex-col items-center justify-center gap-0.5 min-w-[52px] min-h-11 px-2.5 rounded-tab text-on-surface-variant/60 hover:text-on-surface-variant transition-colors duration-200 cursor-pointer"
+            className="relative flex flex-col items-center justify-center gap-0.5 min-w-[52px] min-h-11 px-2.5 rounded-tab text-on-surface-variant/70 hover:text-on-surface-variant transition-colors duration-200 cursor-pointer"
             aria-label="Menu lainnya"
           >
             <Grid3x3 className="w-5 h-5" strokeWidth={2} aria-hidden="true" />
-            <span className="text-[10px] font-semibold leading-none">Lainnya</span>
+            <span className="text-[11px] font-semibold leading-none">Lainnya</span>
           </button>
         </div>
       </nav>

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { DashboardLayoutClient } from "@/components/dashboard/DashboardLayoutClient";
 import type { SidebarItem } from "@/components/dashboard/DashboardLayoutClient";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/guru/beranda", label: "Ringkasan", icon: LayoutDashboard },
@@ -28,7 +29,9 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
 
 export function GuruLayoutClient({ children }: { children: React.ReactNode }) {
   return (
-    <DashboardLayoutClient
+    <>
+      <OnboardingTour />
+      <DashboardLayoutClient
       sidebarItems={SIDEBAR_ITEMS}
       subtitle="Ruang Guru"
       defaultNama="Guru"
@@ -36,5 +39,6 @@ export function GuruLayoutClient({ children }: { children: React.ReactNode }) {
     >
       {children}
     </DashboardLayoutClient>
+    </>
   );
 }

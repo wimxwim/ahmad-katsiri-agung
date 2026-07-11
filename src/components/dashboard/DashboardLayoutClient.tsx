@@ -60,7 +60,7 @@ export function DashboardLayoutClient({
           </div>
           <div className="min-w-0">
             <p className="font-heading font-bold text-sm text-on-surface truncate">AKAL Center</p>
-            <p className="text-xs text-on-surface-variant/60">{subtitle}</p>
+            <p className="text-xs text-on-surface-variant/70">{subtitle}</p>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -93,7 +93,7 @@ export function DashboardLayoutClient({
                 {active && !item.primary && (
                   <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-primary" />
                 )}
-                <item.icon className="w-4.5 h-4.5 shrink-0" />
+                <item.icon className="w-4 h-4 shrink-0" />
                 <span className="truncate">{item.label}</span>
               </Link>
             );
@@ -105,7 +105,7 @@ export function DashboardLayoutClient({
             href="/"
             className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-on-surface-variant hover:bg-surface transition-colors min-h-11"
           >
-            <ChevronLeft className="w-4.5 h-4.5" />
+            <ChevronLeft className="w-4 h-4" />
             Kembali ke Situs
           </Link>
           <button
@@ -114,7 +114,7 @@ export function DashboardLayoutClient({
             }}
             className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer min-h-11"
           >
-            <LogOut className="w-4.5 h-4.5" />
+            <LogOut className="w-4 h-4" />
             Keluar
           </button>
         </div>

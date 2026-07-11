@@ -59,10 +59,10 @@ export function Navbar() {
           <ul className="hidden md:flex items-center gap-1">
             {visibleItems.map((item) => (
               <li key={item.href}>
-                <Link
-                  href={item.href}
-                  aria-current={isActive(item.href) ? "page" : undefined}
-                  className={`relative px-4 py-2 text-sm rounded-full transition-colors duration-200 ${
+<Link
+                    href={item.href}
+                    aria-current={isActive(item.href) ? "page" : undefined}
+                    className={`relative px-4 py-2.5 text-sm rounded-full transition-colors duration-200 min-h-[44px] flex items-center ${
                     isActive(item.href)
                       ? "bg-primary/10 text-primary font-semibold"
                       : "text-on-surface-variant hover:text-primary hover:bg-primary/5"
@@ -107,7 +107,7 @@ export function Navbar() {
             {session && (
               <>
                 <li className="hidden xl:flex">
-                  <span className="px-3 py-2 text-sm text-on-surface-variant/60 font-medium max-w-[120px] truncate">
+                  <span className="px-3 py-2 text-sm text-on-surface-variant/70 font-medium max-w-[120px] truncate">
                     Halo, {session.nama?.split(" ")[0]}
                   </span>
                 </li>
@@ -150,7 +150,7 @@ export function Navbar() {
                 <li>
                   <Link
                     href="/masuk"
-                    className="relative px-4 py-2 text-sm rounded-full border border-border-precision text-on-surface-variant font-medium hover:text-primary hover:border-primary/30 transition-all duration-200"
+                    className="relative px-5 py-2.5 text-sm rounded-full border border-border-precision text-on-surface-variant font-medium hover:text-primary hover:border-primary/30 transition-all duration-200 min-h-[44px] flex items-center"
                   >
                     Masuk
                   </Link>
@@ -158,7 +158,7 @@ export function Navbar() {
                 <li>
                   <Link
                     href="/daftar"
-                    className="relative px-4 py-2 text-sm rounded-full bg-primary text-on-primary font-semibold hover:brightness-110 transition-all duration-200"
+                    className="relative px-5 py-2.5 text-sm rounded-full bg-primary text-on-primary font-semibold hover:brightness-110 transition-all duration-200 min-h-[44px] flex items-center"
                   >
                     Daftar Gratis
                   </Link>

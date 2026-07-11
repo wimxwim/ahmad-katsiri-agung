@@ -124,7 +124,7 @@ export default function PembayaranPage() {
                   <label className="cursor-pointer block">
                     <Upload className="w-8 h-8 text-on-surface-variant/40 mx-auto mb-2" />
                     <p className="text-sm text-on-surface-variant">Klik untuk pilih screenshot</p>
-                    <p className="text-xs text-on-surface-variant/50 mt-1">JPG, PNG, atau WebP — maks 5MB</p>
+                    <p className="text-xs text-on-surface-variant/60 mt-1">JPG, PNG, atau WebP — maks 5MB</p>
                     <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFile} className="hidden" />
                   </label>
                 )}
