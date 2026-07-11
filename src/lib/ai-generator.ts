@@ -147,21 +147,21 @@ export async function runGeneration(
             { role: "system", content: MATERI_SYSTEM },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
-          { model: getModelForTask("heavy"), temperature: 0.3, maxTokens: 1800 },
+          { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
         ),
         chatWithFallback(
           [
             { role: "system", content: QUIZ_SYSTEM },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: 2000 },
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
         ),
         chatWithFallback(
           [
             { role: "system", content: SOAL_SYSTEM },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
-          { model: getModelForTask("heavy"), temperature: 0.6, maxTokens: 2000 },
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
         ),
       ]),
       AI_TIMEOUT_MS,

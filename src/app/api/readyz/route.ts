@@ -38,11 +38,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(_req: NextRequest) {
-  const { chat } = await import("@/lib/ai");
+  const { chat, getModelForTask } = await import("@/lib/ai");
   try {
     const result = await chat(
       [{ role: "user", content: "say hi in 3 words" }],
-      { model: "deepseek-v4-pro", maxTokens: 20 },
+      { model: getModelForTask("light"), maxTokens: 20 },
     );
     return NextResponse.json({ ok: true, result });
   } catch (e: any) {
