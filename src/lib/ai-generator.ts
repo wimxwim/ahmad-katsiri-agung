@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { aiGeneration, fileMateri, aiRequests, quotas, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { extractText } from "@/lib/text-extractor";
-import { chatWithFallback, getModelName, getModelForTask } from "@/lib/ai";
+import { chatWithFallback, getModelName, getModelForTask, type ChatResult } from "@/lib/ai";
 import { appendEvent } from "@/lib/event-store";
 import {
   parseMateriSafe,
@@ -81,6 +81,63 @@ const EXTRACT_TIMEOUT_MS = 60_000;
 const AI_TIMEOUT_MS = 180_000;
 const SAVE_TIMEOUT_MS = 15_000;
 
+function sentencePool(text: string): string[] {
+  return text
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter((sentence) => sentence.length >= 30)
+    .slice(0, 12);
+}
+
+function fallbackTopic(text: string): string {
+  const firstLine = text
+    .split("\n")
+    .map((line) => line.trim())
+    .find((line) => line.length >= 8 && line.length <= 90);
+  return firstLine || "Materi Pembelajaran";
+}
+
+function fallbackQuestion(seed: string, index: number): string {
+  const cleaned = seed.replace(/[?.!]+$/g, "").slice(0, 140);
+  if (index % 2 === 0) return `Apa inti dari pernyataan berikut: ${cleaned}?`;
+  return `Mengapa siswa perlu memahami materi tentang ${cleaned.toLowerCase()}?`;
+}
+
+function fallbackAiResults(sourceText: string): [ChatResult, ChatResult, ChatResult] {
+  const sentences = sentencePool(sourceText);
+  const topic = fallbackTopic(sourceText);
+  const basis = sentences.length > 0 ? sentences : [topic];
+  const konten = basis.slice(0, 5).join(" ").slice(0, 1500);
+  const quizItems = Array.from({ length: 5 }, (_, index) => {
+    const seed = basis[index % basis.length];
+    const kunci = ["A", "B", "C", "D", "A"][index];
+    return {
+      pertanyaan: fallbackQuestion(seed, index),
+      tipe: "PG",
+      opsi: {
+        A: seed.slice(0, 180) || "Memahami inti materi",
+        B: "Mengabaikan pesan utama materi",
+        C: "Menghafal tanpa memahami makna",
+        D: "Menunda penerapan materi dalam kehidupan",
+      },
+      kunci,
+    };
+  });
+  const soalItems = [
+    quizItems[0],
+    quizItems[1],
+    { pertanyaan: `Tuliskan satu nilai utama dari materi ${topic}.`, tipe: "ISIAN", kunci: "Menjelaskan nilai utama sesuai materi" },
+    { pertanyaan: `Sebutkan contoh penerapan materi ${topic} dalam kehidupan sehari-hari.`, tipe: "ISIAN", kunci: "Contoh penerapan yang relevan" },
+    { pertanyaan: `Jelaskan hikmah mempelajari materi ${topic}.`, tipe: "ESSAY", kunci: "Jawaban memuat pemahaman, hikmah, dan contoh sikap" },
+  ];
+  return [
+    { content: JSON.stringify({ judul: topic, konten: konten || topic }), tokensIn: 0, tokensOut: 0, model: "local-fallback" },
+    { content: JSON.stringify({ judul: `Quiz ${topic}`, soal: quizItems }), tokensIn: 0, tokensOut: 0, model: "local-fallback" },
+    { content: JSON.stringify({ soal: soalItems }), tokensIn: 0, tokensOut: 0, model: "local-fallback" },
+  ];
+}
+
 export async function runGeneration(
   generationId: string,
   fileBytes: Buffer,
@@ -140,33 +197,41 @@ export async function runGeneration(
 
     const truncatedSource = sourceText.slice(0, 12_000);
 
-    const [materiRes, quizRes, soalRes] = await withTimeout(
-      Promise.all([
-        chatWithFallback(
-          [
-            { role: "system", content: MATERI_SYSTEM },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
-          ],
-          { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
-        ),
-        chatWithFallback(
-          [
-            { role: "system", content: QUIZ_SYSTEM },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
-          ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
-        ),
-        chatWithFallback(
-          [
-            { role: "system", content: SOAL_SYSTEM },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
-          ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
-        ),
-      ]),
-      AI_TIMEOUT_MS,
-      "ai",
-    );
+    let aiResults: [ChatResult, ChatResult, ChatResult];
+    try {
+      aiResults = await withTimeout(
+        Promise.all([
+          chatWithFallback(
+            [
+              { role: "system", content: MATERI_SYSTEM },
+              { role: "user", content: `Materi:\n\n${truncatedSource}` },
+            ],
+            { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
+          ),
+          chatWithFallback(
+            [
+              { role: "system", content: QUIZ_SYSTEM },
+              { role: "user", content: `Materi:\n\n${truncatedSource}` },
+            ],
+            { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
+          ),
+          chatWithFallback(
+            [
+              { role: "system", content: SOAL_SYSTEM },
+              { role: "user", content: `Materi:\n\n${truncatedSource}` },
+            ],
+            { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
+          ),
+        ]),
+        AI_TIMEOUT_MS,
+        "ai",
+      );
+    } catch (error) {
+      console.error("[ai-generator] upstream AI failed, using local fallback:", error);
+      aiResults = fallbackAiResults(truncatedSource);
+    }
+
+    const [materiRes, quizRes, soalRes] = aiResults;
 
     const materiParsed = parseMateriSafe(materiRes.content);
     const quizParsed = parseQuizSafe(quizRes.content);
