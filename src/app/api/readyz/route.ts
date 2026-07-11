@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   });
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   const { chat } = await import("@/lib/ai");
   try {
     const result = await chat(

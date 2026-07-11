@@ -51,36 +51,78 @@ export function getModelForTask(complexity: AiTaskComplexity): string {
 export async function chat(
   messages: ChatMessage[],
   options: ChatOptions = {},
+  retries = 2,
 ): Promise<ChatResult> {
   const url = `${getBaseUrl()}/chat/completions`;
+  const model = options.model || getModelName();
   const body = {
-    model: options.model || getModelName(),
+    model,
     messages,
     temperature: options.temperature ?? 0.4,
     max_tokens: options.maxTokens ?? 1500,
   };
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${getApiKey()}`,
-    },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(60_000),
-  });
+  let lastError: Error | null = null;
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`NaraRouter error ${res.status}: ${text.slice(0, 300)}`);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getApiKey()}`,
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(120_000),
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        const isRetryable = [502, 503, 504].includes(res.status);
+        if (isRetryable && attempt < retries) {
+          lastError = new Error(`NaraRouter ${res.status} (attempt ${attempt + 1}/${retries + 1})`);
+          await new Promise((r) => setTimeout(r, 1500 * Math.pow(2, attempt)));
+          continue;
+        }
+        throw new Error(`NaraRouter error ${res.status}: ${text.slice(0, 300)}`);
+      }
+
+      const json = (await res.json()) as NaraRouterResponse;
+      const content = json.choices?.[0]?.message?.content || "";
+      return {
+        content,
+        tokensIn: json.usage?.prompt_tokens || 0,
+        tokensOut: json.usage?.completion_tokens || 0,
+        model: json.model,
+      };
+    } catch (e: any) {
+      if (e instanceof Error && e.message.startsWith("NaraRouter error")) throw e;
+      if (attempt < retries) {
+        lastError = e;
+        await new Promise((r) => setTimeout(r, 1500 * Math.pow(2, attempt)));
+        continue;
+      }
+      throw e;
+    }
   }
 
-  const json = (await res.json()) as NaraRouterResponse;
-  const content = json.choices?.[0]?.message?.content || "";
-  return {
-    content,
-    tokensIn: json.usage?.prompt_tokens || 0,
-    tokensOut: json.usage?.completion_tokens || 0,
-    model: json.model,
-  };
+  throw lastError || new Error("NaraRouter failed after all retries");
+}
+
+export async function chatWithFallback(
+  messages: ChatMessage[],
+  options: ChatOptions = {},
+): Promise<ChatResult> {
+  try {
+    return await chat(messages, options);
+  } catch (e) {
+    const heavyModel = getModelForTask("heavy");
+    const flashModel = getFlashModel();
+    const currentModel = options.model || getModelName();
+    if (currentModel === heavyModel && flashModel !== heavyModel) {
+      console.warn("Heavy model failed, falling back to flash:", (e as Error).message);
+      return await chat(messages, { ...options, model: flashModel });
+    }
+    throw e;
+  }
 }

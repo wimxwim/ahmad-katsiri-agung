@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { aiGeneration, fileMateri, aiRequests, quotas, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { extractText } from "@/lib/text-extractor";
-import { chat, getModelName, getModelForTask } from "@/lib/ai";
+import { chatWithFallback, getModelName, getModelForTask } from "@/lib/ai";
 import { appendEvent } from "@/lib/event-store";
 import {
   parseMateriSafe,
@@ -56,7 +56,7 @@ const SOAL_SYSTEM = `Kamu adalah penulis soal Indonesia. Tugasmu: menerima teks 
 8. Data dikirim HANYA untuk generasi konten — tidak untuk training model.`;
 
 export class GenerationTimeoutError extends Error {
-  constructor(public readonly stage: "extract" | "ai" | "save") {
+  constructor(public readonly stage: "extract" | "ai" | "ai-materi" | "ai-quiz" | "ai-soal" | "save") {
     super(`Generation timeout at stage: ${stage}`);
   }
 }
@@ -67,7 +67,7 @@ export class GenerationSchemaError extends Error {
   }
 }
 
-function withTimeout<T>(p: Promise<T>, ms: number, stage: "extract" | "ai" | "save"): Promise<T> {
+function withTimeout<T>(p: Promise<T>, ms: number, stage: "extract" | "ai" | "ai-materi" | "ai-quiz" | "ai-soal" | "save"): Promise<T> {
   return new Promise((resolve, reject) => {
     const t = setTimeout(() => reject(new GenerationTimeoutError(stage)), ms);
     p.then(
@@ -140,33 +140,41 @@ export async function runGeneration(
 
     const truncatedSource = sourceText.slice(0, 12_000);
 
-    const [materiRes, quizRes, soalRes] = await withTimeout(
-      Promise.all([
-        chat(
+    const materiRes = await withTimeout(
+        chatWithFallback(
           [
             { role: "system", content: MATERI_SYSTEM },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
           { model: getModelForTask("heavy"), temperature: 0.3, maxTokens: 1800 },
         ),
-        chat(
+        AI_TIMEOUT_MS,
+        "ai-materi",
+      );
+
+      const quizRes = await withTimeout(
+        chatWithFallback(
           [
             { role: "system", content: QUIZ_SYSTEM },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
           { model: getModelForTask("light"), temperature: 0.5, maxTokens: 2000 },
         ),
-        chat(
+        AI_TIMEOUT_MS,
+        "ai-quiz",
+      );
+
+      const soalRes = await withTimeout(
+        chatWithFallback(
           [
             { role: "system", content: SOAL_SYSTEM },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
           { model: getModelForTask("heavy"), temperature: 0.6, maxTokens: 2000 },
         ),
-      ]),
-      AI_TIMEOUT_MS,
-      "ai",
-    );
+        AI_TIMEOUT_MS,
+        "ai-soal",
+      );
 
     const materiParsed = parseMateriSafe(materiRes.content);
     const quizParsed = parseQuizSafe(quizRes.content);
