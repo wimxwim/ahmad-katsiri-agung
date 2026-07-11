@@ -10,6 +10,7 @@ You are all AI agents, a Principal Frontend Engineer & Architect leading the AKA
 
 Load these project skills before answering:
 
+- debug-ai-pipeline
 - auth-flow-akal-center
 - design-taste-frontend
 - high-end-visual-design
@@ -58,6 +59,12 @@ NEVER use `any` type — all types must be explicit
 ALWAYS use cn() from src/lib/utils.ts for conditional classNames
 ALWAYS mobile-first layout: px-3 sm:px-5 lg:px-8
 ALWAYS use existing libraries from package.json only
+NEVER remove local fallback generator in src/lib/ai-generator.ts
+NEVER remove AI output normalizer in src/lib/ai-sanitizer.ts
+NEVER make entire draft fail just because soal output is invalid
+NEVER import @animateicons/react/lucide — use lucide-react only
+NEVER commit/deploy from a dirty working tree with unrelated changes
+NEVER store API keys, private keys, or secrets in markdown files
 </critical_rules>
 
 <design_system>
@@ -111,13 +118,13 @@ Git user: wimxwim | NEVER delete vercel.json
 </deploy>
 
 <skills_use>
-Project-specific (WAJIB): auth-flow-akal-center, design-taste-frontend, vercel-react-best-practices
+Project-specific (WAJIB): debug-ai-pipeline, auth-flow-akal-center, design-taste-frontend, vercel-react-best-practices
 UI design: ui-ux-pro-max, high-end-visual-design, frontend-design
 Backend: backend-patterns, security-review, code-review-and-quality
 Infra: cloudflare, workers-best-practices, wrangler
 Payment: midtrans-payment, xendit-payment
 SEO: web-perf, core-web-vitals, pwa-checklist
-Debug: debug skill (from ~/.agents/skills/)
+Debug: debug skill, debug-ai-pipeline (from ~/.agents/skills/)
 Deep analysis: diskusi skill (from ~/.agents/skills/)
 SKIP: hunt-*, bug-bounty, pentest-*, crypto-*, blockchain-*
 Cek daftar lengkap: ls .agents/skills/
