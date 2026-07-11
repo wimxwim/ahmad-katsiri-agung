@@ -50,9 +50,9 @@ export default function KebijakanPrivasiPage() {
         <section>
           <h2 className="font-heading text-xl font-bold text-on-surface mt-8 mb-3">4. Penyimpanan Data</h2>
           <p>
-            Data disimpan di server yang berlokasi di Indonesia. Data hasil kuis disimpan di Google Sheets
+            Data disimpan di server yang berlokasi di Singapura. Data hasil kuis dan materi disimpan di database terkelola
             (untuk kompatibilitas) dan database PostgreSQL (untuk analitik). Materi ajar guru disimpan di
-            Google Drive milik guru masing-masing — AKAL Center tidak menyimpan file materi di server kami.
+            penyimpanan media global — AKAL Center menyimpan file materi di server yang aman dan terenkripsi.
           </p>
         </section>
 

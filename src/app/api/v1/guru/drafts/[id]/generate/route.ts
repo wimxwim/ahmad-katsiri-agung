@@ -5,7 +5,7 @@ import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { aiGeneration, fileMateri } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { runGeneration } from "@/lib/ai-generator";
+import { runGenerationFromText } from "@/lib/ai-generator";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import {
   checkRateLimit,
@@ -64,18 +64,15 @@ export async function POST(
       throw e;
     }
 
-    const fileLink = file.linkAkses.startsWith("/")
-      ? `${process.env.NEXT_PUBLIC_SITE_URL || "https://akalcenter.my.id"}${file.linkAkses}`
-      : file.linkAkses;
-
-    const ext = gen.sourceFileName?.split(".").pop() || "pdf";
+    const text = file.extractionText;
+    if (!text || text.length < 50) {
+      releaseConcurrent(`gen:${session.userId}`);
+      return NextResponse.json({ success: false, error: "Teks hasil ekstraksi terlalu pendek. Upload ulang file." }, { status: 400 });
+    }
 
     void (async () => {
       try {
-        const res = await fetch(fileLink);
-        const arr = await res.arrayBuffer();
-        const bytes = Buffer.from(arr);
-        await runGeneration(id, bytes, ext);
+        await runGenerationFromText(id, text, session.userId!);
       } catch (e) {
         console.error("Generate error:", e);
       } finally {
@@ -85,7 +82,7 @@ export async function POST(
 
     await appendEvent(`gen:${session.userId}`, "gen.queued", { generationId: id });
 
-    return NextResponse.json({ success: true, message: "AI generation dimulai", generationId: id });
+    return NextResponse.json({ success: true, message: "AI generation dimulai. Draft siap dalam beberapa menit.", generationId: id });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Generate trigger error:", e);

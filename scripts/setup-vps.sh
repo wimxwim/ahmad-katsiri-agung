@@ -155,6 +155,9 @@ chmod +x /opt/backup-db.sh
 # Cron: backup setiap jam 2 pagi
 (crontab -l 2>/dev/null; echo "0 2 * * * /opt/backup-db.sh >> /var/log/akal-backup.log 2>&1") | crontab -
 
+# Cron: AI generate jam 00:00 WIB
+(crontab -l 2>/dev/null; echo "0 0 * * * source /opt/akal-center/.env.production && bash /opt/akal-center/scripts/cron-generate.sh >> /var/log/akal-cron.log 2>&1") | crontab -
+
 # --- Logrotate ---
 echo "📋 Configuring logrotate..."
 cat > /etc/logrotate.d/akal-center <<LOGROTATE

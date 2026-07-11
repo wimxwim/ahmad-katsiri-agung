@@ -43,8 +43,8 @@ export function Footer({
               <span>AKAL Center</span>
             </Link>
             <p className="mt-3 text-sm text-on-surface-variant leading-relaxed max-w-xs">
-              Model Pembelajaran Aqidah Akhlaq berbasis Deep Learning untuk
-              SMP Kelas 7–9.
+              Platform multi-guru dengan AI Document Generator. Ubah dokumen jadi
+              materi, quiz, dan soal — guru tetap memegang kendali penuh.
             </p>
           </div>
 

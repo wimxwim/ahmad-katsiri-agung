@@ -131,7 +131,7 @@ const valuePillars = [
   {
     title: "Modern 2026",
     label: "PILAR 06",
-    desc: "Arsitektur hemat: Vercel, Supabase, ImageKit. Siap tumbuh ke VPS saat skala bertambah tanpa rombak dari nol.",
+    desc: "Arsitektur cloud-ready: serverless, database terkelola, penyimpanan media global. Siap tumbuh saat skala bertambah tanpa rombak dari nol.",
     icon: Zap,
     span: "lg:col-span-2",
   },
@@ -551,9 +551,9 @@ export default function Home() {
                 </p>
               </div>
               <div className="rounded-2xl border border-border-precision bg-white p-6 shadow-glass">
-                <p className="font-heading text-xl font-semibold text-on-surface">Siap tumbuh ke VPS</p>
+                <p className="font-heading text-xl font-semibold text-on-surface">Siap tumbuh bersama</p>
                 <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
-                  Fase sekarang tetap hemat: Vercel, Supabase, ImageKit. Saat guru dan siswa sudah banyak, arsitektur bisa dipindah ke VPS tanpa rombak produk dari nol.
+                  Fase sekarang tetap hemat dengan arsitektur cloud. Saat guru dan siswa sudah banyak, infrastruktur bisa diskalakan tanpa rombak produk dari nol.
                 </p>
               </div>
             </motion.div>

@@ -14,6 +14,7 @@ interface KursusItem {
   slug: string;
   deskripsi: string | null;
   isPublic: boolean;
+  harga: number;
   createdAt: string;
 }
 
@@ -149,19 +150,19 @@ export default function KursusDetailPage() {
                   <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
                     <GraduationCap className="w-7 h-7 text-primary" />
                   </div>
-                  <p className="font-heading font-bold text-2xl text-on-surface">GRATIS</p>
+                  <p className="font-heading font-bold text-2xl text-on-surface">{kursus.harga === 0 ? "GRATIS" : `Rp${kursus.harga.toLocaleString("id-ID")}`}</p>
                   <p className="text-xs text-on-surface-variant mt-1">
-                    Akses penuh tanpa biaya
+                    {kursus.harga === 0 ? "Akses penuh tanpa biaya" : "Pembayaran sekali untuk akses penuh"}
                   </p>
                 </div>
 
                 <ul className="space-y-2.5 mb-5 text-sm text-on-surface-variant">
                   {[
-                    "14 materi pembelajaran",
+                    "Materi pembelajaran",
                     "Quiz interaktif",
                     "Game edukasi",
                     "Sertifikat digital",
-                    "Akses selamanya",
+                    "Akses tanpa batas waktu",
                   ].map((f, i) => (
                     <li key={i} className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />

@@ -346,3 +346,102 @@ export async function runGeneration(
     throw e;
   }
 }
+
+export async function runGenerationFromText(
+  generationId: string,
+  sourceText: string,
+  guruId: string,
+): Promise<void> {
+  const [gen] = await db
+    .select()
+    .from(aiGeneration)
+    .where(eq(aiGeneration.id, generationId))
+    .limit(1);
+  if (!gen) throw new Error("Generation record tidak ditemukan");
+
+  const truncatedSource = sourceText.slice(0, 12_000);
+
+  let aiResults: [ChatResult, ChatResult, ChatResult];
+  try {
+    const materiRes = await withTimeout(
+      chatWithFallback(
+        [
+          { role: "system", content: MATERI_SYSTEM },
+          { role: "user", content: `Materi:\n\n${truncatedSource}` },
+        ],
+        { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
+      ),
+      AI_TIMEOUT_MS,
+      "ai-materi",
+    );
+    const quizRes = await withTimeout(
+      chatWithFallback(
+        [
+          { role: "system", content: QUIZ_SYSTEM },
+          { role: "user", content: `Materi:\n\n${truncatedSource}` },
+        ],
+        { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
+      ),
+      AI_TIMEOUT_MS,
+      "ai-quiz",
+    );
+    const soalRes = await withTimeout(
+      chatWithFallback(
+        [
+          { role: "system", content: SOAL_SYSTEM },
+          { role: "user", content: `Materi:\n\n${truncatedSource}` },
+        ],
+        { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
+      ),
+      AI_TIMEOUT_MS,
+      "ai-soal",
+    );
+    aiResults = [materiRes, quizRes, soalRes];
+  } catch (error) {
+    console.error("[ai-generator] upstream AI failed:", error);
+    aiResults = fallbackAiResults(truncatedSource);
+  }
+
+  const [materiRes, quizRes, soalRes] = aiResults;
+  const materiParsed = parseMateriSafe(materiRes.content);
+  const quizParsed = parseQuizSafe(quizRes.content);
+  const soalParsed = parseSoalSafe(soalRes.content);
+
+  if (!materiParsed || !quizParsed) {
+    await db
+      .update(aiGeneration)
+      .set({ status: "failed", errorMessage: "AI output tidak valid", updatedAt: new Date() })
+      .where(eq(aiGeneration.id, generationId));
+    throw new Error("AI output tidak valid: materi atau quiz");
+  }
+
+  const tokensIn = materiRes.tokensIn + quizRes.tokensIn + soalRes.tokensIn;
+  const tokensOut = materiRes.tokensOut + quizRes.tokensOut + soalRes.tokensOut;
+
+  await db
+    .update(aiGeneration)
+    .set({
+      status: "ready",
+      materiStatus: "draft",
+      quizStatus: "draft",
+      soalStatus: soalParsed ? "draft" : "not_generated",
+      materiJudul: materiParsed.judul,
+      materiKonten: materiParsed.konten,
+      quizJudul: quizParsed.judul,
+      quizSoal: quizParsed.soal,
+      soalItems: soalParsed?.soal ?? [],
+      errorMessage: soalParsed ? null : "Soal belum valid. Materi dan quiz siap direview.",
+      tokenInput: tokensIn,
+      tokenOutput: tokensOut,
+      modelName: getModelName(),
+      updatedAt: new Date(),
+    })
+    .where(eq(aiGeneration.id, generationId));
+
+  await appendEvent(`gen:${guruId}`, "gen.ready", {
+    generationId,
+    tokensIn,
+    tokensOut,
+    model: getModelName(),
+  });
+}

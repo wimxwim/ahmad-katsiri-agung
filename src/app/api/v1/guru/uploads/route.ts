@@ -11,6 +11,7 @@ import { db } from "@/lib/db";
 import { fileMateri, aiGeneration, kursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
+import { extractText } from "@/lib/text-extractor";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -115,6 +116,21 @@ export async function POST(request: NextRequest) {
       .returning({ id: fileMateri.id });
 
     const jobId = row.id;
+
+    let extractionText = "";
+    try {
+      extractionText = await extractText(bytes, detected);
+    } catch (e) {
+      console.error("Extraction failed:", e);
+    }
+
+    if (extractionText) {
+      await db
+        .update(fileMateri)
+        .set({ extractionText, status: "extracted", updatedAt: new Date() })
+        .where(eq(fileMateri.id, row.id));
+    }
+
     await appendEvent(
       `upload:${session.userId}`,
       "doc.uploaded",
