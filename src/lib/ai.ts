@@ -51,7 +51,7 @@ export function getModelForTask(complexity: AiTaskComplexity): string {
 export async function chat(
   messages: ChatMessage[],
   options: ChatOptions = {},
-  retries = 2,
+  retries = 1,
 ): Promise<ChatResult> {
   const url = `${getBaseUrl()}/chat/completions`;
   const model = options.model || getModelName();
@@ -73,7 +73,7 @@ export async function chat(
           Authorization: `Bearer ${getApiKey()}`,
         },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(120_000),
+        signal: AbortSignal.timeout(90_000),
       });
 
       if (!res.ok) {

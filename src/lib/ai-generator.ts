@@ -140,7 +140,8 @@ export async function runGeneration(
 
     const truncatedSource = sourceText.slice(0, 12_000);
 
-    const materiRes = await withTimeout(
+    const [materiRes, quizRes, soalRes] = await withTimeout(
+      Promise.all([
         chatWithFallback(
           [
             { role: "system", content: MATERI_SYSTEM },
@@ -148,11 +149,6 @@ export async function runGeneration(
           ],
           { model: getModelForTask("heavy"), temperature: 0.3, maxTokens: 1800 },
         ),
-        AI_TIMEOUT_MS,
-        "ai-materi",
-      );
-
-      const quizRes = await withTimeout(
         chatWithFallback(
           [
             { role: "system", content: QUIZ_SYSTEM },
@@ -160,11 +156,6 @@ export async function runGeneration(
           ],
           { model: getModelForTask("light"), temperature: 0.5, maxTokens: 2000 },
         ),
-        AI_TIMEOUT_MS,
-        "ai-quiz",
-      );
-
-      const soalRes = await withTimeout(
         chatWithFallback(
           [
             { role: "system", content: SOAL_SYSTEM },
@@ -172,9 +163,10 @@ export async function runGeneration(
           ],
           { model: getModelForTask("heavy"), temperature: 0.6, maxTokens: 2000 },
         ),
-        AI_TIMEOUT_MS,
-        "ai-soal",
-      );
+      ]),
+      AI_TIMEOUT_MS,
+      "ai",
+    );
 
     const materiParsed = parseMateriSafe(materiRes.content);
     const quizParsed = parseQuizSafe(quizRes.content);
