@@ -4,6 +4,9 @@
   UPDATE TERAKHIR: 11 Juli 2026 — audit RAM selesai, VPS migration planned.
   AI pipeline dari Vercel gagal (503 NaraRouter). Solusi: VPS 4GB 4vCPU.
   Upload 3 detik, generate synchronous, tidak perlu Worker/Queue/after().
+  FINAL: VPS 1 GB cukup untuk 200 murid + 20 guru + 1 admin.
+  Multi-tenant SaaS: Bang Agung sewa ke guru lain, biaya dibagi.
+  Rp65.490/bulan (Neo Lite XS 1.1). Data aman di Supabase+ImageKit+Upstash.
 -->
 
 ## IDENTITAS PROJECT
@@ -44,7 +47,12 @@
   <decision id="D-016">Payment: QRIS static (GoPay) for now — Midtrans pending approval. Payment page at /pembayaran with manual verification by owner.</decision>
   <decision id="D-018">VPS Migration: Neo Lite MS 4.4 (4 vCPU, 4 GB RAM, 60 GB SSD, West Java). Rp198.690/bulan. AI pipeline jalan langsung (synchronous), tidak perlu Worker/Queue/after(). Upload 3 detik, generate 3 menit. PostgreSQL + Redis di VPS sendiri. Latensi 5-10ms ke Indonesia.</decision>
 <decision id="D-019">RAM audit: 4 GB cukup untuk 1.700 user (1.500 siswa + 200 guru). Normal load 71% (2.9 GB), worst case 91.6% (3.75 GB). DB pool max 15, concurrent AI generation max 2.</decision>
-<decision id="D-020">ImageKit tetap untuk storage PDF (free 20 GB). File tidak disimpan di VPS. Database PostgreSQL di VPS, tidak pakai Supabase lagi.</decision></locked-decisions>
+<decision id="D-020">ImageKit tetap untuk storage PDF (free 20 GB). File tidak disimpan di VPS. Database PostgreSQL di VPS, tidak pakai Supabase lagi.</decision>
+<decision id="D-021">FINAL VPS: Neo Lite XS 1.1 (1 vCPU, 1 GB RAM, 60 GB SSD, West Java). Rp65.490/bulan. Cukup untuk 200 murid + 20 guru + 1 admin. Normal load 66%, peak 86% dengan swap 2 GB.</decision>
+<decision id="D-022">Multi-tenant SaaS: Satu domain (akalcenter.my.id), satu VPS, banyak guru. Bang Agung sewa platform ke guru lain (Cing Nani, Cing Ita, dll). Biaya VPS dibagi rata. Data diisolasi via RLS (guru_id).</decision>
+<decision id="D-023">Data strategy: Semua data di luar VPS — Supabase (PostgreSQL), ImageKit (PDF), Upstash (Redis). VPS mati = data TETAP aman. Tidak ada data sensitif (NIK, alamat) yang disimpan.</decision>
+<decision id="D-024">AI generation split: Upload siang (extract text + simpan DB), generate malam (cron 00:00 WIB). Guru juga bisa generate manual via tombol (antri 1 per 1).</decision>
+<decision id="D-025">Docker available: Testing pakai Docker dengan Supabase/ImageKit/Redis external. Build standalone, image 866 MB. Nanti tinggal ganti ke internal services pas VPS jadi.</decision></locked-decisions>
 
 ## STACK TEKNIS RESMI SAAT INI
 

@@ -1,8 +1,51 @@
 # AKAL Center — Design, Direction, and Product System
 
-**Versi:** 2.0 Draft Rebuild
+**Versi:** 2.1 — VPS Architecture Finalized (11 Juli 2026)
 
-**Tanggal update:** 7 Juli 2026
+**Tanggal update:** 11 Juli 2026
+
+---
+
+## 🔒 KEPUTUSAN ARSITEKTUR (11 Juli 2026)
+
+### VPS: Neo Lite XS 1.1
+- **1 vCPU, 1 GB RAM, 60 GB SSD, West Java**
+- **Rp65.490/bulan** (termasuk PPN)
+- Latensi 5-10ms ke Indonesia
+
+### Data Strategy
+- **Supabase**: PostgreSQL (database, free 500 MB)
+- **ImageKit**: PDF storage (free 20 GB)
+- **Upstash**: Redis cache/session (free 100 MB)
+- **NaraRouter**: AI generation (deepseek-v4-flash, Rp9/gen)
+- **VPS**: Next.js runtime only (tidak simpan data)
+
+### Multi-Tenant SaaS
+- Satu domain (akalcenter.my.id), satu VPS, banyak guru
+- Biaya VPS dibagi rata antar guru (Rp65.490 ÷ N guru)
+- Data diisolasi via RLS (guru_id)
+- 20 guru, 200 murid per guru
+
+### AI Pipeline
+- **Upload siang**: extract text + simpan ke DB (3 detik)
+- **Generate malam**: cron 00:00 WIB, proses semua queued
+- **Generate manual**: tombol "Generate Sekarang", antri 1 per 1
+- **Fallback**: deepseek-v4-flash → mimo-v2.5 → local
+- **Retry**: 503 backoff 1.5s/3s/6s
+
+### RAM Budget (1 GB)
+- OS: 200 MB | Next.js idle: 200 MB
+- 200 murid CBT: 225 MB | 2 guru upload: 110 MB
+- 1 guru generate: 150 MB | Buffer: 139 MB
+- Peak: 885 MB (86.4%) — swap 2 GB safety net
+
+### Docker
+- Multi-stage build, standalone output
+- Image: 866 MB
+- Supabase, ImageKit, Redis: external services
+- Testing sebelum VPS production
+
+---
 
 **Status:** Dokumen kerja aktif untuk rebuild total platform
 
