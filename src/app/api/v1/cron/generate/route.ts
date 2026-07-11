@@ -5,7 +5,7 @@ import { eq, asc, and } from "drizzle-orm";
 import { runGenerationFromText } from "@/lib/ai-generator";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 1800;
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   const auth = request.headers.get("Authorization");
