@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { after } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import {
   checkRateLimit,
@@ -178,28 +177,26 @@ export async function POST(request: NextRequest) {
         throw e;
       }
 
-      after(async () => {
-        try {
-          await runGeneration(generation.id, bytes, detected);
-        } catch (e) {
-          console.error("Generation async error:", e);
-          const isTimeout = e instanceof GenerationTimeoutError;
-          const isSchema = e instanceof GenerationSchemaError;
-          if (isSchema) {
-            await appendEvent(`gen:${session.userId}`, "gen.schema_failed", {
-              generationId: generation.id,
-              field: e.field,
-            });
-          } else if (isTimeout) {
-            await appendEvent(`gen:${session.userId}`, "gen.timeout", {
-              generationId: generation.id,
-              stage: e.stage,
-            });
-          }
-        } finally {
-          releaseConcurrent(`gen:${session.userId}`);
+      try {
+        await runGeneration(generation.id, bytes, detected);
+      } catch (e) {
+        console.error("Generation error:", e);
+        const isTimeout = e instanceof GenerationTimeoutError;
+        const isSchema = e instanceof GenerationSchemaError;
+        if (isSchema) {
+          await appendEvent(`gen:${session.userId}`, "gen.schema_failed", {
+            generationId: generation.id,
+            field: e.field,
+          });
+        } else if (isTimeout) {
+          await appendEvent(`gen:${session.userId}`, "gen.timeout", {
+            generationId: generation.id,
+            stage: e.stage,
+          });
         }
-      });
+      } finally {
+        releaseConcurrent(`gen:${session.userId}`);
+      }
     } else {
       await db
         .update(aiGeneration)
