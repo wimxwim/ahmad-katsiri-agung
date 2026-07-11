@@ -34,7 +34,7 @@ function getApiKey(): string {
 }
 
 export function getModelName(): string {
-  return process.env.AI_MODEL || "deepseek-v4-pro";
+  return process.env.AI_MODEL || "deepseek-v4-flash";
 }
 
 export function getFlashModel(): string {
@@ -51,7 +51,7 @@ export function getModelForTask(complexity: AiTaskComplexity): string {
 export async function chat(
   messages: ChatMessage[],
   options: ChatOptions = {},
-  retries = 0,
+  retries = 2,
 ): Promise<ChatResult> {
   const url = `${getBaseUrl()}/chat/completions`;
   const model = options.model || getModelName();
@@ -124,8 +124,14 @@ export async function chatWithFallback(
     const currentModel = options.model || getModelName();
     if (currentModel === heavyModel && flashModel !== heavyModel) {
       console.warn("Heavy model failed, falling back to flash:", (e as Error).message);
-      return await chat(messages, { ...options, model: flashModel });
+      try {
+        return await chat(messages, { ...options, model: flashModel });
+      } catch (e2) {
+        console.warn("Flash model also failed, falling back to mimo:", (e2 as Error).message);
+        return await chat(messages, { ...options, model: "mimo-v2.5" });
+      }
     }
-    throw e;
+    console.warn("Model failed, falling back to mimo:", (e as Error).message);
+    return await chat(messages, { ...options, model: "mimo-v2.5" });
   }
 }
