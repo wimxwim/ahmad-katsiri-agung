@@ -10,8 +10,10 @@ function getRedisConfig(): { url: string; token: string } | null {
   if (!connStr) return null;
 
   try {
-    // Parse rediss://default:token@endpoint.upstash.io:6379
     const u = new URL(connStr);
+    if (u.protocol === "redis:" || u.hostname === "localhost" || u.hostname === "127.0.0.1") {
+      return null;
+    }
     const token = decodeURIComponent(u.password || u.username);
     const endpoint = u.hostname;
     return { url: `https://${endpoint}`, token };

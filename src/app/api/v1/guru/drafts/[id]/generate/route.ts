@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { after } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError } from "@/lib/api-response";
 import { appendEvent } from "@/lib/event-store";
@@ -66,25 +65,25 @@ export async function POST(
     }
 
     const fileLink = file.linkAkses.startsWith("/")
-      ? `https://akalcenter.my.id${file.linkAkses}`
+      ? `${process.env.NEXT_PUBLIC_SITE_URL || "https://akalcenter.my.id"}${file.linkAkses}`
       : file.linkAkses;
 
-    after(async () => {
+    const ext = gen.sourceFileName?.split(".").pop() || "pdf";
+
+    void (async () => {
       try {
         const res = await fetch(fileLink);
         const arr = await res.arrayBuffer();
         const bytes = Buffer.from(arr);
-        const ext = gen.sourceFileName?.split(".").pop() || "pdf";
         await runGeneration(id, bytes, ext);
       } catch (e) {
         console.error("Generate error:", e);
       } finally {
         releaseConcurrent(`gen:${session.userId}`);
       }
-    });
+    })();
 
     await appendEvent(`gen:${session.userId}`, "gen.queued", { generationId: id });
-    releaseConcurrent(`gen:${session.userId}`);
 
     return NextResponse.json({ success: true, message: "AI generation dimulai", generationId: id });
   } catch (e) {

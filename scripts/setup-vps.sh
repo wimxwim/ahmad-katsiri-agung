@@ -130,6 +130,45 @@ echo "⚙️ Configuring PM2 auto-start..."
 pm2 startup systemd -u $SUDO_USER --hp /home/$SUDO_USER
 env PATH=$PATH:/usr/bin pm2 startup systemd -u $SUDO_USER --hp /home/$SUDO_USER
 
+# --- SSL Certbot (Let's Encrypt) ---
+echo "🔒 Installing Certbot..."
+apt install -y certbot python3-certbot-nginx
+echo ""
+echo "⚠️  After DNS is pointing to this VPS, run:"
+echo "   certbot --nginx -d akalcenter.my.id -d www.akalcenter.my.id"
+
+# --- PostgreSQL Backup Script ---
+echo "💾 Creating backup script..."
+cat > /opt/backup-db.sh <<'BACKUP'
+#!/bin/bash
+BACKUP_DIR="/opt/backups"
+mkdir -p "$BACKUP_DIR"
+DATE=$(date +%Y%m%d_%H%M%S)
+FILE="$BACKUP_DIR/akalcenter_$DATE.sql.gz"
+sudo -u postgres pg_dump akalcenter | gzip > "$FILE"
+find "$BACKUP_DIR" -name "*.sql.gz" -mtime +7 -delete
+echo "Backup: $FILE"
+BACKUP
+
+chmod +x /opt/backup-db.sh
+
+# Cron: backup setiap jam 2 pagi
+(crontab -l 2>/dev/null; echo "0 2 * * * /opt/backup-db.sh >> /var/log/akal-backup.log 2>&1") | crontab -
+
+# --- Logrotate ---
+echo "📋 Configuring logrotate..."
+cat > /etc/logrotate.d/akal-center <<LOGROTATE
+/var/log/akal-*.log {
+    daily
+    rotate 14
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+}
+LOGROTATE
+
 echo ""
 echo "✅ SETUP COMPLETE!"
 echo "========================="
@@ -137,6 +176,8 @@ echo "Next steps:"
 echo "1. Set DB password: ALTER USER akal PASSWORD 'your-secure-password';"
 echo "2. Copy .env.production to /opt/akal-center/.env.production"
 echo "3. Run: bash scripts/deploy-vps.sh"
+echo "4. Point DNS A record to this VPS IP (disable Cloudflare proxy)"
+echo "5. SSL: certbot --nginx -d akalcenter.my.id -d www.akalcenter.my.id"
 echo ""
 echo "⚠️  CHANGE THE DATABASE PASSWORD NOW:"
 echo "   sudo -u postgres psql -c \"ALTER USER akal PASSWORD 'YOUR_SECURE_PASSWORD';\""
