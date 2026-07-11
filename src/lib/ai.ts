@@ -55,6 +55,7 @@ export async function chat(
 ): Promise<ChatResult> {
   const url = `${getBaseUrl()}/chat/completions`;
   const model = options.model || getModelName();
+  console.error("[ai] chat() called:", { url, model, msgLen: messages.reduce((s,m) => s + m.content.length, 0) });
   const body = {
     model,
     messages,
@@ -75,6 +76,8 @@ export async function chat(
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(120_000),
       });
+
+      console.error("[ai] response:", { status: res.status, ok: res.ok, attempt });
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");

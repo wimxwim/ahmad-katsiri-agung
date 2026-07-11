@@ -234,7 +234,9 @@ export async function runGeneration(
       );
       aiResults = [materiRes, quizRes, soalRes];
     } catch (error) {
-      console.error("[ai-generator] upstream AI failed, using local fallback:", error);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error("[ai-generator] upstream AI failed:", errMsg);
+      console.error("[ai-generator] error stack:", error instanceof Error ? (error.stack ?? "").slice(0, 500) : "");
       aiResults = fallbackAiResults(truncatedSource);
     }
 
