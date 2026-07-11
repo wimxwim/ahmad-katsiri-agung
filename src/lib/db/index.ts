@@ -8,7 +8,7 @@ type DrizzleDb = ReturnType<typeof drizzle<typeof schema>>;
 function createDb(): DrizzleDb {
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    max: 20,
+    max: 8,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 15000,
     statement_timeout: 30000,

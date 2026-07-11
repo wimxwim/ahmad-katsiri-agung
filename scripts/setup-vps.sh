@@ -44,15 +44,15 @@ ALTER USER akal CREATEDB;
 GRANT ALL ON SCHEMA public TO akal;
 SQL
 
-# Optimize for 4GB RAM
+# Optimize for 2GB RAM
 cat >> /etc/postgresql/16/main/postgresql.conf <<CONF
 
-# --- AKAL Center Optimizations (4GB RAM) ---
-shared_buffers = 1GB
-effective_cache_size = 3GB
-maintenance_work_mem = 256MB
+# --- AKAL Center Optimizations (2GB RAM) ---
+shared_buffers = 512MB
+effective_cache_size = 1536MB
+maintenance_work_mem = 128MB
 work_mem = 16MB
-max_connections = 100
+max_connections = 50
 random_page_cost = 1.1
 CONF
 
@@ -88,8 +88,8 @@ echo "📁 Creating app directory..."
 mkdir -p /opt/akal-center
 chown -R $SUDO_USER:$SUDO_USER /opt/akal-center
 
-# --- Swap (2GB) ---
-echo "💾 Creating swap..."
+# --- Swap (2GB - WAJIB untuk VPS 2GB) ---
+echo "💾 Creating swap (2GB)..."
 fallocate -l 2G /swapfile
 chmod 600 /swapfile
 mkswap /swapfile

@@ -17,7 +17,7 @@ import {
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-const MAX_CONCURRENT_PER_GURU = 2;
+const MAX_CONCURRENT_PER_GURU = 1;
 
 export async function POST(
   request: NextRequest,
