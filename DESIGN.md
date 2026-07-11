@@ -984,6 +984,51 @@ Fase sekarang AI harus diposisikan terutama sebagai:
 
 - budget awareness
 
+### 18.6 Production Stability Contract — AI Document Pipeline
+
+Per 11 Juli 2026, alur upload dokumen sudah berhasil di production setelah masalah berlapis: build Vercel gagal karena import ikon yang tidak tersedia, health check AI membaca env salah, NaraRouter `GET /v1/models` hidup tetapi `POST /v1/chat/completions` dari Vercel timeout, dan output soal AI kadang meleset dari schema.
+
+Kontrak ini **jangan diubah tanpa bukti production baru**:
+
+1. `src/lib/ai.ts` memakai endpoint OpenAI-compatible NaraRouter dengan fallback base URL:
+
+   ```txt
+   https://router.bynara.id/v1
+   ```
+
+   Key dibaca dari `AI_API_KEY || NARAROUTER_API_KEY`. Jangan wajibkan `AI_BASE_URL` karena env itu boleh kosong.
+
+2. `src/lib/ai-generator.ts` harus mempertahankan local fallback generator. Jika NaraRouter timeout/502/504 dari Vercel, sistem tetap membuat draft materi, quiz, dan soal dari teks ekstraksi agar guru tidak melihat upload gagal total.
+
+3. `src/lib/ai-sanitizer.ts` harus mempertahankan normalisasi output AI. Variasi seperti `Pilihan Ganda`, `items`, `questions`, `choices`, opsi array, atau kunci berupa teks jawaban harus dinormalisasi dulu sebelum Zod schema final.
+
+4. Draft tidak boleh gagal total hanya karena bagian soal invalid. Minimal materi dan quiz yang valid tetap disimpan sebagai draft. Semua hasil tetap draft dan wajib direview guru.
+
+5. Health check `/api/health` harus menampilkan kondisi realistis: ImageKit connected, AI connected untuk `GET /models`, Supabase REST `not_applicable` jika app tetap memakai Drizzle/Postgres langsung.
+
+6. Jangan impor `@animateicons/react/lucide` di production. Dashboard guru harus memakai `lucide-react` karena package path itu pernah membuat Vercel build gagal.
+
+### 18.7 Upgrade Path yang Aman
+
+Upgrade yang disarankan bukan menghapus fallback, tetapi mengganti lapisan reliability dengan pengganti yang terbukti:
+
+1. **Durable AI job queue** — upload route cukup menyimpan file dan enqueue job. Worker/queue yang memproses ekstraksi dan AI. Pilihan: Vercel Workflows, Cloudflare Queue/Worker, atau VPS worker.
+
+2. **Vercel AI Gateway** — gunakan base URL OpenAI-compatible `https://ai-gateway.vercel.sh/v1` dengan `AI_GATEWAY_API_KEY` atau BYOK. Ini memberi observability, model routing, dan lebih cocok dengan runtime Vercel.
+
+3. **NaraRouter support escalation** — laporkan bahwa `GET /v1/models` dari Vercel berhasil tetapi `POST /v1/chat/completions` timeout 504. Sertakan timestamp, region Vercel, dan model yang dipakai. Jangan kirim API key.
+
+4. **Quality fallback upgrade** — fallback lokal sekarang adalah safety net agar fitur tidak mati. Jika kualitas ingin ditingkatkan, buat template deterministic yang lebih pedagogis atau jadikan fallback sebagai draft minimal yang bisa diregenerate ketika provider AI sehat.
+
+Urutan upgrade yang aman:
+
+```txt
+1. Pertahankan fallback lokal yang sudah terbukti.
+2. Tambah queue/worker atau AI Gateway sebagai jalur utama baru.
+3. Tes upload PDF nyata sampai status ready + materi/quiz/soal draft.
+4. Baru boleh mengubah fallback lama, jangan sebelumnya.
+```
+
 ---
 
 ## 19. File Upload Security Principles

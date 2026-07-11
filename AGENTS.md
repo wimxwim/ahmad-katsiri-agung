@@ -298,7 +298,39 @@
   <principle>Guru wajib review sebelum publish</principle>
   <principle>File upload dianggap tidak tepercaya</principle>
   <principle>Ekstrak teks dulu bila memungkinkan; jangan oper file mentah ke subsistem lain tanpa validasi</principle>
+  <principle>AI document pipeline production per 11 Juli 2026 WAJIB mempertahankan fallback lokal di src/lib/ai-generator.ts: jika NaraRouter chat completions dari Vercel timeout/502/504, sistem tetap membuat draft materi+quiz+soal dari teks ekstraksi agar upload guru tidak gagal total.</principle>
+  <principle>JANGAN hapus normalisasi output AI di src/lib/ai-sanitizer.ts. Model sering mengembalikan variasi seperti "Pilihan Ganda", "items", "questions", "choices", atau opsi array; normalizer membuat variasi itu tetap lolos schema aman.</principle>
+  <principle>JANGAN kembalikan perilaku lama yang membuat seluruh draft failed hanya karena soal invalid. Materi dan quiz yang valid harus tetap disimpan sebagai draft; semua output tetap perlu review guru sebelum publish.</principle>
+  <principle>Health AI wajib memakai base URL default https://router.bynara.id/v1 dan key fallback AI_API_KEY || NARAROUTER_API_KEY. Jangan wajibkan AI_BASE_URL karena env itu sengaja boleh kosong.</principle>
 </ai-principles>
+
+## AI DOCUMENT PIPELINE — FIX BERHASIL 11 JULI 2026, JANGAN DIHAPUS
+
+<ai-document-pipeline-stability>
+  <problem>Upload dokumen sempat gagal berhari-hari karena beberapa masalah berlapis: build Vercel gagal akibat import @animateicons/react/lucide, health check AI false not_configured, NaraRouter GET /models connected tetapi POST /chat/completions dari Vercel runtime timeout 504, dan output soal AI kadang tidak sesuai schema ketat.</problem>
+  <verified-fix>Per 11 Juli 2026 production berhasil: /api/health status ok, imagekit connected, ai connected, upload PDF berhasil, draft terbaru status ready, materiStatus draft, quizStatus draft, soalStatus draft, errorMessage null.</verified-fix>
+  <critical-files>
+    <file path="src/lib/ai.ts">OpenAI-compatible client untuk NaraRouter. Base URL fallback = https://router.bynara.id/v1. API key fallback = AI_API_KEY || NARAROUTER_API_KEY. Timeout sengaja dibatasi agar tidak melewati durasi Vercel.</file>
+    <file path="src/lib/ai-generator.ts">Orkestrasi upload -> extract text -> AI/fallback -> save draft. Local fallback di file ini WAJIB dipertahankan sampai ada queue/AI Gateway/worker yang terbukti lebih stabil di production.</file>
+    <file path="src/lib/ai-sanitizer.ts">Validasi dan normalisasi output AI. Jangan hapus normalizer tipe/opsi/kunci karena ini yang mencegah schema invalid pada output soal.</file>
+    <file path="src/app/api/health/route.ts">Health check harus sejalan dengan fallback env di src/lib/ai.ts agar tidak false not_configured.</file>
+    <file path="src/app/api/readyz/route.ts">Endpoint uji AI kecil. Jika endpoint ini 504 tetapi /api/health AI connected, berarti GET /models hidup tetapi POST /chat/completions bermasalah dari Vercel.</file>
+    <file path="src/app/guru/beranda/page.tsx">Harus pakai lucide-react. Jangan impor @animateicons/react/lucide karena pernah membuat Vercel build production gagal.</file>
+  </critical-files>
+  <do-not-change>
+    <item>JANGAN hapus local fallback generator di ai-generator.ts sebelum pengganti production terbukti lewat upload PDF nyata.</item>
+    <item>JANGAN hapus partial-save behavior. Draft tidak boleh gagal total jika hanya output soal yang invalid.</item>
+    <item>JANGAN longgarkan aturan draft review. Hasil AI/fallback tetap draft dan guru wajib approve manual.</item>
+    <item>JANGAN menyimpan API key, private key ImageKit, atau secret NaraRouter ke file markdown. Repo public.</item>
+    <item>JANGAN deployment dari local dirty tree jika ada banyak perubahan tidak terkait; commit hanya file yang memang disentuh.</item>
+  </do-not-change>
+  <upgrade-path>
+    <item>Pilihan upgrade paling aman: pindahkan AI job ke durable queue/worker (Vercel Workflows, Cloudflare Queue/Worker, atau VPS worker) sehingga upload route hanya enqueue job.</item>
+    <item>Pilihan upgrade provider: gunakan Vercel AI Gateway OpenAI-compatible base URL https://ai-gateway.vercel.sh/v1 dengan AI_GATEWAY_API_KEY/BYOK agar request AI lebih cocok dengan Vercel runtime dan punya observability.</item>
+    <item>Pilihan upgrade NaraRouter: minta support NaraRouter cek kenapa GET /v1/models dari Vercel berhasil tetapi POST /v1/chat/completions timeout 504. Sertakan region Vercel dan timestamp, tapi jangan kirim API key.</item>
+    <item>Pilihan upgrade kualitas fallback: fallback lokal saat ini adalah reliability fallback agar fitur tidak mati. Jika ingin kualitas lebih baik, buat deterministic template yang lebih kaya atau regenerate ulang lewat provider stabil.</item>
+  </upgrade-path>
+</ai-document-pipeline-stability>
 
 ## PRD & DOKUMEN YANG WAJIB DIBACA SEBELUM FITUR BESAR
 
