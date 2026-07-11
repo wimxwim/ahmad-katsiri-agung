@@ -95,8 +95,8 @@ export default {
       return new Response(null, { status: 403 });
     }
 
-    // AI Proxy — forward POST /ai ke NaraRouter
-    if (url.pathname === '/ai' && request.method === 'POST') {
+    // AI Proxy — forward POST /v1/chat/completions ke NaraRouter
+    if (url.pathname === '/v1/chat/completions' && request.method === 'POST') {
       const authHeader = request.headers.get('Authorization') || '';
       if (!authHeader) {
         return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
