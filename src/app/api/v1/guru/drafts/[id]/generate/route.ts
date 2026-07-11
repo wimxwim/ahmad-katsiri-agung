@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError } from "@/lib/api-response";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { aiGeneration, fileMateri } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { runGeneration } from "@/lib/ai-generator";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import {
   checkRateLimit,
@@ -63,28 +65,23 @@ export async function POST(
       throw e;
     }
 
-    await db
-      .update(aiGeneration)
-      .set({ status: "generating", updatedAt: new Date() })
-      .where(eq(aiGeneration.id, id));
+    const fileLink = file.linkAkses.startsWith("/")
+      ? `https://akalcenter.my.id${file.linkAkses}`
+      : file.linkAkses;
 
-    const msg = {
-      generationId: id,
-      fileId: gen.fileMateriId,
-      fileName: gen.sourceFileName,
-      ext: gen.sourceFileName?.split(".").pop() || "pdf",
-      guruId: gen.guruId,
-      kursusId: gen.kursusId,
-      imagekitFileId: file.imagekitFileId,
-      imagekitLink: file.linkAkses,
-    };
-
-    const workerUrl = "https://akal-center.wimxgooo.workers.dev/v1/ai/generate";
-    fetch(workerUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(msg),
-    }).catch(() => {});
+    after(async () => {
+      try {
+        const res = await fetch(fileLink);
+        const arr = await res.arrayBuffer();
+        const bytes = Buffer.from(arr);
+        const ext = gen.sourceFileName?.split(".").pop() || "pdf";
+        await runGeneration(id, bytes, ext);
+      } catch (e) {
+        console.error("Generate error:", e);
+      } finally {
+        releaseConcurrent(`gen:${session.userId}`);
+      }
+    });
 
     await appendEvent(`gen:${session.userId}`, "gen.queued", { generationId: id });
     releaseConcurrent(`gen:${session.userId}`);
