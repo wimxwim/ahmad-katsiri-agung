@@ -67,6 +67,7 @@ export async function chat(
       Authorization: `Bearer ${getApiKey()}`,
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(60_000),
   });
 
   if (!res.ok) {

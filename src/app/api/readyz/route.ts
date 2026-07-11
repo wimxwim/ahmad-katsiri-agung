@@ -36,3 +36,16 @@ export async function GET(req: NextRequest) {
     timestamp: new Date().toISOString(),
   });
 }
+
+export async function POST(req: NextRequest) {
+  const { chat } = await import("@/lib/ai");
+  try {
+    const result = await chat(
+      [{ role: "user", content: "say hi in 3 words" }],
+      { model: "deepseek-v4-pro", maxTokens: 20 },
+    );
+    return NextResponse.json({ ok: true, result });
+  } catch (e: any) {
+    return NextResponse.json({ ok: false, error: e.message }, { status: 500 });
+  }
+}
