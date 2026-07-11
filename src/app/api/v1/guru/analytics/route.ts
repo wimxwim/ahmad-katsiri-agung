@@ -1,3 +1,4 @@
+import { KKM } from "@/lib/constants";
 import {
   kursus,
   siswaKursus,
@@ -103,8 +104,6 @@ export async function GET(request: NextRequest) {
           .where(inArray(quizPublished.kursusId, kursusIds))
       : Promise.resolve([]),
   ]);
-
-  const KKM = 70;
 
   const kursusBreakdown = kursusList.map((k) => {
     const enrolledSiswa = enrollments.filter((e) => e.kursusId === k.id);

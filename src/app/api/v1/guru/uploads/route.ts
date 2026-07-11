@@ -17,6 +17,9 @@ import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { runGeneration, GenerationTimeoutError, GenerationSchemaError } from "@/lib/ai-generator";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
+
 const ALLOWED_EXT = new Set(["pdf", "docx"]);
 const ALLOWED_MIME = new Set([
   "application/pdf",
@@ -154,8 +157,14 @@ export async function POST(request: NextRequest) {
     if (concRl.allowed) {
       try {
         await checkQuota(session.userId!, session.role, "ai_generation");
-} catch (e) {
-    if (e instanceof GuardError) return apiError(e.message, e.status);
+      } catch (e) {
+        if (e instanceof GuardError) {
+          await db
+            .update(aiGeneration)
+            .set({ status: "failed", errorMessage: e.message })
+            .where(eq(aiGeneration.id, generation.id));
+          return apiError(e.message, e.status);
+        }
         if (e instanceof QuotaExceededError) {
           await db
             .update(aiGeneration)
