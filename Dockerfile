@@ -1,41 +1,33 @@
-# Stage 1: Install dependencies
+# syntax=docker.io/docker/dockerfile:1
 FROM node:22-alpine AS base
+RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
 FROM base AS deps
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --omit=dev
 
-FROM deps AS builder
-WORKDIR /app
+FROM base AS builder
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npx next build
+RUN npm run build
 
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
-RUN apk add --no-cache libjemalloc2 postgresql16-client
-RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-RUN mkdir -p migrations && chown nextjs:nodejs migrations
-COPY --from=builder /app/src/lib/db/migrations ./migrations
-
-COPY scripts/prod-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
-ENV LD_PRELOAD=/usr/lib/libjemalloc.so.2
-ENV NODE_OPTIONS="--max-old-space-size=1536 --max-semi-space-size=16 --optimize-for-size --expose-gc"
-ENV MALLOC_ARENA_MAX=2
-ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
-
 USER nextjs
 EXPOSE 3000
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["node", "server.js"]
