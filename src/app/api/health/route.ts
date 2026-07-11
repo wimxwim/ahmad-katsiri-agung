@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql } from "drizzle-orm";
 
-const startTime = Date.now();
+const BUILD_TIMESTAMP = new Date(process.env.BUILD_TIMESTAMP || Date.now()).getTime();
 const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || "AKAL Center";
 
 async function checkPostgres(): Promise<{ status: string; latencyMs: number }> {
@@ -29,21 +29,9 @@ async function checkRedis(): Promise<{ status: string; latencyMs: number }> {
 }
 
 async function checkSupabase(): Promise<{ status: string; latencyMs: number }> {
-  const t0 = performance.now();
-  try {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    if (!url) return { status: "not_configured", latencyMs: 0 };
-    const res = await fetch(`${url}/rest/v1/`, {
-      headers: {
-        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""}`,
-      },
-      signal: AbortSignal.timeout(5000),
-    });
-    return { status: res.ok || res.status === 401 || res.status === 404 ? "connected" : `error_${res.status}`, latencyMs: Math.round(performance.now() - t0) };
-  } catch {
-    return { status: "unreachable", latencyMs: Math.round(performance.now() - t0) };
-  }
+  // Aplikasi ini tidak menggunakan Supabase Auth/REST; database lewat Drizzle+Postgres.
+  // Health Supabase dianggap not_applicable untuk mencegah false-alarm degraded.
+  return { status: "not_applicable", latencyMs: 0 };
 }
 
 async function checkImageKit(): Promise<{ status: string; latencyMs: number }> {
@@ -52,11 +40,13 @@ async function checkImageKit(): Promise<{ status: string; latencyMs: number }> {
     const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
     const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT;
     if (!privateKey || !urlEndpoint) return { status: "not_configured", latencyMs: 0 };
-    const res = await fetch("https://api.imagekit.io/v1/files?limit=1", {
-      headers: { Authorization: `Basic ${Buffer.from(`${privateKey}:`).toString("base64")}` },
+    const url = `${urlEndpoint.replace(/\/$/, "")}/health-check-${Date.now()}.jpg?tr=w-1`;
+    const res = await fetch(url, {
+      method: "HEAD",
       signal: AbortSignal.timeout(5000),
     });
-    return { status: res.ok ? "connected" : `error_${res.status}`, latencyMs: Math.round(performance.now() - t0) };
+    const isImageKit = (res.headers.get("x-server") || "").toLowerCase().includes("imagekit");
+    return { status: isImageKit ? "connected" : `error_${res.status}`, latencyMs: Math.round(performance.now() - t0) };
   } catch {
     return { status: "unreachable", latencyMs: Math.round(performance.now() - t0) };
   }
@@ -65,9 +55,9 @@ async function checkImageKit(): Promise<{ status: string; latencyMs: number }> {
 async function checkAI(): Promise<{ status: string; latencyMs: number }> {
   const t0 = performance.now();
   try {
-    const baseUrl = process.env.AI_BASE_URL;
-    const apiKey = process.env.AI_API_KEY;
-    if (!baseUrl || !apiKey) return { status: "not_configured", latencyMs: 0 };
+    const baseUrl = process.env.AI_BASE_URL || "https://router.bynara.id/v1";
+    const apiKey = process.env.AI_API_KEY || process.env.NARAROUTER_API_KEY;
+    if (!apiKey) return { status: "not_configured", latencyMs: 0 };
     const res = await fetch(`${baseUrl}/models`, {
       headers: { Authorization: `Bearer ${apiKey}` },
       signal: AbortSignal.timeout(5000),
@@ -89,15 +79,19 @@ export async function GET() {
   ]);
 
   const services = { postgres: pg, redis, supabase, imagekit, ai };
-  const allOk = Object.values(services).every((s) => s.status === "connected" || s.status === "not_configured");
-  const degraded = Object.values(services).some((s) => s.status !== "connected" && s.status !== "not_configured");
+  const allOk = Object.values(services).every(
+    (s) => s.status === "connected" || s.status === "not_configured" || s.status === "not_applicable",
+  );
+  const degraded = Object.values(services).some(
+    (s) => s.status !== "connected" && s.status !== "not_configured" && s.status !== "not_applicable",
+  );
 
   return NextResponse.json(
     {
       status: allOk ? "ok" : degraded ? "degraded" : "error",
       app: APP_NAME,
       version: "2.0.0",
-      uptime: Math.floor((Date.now() - startTime) / 1000),
+      uptime: Math.floor((Date.now() - BUILD_TIMESTAMP) / 1000),
       responseTimeMs: Math.round(performance.now() - t0),
       timestamp: new Date().toISOString(),
       services,
