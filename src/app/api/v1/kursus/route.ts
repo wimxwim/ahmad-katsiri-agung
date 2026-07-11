@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
         deskripsi: sanitizeText(parsed.data.deskripsi || "", 500),
         guruId: session.userId,
         harga: 0,
-        isPublic: true,
+        isPublic: false,
       })
       .returning();
 

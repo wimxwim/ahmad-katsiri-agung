@@ -7,6 +7,7 @@ import {
   materiPublished,
   quizPublished,
   soalPublished,
+  kursus,
 } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
@@ -154,6 +155,18 @@ export async function POST(
       quizId,
       soalCount,
     });
+
+    if (allApproved && row.kursusId && (materiId || quizId)) {
+      await db
+        .update(kursus)
+        .set({
+          statusPublikasi: "PUBLIK",
+          isPublic: true,
+          publishedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(and(eq(kursus.id, row.kursusId), eq(kursus.guruId, session.userId)));
+    }
 
     return NextResponse.json({
       success: true,

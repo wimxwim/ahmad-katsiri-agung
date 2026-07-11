@@ -46,6 +46,7 @@ export default function KursusDetailPage() {
   async function handleEnroll() {
     if (!kursus) return;
     setEnrolling(true);
+    setError("");
     try {
       const res = await fetch("/api/v1/enroll", {
         method: "POST",
@@ -55,13 +56,21 @@ export default function KursusDetailPage() {
       });
       if (res.status === 401) {
         const returnUrl = encodeURIComponent(`/kursus/${params.slug}`);
-        window.location.href = `/masuk?redirect=${returnUrl}`;
+        window.location.href = `/masuk?portal=siswa&redirect=${returnUrl}`;
         return;
       }
-      if (!res.ok) throw new Error("Gagal mendaftar");
+      if (res.status === 429) {
+        setError("Terlalu banyak permintaan. Tunggu beberapa detik lalu coba lagi.");
+        return;
+      }
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(j.error || j.message || "Gagal mendaftar");
+        return;
+      }
       setEnrolled(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal mendaftar");
+      setError("Gagal terhubung ke server. Periksa koneksi internet Anda.");
     } finally {
       setEnrolling(false);
     }
@@ -183,7 +192,7 @@ export default function KursusDetailPage() {
                       </p>
                     </div>
                     <Link
-                      href="/siswa/materi"
+                      href={`/siswa/materi?kursusId=${kursus.id}`}
                       className="block w-full py-2.5 px-4 bg-primary text-white text-center font-semibold text-sm rounded-xl hover:bg-primary/90 transition-colors font-heading"
                     >
                       Mulai Belajar

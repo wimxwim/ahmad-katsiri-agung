@@ -13,8 +13,10 @@ export async function GET(request: NextRequest) {
     const rl = await checkRateLimit(`siswa-materi-list:${session.userId}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
+    const filterKursusId = request.nextUrl.searchParams.get("kursusId");
+
     const enrollments = await db
-      .select({ kursusId: siswaKursus.kursusId, judul: siswaKursus.status })
+      .select({ kursusId: siswaKursus.kursusId })
       .from(siswaKursus)
       .where(and(eq(siswaKursus.siswaId, session.userId!), eq(siswaKursus.status, "AKTIF")));
     const enrolledIds = enrollments.map((e) => e.kursusId);
@@ -22,10 +24,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ data: [] });
     }
 
+    const targetIds = filterKursusId && enrolledIds.includes(filterKursusId)
+      ? [filterKursusId]
+      : enrolledIds;
+
     const materiList = await db
       .select()
       .from(materiPublished)
-      .where(inArray(materiPublished.kursusId, enrolledIds))
+      .where(inArray(materiPublished.kursusId, targetIds))
       .orderBy(asc(materiPublished.urutan));
 
     const materiIds = materiList.map((m) => m.id);

@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Search, Plus, BookOpen } from "lucide-react";
+import { Search, Plus, BookOpen, Globe, Lock, Loader2, Share2, Copy, Check } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
+import { csrfHeaders } from "@/lib/csrf";
 
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
   DRAFT: { label: "Draft", color: "bg-amber-50 text-amber-700" },
@@ -19,6 +20,7 @@ interface KursusItem {
   slug: string;
   deskripsi: string | null;
   statusPublikasi: string;
+  isPublic: boolean;
   createdAt: string;
 }
 
@@ -28,6 +30,61 @@ export default function KursusListPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [publishing, setPublishing] = useState<string | null>(null);
+  const [inviting, setInviting] = useState<string | null>(null);
+  const [inviteLinks, setInviteLinks] = useState<Record<string, string>>({});
+  const [copied, setCopied] = useState<string | null>(null);
+
+  async function handleInvite(id: string) {
+    setInviting(id);
+    setError("");
+    try {
+      const res = await fetch(`/api/v1/kursus/${id}/invite`, {
+        method: "POST",
+        headers: { ...csrfHeaders() },
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || "Gagal membuat link undangan");
+      }
+      const { data } = await res.json();
+      setInviteLinks((prev) => ({ ...prev, [id]: data.inviteLink }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal membuat link undangan");
+    } finally {
+      setInviting(null);
+    }
+  }
+
+  async function copyInviteLink(kursusId: string, link: string) {
+    await navigator.clipboard.writeText(link);
+    setCopied(kursusId);
+    setTimeout(() => setCopied(null), 2000);
+  }
+
+  async function handlePublish(id: string, newStatus: "PUBLIK" | "DRAFT" | "ARSIP") {
+    setPublishing(id);
+    setError("");
+    try {
+      const res = await fetch(`/api/v1/kursus/${id}/publish`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        credentials: "include",
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || "Gagal mengubah status");
+      }
+      const { data } = await res.json();
+      setKursus((prev) => prev.map((k) => (k.id === id ? { ...k, statusPublikasi: data.statusPublikasi, isPublic: data.isPublic } : k)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal mengubah status");
+    } finally {
+      setPublishing(null);
+    }
+  }
 
   useEffect(() => {
     let alive = true;
@@ -125,7 +182,7 @@ export default function KursusListPage() {
               <p className="text-sm text-on-surface-variant line-clamp-2 mb-4">
                 {k.deskripsi || "Tanpa deskripsi"}
               </p>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Link
                   href={`/guru/kursus/${k.id}`}
                   className="text-xs font-semibold text-primary hover:underline"
@@ -139,7 +196,59 @@ export default function KursusListPage() {
                 >
                   Nilai
                 </Link>
+                <span className="text-on-surface-variant/20">|</span>
+                {k.statusPublikasi === "DRAFT" || k.statusPublikasi === "ARSIP" ? (
+                  <button
+                    onClick={() => handlePublish(k.id, "PUBLIK")}
+                    disabled={publishing === k.id}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:underline disabled:opacity-50"
+                  >
+                    {publishing === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Globe className="w-3 h-3" />}
+                    Publikasikan
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handlePublish(k.id, "DRAFT")}
+                    disabled={publishing === k.id}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 hover:underline disabled:opacity-50"
+                  >
+                    {publishing === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Lock className="w-3 h-3" />}
+                    Privatkan
+                  </button>
+                )}
+                <span className="text-on-surface-variant/20">|</span>
+                <button
+                  onClick={() => handleInvite(k.id)}
+                  disabled={inviting === k.id}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline disabled:opacity-50"
+                >
+                  {inviting === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Share2 className="w-3 h-3" />}
+                  Undang
+                </button>
               </div>
+              {inviteLinks[k.id] && (
+                <div className="mt-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
+                  <p className="text-xs font-semibold text-primary mb-1">Link Undangan</p>
+                  <div className="flex items-center gap-2">
+                    <code className="bg-white px-2.5 py-1 rounded-lg text-xs font-bold text-primary border border-primary/10 truncate max-w-[200px]">
+                      {inviteLinks[k.id]}
+                    </code>
+                    <button
+                      onClick={() => copyInviteLink(k.id, inviteLinks[k.id])}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline shrink-0"
+                    >
+                      {copied === k.id ? (
+                        <><Check className="w-3 h-3" /> Tersalin</>
+                      ) : (
+                        <><Copy className="w-3 h-3" /> Salin</>
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-on-surface-variant/60 mt-2">
+                    Bagikan link ini ke siswa via WhatsApp. Siswa yang klik akan langsung terdaftar di kursus ini.
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>
