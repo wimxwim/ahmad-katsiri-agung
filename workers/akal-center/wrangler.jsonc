@@ -6,7 +6,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "vars": {
-    "WORKER_TIMEOUT_MS": "15000",
+    "WORKER_TIMEOUT_MS": "90000",
     "AI_BASE_URL": "https://router.bynara.id/v1"
   },
   "routes": [

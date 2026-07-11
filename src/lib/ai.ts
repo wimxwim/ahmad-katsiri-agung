@@ -73,7 +73,7 @@ export async function chat(
           Authorization: `Bearer ${getApiKey()}`,
         },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(75_000),
+        signal: AbortSignal.timeout(120_000),
       });
 
       if (!res.ok) {
