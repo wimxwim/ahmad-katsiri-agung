@@ -1,17 +1,24 @@
 "use client";
 
 import { StatCard } from "@/components/dashboard/StatCard";
-import { BookOpen, Clock, AlertCircle, ClipboardList, GraduationCap, FileCheck, Users, Circle, ArrowRight } from "lucide-react";
 import {
-  UsersIcon,
-  SparklesIcon,
-  UploadIcon,
-  RocketIcon,
-  ZapIcon,
-  LayersIcon,
-  UserPlusIcon,
-  CircleCheckIcon,
-} from "@animateicons/react/lucide";
+  BookOpen,
+  Clock,
+  AlertCircle,
+  ClipboardList,
+  GraduationCap,
+  FileCheck,
+  Users,
+  Circle,
+  ArrowRight,
+  Sparkles,
+  Upload,
+  Rocket,
+  Zap,
+  Layers,
+  UserPlus,
+  CircleCheck,
+} from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -44,12 +51,12 @@ const STATUS_BADGE: Record<string, { label: string; color: string }> = {
 };
 
 const QUICK_ACTIONS = [
-{ label: "Upload Dokumen", href: "/guru/upload", icon: UploadIcon, desc: "PDF/DOCX untuk draft AI" },
+  { label: "Upload Dokumen", href: "/guru/upload", icon: Upload, desc: "PDF/DOCX untuk draft AI" },
   { label: "Buat Manual", href: "/guru/buat", icon: BookOpen, desc: "Tulis materi tanpa AI" },
-  { label: "Kelola Kelas", href: "/guru/kelas", icon: LayersIcon, desc: "Atur kelas & siswa" },
-  { label: "Daftar Siswa", href: "/guru/siswa", icon: UsersIcon, desc: "Lihat progres siswa" },
+  { label: "Kelola Kelas", href: "/guru/kelas", icon: Layers, desc: "Atur kelas & siswa" },
+  { label: "Daftar Siswa", href: "/guru/siswa", icon: Users, desc: "Lihat progres siswa" },
   { label: "Buat Kuis", href: "/guru/buat", icon: ClipboardList, desc: "Kuis baru manual" },
-  { label: "Undang Siswa", href: "/guru/kelas", icon: UserPlusIcon, desc: "Kelola keanggotaan kelas" },
+  { label: "Undang Siswa", href: "/guru/kelas", icon: UserPlus, desc: "Kelola keanggotaan kelas" },
 ];
 
 interface OnboardingData {
@@ -134,7 +141,7 @@ export default function GuruBerandaPage() {
                   ? "bg-amber-50 text-amber-700 border border-amber-200"
                   : "bg-emerald-50 text-emerald-700 border border-emerald-200"
             }`}>
-              <ZapIcon className="w-3 h-3" />
+              <Zap className="w-3 h-3" />
               AI: {data.aiQuotaUsed}/{data.aiQuotaLimit} tersisa bulan ini
             </div>
           )}
@@ -142,7 +149,7 @@ export default function GuruBerandaPage() {
             href="/guru/buat"
             className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all shadow-glass"
           >
-            <SparklesIcon className="w-4 h-4" />
+            <Sparkles className="w-4 h-4" />
             Buat Kursus dengan AI
             <ArrowRight className="w-4 h-4" />
           </Link>
@@ -157,7 +164,7 @@ export default function GuruBerandaPage() {
         >
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-semibold text-on-surface flex items-center gap-1.5">
-              <RocketIcon className="w-4 h-4" />
+              <Rocket className="w-4 h-4" />
               Onboarding — {onboarding.completedSteps}/{onboarding.totalSteps} langkah
             </p>
             <span className="text-xs text-on-surface-variant">
@@ -174,7 +181,7 @@ export default function GuruBerandaPage() {
             {onboarding.steps.map((s) => (
               <div key={s.key} className="flex items-center gap-1.5">
                 {s.done ? (
-                  <CircleCheckIcon className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <CircleCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                 ) : (
                   <Circle className="w-3.5 h-3.5 text-on-surface-variant/30 shrink-0" />
                 )}
