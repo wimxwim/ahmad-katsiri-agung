@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { WA_NUMBER } from "@/lib/constants";
 import Image from "next/image";
 import { Upload, CheckCircle, AlertCircle, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -11,6 +12,13 @@ export default function PembayaranPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const previewRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    };
+  }, []);
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -19,7 +27,10 @@ export default function PembayaranPage() {
     if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) { setError("Format tidak didukung (JPG/PNG/WebP)"); return; }
     setError("");
     setFile(f);
-    setPreview(URL.createObjectURL(f));
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    const url = URL.createObjectURL(f);
+    previewRef.current = url;
+    setPreview(url);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -48,8 +59,8 @@ export default function PembayaranPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center p-4">
-        <div className="bg-glass border border-border-precision rounded-[32px] p-8 sm:p-10 shadow-glass-lg max-w-md w-full text-center">
+      <div className="min-h-dvh bg-surface flex items-center justify-center p-4">
+        <div className="bg-glass border border-border-precision rounded-2xl p-8 sm:p-10 shadow-glass-lg max-w-md w-full text-center">
           <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
           <h1 className="font-heading text-2xl font-bold text-on-surface mb-2">Bukti Terkirim</h1>
           <p className="text-sm text-on-surface-variant mb-6">
@@ -65,13 +76,13 @@ export default function PembayaranPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface p-4 sm:p-6">
+    <div className="min-h-dvh bg-surface p-4 sm:p-6">
       <div className="max-w-2xl mx-auto">
         <Link href="/harga" className="inline-flex items-center gap-1 text-sm text-on-surface-variant hover:text-primary mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Kembali ke harga
         </Link>
 
-        <div className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass-lg">
+        <div className="bg-glass border border-border-precision rounded-2xl p-6 sm:p-10 shadow-glass-lg">
           <h1 className="font-heading text-2xl font-bold text-on-surface mb-2">Pembayaran QRIS</h1>
           <p className="text-sm text-on-surface-variant mb-8">
             Scan kode QR di bawah pakai aplikasi GoPay, DANA, OVO, atau mobile banking kamu.
@@ -130,7 +141,7 @@ export default function PembayaranPage() {
             <button
               type="submit"
               disabled={loading || !file}
-              className="w-full py-[15px] bg-primary text-white rounded-[13px] font-semibold text-[16px] transition-all duration-200 hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-4 bg-primary text-white rounded-button font-semibold text-md transition-all duration-200 hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
               {loading ? "Mengirim..." : "Kirim Bukti Pembayaran"}
@@ -138,7 +149,7 @@ export default function PembayaranPage() {
 
             <p className="text-center text-xs text-on-surface-variant">
               Tim kami akan verifikasi dalam 1x24 jam. Butuh bantuan?{" "}
-              <a href="https://wa.me/6285158795502" target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">
+              <a href={`https://wa.me/${WA_NUMBER}`} target="_blank" rel="noopener noreferrer" className="text-primary font-semibold hover:underline">
                 WhatsApp kami
               </a>
             </p>

@@ -79,7 +79,7 @@ export default function OnboardingPage() {
     <div>
       <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tracking-[0.18em] text-primary">
+          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold tracking-badge text-primary">
             ONBOARDING
           </span>
           <h1 className="font-heading font-bold text-2xl text-on-surface mt-3">

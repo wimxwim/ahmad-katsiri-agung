@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Search, Users, Filter } from "lucide-react";
 
 interface SiswaItem {
@@ -16,6 +17,7 @@ interface KursusOption {
 }
 
 export default function SiswaListPage() {
+  const router = useRouter();
   const [siswa, setSiswa] = useState<SiswaItem[]>([]);
   const [kursusOptions, setKursusOptions] = useState<KursusOption[]>([]);
   const [search, setSearch] = useState("");
@@ -68,7 +70,7 @@ export default function SiswaListPage() {
     return (
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => window.location.reload()} className="text-sm text-primary hover:underline">Coba lagi</button>
+        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline">Coba lagi</button>
       </div>
     );
   }

@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { GradebookTable } from "@/components/dashboard/GradebookTable";
 
 export default function KursusNilaiPage() {
+  const router = useRouter();
   const params = useParams();
   const [siswaData, setSiswaData] = useState<{ siswaId: string; nama: string; skorRataRata: number }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +69,7 @@ export default function KursusNilaiPage() {
     return (
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => window.location.reload()} className="text-sm text-primary hover:underline">Coba lagi</button>
+        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline">Coba lagi</button>
       </div>
     );
   }

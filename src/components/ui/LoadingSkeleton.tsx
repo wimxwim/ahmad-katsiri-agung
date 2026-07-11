@@ -16,7 +16,7 @@ function LoadingSkeleton({ className = "" }: { className?: string }) {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-glass border border-border-precision rounded-[24px] p-6 space-y-3">
+            <div key={i} className="bg-glass border border-border-precision rounded-xl p-6 space-y-3">
               <SkeletonPulse className="h-4 w-3/4" />
               <SkeletonPulse className="h-3 w-full" />
               <SkeletonPulse className="h-3 w-5/6" />

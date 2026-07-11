@@ -39,16 +39,15 @@ export async function POST(request: NextRequest) {
       return apiError("VALIDATION_ERROR", "Data tidak valid", parsed.error.flatten(), 400);
     }
 
-    const { nama, password, kelas, noAbsen, role, portal, redirectTo } = parsed.data;
+    const { nama, password, kelas, noAbsen, role, portal: portalRaw, redirectTo } = parsed.data;
+    const portal = portalRaw ?? "siswa";
     const email = parsed.data.email.toLowerCase();
 
-    if (portal) {
-      const allowedRoles = INTENT_PORTAL[portal];
-      const sessionRoleOfRequested = roleToSessionRole(role);
-      if (!allowedRoles.includes(sessionRoleOfRequested)) {
-        await logAuthEvent("auth.intent_mismatch", { email, portal, reason: `register_role=${role}` });
-        return apiError(`Portal ${portal} tidak menerima role ${role}.`, 400);
-      }
+    const allowedRoles = INTENT_PORTAL[portal];
+    const sessionRoleOfRequested = roleToSessionRole(role);
+    if (!allowedRoles.includes(sessionRoleOfRequested)) {
+      await logAuthEvent("auth.intent_mismatch", { email, portal, reason: `register_role=${role}` });
+      return apiError(`Portal ${portal} tidak menerima role ${role}.`, 400);
     }
 
     const existing = await db

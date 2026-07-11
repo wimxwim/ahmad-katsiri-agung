@@ -1,4 +1,7 @@
 const ALLOWED_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
+
+import queueConsumer from "./queue-consumer";
+export const queue = queueConsumer.queue;
 const DEFAULT_TIMEOUT_MS = 15_000;
 const TIMEOUT_MS = Math.max(
   5_000,
@@ -119,6 +122,23 @@ export default {
       const aiBody = await aiRes.text();
       return new Response(aiBody, {
         status: aiRes.status,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
+
+    // AI Generation Queue — enqueue job untuk diproses Worker
+    if (url.pathname === '/v1/ai/generate' && request.method === 'POST') {
+      const body = await request.text();
+      const msg = JSON.parse(body);
+      await env.AI_GENERATION.send(msg);
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
         headers: { 'Content-Type': 'application/json' },
       });
     }

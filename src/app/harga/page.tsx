@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WA_NUMBER } from "@/lib/constants";
 import { Sparkles, GraduationCap, Check, HelpCircle, MessageCircle, Shield } from "lucide-react";
 
 const gratisFitur = [
@@ -47,7 +48,7 @@ const faqItems = [
 
 export default function HargaPage() {
   return (
-    <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 md:pt-40 pb-16 md:pb-32">
+    <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 md:pt-40 pb-16 md:pb-32">
       <section
         className="max-w-3xl mx-auto text-center mb-16 sm:mb-24 animate-fade-up"
         style={{ "--anim-duration": "0.7s" } as React.CSSProperties}
@@ -70,7 +71,7 @@ export default function HargaPage() {
 
       <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6 sm:gap-8 mb-16 sm:mb-24">
         <div
-          className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-6 sm:p-8 lg:p-10 shadow-glass animate-fade-up"
+          className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-2xl p-6 sm:p-8 lg:p-10 shadow-glass animate-fade-up"
           style={{ "--anim-delay": "0.1s" } as React.CSSProperties}
         >
           <div className="flex items-center gap-3 mb-6">
@@ -110,7 +111,7 @@ export default function HargaPage() {
         </div>
 
         <div
-          className="bg-glass backdrop-blur-2xl border-2 border-tertiary/30 rounded-2xl sm:rounded-[32px] p-6 sm:p-8 lg:p-10 shadow-glass-xl relative animate-fade-up"
+          className="bg-glass backdrop-blur-2xl border-2 border-tertiary/30 rounded-2xl sm:rounded-2xl p-6 sm:p-8 lg:p-10 shadow-glass-xl relative animate-fade-up"
           style={{ "--anim-delay": "0.2s" } as React.CSSProperties}
         >
           <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-tertiary text-on-tertiary text-xs font-semibold px-4 py-1 rounded-full">
@@ -148,7 +149,7 @@ export default function HargaPage() {
           </ul>
 
           <Link
-            href="https://wa.me/6285158795502?text=Halo%20AKAL%20Center%2C%20saya%20tertarik%20paket%20Sekolah"
+            href={`https://wa.me/${WA_NUMBER}?text=Halo%20AKAL%20Center%2C%20saya%20tertarik%20paket%20Sekolah`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full bg-tertiary text-on-tertiary px-6 py-3.5 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
@@ -160,7 +161,7 @@ export default function HargaPage() {
       </div>
 
       <section
-        className="max-w-2xl mx-auto mb-16 sm:mb-24 text-center bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-6 sm:p-8 lg:p-10 shadow-glass animate-fade-up"
+        className="max-w-2xl mx-auto mb-16 sm:mb-24 text-center bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-2xl p-6 sm:p-8 lg:p-10 shadow-glass animate-fade-up"
         style={{ "--anim-delay": "0.3s" } as React.CSSProperties}
       >
         <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
@@ -232,7 +233,7 @@ export default function HargaPage() {
           </Link>
 
           <Link
-            href="https://wa.me/6285158795502?text=Halo%20AKAL%20Center%2C%20saya%20ingin%20tahu%20lebih%20lanjut%20tentang%20paket%20Sekolah"
+            href={`https://wa.me/${WA_NUMBER}?text=Halo%20AKAL%20Center%2C%20saya%20ingin%20tahu%20lebih%20lanjut%20tentang%20paket%20Sekolah`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 border border-border-precision text-on-surface px-8 py-4 rounded-full font-semibold hover:bg-glass active:scale-[0.98] transition-all duration-300"

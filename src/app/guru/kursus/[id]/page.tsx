@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Users, FileText, ArrowLeft, BarChart3 } from "lucide-react";
@@ -14,6 +15,7 @@ interface KursusDetail {
 interface SiswaItem { siswaId: string; nama: string; skorRataRata: number }
 
 export default function KursusDetailPage() {
+  const router = useRouter();
   const params = useParams();
   const [kursus, setKursus] = useState<KursusDetail | null>(null);
   const [siswa, setSiswa] = useState<SiswaItem[]>([]);
@@ -71,7 +73,7 @@ export default function KursusDetailPage() {
     return (
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => window.location.reload()} className="text-sm text-primary hover:underline">Coba lagi</button>
+        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline">Coba lagi</button>
       </div>
     );
   }
@@ -115,7 +117,7 @@ export default function KursusDetailPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
         <StatCard label="Siswa Terdaftar" value={siswa.length} icon={Users} color="#005231" />
         <StatCard label="Quiz Selesai" value="-" icon={FileText} color="#005231" trend="Segera" />
         <StatCard label="Rata-rata Skor" value={avgSkor > 0 ? `${avgSkor}%` : "-"} icon={BarChart3} color="#005231" />

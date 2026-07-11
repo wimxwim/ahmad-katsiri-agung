@@ -37,9 +37,9 @@ export function LearningProgress({ steps, progress, className }: LearningProgres
 
       <div className="w-full h-2.5 rounded-full bg-surface overflow-hidden">
         <motion.div
-          className="h-full rounded-full bg-primary"
-          initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
+          className="h-full rounded-full bg-primary origin-left"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: progress / 100 }}
           transition={{ duration: 0.8, ease: EASE_CURVE }}
         />
       </div>

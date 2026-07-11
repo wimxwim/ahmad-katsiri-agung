@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, GraduationCap, ShieldCheck, Eye, EyeOff, AlertCircle } from "lucide-react";
 import { GoogleIcon } from "@/app/masuk/_components/GoogleIcon";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 type Mode = "pilih" | "guru" | "siswa";
 
@@ -75,7 +77,7 @@ export function DaftarPicker() {
       <div className="grid gap-4">
         <button
           onClick={() => setMode("guru")}
-          className="group text-left rounded-[24px] border border-border-precision bg-glass p-6 shadow-glass transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-glass-lg"
+          className="group text-left rounded-xl border border-border-precision bg-glass p-6 shadow-glass transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-glass-lg"
         >
           <div className="flex items-start gap-4">
             <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -96,7 +98,7 @@ export function DaftarPicker() {
 
         <button
           onClick={() => setMode("siswa")}
-          className="group text-left rounded-[24px] border border-border-precision bg-glass p-6 shadow-glass transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-glass-lg"
+          className="group text-left rounded-xl border border-border-precision bg-glass p-6 shadow-glass transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-glass-lg"
         >
           <div className="flex items-start gap-4">
             <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -130,7 +132,7 @@ export function DaftarPicker() {
         <button
           type="button"
           onClick={() => { setMode("pilih"); setError(""); }}
-          className="text-[12px] text-on-surface-variant hover:text-primary"
+          className="text-xs text-on-surface-variant hover:text-primary"
         >
           ← Ganti peran
         </button>
@@ -148,39 +150,37 @@ export function DaftarPicker() {
       </p>
 
       <div>
-        <label className="block text-[13px] font-semibold text-on-surface mb-1.5">Nama lengkap</label>
-        <input
+        <label className="block text-sm font-semibold text-on-surface mb-1.5">Nama lengkap</label>
+        <Input
           name="nama"
           required
           minLength={2}
           maxLength={100}
           placeholder="Nama Anda"
-          className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
         />
       </div>
       <div>
-        <label className="block text-[13px] font-semibold text-on-surface mb-1.5">Email</label>
-        <input
+        <label className="block text-sm font-semibold text-on-surface mb-1.5">Email</label>
+        <Input
           name="email"
           type="email"
           required
           placeholder="kamu@email.com"
-          className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
         />
       </div>
       <div>
-        <label className="block text-[13px] font-semibold text-on-surface mb-1.5">
+        <label className="block text-sm font-semibold text-on-surface mb-1.5">
           Kata Sandi <span className="font-normal text-on-surface-variant">(min. 8 karakter)</span>
         </label>
         <div className="relative">
-          <input
+          <Input
             name="password"
             type={showPassword ? "text" : "password"}
             required
             minLength={8}
             maxLength={128}
             placeholder="••••••••"
-            className="w-full px-4 py-[13px] pr-11 border border-border-precision rounded-xl text-[16px] bg-white outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
+            className="pr-11"
           />
           <button
             type="button"
@@ -196,24 +196,22 @@ export function DaftarPicker() {
       {!isGuru && (
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-[13px] font-semibold text-on-surface mb-1.5">
+            <label className="block text-sm font-semibold text-on-surface mb-1.5">
               Kelas <span className="font-normal text-on-surface-variant">(opsional)</span>
             </label>
-            <input
+            <Input
               name="kelas"
               placeholder="mis. 8A"
-              className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
             />
           </div>
           <div>
-            <label className="block text-[13px] font-semibold text-on-surface mb-1.5">
+            <label className="block text-sm font-semibold text-on-surface mb-1.5">
               No. Absen <span className="font-normal text-on-surface-variant">(opsional)</span>
             </label>
-            <input
+            <Input
               name="noAbsen"
               inputMode="numeric"
               placeholder="mis. 14"
-              className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
             />
           </div>
         </div>
@@ -226,13 +224,9 @@ export function DaftarPicker() {
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-[15px] bg-primary text-on-primary rounded-[13px] font-semibold text-[16px] transition-all duration-200 hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
-      >
+      <Button type="submit" disabled={loading}>
         {loading ? "Memproses..." : isGuru ? "Daftar sebagai Guru →" : "Daftar →"}
-      </button>
+      </Button>
 
       <div className="flex items-center gap-3 my-2">
         <div className="flex-1 h-px bg-border-precision" />
@@ -243,7 +237,7 @@ export function DaftarPicker() {
         type="button"
         onClick={startGoogleRegister}
         disabled={redirecting}
-        className="w-full inline-flex items-center justify-center gap-2 py-[13px] border border-border-precision rounded-[13px] text-[14px] font-semibold text-on-surface hover:bg-surface transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full inline-flex items-center justify-center gap-2 py-3 border border-border-precision rounded-button text-base font-semibold text-on-surface hover:bg-surface transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {redirecting ? (
           <span className="flex items-center gap-2">

@@ -31,7 +31,7 @@ export async function signQuizToken(nama: string, kelas: string): Promise<string
 
 export async function verifyQuizToken(token: string): Promise<AuthResult<QuizTokenPayload>> {
   try {
-    const { payload } = await jwtVerify(token, hs256Secret());
+    const { payload } = await jwtVerify<QuizTokenPayload>(token, hs256Secret(), { algorithms: ["HS256"] });
     return { success: true, data: payload as QuizTokenPayload };
   } catch (err) {
     if (err instanceof errors.JWTExpired) return { success: false, code: "expired" };
@@ -69,8 +69,8 @@ export const verifySession = cache(async (token: string): Promise<AuthResult<Ses
     }
   }
   try {
-    const { payload } = await jwtVerify(token, hs256Secret());
-    return { success: true, data: payload as SesiPayload };
+    const { payload } = await jwtVerify<SesiPayload>(token, hs256Secret(), { algorithms: ["HS256"] });
+    return { success: true, data: payload };
   } catch (err) {
     if (err instanceof errors.JWTExpired) {
       return { success: false, code: "expired" };

@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
-import { Search, BookOpen, ArrowRight } from "lucide-react";
+import { Search, BookOpen, ArrowRight, Library } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface KursusItem {
   id: string;
@@ -15,7 +16,27 @@ interface KursusItem {
   createdAt: string;
 }
 
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: EASE_CURVE },
+  },
+};
+
 export default function KatalogKursusPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [kursus, setKursus] = useState<KursusItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,83 +60,121 @@ export default function KatalogKursusPage() {
 
   const filtered = kursus.filter((k) => {
     const q = search.toLowerCase();
-    return k.judul.toLowerCase().includes(q) || (k.deskripsi || "").toLowerCase().includes(q);
+    return (
+      k.judul.toLowerCase().includes(q) ||
+      (k.deskripsi || "").toLowerCase().includes(q)
+    );
   });
 
   return (
-    <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-24 sm:pt-28 pb-16">
+    <div className="min-h-dvh max-w-7xl mx-auto px-4 sm:px-5 lg:px-8 pt-24 sm:pt-28 pb-24">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: EASE_CURVE }}
       >
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
             <BookOpen className="w-8 h-8 text-primary" />
           </div>
           <h1 className="font-heading font-bold text-3xl text-on-surface mb-3">
             Katalog Kursus
           </h1>
-          <p className="text-on-surface-variant max-w-lg mx-auto">
+          <p className="text-on-surface-variant max-w-lg mx-auto text-sm">
             Jelajahi kursus yang tersedia. Setiap kursus dibuat dan dipublikasikan oleh guru secara mandiri.
           </p>
         </div>
 
         <div className="relative mb-8">
-          <Search className="absolute left-3.5 top-2.5 w-4.5 h-4.5 text-on-surface-variant/40" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-on-surface-variant/40" />
           <input
             type="text"
             placeholder="Cari kursus..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10.5 pr-4 py-2.5 rounded-xl bg-white border border-border-precision text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-hidden focus:border-primary/40"
+            className="w-full pl-10.5 pr-4 py-3 rounded-xl bg-white border border-border-precision text-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-hidden focus:border-primary/40 transition-colors"
           />
         </div>
 
         {loading ? (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl border border-border-precision p-6 h-48 animate-pulse" />
+              <div
+                key={i}
+                className="bg-white rounded-2xl border border-border-precision p-6 h-52 animate-pulse"
+              >
+                <div className="w-12 h-12 rounded-xl bg-surface mb-4" />
+                <div className="h-5 bg-surface rounded w-2/3 mb-3" />
+                <div className="h-3 bg-surface rounded w-full mb-2" />
+                <div className="h-3 bg-surface rounded w-3/4" />
+              </div>
             ))}
           </div>
         ) : error ? (
-          <div className="text-center py-16">
-            <p className="text-red-600 mb-2">{error}</p>
-            <button onClick={() => window.location.reload()} className="text-sm text-primary hover:underline">Coba lagi</button>
+          <div className="text-center py-20">
+            <div className="w-16 h-16 rounded-3xl bg-red-50 flex items-center justify-center mx-auto mb-6">
+              <Library className="w-8 h-8 text-red-400" />
+            </div>
+            <p className="text-red-600 text-sm mb-4">{error}</p>
+            <button
+              onClick={() => router.refresh()}
+              className="text-sm text-primary font-semibold hover:underline cursor-pointer"
+            >
+              Coba lagi
+            </button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
-            <BookOpen className="w-12 h-12 text-on-surface-variant/20 mx-auto mb-3" />
-            <p className="text-on-surface-variant">
+            <div className="w-20 h-20 rounded-3xl bg-surface flex items-center justify-center mx-auto mb-6">
+              <BookOpen className="w-10 h-10 text-on-surface-variant/20" />
+            </div>
+            <h3 className="font-heading font-bold text-lg text-on-surface mb-2">
               {search ? "Tidak ada kursus yang cocok" : "Belum ada kursus tersedia"}
+            </h3>
+            <p className="text-sm text-on-surface-variant max-w-sm mx-auto mb-6">
+              {search
+                ? "Coba ubah kata kunci pencarian atau jelajahi kategori lain."
+                : "Kursus akan muncul di sini setelah guru menerbitkan materi. Silakan periksa lagi nanti."}
             </p>
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline cursor-pointer"
+              >
+                Hapus pencarian
+              </button>
+            )}
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((k, i) => (
-              <motion.div
-                key={k.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.08, ease: EASE_CURVE }}
-              >
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+          >
+            {filtered.map((k) => (
+              <motion.div key={k.id} variants={cardVariants}>
                 <Link
                   href={`/kursus/${k.slug}`}
-                  className="block bg-white rounded-2xl border border-border-precision p-6 hover:shadow-glass-lg transition-all group h-full"
+                  className="block bg-white rounded-2xl border border-border-precision p-5 hover:shadow-glass-lg hover:border-primary/20 transition-all duration-200 group h-full cursor-pointer active:scale-[0.98]"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/15 transition-colors">
                     <BookOpen className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="font-heading font-bold text-on-surface group-hover:text-primary transition-colors mb-2">
+                  <h3 className="font-heading font-bold text-on-surface group-hover:text-primary transition-colors mb-2 text-base">
                     {k.judul}
                   </h3>
                   <p className="text-xs text-on-surface-variant line-clamp-2 mb-4 leading-relaxed">
-                    {k.deskripsi || ""}
+                    {k.deskripsi || "Belum ada deskripsi"}
                   </p>
                   <div className="flex items-center justify-between pt-4 border-t border-border-precision">
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                      k.isPublic ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
-                    }`}>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        k.isPublic
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-amber-50 text-amber-700"
+                      }`}
+                    >
                       {k.isPublic ? "Publik" : "Privat"}
                     </span>
                     <span className="text-primary text-sm font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -125,7 +184,7 @@ export default function KatalogKursusPage() {
                 </Link>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
       </motion.div>
     </div>

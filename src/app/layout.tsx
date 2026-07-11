@@ -10,18 +10,21 @@ import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { Toaster } from "@/components/ui/Toaster";
 import "./globals.css";
 
 const bricolageGrotesque = Bricolage_Grotesque({
   variable: "--font-bricolage-grotesque",
   subsets: ["latin"],
-  display: "swap",
+  display: "optional",
+  preload: true,
 });
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  display: "swap",
+  display: "fallback",
+  preload: true,
 });
 
 const amiri = Amiri({
@@ -29,12 +32,14 @@ const amiri = Amiri({
   subsets: ["arabic", "latin"],
   weight: ["400", "700"],
   display: "swap",
+  preload: false,
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -183,6 +188,7 @@ export default async function RootLayout({
           <main id="main" className="flex-1 pt-24 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-x-hidden">{children}</main>
           <Footer navigation={cmsData.navigation} pendiriNama={cmsData.about?.pendiriNama} />
           <FloatingWA waNumber={cmsData.navigation?.waNumber} />
+          <Toaster />
         </Providers>
         <Analytics />
         <SpeedInsights />

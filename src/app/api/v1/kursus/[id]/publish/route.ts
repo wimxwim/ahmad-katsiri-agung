@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { kursus } from "@/lib/db/schema";
@@ -41,6 +41,9 @@ export async function PATCH(
     }
 
     const publishedAt = parsed.data.status === "PUBLIK" ? new Date() : null;
+    const where = session.role === "owner"
+      ? eq(kursus.id, id)
+      : and(eq(kursus.id, id), eq(kursus.guruId, session.userId));
 
     const [updated] = await db
       .update(kursus)
@@ -50,7 +53,7 @@ export async function PATCH(
         isPublic: parsed.data.status === "PUBLIK",
         updatedAt: new Date(),
       })
-      .where(eq(kursus.id, id))
+      .where(where)
       .returning();
 
     await appendEvent(`kursus:${id}`, "kursus.status_changed", {

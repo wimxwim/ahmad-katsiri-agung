@@ -22,7 +22,11 @@ export function FormMasuk({
   errorCode,
 }: FormMasukProps) {
   const [mode, setMode] = useState<Mode>(
-    initialPortal === "guru" ? "guru" : initialPortal === "siswa" ? "murid" : "pilih"
+    initialPortal === "guru"
+      ? "guru"
+      : initialPortal === "siswa"
+      ? "murid"
+      : "pilih"
   );
   const [tabMurid, setTabMurid] = useState<TabMurid>(initialTab);
   const [error, setError] = useState(
@@ -32,9 +36,17 @@ export function FormMasuk({
   const [noPassword, setNoPassword] = useState(false);
 
   useEffect(() => {
-    setMode(initialPortal === "guru" ? "guru" : initialPortal === "siswa" ? "murid" : "pilih");
+    setMode(
+      initialPortal === "guru"
+        ? "guru"
+        : initialPortal === "siswa"
+        ? "murid"
+        : "pilih"
+    );
     setTabMurid(initialTab);
-    setError(errorCode ? ERROR_MESSAGES[errorCode] || `Error: ${errorCode}` : "");
+    setError(
+      errorCode ? ERROR_MESSAGES[errorCode] || `Error: ${errorCode}` : ""
+    );
     setNoPassword(false);
   }, [initialPortal, initialTab, errorCode]);
 
@@ -61,11 +73,19 @@ export function FormMasuk({
       const res = await fetch("/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, redirectTo, portalIntent: mode === "guru" ? "guru" : "siswa" }),
+        body: JSON.stringify({
+          email,
+          password,
+          redirectTo,
+          portalIntent: mode === "guru" ? "guru" : "siswa",
+        }),
       });
       const result = await res.json();
       if (result.error) {
-        const err = typeof result.error === "string" ? { message: result.error } : result.error;
+        const err =
+          typeof result.error === "string"
+            ? { message: result.error }
+            : result.error;
         if (err.code === "INTENT_MISMATCH") {
           const params = new URLSearchParams(err.details || {});
           window.location.href = `/masuk/role-mismatch?${params.toString()}`;
@@ -73,7 +93,10 @@ export function FormMasuk({
         }
         if (err.code === "NO_PASSWORD_SET") {
           setNoPassword(true);
-          setError(err.message || "Akun ini belum punya kata sandi. Masuk lewat Google dulu.");
+          setError(
+            err.message ||
+              "Akun ini belum punya kata sandi. Masuk lewat Google dulu."
+          );
           setLoading(false);
           return;
         }
@@ -84,7 +107,9 @@ export function FormMasuk({
         setError("Terjadi kesalahan");
       }
     } catch (err) {
-      setError("Gagal: " + (err instanceof Error ? err.message : "Terjadi kesalahan"));
+      setError(
+        "Gagal: " + (err instanceof Error ? err.message : "Terjadi kesalahan")
+      );
     } finally {
       setLoading(false);
     }
@@ -121,21 +146,21 @@ export function FormMasuk({
         setError("Terjadi kesalahan");
       }
     } catch (err) {
-      setError("Gagal: " + (err instanceof Error ? err.message : "Terjadi kesalahan"));
+      setError(
+        "Gagal: " + (err instanceof Error ? err.message : "Terjadi kesalahan")
+      );
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface p-0 sm:p-6">
-      <div className="w-full max-w-6xl bg-white rounded-none md:rounded-[32px] overflow-hidden shadow-glass-lg flex flex-col md:grid md:grid-cols-[1.1fr_0.9fr] min-h-screen md:min-h-[640px]">
+    <div className="min-h-dvh flex items-center justify-center bg-surface p-0 sm:p-6">
+      <div className="w-full max-w-6xl bg-white rounded-none md:rounded-2xl overflow-hidden shadow-glass-lg flex flex-col md:grid md:grid-cols-[1.1fr_0.9fr] min-h-dvh md:min-h-[640px]">
         <FormMasukLeftPanel />
 
-        <main className="px-6 py-6 md:px-11 md:py-12 flex flex-col justify-center">
-          {mode === "pilih" && (
-            <FormMasukPortalPicker onSelect={selectMode} />
-          )}
+        <main className="px-5 py-8 sm:px-11 sm:py-12 flex flex-col justify-center">
+          {mode === "pilih" && <FormMasukPortalPicker onSelect={selectMode} />}
 
           {mode === "murid" && (
             <div>
@@ -153,17 +178,27 @@ export function FormMasuk({
 
               <div className="flex gap-1 mb-6 bg-surface rounded-xl p-1">
                 <button
-                  onClick={() => { setTabMurid("masuk"); setError(""); }}
-                  className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${
-                    tabMurid === "masuk" ? "bg-white text-on-surface shadow-glass" : "text-on-surface-variant hover:text-on-surface"
+                  onClick={() => {
+                    setTabMurid("masuk");
+                    setError("");
+                  }}
+                  className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all cursor-pointer active:scale-[0.98] ${
+                    tabMurid === "masuk"
+                      ? "bg-white text-on-surface shadow-glass"
+                      : "text-on-surface-variant hover:text-on-surface"
                   }`}
                 >
                   Masuk
                 </button>
                 <button
-                  onClick={() => { setTabMurid("daftar"); setError(""); }}
-                  className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all cursor-pointer ${
-                    tabMurid === "daftar" ? "bg-white text-on-surface shadow-glass" : "text-on-surface-variant hover:text-on-surface"
+                  onClick={() => {
+                    setTabMurid("daftar");
+                    setError("");
+                  }}
+                  className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all cursor-pointer active:scale-[0.98] ${
+                    tabMurid === "daftar"
+                      ? "bg-white text-on-surface shadow-glass"
+                      : "text-on-surface-variant hover:text-on-surface"
                   }`}
                 >
                   Daftar
@@ -195,7 +230,9 @@ export function FormMasuk({
               <span className="inline-block text-xs font-bold tracking-wider text-primary bg-primary/5 px-3 py-1.5 rounded-full mb-4">
                 GURU
               </span>
-              <h2 className="font-heading text-2xl text-on-surface mb-1">Masuk sebagai Guru</h2>
+              <h2 className="font-heading text-2xl text-on-surface mb-1">
+                Masuk sebagai Guru
+              </h2>
               <p className="text-sm text-on-surface-variant mb-6">
                 Gunakan email dan kata sandi yang sudah didaftarkan.
               </p>

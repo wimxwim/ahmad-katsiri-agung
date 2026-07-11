@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 
@@ -13,6 +14,7 @@ interface KursusSaya {
 }
 
 export default function SiswaKursusPage() {
+  const router = useRouter();
   const [kursus, setKursus] = useState<KursusSaya[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -47,7 +49,7 @@ export default function SiswaKursusPage() {
     return (
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => window.location.reload()} className="text-sm text-primary hover:underline">Coba lagi</button>
+        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline">Coba lagi</button>
       </div>
     );
   }

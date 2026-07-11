@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
 import { ArrowLeft, BookOpen, CheckCircle, ArrowRight, GraduationCap } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 interface KursusItem {
   id: string;
@@ -17,6 +18,7 @@ interface KursusItem {
 }
 
 export default function KursusDetailPage() {
+  const router = useRouter();
   const params = useParams();
   const [kursus, setKursus] = useState<KursusItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,7 +68,7 @@ export default function KursusDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-24 sm:pt-28 pb-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8 pt-24 sm:pt-28 pb-16">
         <div className="animate-pulse space-y-8">
           <div className="h-4 w-32 bg-primary/5 rounded" />
           <div className="grid gap-8 lg:grid-cols-3">
@@ -84,16 +86,16 @@ export default function KursusDetailPage() {
 
   if (error && !kursus) {
     return (
-      <div className="max-w-[1280px] mx-auto px-6 pt-32 pb-20 text-center">
+      <div className="max-w-7xl mx-auto px-6 pt-32 pb-20 text-center">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => window.location.reload()} className="text-sm text-primary hover:underline">Coba lagi</button>
+        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline">Coba lagi</button>
       </div>
     );
   }
 
   if (!kursus) {
     return (
-      <div className="max-w-[1280px] mx-auto px-6 pt-32 pb-20 text-center">
+      <div className="max-w-7xl mx-auto px-6 pt-32 pb-20 text-center">
         <p className="text-on-surface-variant text-lg">Kursus tidak ditemukan</p>
         <Link href="/kursus" className="text-primary text-sm mt-3 inline-block hover:underline">
           Kembali ke katalog
@@ -103,7 +105,7 @@ export default function KursusDetailPage() {
   }
 
   return (
-    <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-24 sm:pt-28 pb-16">
+    <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8 pt-24 sm:pt-28 pb-16">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}

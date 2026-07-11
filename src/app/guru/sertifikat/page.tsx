@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Award, Clock, Users, ArrowRight } from "lucide-react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -13,6 +14,7 @@ interface KursusItem {
 }
 
 export default function SertifikatPage() {
+  const router = useRouter();
   const [kursus, setKursus] = useState<KursusItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -48,7 +50,7 @@ export default function SertifikatPage() {
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
         <button
-          onClick={() => window.location.reload()}
+          onClick={() => router.refresh()}
           className="text-sm text-primary hover:underline"
         >
           Coba lagi
@@ -85,7 +87,7 @@ export default function SertifikatPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: EASE_CURVE, delay: i * 0.08 }}
-              className="bg-glass border border-border-precision rounded-2xl sm:rounded-[32px] p-6 shadow-glass"
+              className="bg-glass border border-border-precision rounded-2xl sm:rounded-2xl p-6 shadow-glass"
             >
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <div className="flex-1 min-w-0">

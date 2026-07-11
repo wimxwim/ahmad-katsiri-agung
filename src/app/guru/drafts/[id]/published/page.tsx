@@ -59,7 +59,7 @@ export default async function DraftPublishedPage({
         ← Kembali ke daftar draft
       </Link>
 
-      <div className="bg-glass border border-emerald-300 rounded-[32px] p-8 sm:p-10 shadow-glass-lg text-center">
+      <div className="bg-glass border border-emerald-300 rounded-2xl p-8 sm:p-10 shadow-glass-lg text-center">
         <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-700 grid place-items-center mx-auto mb-4">
           <CheckCircle2 className="w-9 h-9" />
         </div>

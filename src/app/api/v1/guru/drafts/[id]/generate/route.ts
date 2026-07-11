@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { after } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError } from "@/lib/api-response";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { aiGeneration, fileMateri } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { runGeneration, GenerationTimeoutError, GenerationSchemaError } from "@/lib/ai-generator";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import {
   checkRateLimit,
@@ -53,7 +51,7 @@ export async function POST(
 
     const concRl = await checkConcurrentLimit(`gen:${session.userId}`, MAX_CONCURRENT_PER_GURU);
     if (!concRl.allowed) {
-      return NextResponse.json({ success: false, error: "Terlalu banyak job aktif. Tunggu job sebelumnya selesai." }, { status: 429 });
+      return NextResponse.json({ success: false, error: "Terlalu banyak job aktif" }, { status: 429 });
     }
 
     try {
@@ -65,19 +63,31 @@ export async function POST(
       throw e;
     }
 
-    const fileBytes = await fetch(file.linkAkses.startsWith("/") ? `https://akalcenter.my.id${file.linkAkses}` : file.linkAkses).then(r => r.arrayBuffer()).then(b => Buffer.from(b));
+    await db
+      .update(aiGeneration)
+      .set({ status: "generating", updatedAt: new Date() })
+      .where(eq(aiGeneration.id, id));
 
-    after(async () => {
-      try {
-        await runGeneration(id, fileBytes, file.namaFile?.split(".").pop() || "pdf");
-      } catch (e) {
-        console.error("Generate error:", e);
-      } finally {
-        releaseConcurrent(`gen:${session.userId}`);
-      }
-    });
+    const msg = {
+      generationId: id,
+      fileId: gen.fileMateriId,
+      fileName: gen.sourceFileName,
+      ext: gen.sourceFileName?.split(".").pop() || "pdf",
+      guruId: gen.guruId,
+      kursusId: gen.kursusId,
+      imagekitFileId: file.imagekitFileId,
+      imagekitLink: file.linkAkses,
+    };
 
-    await appendEvent(`gen:${session.userId}`, "gen.triggered", { generationId: id });
+    const workerUrl = "https://akal-center.wimxgooo.workers.dev/v1/ai/generate";
+    fetch(workerUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(msg),
+    }).catch(() => {});
+
+    await appendEvent(`gen:${session.userId}`, "gen.queued", { generationId: id });
+    releaseConcurrent(`gen:${session.userId}`);
 
     return NextResponse.json({ success: true, message: "AI generation dimulai", generationId: id });
   } catch (e) {

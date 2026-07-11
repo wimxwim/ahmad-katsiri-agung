@@ -173,7 +173,7 @@ export default function BulkSoalPage() {
       </p>
 
       <div className="grid gap-8">
-        <div className="bg-glass rounded-[32px] border border-border-precision shadow-glass-lg p-6 sm:p-8">
+        <div className="bg-glass rounded-2xl border border-border-precision shadow-glass-lg p-6 sm:p-8">
           <div className="mb-5">
             <label className="block text-sm font-heading font-semibold text-on-surface mb-1.5">
               Pilih Bab
@@ -235,7 +235,7 @@ export default function BulkSoalPage() {
           </button>
         </div>
 
-        <div className="bg-glass rounded-[32px] border border-border-precision shadow-glass-lg p-6 sm:p-8">
+        <div className="bg-glass rounded-2xl border border-border-precision shadow-glass-lg p-6 sm:p-8">
           <h2 className="text-lg font-heading font-bold text-on-surface mb-1">
             Hasil JSON
           </h2>
@@ -273,7 +273,7 @@ export default function BulkSoalPage() {
               )}
 
               <div className="relative">
-                <pre className="w-full max-h-[500px] overflow-auto rounded-xl bg-[#0d1117] text-[13px] leading-relaxed p-4 sm:p-5 text-[#e6edf3] font-mono whitespace-pre-wrap">
+                <pre className="w-full max-h-[500px] overflow-auto rounded-xl bg-[#0d1117] text-sm leading-relaxed p-4 sm:p-5 text-[#e6edf3] font-mono whitespace-pre-wrap">
                   {result.json}
                 </pre>
               </div>
@@ -285,7 +285,7 @@ export default function BulkSoalPage() {
           )}
         </div>
 
-        <div className="bg-glass rounded-[32px] border border-border-precision shadow-glass-lg p-6 sm:p-8">
+        <div className="bg-glass rounded-2xl border border-border-precision shadow-glass-lg p-6 sm:p-8">
           <div className="flex items-center gap-2 mb-3">
             <Info className="w-5 h-5 text-primary" />
             <h3 className="text-base font-heading font-bold text-on-surface">

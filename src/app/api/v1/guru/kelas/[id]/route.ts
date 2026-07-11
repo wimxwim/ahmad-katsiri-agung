@@ -43,10 +43,14 @@ export async function PATCH(
     if (parsed.data.nama !== undefined) updates.nama = sanitizeText(parsed.data.nama, 50);
     if (parsed.data.tingkat !== undefined) updates.tingkat = parsed.data.tingkat;
 
+    const where = session.role === "owner"
+      ? eq(kelas.id, id)
+      : and(eq(kelas.id, id), eq(kelas.guruId, session.userId));
+
     const [updated] = await db
       .update(kelas)
       .set(updates)
-      .where(eq(kelas.id, id))
+      .where(where)
       .returning();
 
     return NextResponse.json({ data: updated });
@@ -79,10 +83,14 @@ export async function DELETE(
     const rl = await checkRateLimit(`kelas-delete:${ip}`, 5, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
+    const where = session.role === "owner"
+      ? eq(kelas.id, id)
+      : and(eq(kelas.id, id), eq(kelas.guruId, session.userId));
+
     await db
       .update(kelas)
       .set({ deletedAt: new Date(), updatedAt: new Date() })
-      .where(eq(kelas.id, id));
+      .where(where);
 
     return NextResponse.json({ success: true });
   } catch (e) {

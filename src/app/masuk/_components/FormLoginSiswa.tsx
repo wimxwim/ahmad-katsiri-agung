@@ -6,6 +6,8 @@ import { PasswordInput } from "./PasswordInput";
 import { ErrorAlert } from "./ErrorAlert";
 import { GoogleIcon } from "./GoogleIcon";
 import { startGoogleLogin } from "./shared";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
 
 type Props = {
   redirectTo?: string;
@@ -16,7 +18,14 @@ type Props = {
   noPassword: boolean;
 };
 
-export function FormLoginSiswa({ redirectTo, onSubmit, onBack, error, loading, noPassword }: Props) {
+export function FormLoginSiswa({
+  redirectTo,
+  onSubmit,
+  onBack,
+  error,
+  loading,
+  noPassword,
+}: Props) {
   const [redirecting, setRedirecting] = useState(false);
 
   function handleGoogle() {
@@ -27,17 +36,15 @@ export function FormLoginSiswa({ redirectTo, onSubmit, onBack, error, loading, n
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label className="block text-[13px] font-semibold text-on-surface mb-1.5">Email</label>
-        <input
-          name="email"
-          type="email"
-          required
-          placeholder="kamu@email.com"
-          className="w-full px-4 py-[13px] border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/70 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
-        />
+        <label className="block text-sm font-semibold text-on-surface mb-1.5">
+          Email
+        </label>
+        <Input name="email" type="email" required placeholder="kamu@email.com" />
       </div>
       <div>
-        <label className="block text-[13px] font-semibold text-on-surface mb-1.5">Kata Sandi</label>
+        <label className="block text-sm font-semibold text-on-surface mb-1.5">
+          Kata Sandi
+        </label>
         <PasswordInput />
       </div>
       <ErrorAlert message={error} />
@@ -46,7 +53,7 @@ export function FormLoginSiswa({ redirectTo, onSubmit, onBack, error, loading, n
           type="button"
           onClick={handleGoogle}
           disabled={redirecting}
-          className="w-full inline-flex items-center justify-center gap-2 py-[13px] border border-border-precision rounded-[13px] text-[14px] font-semibold text-on-surface hover:bg-surface transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full inline-flex items-center justify-center gap-2 py-3 border border-border-precision rounded-button text-base font-semibold text-on-surface hover:bg-surface active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
         >
           {redirecting ? (
             <span className="flex items-center gap-2">
@@ -61,23 +68,21 @@ export function FormLoginSiswa({ redirectTo, onSubmit, onBack, error, loading, n
           )}
         </button>
       )}
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-[15px] bg-primary text-on-primary rounded-[13px] font-semibold text-[16px] cursor-pointer transition-all duration-200 hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading ? "Memproses..." : "Masuk →"}
-      </button>
+      <Button type="submit" disabled={loading}>
+        {loading ? "Memproses..." : "Masuk \u2192"}
+      </Button>
       <div className="flex items-center gap-3 my-2">
         <div className="flex-1 h-px bg-border-precision" />
-        <span className="text-xs uppercase tracking-wider text-on-surface-variant/60">atau</span>
+        <span className="text-xs uppercase tracking-wider text-on-surface-variant/60">
+          atau
+        </span>
         <div className="flex-1 h-px bg-border-precision" />
       </div>
       <button
         type="button"
         onClick={handleGoogle}
         disabled={redirecting}
-        className="w-full inline-flex items-center justify-center gap-2 py-[13px] border border-border-precision rounded-[13px] text-[14px] font-semibold text-on-surface hover:bg-surface transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full inline-flex items-center justify-center gap-2 py-3 border border-border-precision rounded-button text-base font-semibold text-on-surface hover:bg-surface active:scale-[0.98] transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
       >
         {redirecting ? (
           <span className="flex items-center gap-2">
@@ -91,21 +96,25 @@ export function FormLoginSiswa({ redirectTo, onSubmit, onBack, error, loading, n
           </>
         )}
       </button>
-      <p className="text-center text-[13px] text-on-surface-variant">
+      <p className="text-center text-sm text-on-surface-variant">
         Belum punya akun siswa?{" "}
-        <Link href="/daftar?portal=siswa&auto=siswa" className="font-semibold text-primary hover:underline">
+        <Link
+          href="/daftar?portal=siswa&auto=siswa"
+          className="font-semibold text-primary hover:underline"
+        >
           Daftar di sini
         </Link>
       </p>
       <p className="text-xs text-on-surface-variant bg-surface rounded-xl px-3 py-2.5">
-        Hanya akun siswa yang bisa masuk lewat alur ini. Jika akunmu guru, gunakan portal guru.
+        Hanya akun siswa yang bisa masuk lewat alur ini. Jika akunmu guru, gunakan
+        portal guru.
       </p>
       <button
         type="button"
         onClick={onBack}
-        className="w-full text-center text-[13px] text-on-surface-variant hover:text-primary transition-colors cursor-pointer"
+        className="w-full text-center text-sm text-on-surface-variant hover:text-primary active:scale-[0.98] transition-all duration-200 cursor-pointer"
       >
-        ← Kembali ke pemilihan portal
+        &larr; Kembali ke pemilihan portal
       </button>
     </form>
   );

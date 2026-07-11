@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { BookHeart, ArrowRight, Sparkles, GraduationCap, Users, FileText, Target, MessageCircle } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
-import { EASE_CURVE } from "@/lib/constants";
+import { EASE_CURVE, WA_NUMBER } from "@/lib/constants";
 
 export default function TentangPage() {
   const { about } = useCmsData();
@@ -40,7 +40,7 @@ export default function TentangPage() {
   ];
 
   return (
-    <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 md:pt-40 pb-16 md:pb-32">
+    <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 md:pt-40 pb-16 md:pb-32">
       <motion.section
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -68,7 +68,7 @@ export default function TentangPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: EASE_CURVE }}
-            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
+            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-4">
               Filosofi Kami
@@ -83,7 +83,7 @@ export default function TentangPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1, ease: EASE_CURVE }}
-            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
+            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-8">
               Platform untuk Guru Zaman Now
@@ -115,7 +115,7 @@ export default function TentangPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2, ease: EASE_CURVE }}
-            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
+            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-4">
               Visi & Misi
@@ -140,7 +140,7 @@ export default function TentangPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.25, ease: EASE_CURVE }}
-            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
+            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-6">
               Tim AKAL Center
@@ -171,7 +171,7 @@ export default function TentangPage() {
                   Pendidik PAI yang berdedikasi menghadirkan pengalaman belajar agama yang bermakna. AKAL Center lahir dari pengalaman langsung mengajar di kelas — melihat kebutuhan guru akan alat bantu digital yang praktis dan sesuai Kurikulum Merdeka.
                 </p>
                 <a
-                  href="https://wa.me/6285158795502?text=Halo%20Pak%20Ahmad%2C%20saya%20ingin%20berdiskusi%20tentang%20AKAL%20Center"
+                  href={`https://wa.me/${WA_NUMBER}?text=Halo%20Pak%20Ahmad%2C%20saya%20ingin%20berdiskusi%20tentang%20AKAL%20Center`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-primary hover:underline"
@@ -201,7 +201,7 @@ export default function TentangPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.3, ease: EASE_CURVE }}
-            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-[32px] bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
+            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-6">
               Verifikator & Mitra Akademik

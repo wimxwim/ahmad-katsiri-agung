@@ -49,7 +49,7 @@ export function OwnerLayoutClient({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-surface flex">
+    <div className="min-h-dvh bg-surface flex">
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-border-precision flex flex-col transition-transform duration-300",

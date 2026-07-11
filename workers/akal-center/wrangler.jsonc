@@ -13,6 +13,14 @@
     { "pattern": "akalcenter.my.id/*", "zone_id": "bc8a1f05acc22a9bd2b95ef2edfb9b0f" },
     { "pattern": "www.akalcenter.my.id/*", "zone_id": "bc8a1f05acc22a9bd2b95ef2edfb9b0f" }
   ],
+  "queues": {
+    "producers": [
+      { "queue": "ai-generation-queue", "binding": "AI_GENERATION" }
+    ],
+    "consumers": [
+      { "queue": "ai-generation-queue", "max_batch_size": 1, "max_batch_timeout": 5 }
+    ]
+  },
   "observability": {
     "enabled": true,
     "head_sampling_rate": 0.1

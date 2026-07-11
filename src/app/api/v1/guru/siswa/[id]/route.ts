@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { users, kursus, siswaKursus, quizPublished, quizAttempt } from "@/lib/db/schema";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { requireRole, GuardError } from "@/lib/route-guard-v2";
+import { KKM } from "@/lib/constants";
 
 export async function GET(
   request: NextRequest,
@@ -71,8 +72,6 @@ export async function GET(
     const rataNilai = nilaiList.length > 0
       ? Math.round(nilaiList.reduce((s, n) => s + n, 0) / nilaiList.length)
       : null;
-
-    const KKM = 70;
 
     const attemptsEnriched = attempts.map((a) => {
       const quiz = quizPubs.find((q) => q.id === a.quizPublishedId);

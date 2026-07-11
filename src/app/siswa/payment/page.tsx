@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { BookOpen, ArrowLeft } from "lucide-react";
 
@@ -9,7 +7,7 @@ export default function PaymentPage() {
       <h1 className="font-heading font-bold text-2xl text-on-surface mb-2">Pembayaran</h1>
       <p className="text-on-surface-variant text-sm mb-8">Kelola pembayaran kursus berbayar</p>
 
-      <div className="flex flex-col items-center justify-center py-16 bg-glass rounded-[32px] border border-border-precision shadow-glass">
+      <div className="flex flex-col items-center justify-center py-16 bg-glass rounded-2xl border border-border-precision shadow-glass">
         <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
           <BookOpen className="w-8 h-8 text-primary" />
         </div>

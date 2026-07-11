@@ -137,7 +137,7 @@ export default function OwnerIndex() {
     <div>
       {/* header */}
       <div className="mb-8">
-        <span className="inline-flex items-center gap-2 rounded-full bg-tertiary/10 px-3 py-1 text-xs font-bold tracking-[0.18em] text-tertiary">
+        <span className="inline-flex items-center gap-2 rounded-full bg-tertiary/10 px-3 py-1 text-xs font-bold tracking-badge text-tertiary">
           <ShieldCheck className="w-3 h-3" />
           OWNER CONSOLE
         </span>
@@ -151,7 +151,7 @@ export default function OwnerIndex() {
 
       {/* stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-glass border border-border-precision rounded-[24px] p-6 shadow-glass">
+        <div className="bg-glass border border-border-precision rounded-xl p-6 shadow-glass">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <Users className="w-5 h-5 text-primary" />
@@ -166,7 +166,7 @@ export default function OwnerIndex() {
           </p>
         </div>
 
-        <div className="bg-glass border border-border-precision rounded-[24px] p-6 shadow-glass">
+        <div className="bg-glass border border-border-precision rounded-xl p-6 shadow-glass">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
               <School className="w-5 h-5 text-primary" />
@@ -181,7 +181,7 @@ export default function OwnerIndex() {
           </p>
         </div>
 
-        <div className="bg-glass border border-border-precision rounded-[24px] p-6 shadow-glass">
+        <div className="bg-glass border border-border-precision rounded-xl p-6 shadow-glass">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
               <Sparkles className="w-5 h-5 text-amber-600" />
@@ -196,7 +196,7 @@ export default function OwnerIndex() {
           </p>
         </div>
 
-        <div className="bg-glass border border-border-precision rounded-[24px] p-6 shadow-glass">
+        <div className="bg-glass border border-border-precision rounded-xl p-6 shadow-glass">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
               <Activity className="w-5 h-5 text-emerald-600" />
@@ -211,7 +211,7 @@ export default function OwnerIndex() {
       </div>
 
       {/* TRI Section */}
-      <div className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-8 shadow-glass-lg">
+      <div className="bg-glass border border-border-precision rounded-2xl p-6 sm:p-8 shadow-glass-lg">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
             <Activity className="w-5 h-5 text-primary" />
@@ -251,7 +251,7 @@ export default function OwnerIndex() {
             {triData.map((guru) => (
               <div
                 key={guru.guruId}
-                className="rounded-[20px] border border-border-precision bg-white/40 p-5 transition-all hover:shadow-glass"
+                className="rounded-tab border border-border-precision bg-white/40 p-5 transition-all hover:shadow-glass"
               >
                 {/* header guru */}
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -296,7 +296,7 @@ export default function OwnerIndex() {
       </div>
 
       {/* Payments Verification */}
-      <div className="mt-8 bg-glass border border-border-precision rounded-[32px] p-6 sm:p-8 shadow-glass-lg">
+      <div className="mt-8 bg-glass border border-border-precision rounded-2xl p-6 sm:p-8 shadow-glass-lg">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
             <CreditCard className="w-5 h-5 text-amber-600" />
@@ -318,7 +318,7 @@ export default function OwnerIndex() {
         ) : (
           <div className="mt-6 space-y-3">
             {payments.map((p) => (
-              <div key={p.id} className="rounded-[20px] border border-border-precision bg-white/40 p-5 flex flex-wrap items-center justify-between gap-4">
+              <div key={p.id} className="rounded-tab border border-border-precision bg-white/40 p-5 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold text-sm text-on-surface">{p.userName || "—"}</span>
@@ -358,7 +358,7 @@ export default function OwnerIndex() {
       </div>
 
       {/* note */}
-      <div className="mt-6 p-4 rounded-[16px] border border-primary/15 bg-primary/5">
+      <div className="mt-6 p-4 rounded-lg border border-primary/15 bg-primary/5">
         <div className="flex items-start gap-2">
           <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
           <p className="text-xs text-on-surface-variant">

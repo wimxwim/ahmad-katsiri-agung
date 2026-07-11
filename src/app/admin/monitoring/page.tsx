@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   Users,
@@ -61,10 +61,21 @@ export default function MonitoringPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchRef = useRef<() => Promise<void>>(async () => {});
+
   useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
+    fetchRef.current = fetchData;
+  });
+
+  useEffect(() => {
+    let alive = true;
+    async function poll() {
+      if (!alive) return;
+      await fetchRef.current();
+    }
+    poll();
+    const interval = setInterval(poll, 30000);
+    return () => { alive = false; clearInterval(interval); };
   }, []);
 
   async function fetchData() {
@@ -87,7 +98,7 @@ export default function MonitoringPage() {
 
   if (loading && !data) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-dvh">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
           <p className="text-on-surface-variant">Memuat data monitoring...</p>
@@ -98,8 +109,8 @@ export default function MonitoringPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-glass border border-border-precision rounded-[24px] p-8 shadow-glass max-w-md">
+      <div className="flex items-center justify-center min-h-dvh">
+        <div className="bg-glass border border-border-precision rounded-xl p-8 shadow-glass max-w-md">
           <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="font-heading font-bold text-xl text-on-surface mb-2">
             Error Memuat Data
@@ -320,7 +331,7 @@ export default function MonitoringPage() {
         </SectionCard>
       </div>
 
-      <div className="mt-8 bg-glass border border-border-precision rounded-[24px] p-6 shadow-glass">
+      <div className="mt-8 bg-glass border border-border-precision rounded-xl p-6 shadow-glass">
         <h2 className="font-heading font-bold text-xl text-on-surface mb-4">
           Statistik User
         </h2>
@@ -362,7 +373,7 @@ function StatCard({
 
   return (
     <div
-      className={`bg-glass border border-border-precision rounded-[24px] p-6 shadow-glass ${colorClasses[color as keyof typeof colorClasses]}`}
+      className={`bg-glass border border-border-precision rounded-xl p-6 shadow-glass ${colorClasses[color as keyof typeof colorClasses]}`}
     >
       <div className="flex items-center justify-between mb-2">
         {icon}
@@ -385,7 +396,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-glass border border-border-precision rounded-[24px] p-6 shadow-glass">
+    <div className="bg-glass border border-border-precision rounded-xl p-6 shadow-glass">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           {icon}

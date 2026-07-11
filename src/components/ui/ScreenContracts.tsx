@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { EASE_CURVE } from "@/lib/constants";
+import { EASE_CURVE, WA_NUMBER } from "@/lib/constants";
 import {
   Upload,
   FileText,
@@ -42,7 +42,7 @@ function UploadProgress({ status, message, fileName }: UploadProgressProps) {
   const isFailed = status === "failed";
 
   return (
-    <div className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-8 shadow-glass">
+    <div className="bg-glass border border-border-precision rounded-2xl p-6 sm:p-8 shadow-glass">
       {fileName && (
         <p className="text-sm font-medium text-on-surface mb-4 truncate max-w-full">
           {fileName}
@@ -155,7 +155,7 @@ const GURU_STEPS = [
 
 function DashboardGuruKosong({ namaGuru }: DashboardGuruKosongProps) {
   return (
-    <div className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass">
+    <div className="bg-glass border border-border-precision rounded-2xl p-6 sm:p-10 shadow-glass">
       <div className="text-center mb-8">
         <span className="w-14 h-14 rounded-2xl bg-primary/10 text-primary grid place-items-center mx-auto mb-4">
           <GraduationCap className="w-7 h-7" />
@@ -206,7 +206,7 @@ function DashboardGuruKosong({ namaGuru }: DashboardGuruKosongProps) {
 
 function DashboardSiswaKosong() {
   return (
-    <div className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass text-center">
+    <div className="bg-glass border border-border-precision rounded-2xl p-6 sm:p-10 shadow-glass text-center">
       <span className="w-14 h-14 rounded-2xl bg-tertiary/10 text-tertiary grid place-items-center mx-auto mb-4">
         <FileText className="w-7 h-7" />
       </span>
@@ -218,7 +218,7 @@ function DashboardSiswaKosong() {
         dari guru atau hubungi langsung jika ada pertanyaan.
       </p>
       <Link
-        href="https://wa.me/6285158795502"
+        href={`https://wa.me/${WA_NUMBER}`}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex items-center gap-2 bg-tertiary text-on-tertiary px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
@@ -257,7 +257,7 @@ function RoleMismatchError({ currentPortal, actualRole }: RoleMismatchErrorProps
   const correctHref = DESTINATION_MAP[actualRole] || "/";
 
   return (
-    <div className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass max-w-md mx-auto text-center">
+    <div className="bg-glass border border-border-precision rounded-2xl p-6 sm:p-10 shadow-glass max-w-md mx-auto text-center">
       <span className="w-14 h-14 rounded-2xl bg-red-50 text-red-600 grid place-items-center mx-auto mb-4">
         <ShieldAlert className="w-7 h-7" />
       </span>

@@ -114,7 +114,7 @@ export default function QuranPage() {
 
   return (
     <>
-      <div className="min-h-screen pb-24 md:pb-16">
+      <div className="min-h-dvh pb-24 md:pb-16">
         {/* Hero */}
         <section className="relative pt-28 pb-16 sm:pb-20 px-4 text-center overflow-hidden">
           <div className="absolute inset-0 -z-10">
@@ -154,7 +154,7 @@ export default function QuranPage() {
                 Kembali ke daftar
               </button>
 
-              <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass">
+              <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl p-6 sm:p-10 shadow-glass">
                 <div className="text-center mb-8">
                   <div className="flex items-center justify-center gap-4 mb-4">
                     <span className="text-3xl sm:text-4xl font-quran text-primary font-bold" dir="rtl">
@@ -261,7 +261,7 @@ export default function QuranPage() {
                     <button
                       key={surah.nomor}
                       onClick={() => openSurah(surah.nomor)}
-                      className="group text-left bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[28px] p-5 shadow-glass hover:shadow-glass-lg hover:-translate-y-1 transition-all duration-300"
+                      className="group text-left bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-card p-5 shadow-glass hover:shadow-glass-lg hover:-translate-y-1 transition-all duration-300"
                     >
                       <div className="flex items-start justify-between mb-3">
                         <span className="w-9 h-9 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">

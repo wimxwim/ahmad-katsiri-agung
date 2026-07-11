@@ -23,7 +23,7 @@ function EmptyState({
   return (
     <div
       className={cn(
-        "bg-glass border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass text-center",
+        "bg-glass border border-border-precision rounded-2xl p-6 sm:p-10 shadow-glass text-center",
         className
       )}
     >

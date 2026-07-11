@@ -4,7 +4,7 @@ import { getSession } from "@/lib/dal";
 import { checkRateLimitSync, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { pengumuman } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
 
 const UpdateSchema = z.object({
@@ -14,6 +14,8 @@ const UpdateSchema = z.object({
   expiresAt: z.string().datetime().nullable().optional(),
   isPinned: z.boolean().optional(),
 });
+
+const GURU_ROLES = new Set(["guru", "owner", "admin_sekolah"]);
 
 export async function GET(
   _request: NextRequest,
@@ -26,6 +28,9 @@ export async function GET(
   const { id } = await params;
   const [row] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
   if (!row) return apiError("Pengumuman tidak ditemukan", 404);
+  if (row.target === "GURU" && !GURU_ROLES.has(session.role)) {
+    return apiError("Tidak diizinkan", 403);
+  }
   return NextResponse.json(row);
   } catch (e) {
     console.error("Pengumuman GET error:", e);
@@ -41,7 +46,7 @@ export async function PUT(
   const session = await getSession();
   if (!session) return apiUnauthorized();
 
-  if (session.role !== "guru" && session.role !== "owner" && session.role !== "admin_sekolah") {
+  if (!GURU_ROLES.has(session.role)) {
     return apiError("Tidak diizinkan", 403);
   }
 
@@ -61,6 +66,10 @@ export async function PUT(
   if (!parsed.success) return apiError("Data tidak valid", 400);
 
   const { judul, konten, target, isPinned, expiresAt } = parsed.data;
+  const where = session.role === "owner"
+    ? eq(pengumuman.id, id)
+    : and(eq(pengumuman.id, id), eq(pengumuman.guruId, session.userId));
+
   const [updated] = await db
     .update(pengumuman)
     .set({
@@ -70,7 +79,7 @@ export async function PUT(
       isPinned,
       ...(expiresAt !== undefined ? { expiresAt: expiresAt ? new Date(expiresAt) : null } : {}),
     })
-    .where(eq(pengumuman.id, id))
+    .where(where)
     .returning();
 
   return NextResponse.json(updated);
@@ -88,7 +97,7 @@ export async function DELETE(
   const session = await getSession();
   if (!session) return apiUnauthorized();
 
-  if (session.role !== "guru" && session.role !== "owner" && session.role !== "admin_sekolah") {
+  if (!GURU_ROLES.has(session.role)) {
     return apiError("Tidak diizinkan", 403);
   }
 
@@ -99,7 +108,11 @@ export async function DELETE(
     return apiError("Hanya pembuat yang bisa menghapus", 403);
   }
 
-  await db.delete(pengumuman).where(eq(pengumuman.id, id));
+  const where = session.role === "owner"
+    ? eq(pengumuman.id, id)
+    : and(eq(pengumuman.id, id), eq(pengumuman.guruId, session.userId));
+
+  await db.delete(pengumuman).where(where);
   return NextResponse.json({ success: true });
   } catch (e) {
     console.error("Pengumuman DELETE error:", e);

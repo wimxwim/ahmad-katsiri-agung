@@ -28,11 +28,11 @@ export default async function DaftarPage() {
     }
   }
   return (
-    <div className="min-h-screen bg-surface px-3 py-10 sm:px-5 lg:px-8">
-      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-6xl items-center">
-        <div className="grid w-full gap-6 rounded-[32px] border border-border-precision bg-white p-6 shadow-glass-lg md:grid-cols-2 md:p-10">
+    <div className="min-h-dvh bg-surface px-3 py-10 sm:px-5 lg:px-8">
+      <div className="mx-auto flex min-h-[calc(100dvh-5rem)] max-w-6xl items-center">
+        <div className="grid w-full gap-6 rounded-2xl border border-border-precision bg-white p-6 shadow-glass-lg md:grid-cols-2 md:p-10">
           <div className="md:pr-6">
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold tracking-[0.18em] text-primary">
+            <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold tracking-badge text-primary">
               AKAL CENTER
             </span>
             <h1 className="mt-6 font-heading text-3xl font-bold leading-tight text-on-surface sm:text-4xl">

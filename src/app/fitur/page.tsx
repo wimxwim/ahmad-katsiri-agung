@@ -22,7 +22,7 @@ import {
   Workflow,
   PenTool,
 } from "lucide-react";
-import { EASE_CURVE } from "@/lib/constants";
+import { EASE_CURVE, WA_NUMBER } from "@/lib/constants";
 
 const guruFeatures = [
   {
@@ -136,17 +136,17 @@ const fadeUp = {
 export default function FiturPage() {
   return (
     <main className="bg-surface pb-20">
-      <section className="mx-auto max-w-[1280px] px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 md:pt-32">
+      <section className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 md:pt-32">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: EASE_CURVE }}
-          className="rounded-[32px] border border-border-precision bg-white p-6 shadow-glass-lg sm:p-10 lg:p-14"
+          className="rounded-2xl border border-border-precision bg-white p-6 shadow-glass-lg sm:p-10 lg:p-14"
         >
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold tracking-[0.18em] text-primary">
+          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold tracking-badge text-primary">
             FITUR LENGKAP
           </span>
-          <h1 className="mt-6 font-heading text-4xl font-bold leading-[0.95] tracking-tight text-on-surface sm:text-5xl lg:text-7xl">
+          <h1 className="mt-6 font-heading text-4xl font-bold leading-hero tracking-tight text-on-surface sm:text-5xl lg:text-7xl">
             Fitur AKAL Center
           </h1>
           <p className="mt-5 max-w-2xl text-sm leading-relaxed text-on-surface-variant sm:text-base lg:text-lg">
@@ -156,9 +156,9 @@ export default function FiturPage() {
         </motion.div>
       </section>
 
-      <section className="mx-auto mt-16 max-w-[1280px] px-3 sm:px-5 lg:px-8">
+      <section className="mx-auto mt-16 max-w-7xl px-3 sm:px-5 lg:px-8">
         <motion.div {...fadeUp} className="mb-8">
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold tracking-[0.18em] text-primary">
+          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold tracking-badge text-primary">
             UNTUK GURU
           </span>
           <h2 className="mt-4 font-heading text-3xl font-bold tracking-tight text-on-surface sm:text-4xl">
@@ -178,7 +178,7 @@ export default function FiturPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.08, ease: EASE_CURVE }}
-                className="rounded-[28px] border border-border-precision bg-glass p-5 shadow-glass backdrop-blur-2xl sm:p-6"
+                className="rounded-card border border-border-precision bg-glass p-5 shadow-glass backdrop-blur-2xl sm:p-6"
               >
                 <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <Icon className="h-6 w-6" />
@@ -195,9 +195,9 @@ export default function FiturPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-16 max-w-[1280px] px-3 sm:px-5 lg:px-8">
+      <section className="mx-auto mt-16 max-w-7xl px-3 sm:px-5 lg:px-8">
         <motion.div {...fadeUp} className="mb-8">
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold tracking-[0.18em] text-primary">
+          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold tracking-badge text-primary">
             UNTUK SISWA
           </span>
           <h2 className="mt-4 font-heading text-3xl font-bold tracking-tight text-on-surface sm:text-4xl">
@@ -218,7 +218,7 @@ export default function FiturPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1, ease: EASE_CURVE }}
                 className={cn(
-                  "rounded-[28px] border border-border-precision bg-white p-5 shadow-glass sm:p-6",
+                  "rounded-card border border-border-precision bg-white p-5 shadow-glass sm:p-6",
                   i === 0 && "sm:col-span-2"
                 )}
               >
@@ -237,9 +237,9 @@ export default function FiturPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-16 max-w-[1280px] px-3 sm:px-5 lg:px-8">
+      <section className="mx-auto mt-16 max-w-7xl px-3 sm:px-5 lg:px-8">
         <motion.div {...fadeUp} className="mb-8">
-          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold tracking-[0.18em] text-primary">
+          <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold tracking-badge text-primary">
             UNTUK SEKOLAH
           </span>
           <h2 className="mt-4 font-heading text-3xl font-bold tracking-tight text-on-surface sm:text-4xl">
@@ -260,7 +260,7 @@ export default function FiturPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1, ease: EASE_CURVE }}
                 className={cn(
-                  "rounded-[28px] border border-border-precision bg-glass p-5 shadow-glass backdrop-blur-2xl sm:p-6",
+                  "rounded-card border border-border-precision bg-glass p-5 shadow-glass backdrop-blur-2xl sm:p-6",
                   i === 0 && "sm:col-span-2"
                 )}
               >
@@ -279,17 +279,17 @@ export default function FiturPage() {
         </div>
       </section>
 
-      <section className="mx-auto mt-16 max-w-[1280px] px-3 sm:px-5 lg:px-8">
+      <section className="mx-auto mt-16 max-w-7xl px-3 sm:px-5 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: EASE_CURVE }}
-          className="rounded-[32px] border border-border-precision bg-[#052b19] p-6 text-white shadow-glass-xl sm:p-10 lg:p-14"
+          className="rounded-2xl border border-border-precision bg-[#052b19] p-6 text-white shadow-glass-xl sm:p-10 lg:p-14"
         >
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold tracking-[0.18em] text-white/80">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold tracking-badge text-white/80">
                 KILLER FEATURE
               </span>
               <div className="mt-4 flex items-center gap-3">
@@ -335,7 +335,7 @@ export default function FiturPage() {
             </div>
 
             <div className="space-y-3">
-              <p className="text-xs font-bold tracking-[0.18em] text-white/50">
+              <p className="text-xs font-bold tracking-badge text-white/50">
                 ALUR KERJA AI DOCUMENT GENERATOR
               </p>
               {pipelineSteps.map((item) => {
@@ -347,14 +347,14 @@ export default function FiturPage() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.4, delay: Number(item.step) * 0.08, ease: EASE_CURVE }}
-                    className="rounded-[22px] border border-white/10 bg-white/5 p-4"
+                    className="rounded-2xl border border-white/10 bg-white/5 p-4"
                   >
                     <div className="flex items-start gap-3">
                       <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-[#eec055]">
                         <Icon className="h-5 w-5" />
                       </span>
                       <div className="flex-1">
-                        <p className="text-xs font-bold tracking-[0.18em] text-white/50">
+                        <p className="text-xs font-bold tracking-badge text-white/50">
                           STEP {item.step}
                         </p>
                         <p className="mt-1 font-heading text-base font-semibold text-white">
@@ -373,13 +373,13 @@ export default function FiturPage() {
         </motion.div>
       </section>
 
-      <section className="mx-auto mt-16 max-w-[1280px] px-3 sm:px-5 lg:px-8">
+      <section className="mx-auto mt-16 max-w-7xl px-3 sm:px-5 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, ease: EASE_CURVE }}
-          className="rounded-[32px] border border-border-precision bg-gradient-to-br from-primary to-[#003d24] p-6 text-white shadow-glass-xl sm:p-10 lg:p-14"
+          className="rounded-2xl border border-border-precision bg-gradient-to-br from-primary to-[#003d24] p-6 text-white shadow-glass-xl sm:p-10 lg:p-14"
         >
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div>
@@ -403,7 +403,7 @@ export default function FiturPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
-                  href="https://wa.me/6285158795502?text=Halo%2C%20saya%20tertarik%20dengan%20AKAL%20Center%20untuk%20sekolah"
+                  href={`https://wa.me/${WA_NUMBER}?text=Halo%2C%20saya%20tertarik%20dengan%20AKAL%20Center%20untuk%20sekolah`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
@@ -414,8 +414,8 @@ export default function FiturPage() {
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-white/15 bg-white/5 p-5 lg:p-6">
-              <p className="text-xs font-bold tracking-[0.18em] text-white/60">APA YANG ANDA DAPATKAN</p>
+            <div className="rounded-card border border-white/15 bg-white/5 p-5 lg:p-6">
+              <p className="text-xs font-bold tracking-badge text-white/60">APA YANG ANDA DAPATKAN</p>
               <div className="mt-4 space-y-3">
                 {[
                   "1 guru, 1 kelas gratis",

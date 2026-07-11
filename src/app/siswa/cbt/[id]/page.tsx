@@ -124,7 +124,7 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
           <ArrowLeft className="w-4 h-4" />
           Kembali ke daftar kuis
         </Link>
-        <div className="bg-glass border-2 border-emerald-300 rounded-[32px] p-8 sm:p-10 shadow-glass-lg text-center">
+        <div className="bg-glass border-2 border-emerald-300 rounded-2xl p-8 sm:p-10 shadow-glass-lg text-center">
           <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-700 grid place-items-center mx-auto mb-4">
             {result.tampilkanNilai ? (
               <CheckCircle2 className="w-9 h-9" />

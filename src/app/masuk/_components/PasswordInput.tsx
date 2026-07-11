@@ -14,7 +14,7 @@ export function PasswordInput({ name = "password", placeholder = "••••�
         required
         minLength={minLength}
         placeholder={placeholder}
-        className="w-full px-4 py-[13px] pr-11 border border-border-precision rounded-xl text-[16px] bg-white text-on-surface placeholder:text-on-surface-variant/70 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
+        className="w-full px-4 py-3 pr-11 border border-border-precision rounded-xl text-md bg-white text-on-surface placeholder:text-on-surface-variant/70 outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10 transition-all"
       />
       <button
         type="button"

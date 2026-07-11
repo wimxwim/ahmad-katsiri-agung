@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "NODE_OPTIONS=--max-old-space-size=8192 next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@keystatic/core": "^0.5.50",
@@ -14,6 +16,7 @@
     "@markdoc/markdoc": "^0.5.7",
     "@next/third-parties": "^16.2.7",
     "@node-rs/argon2": "^2.0.2",
+    "@tanstack/react-query": "^5.101.2",
     "@upstash/redis": "^1.38.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/functions": "^3.7.5",
@@ -31,21 +34,29 @@
     "pg": "^8.22.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
-    "unpdf": "^1.6.2"
+    "unpdf": "^1.6.2",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^6.0.3",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
+    "jsdom": "^28.1.0",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vitest": "^4.1.10",
     "wrangler": "^4.101.0"
   }
 }

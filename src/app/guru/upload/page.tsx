@@ -201,7 +201,7 @@ export default function GuruUploadPage() {
 
       <div className="mb-4 grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="block text-[13px] font-semibold text-on-surface mb-1.5">Kursus</label>
+          <label className="block text-sm font-semibold text-on-surface mb-1.5">Kursus</label>
           {kursus.length === 0 ? (
             <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-800">
               Belum ada kursus.{" "}
@@ -225,7 +225,7 @@ export default function GuruUploadPage() {
           )}
         </div>
         <div>
-          <label className="block text-[13px] font-semibold text-on-surface mb-1.5">
+          <label className="block text-sm font-semibold text-on-surface mb-1.5">
             Kelas tujuan <span className="font-normal text-on-surface-variant">(opsional)</span>
           </label>
           <Link
@@ -243,7 +243,7 @@ export default function GuruUploadPage() {
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
-        className={`block cursor-pointer rounded-[24px] border-2 border-dashed transition-all ${
+        className={`block cursor-pointer rounded-xl border-2 border-dashed transition-all ${
           dragOver
             ? "border-primary bg-primary/5"
             : file

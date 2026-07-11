@@ -87,7 +87,7 @@ export default function SiswaMateriPage() {
         Kembali ke Beranda
       </Link>
 
-      <article className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-8 shadow-glass-lg">
+      <article className="bg-glass border border-border-precision rounded-2xl p-6 sm:p-8 shadow-glass-lg">
         <div className="flex items-start gap-3 mb-4">
           <span className="w-12 h-12 rounded-2xl bg-primary/10 text-primary grid place-items-center shrink-0">
             <BookOpen className="w-6 h-6" />

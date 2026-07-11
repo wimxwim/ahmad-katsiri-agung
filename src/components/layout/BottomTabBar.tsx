@@ -61,32 +61,50 @@ export function BottomTabBar() {
     { href: "/", label: "Beranda", icon: Home },
     { href: "/fitur", label: "Fitur", icon: Sparkles },
     { href: "/kursus", label: "Kursus", icon: BookOpen },
-    ...(session ? [{ href: session.role === "guru" ? "/guru/beranda" : session.role === "owner" ? "/owner" : session.role === "admin_sekolah" ? "/admin-sekolah" : session.role === "orang_tua" ? "/orang-tua" : "/siswa/beranda", label: "Dashboard", icon: GraduationCap, sessionOnly: true }] : []),
+    ...(session
+      ? [
+          {
+            href:
+              session.role === "guru"
+                ? "/guru/beranda"
+                : session.role === "owner"
+                ? "/owner"
+                : session.role === "admin_sekolah"
+                ? "/admin-sekolah"
+                : session.role === "orang_tua"
+                ? "/orang-tua"
+                : "/siswa/beranda",
+            label: "Dashboard",
+            icon: GraduationCap,
+            sessionOnly: true,
+          },
+        ]
+      : []),
   ];
 
   return (
     <>
       <AnimatePresence>
         {sheetOpen && (
+          <motion.div
+            key="sheet-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-50 bg-black/40"
+            onClick={closeSheet}
+          >
             <motion.div
-              key="sheet-overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="fixed inset-0 z-50 bg-black/40"
-              onClick={closeSheet}
+              key="sheet-panel"
+              ref={sheetRef}
+              initial={{ transform: "translateY(100%)" }}
+              animate={{ transform: "translateY(0%)" }}
+              exit={{ transform: "translateY(100%)" }}
+              transition={{ duration: 0.25, ease: EASE_CURVE }}
+              className="absolute bottom-0 inset-x-0 bg-white rounded-t-2xl shadow-glass-xl pb-[calc(1rem+env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto will-change-transform"
+              onClick={(e) => e.stopPropagation()}
             >
-              <motion.div
-                key="sheet-panel"
-                ref={sheetRef}
-                initial={{ transform: "translateY(100%)" }}
-                animate={{ transform: "translateY(0%)" }}
-                exit={{ transform: "translateY(100%)" }}
-                transition={{ duration: 0.25, ease: EASE_CURVE }}
-                className="absolute bottom-0 inset-x-0 bg-white rounded-t-[32px] shadow-glass-xl pb-[calc(1rem+env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto will-change-transform"
-                onClick={(e) => e.stopPropagation()}
-              >
               <div className="flex justify-center pt-3 pb-1">
                 <div className="w-10 h-1 rounded-full bg-gray-300" />
               </div>
@@ -145,7 +163,10 @@ export function BottomTabBar() {
                     </Link>
                   ) : (
                     <button
-                      onClick={() => { closeSheet(); handleLogout().then((r) => (window.location.href = r)); }}
+                      onClick={() => {
+                        closeSheet();
+                        handleLogout().then((r) => (window.location.href = r));
+                      }}
                       className="flex flex-col items-start gap-2 p-4 rounded-2xl border border-border-precision bg-white hover:bg-red-50 hover:border-red-200 transition-all duration-200 text-left"
                     >
                       <div className="p-2 rounded-xl bg-red-50">
@@ -166,8 +187,11 @@ export function BottomTabBar() {
         )}
       </AnimatePresence>
 
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/90 backdrop-blur-2xl border-t border-border-precision shadow-[0_-4px_30px_rgba(0,0,0,0.06)]">
-        <div className="flex items-center justify-around h-16" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
+      <nav
+        className="md:hidden fixed bottom-3 inset-x-0 z-40 flex justify-center pointer-events-none"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      >
+        <div className="pointer-events-auto flex items-center gap-0.5 bg-white/80 backdrop-blur-2xl border border-white/20 rounded-xl px-1.5 py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.6)]">
           {navTabs.map((tab) => {
             const active = tab.href !== null && isActive(tab.href);
             const Icon = tab.icon;
@@ -176,15 +200,27 @@ export function BottomTabBar() {
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`relative flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 min-h-[44px] transition-colors duration-200 ${
-                  active ? "text-primary" : "text-on-surface-variant/60 hover:text-on-surface-variant"
-                }`}
+                className="relative flex flex-col items-center justify-center gap-0.5 min-w-[52px] min-h-11 px-2.5 rounded-tab transition-colors duration-200 cursor-pointer"
               >
                 {active && (
-                  <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary" />
+                  <motion.span
+                    layoutId="tab-indicator"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    className="absolute inset-0 bg-primary rounded-tab"
+                  />
                 )}
-                <Icon className="w-5 h-5" aria-hidden="true" fill={active ? "currentColor" : "none"} />
-                <span className={`text-xs font-semibold leading-none ${active ? "opacity-100" : "opacity-70"}`}>
+                <span className="relative z-10">
+                  <Icon
+                    className="w-5 h-5"
+                    aria-hidden="true"
+                    strokeWidth={active ? 2.5 : 2}
+                  />
+                </span>
+                <span
+                  className={`relative z-10 text-[10px] font-semibold leading-none transition-colors duration-200 ${
+                    active ? "text-on-primary" : "text-on-surface-variant/60"
+                  }`}
+                >
                   {tab.label}
                 </span>
               </Link>
@@ -193,11 +229,11 @@ export function BottomTabBar() {
 
           <button
             onClick={() => setSheetOpen(true)}
-            className="relative flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 min-h-[44px] text-on-surface-variant/60 hover:text-on-surface-variant transition-colors duration-200"
+            className="relative flex flex-col items-center justify-center gap-0.5 min-w-[52px] min-h-11 px-2.5 rounded-tab text-on-surface-variant/60 hover:text-on-surface-variant transition-colors duration-200 cursor-pointer"
             aria-label="Menu lainnya"
           >
-            <Grid3x3 className="w-5 h-5" aria-hidden="true" />
-            <span className="text-xs font-semibold leading-none opacity-70">Lainnya</span>
+            <Grid3x3 className="w-5 h-5" strokeWidth={2} aria-hidden="true" />
+            <span className="text-[10px] font-semibold leading-none">Lainnya</span>
           </button>
         </div>
       </nav>

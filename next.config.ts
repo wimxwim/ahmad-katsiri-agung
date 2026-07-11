@@ -2,8 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  serverExternalPackages: ["unpdf"],
   experimental: {
     viewTransition: true,
+    optimizePackageImports: ["lucide-react"],
+  },
+  env: {
+    BUILD_TIMESTAMP: new Date().toISOString(),
   },
   async redirects() {
     return [

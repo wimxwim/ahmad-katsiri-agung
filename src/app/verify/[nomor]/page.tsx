@@ -43,8 +43,8 @@ export default function VerifyPage() {
 
   if (state === "loading") {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center px-4">
-        <div className="bg-glass rounded-[32px] p-10 w-full max-w-md animate-pulse">
+      <div className="min-h-dvh bg-surface flex items-center justify-center px-4">
+        <div className="bg-glass rounded-2xl p-10 w-full max-w-md animate-pulse">
           <div className="w-16 h-16 rounded-full bg-on-surface/5 mx-auto mb-4" />
           <div className="h-5 bg-on-surface/5 rounded w-3/4 mx-auto mb-2" />
           <div className="h-4 bg-on-surface/5 rounded w-1/2 mx-auto" />
@@ -54,12 +54,12 @@ export default function VerifyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center px-4 py-12">
+    <div className="min-h-dvh bg-surface flex items-center justify-center px-4 py-12">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: EASE_CURVE }}
-        className="bg-glass border border-border-precision rounded-[32px] shadow-glass-lg p-8 sm:p-10 w-full max-w-md text-center"
+        className="bg-glass border border-border-precision rounded-2xl shadow-glass-lg p-8 sm:p-10 w-full max-w-md text-center"
       >
         {state === "valid" && data && (
           <>

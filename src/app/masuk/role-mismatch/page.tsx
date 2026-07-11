@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WA_NUMBER } from "@/lib/constants";
 import { cookies } from "next/headers";
 import { ShieldAlert, ArrowRight, LogIn, UserCog } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -51,8 +52,8 @@ export default async function RoleMismatchPage({ searchParams }: PageProps) {
   const actualLabel = actualPortal ? PORTAL_LABEL[actualPortal] : "Portal sesuai peran Anda";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface px-3 py-10 sm:px-5 lg:px-8">
-      <div className="w-full max-w-xl bg-white rounded-[32px] border border-border-precision shadow-glass-lg p-8 sm:p-10">
+    <div className="min-h-dvh flex items-center justify-center bg-surface px-3 py-10 sm:px-5 lg:px-8">
+      <div className="w-full max-w-xl bg-white rounded-2xl border border-border-precision shadow-glass-lg p-8 sm:p-10">
         <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-700 grid place-items-center mx-auto mb-4">
           <ShieldAlert className="w-7 h-7" />
         </div>
@@ -98,7 +99,7 @@ export default async function RoleMismatchPage({ searchParams }: PageProps) {
         <p className="mt-6 text-center text-xs text-on-surface-variant">
           Butuh bantuan? Hubungi{" "}
           <a
-            href="https://wa.me/6285158795502"
+            href={`https://wa.me/${WA_NUMBER}`}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-primary hover:underline"

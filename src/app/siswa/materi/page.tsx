@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, CheckCircle2, Circle, ArrowRight } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -18,6 +19,7 @@ interface MateriItem {
 }
 
 export default function SiswaMateriListPage() {
+  const router = useRouter();
   const [data, setData] = useState<MateriItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -49,7 +51,7 @@ export default function SiswaMateriListPage() {
     return (
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => window.location.reload()} className="text-sm text-primary hover:underline">Coba lagi</button>
+        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline">Coba lagi</button>
       </div>
     );
   }

@@ -20,7 +20,7 @@ function GameSkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8 max-w-5xl mx-auto mb-16 sm:mb-24">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 animate-pulse">
+        <div key={i} className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-2xl p-5 sm:p-8 animate-pulse">
           <div className="flex items-center gap-2 mb-4">
             <div className="h-6 w-24 bg-primary/10 rounded-full" />
             <div className="h-6 w-20 bg-amber-500/10 rounded-full" />
@@ -60,7 +60,7 @@ export default function GamePage() {
   };
 
   return (
-    <div className="max-w-[1280px] mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 pb-24 sm:pb-32">
+    <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 pb-24 sm:pb-32">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -129,7 +129,7 @@ export default function GamePage() {
                   delay: i * 0.07,
                   ease: EASE_CURVE,
                 }}
-                className="group block bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
+                className="group block bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-2xl p-5 sm:p-8 shadow-glass hover:shadow-2xl hover:-translate-y-2 transition-transform duration-500"
               >
                 <div className="flex items-center gap-2 mb-4 flex-wrap">
                 <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold tracking-wider">

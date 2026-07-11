@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, BookOpen } from "lucide-react";
 
@@ -11,6 +12,7 @@ interface KursusItem {
 }
 
 export default function NilaiListPage() {
+  const router = useRouter();
   const [kursus, setKursus] = useState<KursusItem[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ export default function NilaiListPage() {
     return (
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => window.location.reload()} className="text-sm text-primary hover:underline">Coba lagi</button>
+        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline">Coba lagi</button>
       </div>
     );
   }
@@ -84,7 +86,7 @@ export default function NilaiListPage() {
             <Link
               key={k.id}
               href={`/guru/kursus/${k.id}/nilai`}
-              className="bg-glass border border-border-precision rounded-2xl sm:rounded-[32px] p-6 shadow-glass hover:shadow-glass-lg transition-all duration-300 flex items-center justify-between"
+              className="bg-glass border border-border-precision rounded-2xl sm:rounded-2xl p-6 shadow-glass hover:shadow-glass-lg transition-all duration-300 flex items-center justify-between"
             >
               <div>
                 <h3 className="font-heading font-semibold text-on-surface">{k.judul}</h3>

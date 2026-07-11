@@ -19,7 +19,7 @@ export async function sendTelegram(message: string) {
   if (!BOT_TOKEN || CHAT_IDS.length === 0) return;
   const truncated =
     message.length > TELEGRAM_MAX_LENGTH
-      ? message.slice(0, TELEGRAM_MAX_LENGTH) + "\n\n✂️ *Pesan dipotong* — terlalu panjang"
+      ? message.slice(0, TELEGRAM_MAX_LENGTH) + "\n\n*Pesan dipotong* — terlalu panjang"
       : message;
   const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
   await Promise.all(

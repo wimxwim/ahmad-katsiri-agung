@@ -57,23 +57,21 @@ export default async function RootLayout() {
     const access = await verifyGithubUser();
     if (access === "denied") {
       return (
-        <html>
-          <body style={{ fontFamily: "system-ui, sans-serif", background: "#0a0a0a", color: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100vh", margin: 0 }}>
-            <div style={{ textAlign: "center", maxWidth: 420, padding: 24 }}>
-              <h1 style={{ fontSize: 28, marginBottom: 12 }}>⛔ Akses Ditolak</h1>
-              <p style={{ color: "#aaa", lineHeight: 1.6 }}>
-                Akun GitHub Anda tidak terdaftar untuk mengakses CMS ini.
-                Hubungi administrator jika Anda perlu akses.
-              </p>
-              <a
-                href="/keystatic"
-                style={{ display: "inline-block", marginTop: 20, color: "#4ade80" }}
-              >
-                Coba Login Ulang
-              </a>
-            </div>
-          </body>
-        </html>
+        <div className="min-h-dvh bg-surface flex items-center justify-center p-4">
+          <div className="bg-glass border border-border-precision rounded-2xl p-8 sm:p-10 shadow-glass-lg max-w-md w-full text-center">
+            <h1 className="font-heading text-2xl font-bold text-on-surface mb-3">Akses Ditolak</h1>
+            <p className="text-sm text-on-surface-variant leading-relaxed">
+              Akun GitHub Anda tidak terdaftar untuk mengakses CMS ini.
+              Hubungi administrator jika Anda perlu akses.
+            </p>
+            <a
+              href="/keystatic"
+              className="inline-block mt-6 text-sm font-semibold text-primary hover:underline"
+            >
+              Coba Login Ulang
+            </a>
+          </div>
+        </div>
       );
     }
   }

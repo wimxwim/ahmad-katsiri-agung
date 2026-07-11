@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, Plus, BookOpen } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -22,25 +23,28 @@ interface KursusItem {
 }
 
 export default function KursusListPage() {
+  const router = useRouter();
   const [kursus, setKursus] = useState<KursusItem[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let alive = true;
     async function fetchData() {
       try {
         const res = await fetch("/api/v1/kursus", { credentials: "include" });
         if (!res.ok) throw new Error("Gagal memuat kursus");
         const { data } = await res.json();
-        setKursus(data || []);
+        if (alive) setKursus(data || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal memuat kursus");
+        if (alive) setError(err instanceof Error ? err.message : "Gagal memuat kursus");
       } finally {
-        setLoading(false);
+        if (alive) setLoading(false);
       }
     }
     fetchData();
+    return () => { alive = false; };
   }, []);
 
   const filtered = kursus.filter(
@@ -58,7 +62,7 @@ export default function KursusListPage() {
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
         <button
-          onClick={() => window.location.reload()}
+          onClick={() => router.refresh()}
           className="text-sm text-primary hover:underline"
         >
           Coba lagi
@@ -109,7 +113,7 @@ export default function KursusListPage() {
           {filtered.map((k) => (
             <div
               key={k.id}
-              className="bg-glass border border-border-precision rounded-2xl sm:rounded-[32px] p-6 shadow-glass"
+              className="bg-glass border border-border-precision rounded-2xl sm:rounded-2xl p-6 shadow-glass"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="w-full h-1 bg-primary rounded-full flex-1 mr-3" />

@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { users, kursus, siswaKursus, quizPublished, quizAttempt } from "@/lib/db/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { requireRole, GuardError } from "@/lib/route-guard-v2";
+import { KKM } from "@/lib/constants";
 
 export async function GET(
   request: NextRequest,
@@ -52,8 +53,6 @@ export async function GET(
           .from(quizAttempt)
           .where(inArray(quizAttempt.quizPublishedId, quizPubIds))
       : [];
-
-    const KKM = 70;
 
     const siswaProgres = siswaList.map((s) => {
       const attempts = allAttempts.filter((a) => a.siswaId === s.id);

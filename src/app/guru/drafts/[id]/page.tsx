@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, RefreshCw, XCircle, Loader2, FileText, BookOpen, ClipboardList, Edit3, Save, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -57,6 +57,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
   const [draft, setDraft] = useState<DraftDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const loadRef = useRef<() => Promise<void>>(async () => {});
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [tab, setTab] = useState<TabKey>("materi");
@@ -82,6 +83,8 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
     }
   }
 
+  loadRef.current = load;
+
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,7 +94,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
     if (!draft) return;
     const interval = setInterval(() => {
       if (["queued", "extracting", "generating"].includes(draft.status)) {
-        load();
+        loadRef.current();
       }
     }, 4000);
     return () => clearInterval(interval);
@@ -275,13 +278,13 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                 </p>
               ) : editingMateri ? (
                 <div className="space-y-3">
-                  <label className="block text-[13px] font-semibold text-on-surface">Judul</label>
+                  <label className="block text-sm font-semibold text-on-surface">Judul</label>
                   <input
                     value={editJudul}
                     onChange={(e) => setEditJudul(e.target.value)}
                     className="w-full px-3 py-2 rounded-lg border border-border-precision text-sm"
                   />
-                  <label className="block text-[13px] font-semibold text-on-surface">Konten</label>
+                  <label className="block text-sm font-semibold text-on-surface">Konten</label>
                   <textarea
                     value={editKonten}
                     onChange={(e) => setEditKonten(e.target.value)}

@@ -146,14 +146,24 @@ export function Navbar() {
               </>
             )}
             {!session && !isLoading && (
-              <li>
-                <Link
-                  href="/masuk"
-                  className="relative px-4 py-2 text-sm rounded-full bg-primary text-on-primary font-semibold hover:brightness-110 transition-all duration-200"
-                >
-                  Masuk
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link
+                    href="/masuk"
+                    className="relative px-4 py-2 text-sm rounded-full border border-border-precision text-on-surface-variant font-medium hover:text-primary hover:border-primary/30 transition-all duration-200"
+                  >
+                    Masuk
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/daftar"
+                    className="relative px-4 py-2 text-sm rounded-full bg-primary text-on-primary font-semibold hover:brightness-110 transition-all duration-200"
+                  >
+                    Daftar Gratis
+                  </Link>
+                </li>
+              </>
             )}
           </ul>
           {session && (

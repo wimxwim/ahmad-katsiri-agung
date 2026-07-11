@@ -155,7 +155,7 @@ export default function GuruSiswaDetailPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
           <p className="text-xs font-bold tracking-wider text-on-surface-variant">ATTEMPT</p>
           <p className="font-heading text-2xl font-bold text-on-surface mt-1">{data.totalAttempt}</p>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { WA_NUMBER } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Kebijakan Privasi",
@@ -83,7 +84,7 @@ export default function KebijakanPrivasiPage() {
             <br />
             Ahmad Katsiri Agung, S.Pd.
             <br />
-            WhatsApp: 0851-5879-5502
+            WhatsApp: {WA_NUMBER}
           </p>
         </section>
       </div>

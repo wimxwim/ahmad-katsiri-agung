@@ -122,7 +122,7 @@ export default function GuruKelasPage() {
           <h2 className="font-heading font-semibold text-on-surface mb-4">Kelas Baru</h2>
           <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
             <div>
-              <label className="block text-[13px] font-semibold text-on-surface mb-1.5">
+              <label className="block text-sm font-semibold text-on-surface mb-1.5">
                 Nama kelas
               </label>
               <input
@@ -136,7 +136,7 @@ export default function GuruKelasPage() {
               />
             </div>
             <div>
-              <label className="block text-[13px] font-semibold text-on-surface mb-1.5">
+              <label className="block text-sm font-semibold text-on-surface mb-1.5">
                 Tingkat
               </label>
               <input

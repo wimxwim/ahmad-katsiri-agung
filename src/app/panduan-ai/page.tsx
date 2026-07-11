@@ -82,7 +82,7 @@ const SECTIONS = [
 
 export default function PanduanAIPage() {
   return (
-    <main className="min-h-screen bg-surface">
+    <main className="min-h-dvh bg-surface">
       <div className="max-w-3xl mx-auto px-3 sm:px-5 lg:px-8 py-12 sm:py-20">
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-primary mb-4">
@@ -100,7 +100,7 @@ export default function PanduanAIPage() {
           {SECTIONS.map((section, i) => (
             <div
               key={i}
-              className="bg-glass border border-border-precision rounded-2xl sm:rounded-[32px] p-6 sm:p-8 shadow-glass"
+              className="bg-glass border border-border-precision rounded-2xl sm:rounded-2xl p-6 sm:p-8 shadow-glass"
             >
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">

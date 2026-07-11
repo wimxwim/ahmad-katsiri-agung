@@ -46,10 +46,10 @@ export function DashboardLayoutClient({
   const nama = session?.nama || defaultNama;
 
   return (
-    <div className="min-h-screen bg-surface flex">
+    <div className="min-h-dvh bg-surface flex">
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-border-precision flex flex-col transition-transform duration-300",
+          "fixed inset-y-0 left-0 z-40 w-72 bg-white border-r border-border-precision flex flex-col transition-transform duration-300",
           sidebarOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0 lg:static lg:z-auto",
         )}
@@ -73,14 +73,16 @@ export function DashboardLayoutClient({
 
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {sidebarItems.map((item) => {
-            const active = pathname === item.href || (item.href !== homeHref && pathname.startsWith(item.href));
+            const active =
+              pathname === item.href ||
+              (item.href !== homeHref && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                  "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors relative min-h-11",
                   active && !item.primary
                     ? "bg-primary/10 text-primary"
                     : item.primary
@@ -88,6 +90,9 @@ export function DashboardLayoutClient({
                     : "text-on-surface-variant hover:bg-surface hover:text-on-surface",
                 )}
               >
+                {active && !item.primary && (
+                  <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-primary" />
+                )}
                 <item.icon className="w-4.5 h-4.5 shrink-0" />
                 <span className="truncate">{item.label}</span>
               </Link>
@@ -98,7 +103,7 @@ export function DashboardLayoutClient({
         <div className="px-3 py-4 border-t border-border-precision space-y-1">
           <Link
             href="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-on-surface-variant hover:bg-surface transition-colors"
+            className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-on-surface-variant hover:bg-surface transition-colors min-h-11"
           >
             <ChevronLeft className="w-4.5 h-4.5" />
             Kembali ke Situs
@@ -107,7 +112,7 @@ export function DashboardLayoutClient({
             onClick={() => {
               handleLogout().then((redirect) => router.push(redirect));
             }}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer"
+            className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer min-h-11"
           >
             <LogOut className="w-4.5 h-4.5" />
             Keluar
@@ -117,7 +122,7 @@ export function DashboardLayoutClient({
 
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/20 lg:hidden"
+          className="fixed inset-0 z-30 bg-black/40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -126,14 +131,18 @@ export function DashboardLayoutClient({
         <header className="sticky top-0 z-20 bg-surface/80 backdrop-blur-md border-b border-border-precision flex items-center gap-3 px-4 py-3">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 -ml-2 text-on-surface-variant hover:text-on-surface"
+            className="lg:hidden p-2 -ml-2 text-on-surface-variant hover:text-on-surface cursor-pointer"
             aria-label="Buka menu"
           >
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-2 text-sm text-on-surface-variant">
-            <Link href="/profil" className="flex items-center gap-2 hover:text-primary transition-colors" aria-label="Profil">
+            <Link
+              href="/profil"
+              className="flex items-center gap-2 hover:text-primary transition-colors"
+              aria-label="Profil"
+            >
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
                 <span className="text-xs font-bold text-primary font-heading">
                   {nama.charAt(0).toUpperCase()}

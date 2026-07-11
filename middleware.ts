@@ -101,7 +101,7 @@ async function getRoleFromSession(
     }
   }
   try {
-    const { payload } = await jwtVerify(token, secret);
+    const { payload } = await jwtVerify(token, secret, { algorithms: ["HS256"] });
     const p = payload as Record<string, unknown>;
     const userId = typeof p.userId === "string" ? p.userId : null;
     const role = typeof p.role === "string" ? p.role : null;

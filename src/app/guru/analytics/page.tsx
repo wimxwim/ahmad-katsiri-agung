@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, Users, TrendingUp, Award, AlertTriangle, Send, ChevronRight, BarChart3, XCircle, RefreshCw, Lightbulb, GraduationCap, FileEdit, ListChecks } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { KKM } from "@/lib/constants";
 
 interface KursusBreakdown {
   kursusId: string;
@@ -49,14 +51,17 @@ interface AnalyticsResponse {
 }
 
 export default function GuruAnalyticsPage() {
+  const router = useRouter();
   const [data, setData] = useState<AnalyticsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let alive = true;
     fetch("/api/v1/guru/analytics", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => {
+        if (!alive) return;
         if (!j?.data) {
           setError("Gagal memuat data analytics");
         } else {
@@ -65,9 +70,11 @@ export default function GuruAnalyticsPage() {
         setLoading(false);
       })
       .catch(() => {
+        if (!alive) return;
         setError("Terjadi kesalahan saat memuat data. Coba lagi.");
         setLoading(false);
       });
+    return () => { alive = false; };
   }, []);
 
   if (loading) {
@@ -93,7 +100,7 @@ export default function GuruAnalyticsPage() {
         <h2 className="font-heading text-xl text-on-surface mb-2">Gagal Memuat Analytics</h2>
         <p className="text-on-surface-variant mb-6 max-w-md">{error}</p>
         <button
-          onClick={() => window.location.reload()}
+          onClick={() => router.refresh()}
           className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 cursor-pointer"
         >
           <RefreshCw className="w-4 h-4" />
@@ -115,7 +122,7 @@ export default function GuruAnalyticsPage() {
       </div>
 
       {noData ? (
-        <div className="bg-glass border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass text-center">
+        <div className="bg-glass border border-border-precision rounded-2xl p-6 sm:p-10 shadow-glass text-center">
           <BarChart3 className="w-10 h-10 text-on-surface-variant/30 mx-auto mb-3" />
           <h3 className="font-heading text-lg font-bold text-on-surface mb-2">
             Belum ada data analytics
@@ -355,7 +362,7 @@ export default function GuruAnalyticsPage() {
                 </h2>
               </div>
               <p className="text-sm text-on-surface-variant mb-4">
-                {data.remedialList.length} siswa masih di bawah KKM (70).
+                {data.remedialList.length} siswa masih di bawah KKM ({KKM}).
                 {data.remedialList.length >= 5
                   ? ` Cek detail masing-masing siswa untuk tahu topik mana yang perlu diperbaiki.`
                   : ` Segera tindak lanjuti dengan bimbingan atau quiz ulang.`}
