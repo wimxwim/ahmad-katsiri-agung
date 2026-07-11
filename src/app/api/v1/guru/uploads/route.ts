@@ -3,8 +3,6 @@ import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import {
   checkRateLimit,
   checkRateLimitPerUser,
-  checkConcurrentLimit,
-  releaseConcurrent,
   ipFromRequest,
 } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
@@ -13,8 +11,6 @@ import { db } from "@/lib/db";
 import { fileMateri, aiGeneration, kursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
-import { runGeneration, GenerationTimeoutError, GenerationSchemaError } from "@/lib/ai-generator";
-import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -25,7 +21,6 @@ const ALLOWED_MIME = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
 const MAX_SIZE = 10 * 1024 * 1024;
-const MAX_CONCURRENT_PER_GURU = 2;
 
 const MAGIC_BYTES: { ext: string; bytes: number[] }[] = [
   { ext: "pdf", bytes: [0x25, 0x50, 0x44, 0x46] },
@@ -148,65 +143,6 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    const concRl = await checkConcurrentLimit(
-      `gen:${session.userId}`,
-      MAX_CONCURRENT_PER_GURU,
-    );
-
-    if (concRl.allowed) {
-      try {
-        await checkQuota(session.userId!, session.role, "ai_generation");
-      } catch (e) {
-        if (e instanceof GuardError) {
-          await db
-            .update(aiGeneration)
-            .set({ status: "failed", errorMessage: e.message })
-            .where(eq(aiGeneration.id, generation.id));
-          return apiError(e.message, e.status);
-        }
-        if (e instanceof QuotaExceededError) {
-          await db
-            .update(aiGeneration)
-            .set({ status: "failed", errorMessage: e.message })
-            .where(eq(aiGeneration.id, generation.id));
-          return NextResponse.json(
-            { success: false, error: e.message, quota: { limit: e.limitValue, used: e.currentUsage } },
-            { status: 429 },
-          );
-        }
-        throw e;
-      }
-
-      try {
-        await runGeneration(generation.id, bytes, detected);
-      } catch (e) {
-        console.error("Generation error:", e);
-        const isTimeout = e instanceof GenerationTimeoutError;
-        const isSchema = e instanceof GenerationSchemaError;
-        if (isSchema) {
-          await appendEvent(`gen:${session.userId}`, "gen.schema_failed", {
-            generationId: generation.id,
-            field: e.field,
-          });
-        } else if (isTimeout) {
-          await appendEvent(`gen:${session.userId}`, "gen.timeout", {
-            generationId: generation.id,
-            stage: e.stage,
-          });
-        }
-      } finally {
-        releaseConcurrent(`gen:${session.userId}`);
-      }
-    } else {
-      await db
-        .update(aiGeneration)
-        .set({
-          status: "failed",
-          errorMessage: `Terlalu banyak job aktif (maks ${MAX_CONCURRENT_PER_GURU}). Tunggu job sebelumnya selesai.`,
-        })
-        .where(eq(aiGeneration.id, generation.id));
-    }
-
     return NextResponse.json({
       success: true,
       jobId,
@@ -215,9 +151,7 @@ export async function POST(request: NextRequest) {
       sizeBytes: file.size,
       ext: detected,
       generationId: generation.id,
-      message: concRl.allowed
-        ? "File tersimpan ke ImageKit. Pipeline AI berjalan di background."
-        : "File tersimpan, tapi AI generation di-queue (job lain masih aktif).",
+      message: "File tersimpan. Klik 'Generate AI' untuk memulai.",
     });
   } catch (e) {
     if (e instanceof QuotaExceededError) {
