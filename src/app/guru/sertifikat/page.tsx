@@ -3,37 +3,59 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Award, Clock, Users, ArrowRight } from "lucide-react";
+import { Award, Users, Loader2, CheckCircle2 } from "lucide-react";
 import { EASE_CURVE } from "@/lib/constants";
+import { apiFetch } from "@/lib/api-helpers";
 
-interface KursusItem {
+interface KursusSertifikat {
   id: string;
   judul: string;
   slug: string;
   deskripsi: string | null;
+  totalSertifikat: number;
+  totalSiswaSelesai: number;
 }
 
 export default function SertifikatPage() {
   const router = useRouter();
-  const [kursus, setKursus] = useState<KursusItem[]>([]);
+  const [kursus, setKursus] = useState<KursusSertifikat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [generating, setGenerating] = useState<string | null>(null);
+  const [generated, setGenerated] = useState<string | null>(null);
+
+  async function fetchData() {
+    setLoading(true);
+    setError("");
+    const result = await apiFetch<KursusSertifikat[]>("/api/v1/guru/sertifikat/kursus");
+    if (!result.ok) {
+      setError(result.error);
+    } else {
+      setKursus(result.data ?? []);
+    }
+    setLoading(false);
+  }
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/v1/kursus", { credentials: "include" });
-        if (!res.ok) throw new Error("Gagal memuat data");
-        const { data } = await res.json();
-        setKursus(data || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal memuat data");
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchData();
   }, []);
+
+  async function handleGenerate(kursusId: string) {
+    setGenerating(kursusId);
+    setError("");
+    const result = await apiFetch(`/api/v1/guru/sertifikat/generate`, {
+      method: "POST",
+      body: JSON.stringify({ kursusId }),
+    });
+    if (result.ok) {
+      setGenerated(kursusId);
+      setTimeout(() => setGenerated(null), 3000);
+      await fetchData();
+    } else {
+      setError(result.error);
+    }
+    setGenerating(null);
+  }
 
   if (loading) {
     return (
@@ -67,7 +89,7 @@ export default function SertifikatPage() {
         </div>
         <div>
           <h1 className="font-heading font-bold text-2xl text-on-surface">Sertifikat</h1>
-          <p className="text-sm text-on-surface-variant">Kelola penerbitan sertifikat siswa</p>
+          <p className="text-sm text-on-surface-variant">Terbitkan sertifikat untuk siswa yang telah menyelesaikan kursus</p>
         </div>
       </div>
 
@@ -75,7 +97,7 @@ export default function SertifikatPage() {
         <div className="text-center py-16 bg-glass rounded-2xl border border-border-precision">
           <Award className="w-12 h-12 text-on-surface-variant/30 mx-auto mb-3" />
           <p className="text-on-surface-variant mb-1">Belum ada kursus</p>
-          <p className="text-sm text-on-surface-variant/60">
+          <p className="text-sm text-on-surface-variant/70">
             Buat kursus terlebih dahulu untuk mulai menerbitkan sertifikat
           </p>
         </div>
@@ -87,39 +109,41 @@ export default function SertifikatPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: EASE_CURVE, delay: i * 0.08 }}
-              className="bg-glass border border-border-precision rounded-2xl sm:rounded-2xl p-6 shadow-glass"
+              className="bg-glass border border-border-precision rounded-2xl p-6 shadow-glass"
             >
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    <h3 className="font-heading font-semibold text-on-surface truncate">
-                      {k.judul}
-                    </h3>
-                  </div>
+                  <h3 className="font-heading font-semibold text-on-surface truncate mb-1">
+                    {k.judul}
+                  </h3>
                   <p className="text-sm text-on-surface-variant line-clamp-1 mb-3">
                     {k.deskripsi || "Tanpa deskripsi"}
                   </p>
-                  <div className="flex items-center gap-4 text-xs text-on-surface-variant/60">
+                  <div className="flex items-center gap-4 text-xs text-on-surface-variant/70">
+                    <span className="flex items-center gap-1">
+                      <Award className="w-3.5 h-3.5" />
+                      {k.totalSertifikat} sertifikat diterbitkan
+                    </span>
                     <span className="flex items-center gap-1">
                       <Users className="w-3.5 h-3.5" />
-                      Sertifikat dibuat: 0
+                      {k.totalSiswaSelesai} siswa eligible
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-center min-w-[120px]">
-                    <Clock className="w-4 h-4 text-amber-500 mx-auto mb-1" />
-                    <p className="text-xs text-amber-700 font-heading font-semibold">
-                      Segera Hadir
-                    </p>
-                    <p className="text-xs text-amber-600/60">
-                      Fitur dalam pengembangan
-                    </p>
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-on-surface-variant/20 hidden sm:block" />
-                </div>
+                <button
+                  onClick={() => handleGenerate(k.id)}
+                  disabled={generating === k.id || k.totalSiswaSelesai === 0}
+                  className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 disabled:opacity-50 transition-all active:scale-[0.98]"
+                >
+                  {generating === k.id ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Menerbitkan...</>
+                  ) : generated === k.id ? (
+                    <><CheckCircle2 className="w-4 h-4" /> Berhasil</>
+                  ) : (
+                    <><Award className="w-4 h-4" /> Generate Sertifikat</>
+                  )}
+                </button>
               </div>
             </motion.div>
           ))}

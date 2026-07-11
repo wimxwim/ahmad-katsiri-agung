@@ -1,11 +1,11 @@
 #!/bin/bash
 # ============================================================
 # AKAL CENTER — Deploy to VPS
-# Run from local machine: bash scripts/deploy-vps.sh
+# Run from LOCAL machine: VPS_HOST=1.2.3.4 bash scripts/deploy-vps.sh
 # ============================================================
 set -e
 
-VPS_HOST="${VPS_HOST:-YOUR_VPS_IP}"
+VPS_HOST="${VPS_HOST:?Set VPS_HOST env var (VPS IP)}"
 VPS_USER="${VPS_USER:-root}"
 APP_DIR="/opt/akal-center"
 
@@ -15,10 +15,22 @@ echo ""
 
 # --- Build locally ---
 echo "📦 Building..."
-npm run build 2>&1 | tail -3
+NODE_OPTIONS="--max-old-space-size=4096" npm run build 2>&1 | tail -5
+echo ""
 
-# --- Copy files to VPS ---
-echo "📤 Copying files..."
+# --- Copy .env.production (kalau belum ada di VPS) ---
+echo "📤 Copying .env.production..."
+if [ -f .env.production ]; then
+  scp .env.production "$VPS_USER@$VPS_HOST:$APP_DIR/.env.production"
+  ssh "$VPS_USER@$VPS_HOST" "chmod 600 $APP_DIR/.env.production"
+  echo "   .env.production copied."
+else
+  echo "   ⚠️  .env.production not found locally. Skipping."
+  echo "   Make sure .env.production exists on VPS at $APP_DIR/.env.production"
+fi
+
+# --- Copy build artifacts to VPS ---
+echo "📤 Copying build artifacts..."
 rsync -avz --delete \
   --exclude 'node_modules' \
   --exclude '.git' \
@@ -28,25 +40,28 @@ rsync -avz --delete \
   --exclude 'prd' \
   --exclude '.env.local' \
   --exclude '.env' \
+  --exclude '.env.production' \
   .next/ \
   package.json \
   package-lock.json \
   next.config.ts \
+  drizzle.config.ts \
   public/ \
+  scripts/ \
+  ecosystem.config.cjs \
   "$VPS_USER@$VPS_HOST:$APP_DIR/"
 
 # --- Install dependencies on VPS ---
 echo "📦 Installing dependencies..."
 ssh "$VPS_USER@$VPS_HOST" "cd $APP_DIR && npm ci --omit=dev"
 
-# --- Run database migrations ---
-echo "🗄️ Running migrations..."
-ssh "$VPS_USER@$VPS_HOST" "cd $APP_DIR && npx drizzle-kit push --config=drizzle.config.ts"
-
-# --- Restart app ---
-echo "🔄 Restarting app..."
-ssh "$VPS_USER@$VPS_HOST" "cd $APP_DIR && pm2 delete akal-center 2>/dev/null; pm2 start npm --name akal-center -- start -- --port 3000 && pm2 save"
-
 echo ""
 echo "✅ Deploy complete!"
-echo "   Check: curl http://$VPS_HOST:3000/api/health"
+echo ""
+echo "Next steps on VPS:"
+echo "  ssh $VPS_USER@$VPS_HOST"
+echo "  cd $APP_DIR"
+echo "  pm2 start ecosystem.config.cjs"
+echo "  pm2 save"
+echo ""
+echo "  curl http://localhost:3000/api/health"
