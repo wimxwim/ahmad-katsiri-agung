@@ -78,7 +78,7 @@ function withTimeout<T>(p: Promise<T>, ms: number, stage: "extract" | "ai" | "ai
 }
 
 const EXTRACT_TIMEOUT_MS = 60_000;
-const AI_TIMEOUT_MS = 180_000;
+const AI_TIMEOUT_MS = 90_000;
 const SAVE_TIMEOUT_MS = 15_000;
 
 function sentencePool(text: string): string[] {
@@ -199,33 +199,40 @@ export async function runGeneration(
 
     let aiResults: [ChatResult, ChatResult, ChatResult];
     try {
-      aiResults = await withTimeout(
-        Promise.all([
-          chatWithFallback(
-            [
-              { role: "system", content: MATERI_SYSTEM },
-              { role: "user", content: `Materi:\n\n${truncatedSource}` },
-            ],
-            { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
-          ),
-          chatWithFallback(
-            [
-              { role: "system", content: QUIZ_SYSTEM },
-              { role: "user", content: `Materi:\n\n${truncatedSource}` },
-            ],
-            { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
-          ),
-          chatWithFallback(
-            [
-              { role: "system", content: SOAL_SYSTEM },
-              { role: "user", content: `Materi:\n\n${truncatedSource}` },
-            ],
-            { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
-          ),
-        ]),
+      const materiRes = await withTimeout(
+        chatWithFallback(
+          [
+            { role: "system", content: MATERI_SYSTEM },
+            { role: "user", content: `Materi:\n\n${truncatedSource}` },
+          ],
+          { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
+        ),
         AI_TIMEOUT_MS,
-        "ai",
+        "ai-materi",
       );
+      const quizRes = await withTimeout(
+        chatWithFallback(
+          [
+            { role: "system", content: QUIZ_SYSTEM },
+            { role: "user", content: `Materi:\n\n${truncatedSource}` },
+          ],
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
+        ),
+        AI_TIMEOUT_MS,
+        "ai-quiz",
+      );
+      const soalRes = await withTimeout(
+        chatWithFallback(
+          [
+            { role: "system", content: SOAL_SYSTEM },
+            { role: "user", content: `Materi:\n\n${truncatedSource}` },
+          ],
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
+        ),
+        AI_TIMEOUT_MS,
+        "ai-soal",
+      );
+      aiResults = [materiRes, quizRes, soalRes];
     } catch (error) {
       console.error("[ai-generator] upstream AI failed, using local fallback:", error);
       aiResults = fallbackAiResults(truncatedSource);
