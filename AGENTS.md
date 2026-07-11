@@ -1,10 +1,9 @@
 # AGENTS.md — AKAL Center (Single Source of Truth untuk AI Coding Agent)
 
 <!--
-  UPDATE TERAKHIR: 9 Juli 2026 — cutover multi-guru selesai dieksekusi & LIVE.
-  Konten single-guru lama (Bang Agung) sudah dihapus total dari kode & branch
-  production (main). Platform sekarang murni multi-guru, DB-driven, siap
-  dipakai Bang Agung sebagai guru pertama untuk upload materi sendiri.
+  UPDATE TERAKHIR: 11 Juli 2026 — audit RAM selesai, VPS migration planned.
+  AI pipeline dari Vercel gagal (503 NaraRouter). Solusi: VPS 4GB 4vCPU.
+  Upload 3 detik, generate synchronous, tidak perlu Worker/Queue/after().
 -->
 
 ## IDENTITAS PROJECT
@@ -43,7 +42,9 @@
   <decision id="D-014">AI model strategy: DeepSeek V4 Flash (Rp9/gen) for 80% tasks, DeepSeek V4 Pro (Rp87/gen) for 20% heavy tasks. Average Rp22/gen — sustainable at scale.</decision>
   <decision id="D-015">Owner monitoring via owner_metrics_daily table + pg_cron — metrics refreshed daily at 3 AM. Real-time queries for lightweight metrics.</decision>
   <decision id="D-016">Payment: QRIS static (GoPay) for now — Midtrans pending approval. Payment page at /pembayaran with manual verification by owner.</decision>
-  <decision id="D-017">PSE Registration identified as legal requirement — must register akalcenter.my.id with Komdigi before public launch.</decision></locked-decisions>
+  <decision id="D-018">VPS Migration: Neo Lite MS 4.4 (4 vCPU, 4 GB RAM, 60 GB SSD, West Java). Rp198.690/bulan. AI pipeline jalan langsung (synchronous), tidak perlu Worker/Queue/after(). Upload 3 detik, generate 3 menit. PostgreSQL + Redis di VPS sendiri. Latensi 5-10ms ke Indonesia.</decision>
+<decision id="D-019">RAM audit: 4 GB cukup untuk 1.700 user (1.500 siswa + 200 guru). Normal load 71% (2.9 GB), worst case 91.6% (3.75 GB). DB pool max 15, concurrent AI generation max 2.</decision>
+<decision id="D-020">ImageKit tetap untuk storage PDF (free 20 GB). File tidak disimpan di VPS. Database PostgreSQL di VPS, tidak pakai Supabase lagi.</decision></locked-decisions>
 
 ## STACK TEKNIS RESMI SAAT INI
 
