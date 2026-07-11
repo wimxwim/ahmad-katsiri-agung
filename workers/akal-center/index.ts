@@ -1,5 +1,9 @@
 const ALLOWED_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
-const TIMEOUT_MS = 15_000;
+const DEFAULT_TIMEOUT_MS = 15_000;
+const TIMEOUT_MS = Math.max(
+  5_000,
+  Number.parseInt(process.env.WORKER_TIMEOUT_MS || String(DEFAULT_TIMEOUT_MS), 10) || DEFAULT_TIMEOUT_MS,
+);
 
 function getOrigin(): string {
   const origin = process.env.ORIGIN_URL;
@@ -91,6 +95,34 @@ export default {
       return new Response(null, { status: 403 });
     }
 
+    // AI Proxy — forward POST /ai ke NaraRouter
+    if (url.pathname === '/ai' && request.method === 'POST') {
+      const authHeader = request.headers.get('Authorization') || '';
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      const aiBaseUrl = process.env.AI_BASE_URL || 'https://router.bynara.id/v1';
+      const aiUrl = `${aiBaseUrl}/chat/completions`;
+      const body = await request.text();
+      const aiReq = new Request(aiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: authHeader,
+        },
+        body,
+      });
+      const aiRes = await fetch(aiReq);
+      const aiBody = await aiRes.text();
+      return new Response(aiBody, {
+        status: aiRes.status,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // Rate limiting for API endpoints (worker-level; defense-in-depth)
     if (url.pathname.startsWith('/api/')) {
       cleanupStore();
@@ -142,6 +174,7 @@ export default {
     } catch (err) {
       clearTimeout(timeout);
       if (err.name === 'AbortError') {
+        console.error(JSON.stringify({ event: 'worker.upstream_timeout', method: request.method, path: url.pathname, timeout_ms: TIMEOUT_MS }));
         return new Response(JSON.stringify({ error: 'Upstream timeout' }), {
           status: 504,
           headers: { 'Content-Type': 'application/json' },

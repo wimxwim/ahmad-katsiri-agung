@@ -5,6 +5,10 @@
   "compatibility_date": "2026-06-10",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
+  "vars": {
+    "WORKER_TIMEOUT_MS": "15000",
+    "AI_BASE_URL": "https://router.bynara.id/v1"
+  },
   "routes": [
     { "pattern": "akalcenter.my.id/*", "zone_id": "bc8a1f05acc22a9bd2b95ef2edfb9b0f" },
     { "pattern": "www.akalcenter.my.id/*", "zone_id": "bc8a1f05acc22a9bd2b95ef2edfb9b0f" }

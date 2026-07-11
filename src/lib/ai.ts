@@ -24,7 +24,7 @@ interface NaraRouterResponse {
 }
 
 function getBaseUrl(): string {
-  return process.env.AI_BASE_URL || "https://router.bynara.id/v1";
+  return process.env.AI_WORKER_URL || process.env.AI_BASE_URL || "https://router.bynara.id/v1";
 }
 
 function getApiKey(): string {
