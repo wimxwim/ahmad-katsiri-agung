@@ -172,11 +172,10 @@ export async function runGeneration(
     const quizParsed = parseQuizSafe(quizRes.content);
     const soalParsed = parseSoalSafe(soalRes.content);
 
-    if (!materiParsed || !quizParsed || !soalParsed) {
+    if (!materiParsed || !quizParsed) {
       const missing = [
         !materiParsed && "materi",
         !quizParsed && "quiz",
-        !soalParsed && "soal",
       ].filter(Boolean).join(", ");
       await db
         .update(aiGeneration)
@@ -185,6 +184,10 @@ export async function runGeneration(
       throw new GenerationSchemaError(
         (!materiParsed ? "materi" : !quizParsed ? "quiz" : "soal") as "materi" | "quiz" | "soal",
       );
+    }
+
+    if (!soalParsed) {
+      console.error("[ai-generator] soal output invalid:", soalRes.content.slice(0, 2000));
     }
 
     const tokensIn = materiRes.tokensIn + quizRes.tokensIn + soalRes.tokensIn;
@@ -197,12 +200,13 @@ export async function runGeneration(
           status: "ready",
           materiStatus: "draft",
           quizStatus: "draft",
-          soalStatus: "draft",
+          soalStatus: soalParsed ? "draft" : "not_generated",
           materiJudul: materiParsed.judul,
           materiKonten: materiParsed.konten,
           quizJudul: quizParsed.judul,
           quizSoal: quizParsed.soal,
-          soalItems: soalParsed.soal,
+          soalItems: soalParsed?.soal ?? [],
+          errorMessage: soalParsed ? null : "Soal AI belum valid. Materi dan quiz tetap siap direview; gunakan regenerate soal dari halaman draft.",
           tokenInput: tokensIn,
           tokenOutput: tokensOut,
           modelName: getModelName(),

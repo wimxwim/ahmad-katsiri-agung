@@ -18,6 +18,14 @@ const SAFE_TEXT_LIMITS = {
   opsi: 200,
 };
 
+type JsonObject = Record<string, unknown>;
+
+const OPTION_KEYS = ["A", "B", "C", "D", "E"] as const;
+
+function isObject(value: unknown): value is JsonObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function cleanText(input: unknown, max: number): string {
   if (typeof input !== "string") return "";
   return input
@@ -148,7 +156,7 @@ export function parseMateriSafe(content: string): ValidatedMateri | null {
 
 export function parseQuizSafe(content: string): ValidatedQuiz | null {
   try {
-    const raw = JSON.parse(extractJson(content));
+    const raw = normalizeQuizPayload(JSON.parse(extractJson(content)));
     return QuizResultSchema.parse(raw);
   } catch (error) {
     console.error("[ai-sanitizer] parseQuizSafe failed:", error);
@@ -158,7 +166,7 @@ export function parseQuizSafe(content: string): ValidatedQuiz | null {
 
 export function parseSoalSafe(content: string): ValidatedSoal | null {
   try {
-    const raw = JSON.parse(extractJson(content));
+    const raw = normalizeSoalPayload(JSON.parse(extractJson(content)));
     return SoalResultSchema.parse(raw);
   } catch (error) {
     console.error("[ai-sanitizer] parseSoalSafe failed:", error);
@@ -168,5 +176,107 @@ export function parseSoalSafe(content: string): ValidatedSoal | null {
 
 function extractJson(content: string): string {
   const fence = content.match(/```(?:json)?\s*([\s\S]*?)```/);
-  return (fence ? fence[1] : content).trim();
+  const raw = (fence ? fence[1] : content).trim();
+  if (raw.startsWith("{") && raw.endsWith("}")) return raw;
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  if (start >= 0 && end > start) return raw.slice(start, end + 1).trim();
+  return raw;
+}
+
+function normalizeQuizPayload(raw: unknown): unknown {
+  if (!isObject(raw)) return raw;
+  const soal = Array.isArray(raw.soal) ? raw.soal.map(normalizeSoalItem) : raw.soal;
+  return { ...raw, soal };
+}
+
+function normalizeSoalPayload(raw: unknown): unknown {
+  if (Array.isArray(raw)) return { soal: raw.map(normalizeSoalItem) };
+  if (!isObject(raw)) return raw;
+  const source = Array.isArray(raw.soal)
+    ? raw.soal
+    : Array.isArray(raw.items)
+      ? raw.items
+      : Array.isArray(raw.questions)
+        ? raw.questions
+        : Array.isArray(raw.data)
+          ? raw.data
+          : raw.soal;
+  const soal = Array.isArray(source) ? source.map(normalizeSoalItem) : source;
+  return { ...raw, soal };
+}
+
+function normalizeSoalItem(item: unknown): unknown {
+  if (!isObject(item)) return item;
+  const pertanyaan = item.pertanyaan ?? item.question ?? item.teks ?? item.soal;
+  const tipe = normalizeTipe(item.tipe ?? item.type ?? item.jenis);
+  const opsi = normalizeOpsi(item.opsi ?? item.pilihan ?? item.options ?? item.choices);
+  const kunci = normalizeKunci(item.kunci ?? item.jawaban ?? item.answer ?? item.correctAnswer, tipe, opsi);
+  return {
+    ...item,
+    pertanyaan,
+    tipe,
+    ...(opsi ? { opsi } : {}),
+    kunci,
+  };
+}
+
+function normalizeTipe(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+  const normalized = value.trim().toLowerCase();
+  if (["pg", "pilihan ganda", "multiple choice", "multiple-choice", "mcq"].includes(normalized)) return "PG";
+  if (["isian", "isi singkat", "jawaban singkat", "short answer", "fill", "fill in"].includes(normalized)) return "ISIAN";
+  if (["essay", "esai", "uraian", "essay question", "long answer"].includes(normalized)) return "ESSAY";
+  return value;
+}
+
+function normalizeOpsi(value: unknown): Record<string, string> | undefined {
+  if (Array.isArray(value)) {
+    const output: Record<string, string> = {};
+    value.slice(0, OPTION_KEYS.length).forEach((entry, index) => {
+      const cleaned = cleanOptionEntry(entry);
+      if (cleaned) output[OPTION_KEYS[index]] = cleaned;
+    });
+    return Object.keys(output).length > 0 ? output : undefined;
+  }
+
+  if (!isObject(value)) return undefined;
+
+  const output: Record<string, string> = {};
+  for (const [key, entry] of Object.entries(value)) {
+    const optionKey = normalizeOptionKey(key);
+    const cleaned = cleanOptionEntry(entry);
+    if (optionKey && cleaned) output[optionKey] = cleaned;
+  }
+
+  return Object.keys(output).length > 0 ? output : undefined;
+}
+
+function normalizeOptionKey(key: string): string | null {
+  const trimmed = key.trim().toUpperCase();
+  if (OPTION_KEYS.includes(trimmed as (typeof OPTION_KEYS)[number])) return trimmed;
+  const separated = trimmed.match(/(?:^|[^A-Z])([A-E])(?:[^A-Z]|$)/);
+  if (separated) return separated[1];
+  const suffix = trimmed.match(/[A-E]$/);
+  if (suffix && /^(OPTION|OPSI|PILIHAN|JAWABAN|ANSWER|CHOICE)/.test(trimmed)) return suffix[0];
+  return null;
+}
+
+function cleanOptionEntry(value: unknown): string {
+  if (typeof value === "string") return cleanText(value, SAFE_TEXT_LIMITS.opsi);
+  if (isObject(value)) {
+    const candidate = value.text ?? value.label ?? value.value ?? value.jawaban;
+    if (typeof candidate === "string") return cleanText(candidate, SAFE_TEXT_LIMITS.opsi);
+  }
+  return "";
+}
+
+function normalizeKunci(value: unknown, tipe: unknown, opsi: Record<string, string> | undefined): unknown {
+  if (typeof value !== "string") return value;
+  if (tipe !== "PG" || !opsi) return value;
+  const cleaned = cleanText(value, SAFE_TEXT_LIMITS.kunci);
+  const direct = normalizeOptionKey(cleaned);
+  if (direct && opsi[direct]) return direct;
+  const match = Object.entries(opsi).find(([, option]) => option.toLowerCase() === cleaned.toLowerCase());
+  return match?.[0] ?? cleaned;
 }
