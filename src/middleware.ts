@@ -49,12 +49,9 @@ const ROLE_ROUTE_MAP: Record<string, string[]> = {
 };
 
 export async function middleware(request: NextRequest) {
-  const nonce = crypto.randomUUID();
   const { pathname } = request.nextUrl;
 
   const scriptSrc = [
-    `'nonce-${nonce}'`,
-    "'strict-dynamic'",
     "'self'",
     "https://www.youtube.com",
     "https://www.youtube-nocookie.com",
@@ -79,13 +76,11 @@ export async function middleware(request: NextRequest) {
   ].join("; ");
 
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", nonce);
 
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
   response.headers.set("Content-Security-Policy", csp);
-  response.headers.set("x-nonce", nonce);
   response.headers.set(
     "Strict-Transport-Security",
     "max-age=31536000; includeSubDomains; preload"

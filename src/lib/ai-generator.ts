@@ -41,26 +41,35 @@ const MATERI_SYSTEM = `Kamu adalah asisten pengajar PAI/Akidah Akhlak Indonesia.
 6. JANGAN gunakan data siswa asli (nama, NISN, nilai) dalam output.
 7. Data yang dikirim HANYA untuk generasi konten — tidak untuk training model.`;
 
-const QUIZ_SYSTEM = `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan 5 soal PILIHAN GANDA berkualitas untuk kuis singkat. ATURAN:
-1. Output HARUS JSON valid dengan field "judul" (string) dan "soal" (array 5 item).
+const QUIZ_SYSTEM = `Kamu adalah penulis kuis PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan soal PILIHAN GANDA untuk kuis singkat. ATURAN:
+1. Output HARUS JSON valid dengan field "judul" (string) dan "soal" (array).
 2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
 3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
-4. Buat distraktor (opsi salah) yang masuk akal dan menantang.
-5. Bahasa Indonesia, sesuai materi, untuk siswa SMP/MTs.
-6. Tidak ada markup, tidak ada komentar di luar JSON.
-7. JANGAN gunakan data siswa asli dalam soal.
-8. Data dikirim HANYA untuk generasi konten — tidak untuk training model.`;
+4. Buat distraktor yang masuk akal.
+5. Bahasa Indonesia, untuk siswa SMP/MTs.
+6. Tidak ada markup, tidak ada komentar di luar JSON.`;
 
-const SOAL_SYSTEM = `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan 10 soal PILIHAN GANDA berkualitas untuk latihan siswa SMP/MTs. ATURAN:
-1. Output HARUS JSON valid dengan field "soal" (array 10 item).
+const SOAL_SYSTEM = `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan soal PILIHAN GANDA untuk latihan siswa SMP/MTs. ATURAN:
+1. Output HARUS JSON valid dengan field "soal" (array).
+2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
+3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
+4. Buat distraktor yang masuk akal dan menantang.
+5. Variasikan tingkat kesulitan: mudah, sedang, sulit.
+6. Bahasa Indonesia, untuk siswa SMP/MTs.
+7. Tidak ada markup, tidak ada komentar di luar JSON.`;
+
+export function buildSoalSystemPrompt(count: number): string {
+  return `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan ${count} soal PILIHAN GANDA berkualitas untuk latihan siswa SMP/MTs. ATURAN:
+1. Output HARUS JSON valid dengan field "soal" (array ${count} item).
 2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
 3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
 4. Buat distraktor (opsi salah) yang masuk akal dan menantang — jangan terlalu mudah.
-5. Variasikan tingkat kesulitan: 3 mudah, 4 sedang, 3 sulit.
+5. Variasikan tingkat kesulitan: ${Math.round(count * 0.3)} mudah, ${Math.round(count * 0.4)} sedang, ${Math.round(count * 0.3)} sulit.
 6. Bahasa Indonesia, sesuai materi, untuk siswa SMP/MTs.
 7. Tidak ada markup, tidak ada komentar di luar JSON.
 8. JANGAN gunakan data siswa asli dalam soal.
 9. Data dikirim HANYA untuk generasi konten — tidak untuk training model.`;
+}
 
 export class GenerationTimeoutError extends Error {
   constructor(public readonly stage: "extract" | "ai" | "ai-materi" | "ai-quiz" | "ai-soal" | "save") {

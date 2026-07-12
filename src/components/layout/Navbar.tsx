@@ -96,16 +96,16 @@ export function Navbar() {
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 flex justify-center pt-4 px-4">
-      <nav className="w-full max-w-5xl bg-glass backdrop-blur-2xl border border-border-precision rounded-full flex items-center justify-between px-6 h-14 shadow-glass">
+      <nav className="w-full max-w-5xl bg-glass backdrop-blur-2xl border border-border-precision rounded-full flex items-center px-6 h-14 shadow-glass">
         <Link
           href="/"
           className="flex items-center gap-2 font-heading font-bold text-primary text-lg tracking-tight shrink-0"
         >
           <Image src="/logo.webp" alt="Logo PAI" width={28} height={28} className="object-contain" />
-          <span className="truncate md:max-w-none">AKAL Center</span>
+          <span className="hidden sm:inline">AKAL Center</span>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex-1 flex justify-center">
           <div className="hidden md:block">
             <Menu
               mode="horizontal"
@@ -115,33 +115,33 @@ export function Navbar() {
               className="[&_.ant-menu-item]:!px-3 [&_.ant-menu-item]:!rounded-full [&_.ant-menu-item-selected]:!bg-primary/10 [&_.ant-menu-item-selected]:!text-primary"
             />
           </div>
+        </div>
 
-          <div className="flex items-center gap-2">
-            {session && (
-              <>
-                <span className="hidden xl:flex px-3 py-2 text-sm text-on-surface-variant/70 font-medium max-w-[120px] truncate">
-                  Halo, {session.nama?.split(" ")[0]}
-                </span>
-                <Menu
-                  mode="horizontal"
-                  selectedKeys={selectedKeys}
-                  items={sessionMenuItems}
-                  style={{ border: "none", background: "transparent", minWidth: 0 }}
-                  className="[&_.ant-menu-item]:!px-3 [&_.ant-menu-item]:!rounded-full [&_.ant-menu-item-selected]:!bg-primary/10 [&_.ant-menu-item-selected]:!text-primary"
-                />
-              </>
-            )}
-            {!session && !isLoading && (
-              <div className="flex items-center gap-2">
-                <Link href="/masuk" className="hidden sm:inline-flex">
-                  <Button size="small" className="rounded-full">Masuk</Button>
-                </Link>
-                <Link href="/daftar">
-                  <Button type="primary" size="small" className="rounded-full text-xs sm:text-sm">Daftar</Button>
-                </Link>
-              </div>
-            )}
-          </div>
+        <div className="flex items-center gap-2 shrink-0">
+          {session && (
+            <>
+              <span className="hidden xl:flex px-3 py-2 text-sm text-on-surface-variant/70 font-medium max-w-[120px] truncate">
+                Halo, {session.nama?.split(" ")[0]}
+              </span>
+              <Menu
+                mode="horizontal"
+                selectedKeys={selectedKeys}
+                items={sessionMenuItems}
+                style={{ border: "none", background: "transparent", minWidth: 0 }}
+                className="[&_.ant-menu-item]:!px-3 [&_.ant-menu-item]:!rounded-full [&_.ant-menu-item-selected]:!bg-primary/10 [&_.ant-menu-item-selected]:!text-primary"
+              />
+            </>
+          )}
+          {!session && !isLoading && (
+            <div className="flex items-center gap-2">
+              <Link href="/masuk">
+                <Button size="small" className="rounded-full text-xs sm:text-sm">Masuk</Button>
+              </Link>
+              <Link href="/daftar">
+                <Button type="primary" size="small" className="rounded-full text-xs sm:text-sm">Daftar</Button>
+              </Link>
+            </div>
+          )}
           {session && (
             <LogoutButton role={session.role} />
           )}
