@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { WA_NUMBER } from "@/lib/constants";
 import { motion } from "motion/react";
+import { Button, Card, Tag, Steps, Collapse, Typography } from "antd";
 import {
   ArrowRight,
   BookOpen,
@@ -14,7 +15,6 @@ import {
   ShieldCheck,
   Sparkles,
   Upload,
-  ChevronDown,
   FileText,
   Lock,
   Zap,
@@ -92,6 +92,12 @@ const faqs = [
   },
 ];
 
+const faqItems = faqs.map((item, i) => ({
+  key: String(i + 1),
+  label: <Typography.Text strong>{item.q}</Typography.Text>,
+  children: <Typography.Paragraph type="secondary">{item.a}</Typography.Paragraph>,
+}));
+
 const valuePillars = [
   {
     title: "Tegas",
@@ -145,7 +151,7 @@ const tigaDunia = [
 
 export default function Home() {
   return (
-    <main className="bg-surface relative overflow-hidden">
+    <div className="bg-surface relative overflow-hidden">
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute -top-40 -right-40 h-[600px] w-[600px] rounded-full bg-primary/[0.03] blur-3xl" />
         <div className="absolute top-1/3 -left-40 h-[500px] w-[500px] rounded-full bg-tertiary/[0.02] blur-3xl" />
@@ -181,27 +187,20 @@ export default function Home() {
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  href="/masuk"
-                  className="group inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-on-primary transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  Masuk
-                  <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-white/20 transition-transform group-hover:translate-x-0.5">
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </span>
+                <Link href="/masuk">
+                  <Button type="primary" size="large" icon={<ArrowRight className="h-3.5 w-3.5" />} iconPosition="end">
+                    Masuk
+                  </Button>
                 </Link>
-                <Link
-                  href="/daftar"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-border-precision bg-glass px-6 py-3.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
-                >
-                  Daftar Gratis
+                <Link href="/daftar">
+                  <Button size="large" icon={<ArrowRight className="h-3.5 w-3.5" />} iconPosition="end">
+                    Daftar Gratis
+                  </Button>
                 </Link>
-                <Link
-                  href="/fitur"
-                  className="inline-flex items-center gap-2 rounded-2xl text-sm font-medium text-on-surface-variant transition-colors hover:text-primary"
-                >
-                  Lihat Fitur
-                  <ArrowRight className="h-4 w-4" />
+                <Link href="/fitur">
+                  <Button type="text" size="large" icon={<ArrowRight className="h-4 w-4" />} iconPosition="end">
+                    Lihat Fitur
+                  </Button>
                 </Link>
               </div>
             </motion.div>
@@ -287,18 +286,25 @@ export default function Home() {
                   whileInView="visible"
                   viewport={{ once: true, margin: "-100px" }}
                   custom={i + 1}
-                  className={`rounded-2xl border border-border-precision bg-white p-6 shadow-glass-lg transition-colors hover:border-primary/25 sm:p-8 ${pillar.span}`}
+                  className={pillar.span}
                 >
-                  <span className="text-xs font-bold tracking-badge text-primary/60">{pillar.label}</span>
-                  <div className="mt-4 flex items-start gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <h3 className="font-heading text-xl font-semibold text-on-surface">{pillar.title}</h3>
-                      <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">{pillar.desc}</p>
-                    </div>
-                  </div>
+                  <Card
+                    hoverable
+                    className="h-full"
+                    title={
+                      <div className="flex items-start gap-4">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        <div>
+                          <Tag color="green" className="mb-1">{pillar.label}</Tag>
+                          <Typography.Title level={4} className="!mb-0 !mt-1">{pillar.title}</Typography.Title>
+                        </div>
+                      </div>
+                    }
+                  >
+                    <Typography.Paragraph type="secondary">{pillar.desc}</Typography.Paragraph>
+                  </Card>
                 </motion.div>
               );
             })}
@@ -339,15 +345,18 @@ export default function Home() {
                       whileInView="visible"
                       viewport={{ once: true, margin: "-100px" }}
                       custom={i + 1}
-                      className="flex items-start gap-4 rounded-2xl border border-border-precision bg-glass p-4"
                     >
-                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <div>
-                        <p className="font-heading text-base font-semibold text-on-surface">{item.title}</p>
-                        <p className="mt-1 text-sm text-on-surface-variant">{item.desc}</p>
-                      </div>
+                      <Card size="small" hoverable>
+                        <div className="flex items-start gap-4">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                            <Icon className="h-4 w-4" />
+                          </span>
+                          <div>
+                            <Typography.Title level={5} className="!mb-0">{item.title}</Typography.Title>
+                            <Typography.Paragraph type="secondary" className="!mb-0 mt-1">{item.desc}</Typography.Paragraph>
+                          </div>
+                        </div>
+                      </Card>
                     </motion.div>
                   );
                 })}
@@ -403,30 +412,24 @@ export default function Home() {
             </h2>
           </motion.div>
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5 lg:gap-6">
-            {pipeline.map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <motion.div
-                  key={item.step}
-                  variants={fadeUp}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: "-100px" }}
-                  custom={i + 1}
-                  className="rounded-2xl border border-border-precision bg-white p-6 shadow-glass-lg"
-                >
-                  <span className="text-xs font-bold tracking-badge text-primary/60">{item.step}</span>
-                  <div className="mt-4">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                      <Icon className="h-5 w-5" />
+          <div className="mt-12">
+            <Steps
+              current={-1}
+              direction="horizontal"
+              responsive
+              items={pipeline.map((item) => {
+                const Icon = item.icon;
+                return {
+                  title: <Typography.Text strong>{item.title}</Typography.Text>,
+                  description: <Typography.Text type="secondary">{item.desc}</Typography.Text>,
+                  icon: (
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <Icon className="h-4 w-4" />
                     </span>
-                    <h3 className="mt-4 font-heading text-lg font-semibold text-on-surface">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">{item.desc}</p>
-                  </div>
-                </motion.div>
-              );
-            })}
+                  ),
+                };
+              })}
+            />
           </div>
         </div>
       </section>
@@ -471,14 +474,16 @@ export default function Home() {
                       Guru mengunggah PDF atau DOCX, sistem mengekstrak teks lalu AI membuat draft materi, quiz, dan soal sekaligus. Semua hasil tetap draft — guru wajib review sebelum publish.
                     </p>
                     <div className="mt-6 flex flex-wrap gap-3">
-                      <Link
-                        href="/daftar"
-                        className="group inline-flex items-center gap-2 rounded-2xl bg-[#eec055] px-6 py-3.5 text-sm font-semibold text-[#003d24] transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        Mulai Upload
-                        <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#003d24]/15 transition-transform group-hover:translate-x-0.5">
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </span>
+                      <Link href="/daftar">
+                        <Button
+                          type="primary"
+                          size="large"
+                          icon={<ArrowRight className="h-3.5 w-3.5" />}
+                          iconPosition="end"
+                          style={{ background: "#eec055", borderColor: "#eec055", color: "#003d24" }}
+                        >
+                          Mulai Upload
+                        </Button>
                       </Link>
                     </div>
                   </div>
@@ -521,27 +526,23 @@ export default function Home() {
               whileInView="visible"
               viewport={{ once: true, margin: "-100px" }}
               custom={0}
-              className="rounded-2xl border border-border-precision bg-white p-6 shadow-glass-lg sm:p-10"
             >
-              <span className="inline-flex items-center gap-2 rounded-full border border-border-precision bg-glass px-4 py-2 text-xs font-bold tracking-badge text-primary">
-                DIPERCAYA
-              </span>
-              <h2 className="mt-6 font-heading text-3xl font-bold tracking-tight text-on-surface sm:text-4xl">
-                Dipercaya oleh Guru PAI di Indonesia
-              </h2>
-              <p className="mt-4 max-w-lg text-sm leading-relaxed text-on-surface-variant sm:text-base">
-                Platform ini dibangun bersama dan didukung oleh para akademisi pendidikan Islam untuk menghadirkan pembelajaran yang lebih terstruktur dan modern.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <span className="inline-flex items-center gap-2 rounded-full border border-border-precision bg-glass px-5 py-2.5 text-sm font-semibold text-on-surface">
-                  <ShieldCheck className="h-4 w-4 text-primary" />
-                  Didukung Akademisi Pendidikan Islam
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-border-precision bg-glass px-5 py-2.5 text-sm font-semibold text-on-surface">
-                  <Lock className="h-4 w-4 text-primary" />
-                  Security by Default
-                </span>
-              </div>
+              <Card
+                title={
+                  <div>
+                    <Tag color="green" className="mb-2">DIPERCAYA</Tag>
+                    <Typography.Title level={2} className="!mb-0 !mt-2">Dipercaya oleh Guru PAI di Indonesia</Typography.Title>
+                  </div>
+                }
+              >
+                <Typography.Paragraph type="secondary">
+                  Platform ini dibangun bersama dan didukung oleh para akademisi pendidikan Islam untuk menghadirkan pembelajaran yang lebih terstruktur dan modern.
+                </Typography.Paragraph>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Tag icon={<ShieldCheck className="h-3.5 w-3.5" />} color="green">Didukung Akademisi Pendidikan Islam</Tag>
+                  <Tag icon={<Lock className="h-3.5 w-3.5" />} color="green">Security by Default</Tag>
+                </div>
+              </Card>
             </motion.div>
 
             <motion.div
@@ -552,18 +553,16 @@ export default function Home() {
               custom={1}
               className="flex flex-col gap-4"
             >
-              <div className="rounded-2xl border border-border-precision bg-white p-6 shadow-glass">
-                <p className="font-heading text-xl font-semibold text-on-surface">Security by default</p>
-                <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
+              <Card size="small" title="Security by default">
+                <Typography.Paragraph type="secondary" className="!mb-0">
                   File upload diperlakukan sebagai konten tidak tepercaya, hasil AI selalu draft, dan setiap peran hanya masuk ke dashboard yang tepat.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-border-precision bg-white p-6 shadow-glass">
-                <p className="font-heading text-xl font-semibold text-on-surface">Siap tumbuh bersama</p>
-                <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
+                </Typography.Paragraph>
+              </Card>
+              <Card size="small" title="Siap tumbuh bersama">
+                <Typography.Paragraph type="secondary" className="!mb-0">
                   Fase sekarang tetap hemat dengan arsitektur cloud. Saat guru dan siswa sudah banyak, infrastruktur bisa diskalakan tanpa rombak produk dari nol.
-                </p>
-              </div>
+                </Typography.Paragraph>
+              </Card>
             </motion.div>
           </div>
         </div>
@@ -597,59 +596,53 @@ export default function Home() {
                     </p>
 
                     <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
-                        <p className="text-xs font-bold tracking-wider text-white/60">GRATIS</p>
-                        <p className="mt-2 font-heading text-xl font-semibold">1 guru, 1 kelas</p>
-                        <p className="mt-2 text-sm text-white/70">
+                      <Card size="small" className="border-white/15 bg-white/5">
+                        <Tag color="gold" className="mb-2">GRATIS</Tag>
+                        <Typography.Title level={4} className="!mb-0 !mt-1 !text-white">1 guru, 1 kelas</Typography.Title>
+                        <Typography.Paragraph className="!text-white/70 !mb-0 mt-2">
                           Upload sampai 5 dokumen per bulan. Cocok untuk guru yang baru coba-coba.
-                        </p>
-                      </div>
-                      <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
-                        <p className="text-xs font-bold tracking-wider text-white/60">SEKOLAH</p>
-                        <p className="mt-2 font-heading text-xl font-semibold">Multi-guru, multi-kelas</p>
-                        <p className="mt-2 text-sm text-white/70">
+                        </Typography.Paragraph>
+                      </Card>
+                      <Card size="small" className="border-white/15 bg-white/5">
+                        <Tag color="green" className="mb-2">SEKOLAH</Tag>
+                        <Typography.Title level={4} className="!mb-0 !mt-1 !text-white">Multi-guru, multi-kelas</Typography.Title>
+                        <Typography.Paragraph className="!text-white/70 !mb-0 mt-2">
                           Kuota AI lebih besar, admin sekolah, dan laporan agregat. Harga via WA.
-                        </p>
-                      </div>
+                        </Typography.Paragraph>
+                      </Card>
                     </div>
 
                     <div className="mt-6 flex flex-wrap gap-3">
-                      <Link
-                        href="/daftar"
-                        className="group inline-flex items-center gap-2 rounded-2xl bg-[#eec055] px-6 py-3.5 text-sm font-semibold text-[#003d24] transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                      >
-                        Coba Gratis
-                        <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#003d24]/15 transition-transform group-hover:translate-x-0.5">
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </span>
+                      <Link href="/daftar">
+                        <Button
+                          size="large"
+                          icon={<ArrowRight className="h-3.5 w-3.5" />}
+                          iconPosition="end"
+                          style={{ background: "#eec055", borderColor: "#eec055", color: "#003d24" }}
+                        >
+                          Coba Gratis
+                        </Button>
                       </Link>
                       <a
                         href={`https://wa.me/${WA_NUMBER}?text=Halo%2C%20saya%20tertarik%20dengan%20AKAL%20Center%20untuk%20sekolah`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
                       >
-                        <MessageCircle className="h-4 w-4" />
-                        Diskusi via WhatsApp
+                        <Button ghost size="large" icon={<MessageCircle className="h-4 w-4" />}>
+                          Diskusi via WhatsApp
+                        </Button>
                       </a>
                     </div>
                   </div>
 
                   <div className="rounded-card border border-white/15 bg-white/5 p-5 lg:p-6">
                     <p className="text-xs font-bold tracking-badge text-white/60">FAQ SINGKAT</p>
-                    <div className="mt-4 space-y-3">
-                      {faqs.slice(0, 3).map((item) => (
-                        <details
-                          key={item.q}
-                          className="group rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
-                        >
-                          <summary className="flex cursor-pointer items-start justify-between gap-3 text-sm font-semibold text-white [&::-webkit-details-marker]:hidden">
-                            <span>{item.q}</span>
-                            <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" />
-                          </summary>
-                          <p className="mt-2 text-sm leading-relaxed text-white/75">{item.a}</p>
-                        </details>
-                      ))}
+                    <div className="mt-4">
+                      <Collapse
+                        ghost
+                        items={faqItems.slice(0, 3)}
+                        expandIconPosition="end"
+                      />
                     </div>
                     <p className="mt-4 text-xs text-white/55">
                       Pertanyaan lebih lengkap? Lihat semua FAQ di bawah atau hubungi kami.
@@ -696,18 +689,12 @@ export default function Home() {
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
-              {faqs.map((item) => (
-                <details
-                  key={item.q}
-                  className="group rounded-2xl border border-border-precision bg-glass px-4 py-3"
-                >
-                  <summary className="flex cursor-pointer items-start justify-between gap-3 text-sm font-semibold text-on-surface [&::-webkit-details-marker]:hidden">
-                    <span>{item.q}</span>
-                    <ChevronDown className="h-4 w-4 shrink-0 transition-transform group-open:rotate-180" />
-                  </summary>
-                  <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">{item.a}</p>
-                </details>
-              ))}
+              <Collapse
+                ghost
+                items={faqItems}
+                expandIconPosition="end"
+                className="md:col-span-2"
+              />
             </div>
           </motion.div>
         </div>
@@ -737,23 +724,24 @@ export default function Home() {
                   Daftar gratis, upload dokumen pertama Anda, dan lihat bagaimana AI membantu menyiapkan materi pembelajaran dalam hitungan menit.
                 </p>
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                  <Link
-                    href="/daftar"
-                    className="group inline-flex items-center gap-2 rounded-2xl bg-[#eec055] px-8 py-4 text-sm font-semibold text-[#003d24] transition-transform hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    Coba Gratis Sekarang
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#003d24]/15 transition-transform group-hover:translate-x-0.5">
-                      <ArrowRight className="h-4 w-4" />
-                    </span>
+                  <Link href="/daftar">
+                    <Button
+                      size="large"
+                      icon={<ArrowRight className="h-4 w-4" />}
+                      iconPosition="end"
+                      style={{ background: "#eec055", borderColor: "#eec055", color: "#003d24", paddingInline: 32, height: 48 }}
+                    >
+                      Coba Gratis Sekarang
+                    </Button>
                   </Link>
                   <a
                     href={`https://wa.me/${WA_NUMBER}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-6 py-4 text-sm font-semibold text-white transition-colors hover:bg-white/20"
                   >
-                    <MessageCircle className="h-4 w-4" />
-                    Tanya dulu
+                    <Button ghost size="large" icon={<MessageCircle className="h-4 w-4" />} style={{ height: 48 }}>
+                      Tanya dulu
+                    </Button>
                   </a>
                 </div>
               </div>
@@ -762,6 +750,6 @@ export default function Home() {
         </div>
       </section>
     </div>
-    </main>
+    </div>
   );
 }
