@@ -48,6 +48,12 @@ export function getModelForTask(complexity: AiTaskComplexity): string {
   return getModelName();
 }
 
+const MODELS_WITHOUT_TEMP = new Set(["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]);
+
+function supportsTemperature(model: string): boolean {
+  return !MODELS_WITHOUT_TEMP.has(model);
+}
+
 export async function chat(
   messages: ChatMessage[],
   options: ChatOptions = {},
@@ -56,12 +62,14 @@ export async function chat(
   const url = `${getBaseUrl()}/chat/completions`;
   const model = options.model || getModelName();
   console.error("[ai] chat() called:", { url, model, msgLen: messages.reduce((s,m) => s + m.content.length, 0) });
-  const body = {
+  const body: Record<string, unknown> = {
     model,
     messages,
-    temperature: options.temperature ?? 0.4,
     max_tokens: options.maxTokens ?? 1500,
   };
+  if (supportsTemperature(model)) {
+    body.temperature = options.temperature ?? 0.4;
+  }
 
   let lastError: Error | null = null;
 
