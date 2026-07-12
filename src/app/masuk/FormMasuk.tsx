@@ -152,7 +152,7 @@ export function FormMasuk({
       <div className="w-full max-w-6xl bg-white rounded-none md:rounded-2xl overflow-hidden shadow-glass-lg flex flex-col md:grid md:grid-cols-[1.1fr_0.9fr] min-h-dvh md:min-h-[640px]">
         <FormMasukLeftPanel />
 
-        <main className="px-5 py-8 sm:px-11 sm:py-12 flex flex-col justify-center">
+        <div className="px-5 py-8 sm:px-11 sm:py-12 flex flex-col justify-center">
           <div className="flex gap-1 mb-6 bg-surface rounded-xl p-1">
             <button
               onClick={() => { setMode("guru"); setError(""); }}
@@ -260,7 +260,7 @@ export function FormMasuk({
               />
             </div>
           )}
-        </main>
+        </div>
       </div>
     </div>
   );

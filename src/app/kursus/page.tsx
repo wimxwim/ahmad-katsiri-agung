@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
 import { Search, BookOpen, ArrowRight, Library } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 interface KursusItem {
   id: string;
@@ -36,27 +35,29 @@ const cardVariants = {
 };
 
 export default function KatalogKursusPage() {
-  const router = useRouter();
   const [search, setSearch] = useState("");
   const [kursus, setKursus] = useState<KursusItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function fetchKursus() {
-      try {
-        const res = await fetch("/api/v1/kursus");
-        if (!res.ok) throw new Error("Gagal memuat data");
-        const { data } = await res.json();
-        setKursus((data || []).filter((k: KursusItem) => k.isPublic));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal memuat data");
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchKursus();
   }, []);
+
+  async function fetchKursus() {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/v1/kursus");
+      if (!res.ok) throw new Error("Gagal memuat data");
+      const { data } = await res.json();
+      setKursus((data || []).filter((k: KursusItem) => k.isPublic));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memuat data");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const filtered = kursus.filter((k) => {
     const q = search.toLowerCase();
@@ -67,7 +68,7 @@ export default function KatalogKursusPage() {
   });
 
   return (
-    <div className="min-h-dvh max-w-7xl mx-auto px-4 sm:px-5 lg:px-8 pt-24 sm:pt-28 pb-24">
+    <div className="min-h-dvh max-w-7xl mx-auto px-4 sm:px-5 lg:px-8 pb-24">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -117,7 +118,7 @@ export default function KatalogKursusPage() {
             </div>
             <p className="text-red-600 text-sm mb-4">{error}</p>
             <button
-              onClick={() => router.refresh()}
+              onClick={() => fetchKursus()}
               className="text-sm text-primary font-semibold hover:underline cursor-pointer"
             >
               Coba lagi

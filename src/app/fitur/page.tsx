@@ -135,8 +135,8 @@ const fadeUp = {
 
 export default function FiturPage() {
   return (
-    <main className="bg-surface pb-20">
-      <section className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8 pt-20 sm:pt-24 md:pt-32">
+    <div className="bg-surface pb-20">
+      <section className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -435,6 +435,6 @@ export default function FiturPage() {
           </div>
         </motion.div>
       </section>
-    </main>
+    </div>
   );
 }

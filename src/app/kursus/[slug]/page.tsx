@@ -5,8 +5,7 @@ import { useParams } from "next/navigation";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
 import { ArrowLeft, BookOpen, CheckCircle, ArrowRight, GraduationCap } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 
 interface KursusItem {
   id: string;
@@ -19,7 +18,6 @@ interface KursusItem {
 }
 
 export default function KursusDetailPage() {
-  const router = useRouter();
   const params = useParams();
   const [kursus, setKursus] = useState<KursusItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,26 +25,37 @@ export default function KursusDetailPage() {
   const [enrolling, setEnrolling] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
 
-  useEffect(() => {
-    async function fetchKursus() {
-      try {
-        const res = await fetch(`/api/v1/kursus?slug=${params.slug}`);
-        if (!res.ok) throw new Error("Gagal memuat data");
-        const { data } = await res.json();
-        setKursus((data && data[0]) || null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal memuat data");
-      } finally {
-        setLoading(false);
-      }
+  const fetchKursus = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/v1/kursus?slug=${params.slug}`);
+      if (!res.ok) throw new Error("Gagal memuat data");
+      const { data } = await res.json();
+      setKursus((data && data[0]) || null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memuat data");
+    } finally {
+      setLoading(false);
     }
-    fetchKursus();
   }, [params.slug]);
+
+  useEffect(() => {
+    fetchKursus();
+  }, [fetchKursus]);
 
   async function handleEnroll() {
     if (!kursus) return;
     setEnrolling(true);
     setError("");
+
+    const meRes = await fetch("/api/v1/account/me", { credentials: "include" }).catch(() => null);
+    if (!meRes || !meRes.ok) {
+      const returnUrl = encodeURIComponent(`/kursus/${params.slug}`);
+      window.location.href = `/masuk?portal=siswa&redirect=${returnUrl}`;
+      return;
+    }
+
     try {
       const res = await fetch("/api/v1/enroll", {
         method: "POST",
@@ -54,11 +63,6 @@ export default function KursusDetailPage() {
         credentials: "include",
         body: JSON.stringify({ kursusId: kursus.id }),
       });
-      if (res.status === 401) {
-        const returnUrl = encodeURIComponent(`/kursus/${params.slug}`);
-        window.location.href = `/masuk?portal=siswa&redirect=${returnUrl}`;
-        return;
-      }
       if (res.status === 429) {
         setError("Terlalu banyak permintaan. Tunggu beberapa detik lalu coba lagi.");
         return;
@@ -78,7 +82,7 @@ export default function KursusDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8 pt-24 sm:pt-28 pb-16">
+<div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8 pb-16">
         <div className="animate-pulse space-y-8">
           <div className="h-4 w-32 bg-primary/5 rounded" />
           <div className="grid gap-8 lg:grid-cols-3">
@@ -98,7 +102,7 @@ export default function KursusDetailPage() {
     return (
       <div className="max-w-7xl mx-auto px-6 pt-32 pb-20 text-center">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline">Coba lagi</button>
+        <button onClick={() => fetchKursus()} className="text-sm text-primary hover:underline">Coba lagi</button>
       </div>
     );
   }
