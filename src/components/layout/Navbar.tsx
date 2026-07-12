@@ -159,6 +159,7 @@ function LogoutButton({ role }: { role: string }) {
       onClick={() => handleLogout().then((r) => (window.location.href = r))}
       className="flex items-center gap-1 text-xs text-on-surface-variant hover:text-red-500 transition-colors px-2 py-1 cursor-pointer"
       title={`${role === "guru" ? "Guru" : "Siswa"} — Keluar`}
+      aria-label="Keluar"
     >
       <LogOut className="w-3.5 h-3.5" aria-hidden="true" />
       <span className="hidden sm:inline">Keluar</span>
