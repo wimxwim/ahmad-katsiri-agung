@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Upload, FileText, Sparkles, Loader2, AlertCircle, X, History, FilePlus, Layers, CheckCircle2 } from "lucide-react";
+import { Upload, FileText, Loader2, AlertCircle, X, History, FilePlus, Layers, CheckCircle2 } from "lucide-react";
 import { UploadProgress } from "@/components/ui/ScreenContracts";
 import { useToast } from "@/components/ui/Toast";
 import { csrfHeaders } from "@/lib/csrf";
@@ -21,14 +21,12 @@ interface FileHistoryItem {
   namaFile: string;
   sizeBytes: number;
   status: string;
-  generationStatus?: string;
-  generationId?: string;
   createdAt: string;
   link: string;
 }
 
 interface JobProgress {
-  state: "idle" | "uploading" | "extracting" | "generating" | "ready" | "failed";
+  state: "idle" | "uploading" | "extracting" | "ready" | "failed";
   progress: number;
   message: string;
 }
@@ -130,7 +128,7 @@ export default function GuruUploadPage() {
     fd.append("file", file);
     fd.append("kursusId", selectedKursus);
 
-    setJob({ state: "uploading", progress: 25, message: "Mengupload ke ImageKit..." });
+    setJob({ state: "uploading", progress: 40, message: "Mengupload ke server..." });
     try {
       const res = await fetch("/api/v1/guru/uploads", {
         method: "POST",
@@ -146,35 +144,12 @@ export default function GuruUploadPage() {
         return;
       }
 
-      setJob({ state: "extracting", progress: 50, message: "Mengekstrak teks..." });
-      await new Promise((r) => setTimeout(r, 400));
-      setJob({ state: "generating", progress: 75, message: "AI membuat draft materi, kuis, dan soal..." });
-
-      let attempts = 0;
-      let genId = json.generationId as string;
-      while (attempts < 60) {
-        await new Promise((r) => setTimeout(r, 2000));
-        const poll = await fetch(`/api/v1/guru/drafts/${genId}`, { credentials: "include" });
-        if (poll.ok) {
-          const { data } = await poll.json();
-          if (data.status === "ready") {
-            setJob({ state: "ready", progress: 100, message: "Draft siap direview!" });
-            setSuccessFileName(file.name);
-            toast("success", "Draft berhasil dibuat! Siap untuk direview.");
-            await loadHistory();
-            return;
-          }
-          if (data.status === "failed") {
-            setJob({ state: "failed", progress: 0, message: data.errorMessage || "AI generation gagal" });
-            setError(data.errorMessage || "AI generation gagal");
-            toast("error", data.errorMessage || "AI gagal memproses dokumen");
-            return;
-          }
-        }
-        attempts += 1;
-      }
-      setJob({ state: "failed", progress: 0, message: "Timeout menunggu AI" });
-      toast("error", "Timeout menunggu AI. Coba lagi nanti.");
+      setJob({ state: "extracting", progress: 70, message: "Mengekstrak teks..." });
+      await new Promise((r) => setTimeout(r, 600));
+      setJob({ state: "ready", progress: 100, message: "Upload selesai!" });
+      setSuccessFileName(file.name);
+      toast("success", "File berhasil diupload! Sistem AI sedang memproses dokumen Anda. Draft materi, kuis, dan soal akan muncul di halaman Draft dalam beberapa menit.");
+      await loadHistory();
     } catch (e) {
       setJob({ state: "failed", progress: 0, message: "Gagal" });
       setError(e instanceof Error ? e.message : "Gagal");
@@ -194,8 +169,7 @@ export default function GuruUploadPage() {
       <div className="mb-6">
         <h1 className="font-heading font-bold text-2xl text-on-surface">Upload Dokumen</h1>
         <p className="text-sm text-on-surface-variant mt-1 max-w-2xl">
-          Gunakan PDF atau DOCX untuk membuat draft materi, kuis, dan soal. File akan diproses
-          aman sebagai draft — guru tetap meninjau sebelum diterbitkan.
+          Upload PDF atau DOCX materi pembelajaran. File akan disimpan aman — Sistem AI sedang memproses dokumen Anda. Draft materi, kuis, dan soal akan muncul di halaman Draft dalam beberapa menit.
         </p>
       </div>
 
@@ -309,23 +283,15 @@ export default function GuruUploadPage() {
         <div className="mt-4 p-4 rounded-2xl border border-emerald-300 bg-emerald-50/40 text-emerald-900">
           <p className="font-heading font-semibold mb-1 flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 shrink-0" aria-hidden="true" />
-            Dokumen berhasil diproses
+            Dokumen berhasil diupload
           </p>
           <p className="text-sm">
-            Draft materi, kuis, dan soal sudah siap untuk ditinjau untuk{" "}
-            <b>{successFileName}</b>.
+            <b>{successFileName}</b> telah tersimpan. Sistem AI sedang memproses dokumen Anda. Draft materi, kuis, dan soal akan muncul di halaman Draft dalam beberapa menit.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Link
-              href="/guru/drafts"
-              className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
-            >
-              <Sparkles className="w-4 h-4" />
-              Review Draft
-            </Link>
             <button
               onClick={reset}
-              className="inline-flex items-center gap-2 bg-white text-primary border border-primary/20 px-4 py-2 rounded-full text-sm font-semibold hover:bg-primary/5 transition-colors"
+              className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
             >
               <FilePlus className="w-4 h-4" />
               Upload Dokumen Lain
@@ -340,12 +306,12 @@ export default function GuruUploadPage() {
           disabled={!file || !selectedKursus || (job.state !== "idle" && job.state !== "failed" && job.state !== "ready")}
           className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {job.state === "uploading" || job.state === "extracting" || job.state === "generating" ? (
+          {job.state === "uploading" || job.state === "extracting" ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
             <Upload className="w-4 h-4" />
           )}
-          Unggah dan Proses
+          Upload Dokumen
         </button>
         {file && (job.state === "idle" || job.state === "failed" || job.state === "ready") && (
           <button
@@ -373,20 +339,13 @@ export default function GuruUploadPage() {
         ) : (
           <div className="space-y-2">
             {history.slice(0, 10).map((h) => {
-              const gen = h.generationStatus || "unknown";
               const meta: Record<string, { label: string; color: string }> = {
-                uploaded: { label: "Uploaded", color: "bg-blue-50 text-blue-700" },
+                uploaded: { label: "Tersimpan", color: "bg-blue-50 text-blue-700" },
                 extracting: { label: "Ekstraksi...", color: "bg-amber-50 text-amber-700" },
-                extracted: { label: "Terekstrak", color: "bg-amber-50 text-amber-700" },
-                generating: { label: "AI bekerja...", color: "bg-amber-50 text-amber-700" },
-                ready: { label: "Siap direview", color: "bg-emerald-50 text-emerald-700" },
-                approved: { label: "Disetujui", color: "bg-emerald-50 text-emerald-800" },
-                rejected: { label: "Ditolak", color: "bg-red-50 text-red-700" },
+                extracted: { label: "Terekstrak", color: "bg-emerald-50 text-emerald-700" },
                 failed: { label: "Gagal", color: "bg-red-50 text-red-700" },
-                queued: { label: "Antrian", color: "bg-blue-50 text-blue-700" },
-                unknown: { label: "—", color: "bg-surface text-on-surface-variant" },
               };
-              const m = meta[gen] || meta.unknown;
+              const m = meta[h.status] || { label: h.status, color: "bg-surface text-on-surface-variant" };
               return (
                 <div
                   key={h.id}
@@ -404,14 +363,6 @@ export default function GuruUploadPage() {
                   <span className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap ${m.color}`}>
                     {m.label}
                   </span>
-                  {h.generationId && (gen === "ready" || gen === "approved") && (
-                    <Link
-                      href={`/guru/drafts/${h.generationId}`}
-                      className="text-xs font-semibold text-primary hover:underline whitespace-nowrap"
-                    >
-                      Review →
-                    </Link>
-                  )}
                 </div>
               );
             })}

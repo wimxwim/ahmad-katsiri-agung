@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Search, Users, Filter } from "lucide-react";
 
 interface SiswaItem {
@@ -126,7 +127,11 @@ export default function SiswaListPage() {
               {filtered.map((s, i) => (
                 <tr key={s.siswaId} className="border-b border-border-precision/50 last:border-0 hover:bg-surface/50 transition-colors">
                   <td className="px-4 py-3 text-on-surface-variant">{i + 1}</td>
-                  <td className="px-4 py-3 font-medium text-on-surface">{s.nama}</td>
+                  <td className="px-4 py-3 font-medium text-on-surface">
+                    <Link href={`/guru/siswa/${s.siswaId}`} className="hover:text-primary hover:underline transition-colors">
+                      {s.nama}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-on-surface-variant">
                     <div className="flex flex-wrap gap-1">
                       {s.kursus.map((k, j) => (

@@ -185,7 +185,7 @@ export default function HargaPage() {
           Pertanyaan Umum
         </h2>
 
-        <div className="space-y-3" role="list">
+        <div className="space-y-3 [&_details>summary::-webkit-details-marker]:hidden [&_details>summary::marker]:hidden" role="list">
           {faqItems.map((item, i) => (
             <details
               key={i}

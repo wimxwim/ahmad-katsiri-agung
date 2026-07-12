@@ -83,6 +83,13 @@ export default function SiswaKursusPage() {
                       year: "numeric",
                     })}
                   </p>
+                  <Link
+                    href={`/siswa/materi?kursusId=${k.kursusId}`}
+                    className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-2"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    Buka materi
+                  </Link>
                 </div>
                 <span className={`shrink-0 px-2 py-1 text-xs rounded-full font-medium ${
                   k.status === "AKTIF" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"

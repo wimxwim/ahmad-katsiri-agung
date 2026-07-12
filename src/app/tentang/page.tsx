@@ -68,7 +68,7 @@ export default function TentangPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: EASE_CURVE }}
-            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
+            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-border-precision shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-4">
               Filosofi Kami
@@ -83,7 +83,7 @@ export default function TentangPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1, ease: EASE_CURVE }}
-            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
+            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-border-precision shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-8">
               Platform untuk Guru Zaman Now
@@ -115,10 +115,10 @@ export default function TentangPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2, ease: EASE_CURVE }}
-            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
+            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-border-precision shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-4">
-              Visi & Misi
+              Visi &amp; Misi
             </h2>
             <p className="text-on-surface-variant leading-relaxed mb-4">
               {visi}
@@ -140,12 +140,12 @@ export default function TentangPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.25, ease: EASE_CURVE }}
-            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
+            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-border-precision shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-6">
               Tim AKAL Center
             </h2>
-            <div className="flex flex-col sm:flex-row gap-6 items-start mb-8 pb-8 border-b border-glass-stroke">
+            <div className="flex flex-col sm:flex-row gap-6 items-start mb-8 pb-8 border-b border-border-precision">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 bg-primary/10 grid place-items-center relative">
                 <Image
                   src={pendiriFoto}
@@ -201,10 +201,10 @@ export default function TentangPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.3, ease: EASE_CURVE }}
-            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-glass-stroke shadow-glass"
+            className="p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-2xl bg-glass backdrop-blur-2xl border border-border-precision shadow-glass"
           >
             <h2 className="font-heading text-xl sm:text-2xl md:text-3xl text-on-surface mb-6">
-              Verifikator & Mitra Akademik
+              Verifikator &amp; Mitra Akademik
             </h2>
             <p className="text-sm sm:text-base text-on-surface-variant leading-relaxed mb-6">
               Konten dan media pembelajaran AKAL Center diverifikasi oleh akademisi berpengalaman untuk memastikan kualitas dan kesesuaian dengan standar pendidikan nasional.

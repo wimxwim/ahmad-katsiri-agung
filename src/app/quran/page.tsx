@@ -33,6 +33,9 @@ export default function QuranPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [playing, setPlaying] = useState(false);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const [activeSurahNo, setActiveSurahNo] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const detailRef = useRef<HTMLDivElement>(null);
 
@@ -84,26 +87,51 @@ export default function QuranPage() {
       audioRef.current.pause();
       audioRef.current = null;
       setPlaying(false);
+      setAudioProgress(0);
+      setAudioDuration(0);
+      setActiveSurahNo(null);
     }
     setSelected(null);
   }
 
-  function toggleAudio(url: string) {
+  function toggleAudio(url: string, nomor: number) {
     if (playing && audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
       setPlaying(false);
+      setAudioProgress(0);
+      setAudioDuration(0);
+      setActiveSurahNo(null);
     } else {
       const audio = new Audio(url);
       audio.loop = false;
+
+      audio.ontimeupdate = () => {
+        setAudioProgress(audio.currentTime);
+      };
+      audio.onloadedmetadata = () => {
+        setAudioDuration(audio.duration);
+      };
+      audio.onended = () => {
+        setPlaying(false);
+        setAudioProgress(0);
+        setAudioDuration(0);
+        setActiveSurahNo(null);
+        audioRef.current = null;
+      };
+
       audio.play();
       audioRef.current = audio;
       setPlaying(true);
-      audio.onended = () => {
-        setPlaying(false);
-        audioRef.current = null;
-      };
+      setActiveSurahNo(nomor);
     }
+  }
+
+  function formatTime(seconds: number): string {
+    if (!seconds || !isFinite(seconds)) return "0:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
   }
 
   const filtered = surahs.filter(
@@ -174,20 +202,43 @@ export default function QuranPage() {
                     <span>{selected.jumlah_ayat} Ayat</span>
                   </div>
 
-                  <button
-                    onClick={() => toggleAudio(selected.audio)}
-                    className="mt-5 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-on-primary font-semibold text-sm hover:brightness-110 transition-all shadow-xl shadow-primary/20"
-                  >
-                    {playing ? (
-                      <>
-                        <Pause className="w-4 h-4" /> Berhenti
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4" /> Putar Audio
-                      </>
-                    )}
-                  </button>
+                  {selected.audio && (
+                    <div className="mt-5 space-y-3">
+                      <button
+                        onClick={() => toggleAudio(selected.audio, selected.nomor)}
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary text-on-primary font-semibold text-sm hover:brightness-110 transition-all shadow-xl shadow-primary/20"
+                      >
+                        {playing ? (
+                          <>
+                            <Pause className="w-4 h-4" /> Berhenti
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-4 h-4" /> Putar Audio
+                          </>
+                        )}
+                      </button>
+
+                      {playing && (
+                        <div className="max-w-xs mx-auto">
+                          <div className="flex items-center justify-between text-xs text-on-surface-variant mb-1.5">
+                            <span>{formatTime(audioProgress)}</span>
+                            <span>{formatTime(audioDuration)}</span>
+                          </div>
+                          <div className="h-1.5 bg-border-precision rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary rounded-full transition-[width] duration-150 ease-linear"
+                              style={{
+                                width: audioDuration > 0
+                                  ? `${(audioProgress / audioDuration) * 100}%`
+                                  : "0%",
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <p className="text-sm text-on-surface-variant leading-relaxed mb-8 text-center max-w-3xl mx-auto">
@@ -280,11 +331,17 @@ export default function QuranPage() {
                       <p className="text-xs text-on-surface-variant mb-3">
                         {surah.arti}
                       </p>
-                      <div className="flex items-center gap-2 text-xs text-on-surface-variant">
+                      <div className="flex items-center gap-2 text-xs text-on-surface-variant flex-wrap">
                         <span className="px-2.5 py-1 rounded-full bg-primary/5 text-primary/80 font-semibold capitalize">
                           {surah.tempat_turun === "mekah" ? "Makkiyah" : "Madaniyah"}
                         </span>
                         <span>{surah.jumlah_ayat} Ayat</span>
+                        {activeSurahNo === surah.nomor && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-semibold border border-emerald-500/20">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Diputar
+                          </span>
+                        )}
                       </div>
                     </button>
                   ))}

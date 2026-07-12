@@ -25,7 +25,7 @@ export function FormMasuk({
       ? "guru"
       : initialPortal === "siswa"
       ? "murid"
-      : "guru"
+      : "pilih"
   );
   const [tabMurid, setTabMurid] = useState<TabMurid>(initialTab);
   const [error, setError] = useState(
@@ -33,21 +33,6 @@ export function FormMasuk({
   );
   const [loading, setLoading] = useState(false);
   const [noPassword, setNoPassword] = useState(false);
-
-  useEffect(() => {
-    setMode(
-      initialPortal === "guru"
-        ? "guru"
-        : initialPortal === "siswa"
-        ? "murid"
-        : "pilih"
-    );
-    setTabMurid(initialTab);
-    setError(
-      errorCode ? ERROR_MESSAGES[errorCode] || `Error: ${errorCode}` : ""
-    );
-    setNoPassword(false);
-  }, [initialPortal, initialTab, errorCode]);
 
   useEffect(() => {
     setNoPassword(false);

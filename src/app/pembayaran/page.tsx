@@ -141,7 +141,7 @@ export default function PembayaranPage() {
             <button
               type="submit"
               disabled={loading || !file}
-              className="w-full py-4 bg-primary text-white rounded-button font-semibold text-md transition-all duration-200 hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-4 bg-primary text-white rounded-full font-semibold text-md transition-all duration-200 hover:brightness-110 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
               {loading ? "Mengirim..." : "Kirim Bukti Pembayaran"}

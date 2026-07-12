@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, GraduationCap, ShieldCheck, Eye, EyeOff, AlertCircle } from "lucide-react";
+import { ArrowRight, GraduationCap, ShieldCheck, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 import { GoogleIcon } from "@/app/masuk/_components/GoogleIcon";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -53,6 +53,7 @@ export function DaftarPicker() {
           password: fd.get("password"),
           kelas: fd.get("kelas") || undefined,
           noAbsen: fd.get("noAbsen") || undefined,
+          nis: fd.get("nis") || undefined,
           role,
           portal,
         }),
@@ -194,27 +195,39 @@ export function DaftarPicker() {
       </div>
 
       {!isGuru && (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-semibold text-on-surface mb-1.5">
-              Kelas <span className="font-normal text-on-surface-variant">(opsional)</span>
-            </label>
-            <Input
-              name="kelas"
-              placeholder="mis. 8A"
-            />
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-semibold text-on-surface mb-1.5">
+                Kelas <span className="font-normal text-on-surface-variant">(opsional)</span>
+              </label>
+              <Input
+                name="kelas"
+                placeholder="mis. 8A"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-on-surface mb-1.5">
+                No. Absen <span className="font-normal text-on-surface-variant">(opsional)</span>
+              </label>
+              <Input
+                name="noAbsen"
+                inputMode="numeric"
+                placeholder="mis. 14"
+              />
+            </div>
           </div>
           <div>
             <label className="block text-sm font-semibold text-on-surface mb-1.5">
-              No. Absen <span className="font-normal text-on-surface-variant">(opsional)</span>
+              NIS <span className="font-normal text-on-surface-variant">(opsional)</span>
             </label>
             <Input
-              name="noAbsen"
+              name="nis"
               inputMode="numeric"
-              placeholder="mis. 14"
+              placeholder="Nomor Induk Siswa"
             />
           </div>
-        </div>
+        </>
       )}
 
       {error && (
@@ -241,7 +254,7 @@ export function DaftarPicker() {
       >
         {redirecting ? (
           <span className="flex items-center gap-2">
-            <span className="w-4 h-4 border-2 border-on-surface-variant/30 border-t-on-surface rounded-full animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" />
             Sedang mengarahkan ke Google...
           </span>
         ) : (
