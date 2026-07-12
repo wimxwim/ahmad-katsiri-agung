@@ -135,6 +135,8 @@ export async function GET(request: NextRequest) {
         nama: user.nama,
         email: user.email,
       });
+      const { createRefreshToken } = await import("@/lib/refresh-token");
+      const refreshToken = await createRefreshToken(user.id);
       const target = (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//"))
         ? returnTo
         : ROLE_HOME_PATHS[sessionRole];
@@ -150,6 +152,13 @@ export async function GET(request: NextRequest) {
         sameSite: "lax",
         path: "/",
         maxAge: SESSION_DURATION_SECONDS,
+      });
+      resp.cookies.set("akal_refresh", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/api/v1/auth/refresh",
+        maxAge: 30 * 24 * 60 * 60,
       });
       return resp;
     }
@@ -197,6 +206,8 @@ export async function GET(request: NextRequest) {
       nama: user.nama,
       email: user.email,
     });
+    const { createRefreshToken } = await import("@/lib/refresh-token");
+    const refreshToken = await createRefreshToken(user.id);
     const target = (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//"))
       ? returnTo
       : ROLE_HOME_PATHS[sessionRole];
@@ -210,6 +221,13 @@ export async function GET(request: NextRequest) {
       sameSite: "lax",
       path: "/",
       maxAge: SESSION_DURATION_SECONDS,
+    });
+    resp.cookies.set("akal_refresh", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/api/v1/auth/refresh",
+      maxAge: 30 * 24 * 60 * 60,
     });
     return resp;
   } catch (e) {

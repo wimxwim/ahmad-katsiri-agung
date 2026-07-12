@@ -8,10 +8,11 @@ import {
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
-import { fileMateri, aiGeneration, kursus } from "@/lib/db/schema";
+import { aiGeneration, fileMateri, kursus, users } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { extractText } from "@/lib/text-extractor";
+import { uuidv7 } from "@/lib/uuid";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -131,6 +132,24 @@ export async function POST(request: NextRequest) {
         .where(eq(fileMateri.id, row.id));
     }
 
+    const genId = uuidv7();
+    const genStatus = extractionText ? "extracted" : "queued";
+
+    await db.insert(aiGeneration).values({
+      id: genId,
+      fileMateriId: row.id,
+      guruId: session.userId!,
+      kursusId,
+      sourceFileName: originalName,
+      status: genStatus,
+    });
+
+    const guru = await db.query.users.findFirst({
+      where: eq(users.id, session.userId!),
+      columns: { nama: true },
+    });
+    const guruNama = guru?.nama ?? "Guru";
+
     await appendEvent(
       `upload:${session.userId}`,
       "doc.uploaded",
@@ -148,26 +167,33 @@ export async function POST(request: NextRequest) {
       },
     );
 
-    const [generation] = await db
-      .insert(aiGeneration)
-      .values({
-        fileMateriId: row.id,
-        guruId: session.userId!,
+    await appendEvent(
+      "owner:notif",
+      "upload.masuk",
+      {
+        guruId: session.userId,
+        guruNama,
+        fileName: originalName,
+        fileId: row.id,
         kursusId,
-        sourceFileName: originalName,
-        status: "queued",
-      })
-      .returning();
+        sizeBytes: file.size,
+        ext: detected,
+        link: uploadResult.link,
+        at: new Date().toISOString(),
+      },
+    );
 
     return NextResponse.json({
       success: true,
       jobId,
+      generationId: genId,
       fileId: row.id,
       fileName: originalName,
       sizeBytes: file.size,
       ext: detected,
-      generationId: generation.id,
-      message: "File tersimpan. Klik 'Generate AI' untuk memulai.",
+      message: extractionText
+        ? "File berhasil diupload. Draft siap di-generate dari halaman Draft AI."
+        : "File berhasil diupload. Ekstraksi teks akan diproses sebelum generate.",
     });
   } catch (e) {
     console.error("Upload error:", e);

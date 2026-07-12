@@ -38,15 +38,13 @@ async function checkImageKit(): Promise<{ status: string; latencyMs: number }> {
   const t0 = performance.now();
   try {
     const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
-    const urlEndpoint = process.env.IMAGEKIT_URL_ENDPOINT;
-    if (!privateKey || !urlEndpoint) return { status: "not_configured", latencyMs: 0 };
-    const url = `${urlEndpoint.replace(/\/$/, "")}/health-check-${Date.now()}.jpg?tr=w-1`;
-    const res = await fetch(url, {
-      method: "HEAD",
+    if (!privateKey) return { status: "not_configured", latencyMs: 0 };
+    const basicAuth = Buffer.from(`${privateKey}:`).toString("base64");
+    const res = await fetch("https://api.imagekit.io/v1/files?limit=1", {
+      headers: { Authorization: `Basic ${basicAuth}` },
       signal: AbortSignal.timeout(5000),
     });
-    const isImageKit = (res.headers.get("x-server") || "").toLowerCase().includes("imagekit");
-    return { status: isImageKit ? "connected" : `error_${res.status}`, latencyMs: Math.round(performance.now() - t0) };
+    return { status: res.ok ? "connected" : `error_${res.status}`, latencyMs: Math.round(performance.now() - t0) };
   } catch {
     return { status: "unreachable", latencyMs: Math.round(performance.now() - t0) };
   }

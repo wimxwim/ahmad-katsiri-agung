@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { checkRateLimit, checkRateLimitPerUser, ipFromRequest } from "@/lib/rate-limit";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { db } from "@/lib/db";
 import { payments } from "@/lib/db/schema";
-import { apiError } from "@/lib/api-response";
 
 const MAX_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -17,6 +18,13 @@ const SubmitSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const session = await requireSiswa(request);
+
+    const ip = ipFromRequest(request);
+    const ipRl = await checkRateLimit(`payment-submit-ip:${ip}`, 5, 60_000);
+    if (!ipRl.allowed) return apiRateLimit(ipRl.retryAfter);
+
+    const userRl = await checkRateLimitPerUser(`payment-submit:${session.userId}`, 3, 60_000);
+    if (!userRl.allowed) return apiRateLimit(userRl.retryAfter);
 
     const fd = await request.formData();
     const file = fd.get("file");

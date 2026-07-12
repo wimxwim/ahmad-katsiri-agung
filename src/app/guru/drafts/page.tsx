@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import Link from "next/link";
-import { Sparkles, FileText, CheckCircle2, XCircle, RefreshCw, Clock, AlertCircle, Loader2, Search, Filter } from "lucide-react";
+import { Sparkles, FileText, CheckCircle2, XCircle, RefreshCw, Clock, AlertCircle, Loader2, Search, Filter, Zap } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 
@@ -34,6 +34,34 @@ export default function GuruDraftsPage() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
+  const [generateError, setGenerateError] = useState("");
+
+  async function handleGenerate(draftId: string) {
+    setGenerateError("");
+    setGeneratingIds((prev) => new Set(prev).add(draftId));
+    try {
+      const res = await fetch(`/api/v1/guru/drafts/${draftId}/generate`, {
+        method: "POST",
+        headers: { "x-csrf-token": document.cookie.split("__Host-psrf=")[1]?.split(";")[0] || "" },
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setGenerateError(j?.error?.message || j?.error || "Gagal memulai generate");
+      } else {
+        await load();
+      }
+    } catch {
+      setGenerateError("Gagal menghubungi server");
+    } finally {
+      setGeneratingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(draftId);
+        return next;
+      });
+    }
+  }
 
   async function load() {
     try {
@@ -119,6 +147,15 @@ export default function GuruDraftsPage() {
         />
       ) : (
         <>
+          {generateError && (
+            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              {generateError}
+              <button onClick={() => setGenerateError("")} className="ml-auto text-red-400 hover:text-red-600">
+                <XCircle className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <div className="relative flex-1">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/40" />
@@ -194,6 +231,25 @@ export default function GuruDraftsPage() {
                   >
                     Review →
                   </Link>
+                )}
+                {(d.status === "extracted" || d.status === "failed") && (
+                  <button
+                    onClick={() => handleGenerate(d.id)}
+                    disabled={generatingIds.has(d.id)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-primary text-on-primary hover:brightness-110 active:scale-[0.98] transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                  >
+                    {generatingIds.has(d.id) ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Generate...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-3.5 h-3.5" />
+                        Generate AI
+                      </>
+                    )}
+                  </button>
                 )}
               </div>
             );

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { apiError } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { kelas } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -18,6 +19,10 @@ export async function POST(
 ) {
   try {
     const session = await requireGuru(request);
+
+    const rl = await checkRateLimitPerUser(`kelas-invite:${session.userId}`, 10, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
+
     const { id } = await params;
 
     const [k] = await db

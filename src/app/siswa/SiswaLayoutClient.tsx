@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   BookOpen,
   BarChart3,
-  GraduationCap,
   Sparkles,
   Megaphone,
 } from "lucide-react";
@@ -15,7 +14,6 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/siswa/beranda", label: "Beranda", icon: LayoutDashboard },
   { href: "/siswa/materi", label: "Materi", icon: BookOpen },
   { href: "/siswa/quiz", label: "Kuis", icon: Sparkles },
-  { href: "/siswa/cbt", label: "CBT", icon: GraduationCap },
   { href: "/siswa/progres", label: "Progres", icon: BarChart3 },
   { href: "/siswa/pengumuman", label: "Pengumuman", icon: Megaphone },
 ];

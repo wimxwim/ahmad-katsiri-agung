@@ -1080,6 +1080,7 @@ ${C}${BOLD}👥 DATA MANAGEMENT${N}
 
 ${C}${BOLD}🤖 AI & FITUR${N}
   5. AI Cost Tracking           21. Feature Flags
+ 28. Input Materi (PDF/DOCX → AI → Guru)
 
 ${C}${BOLD}🗄️ DATABASE (Supabase CLI + psql)${N}
   9. Lihat Tabel               10. Run SQL Query
@@ -1113,6 +1114,19 @@ EOF
 }
 
 # ====================================================================
+# 28. INPUT MATERI — Upload PDF/DOCX + AI generate ke akun guru
+# ====================================================================
+input_materi() {
+  print_header; print_box "  📥  INPUT MATERI  " "$G"
+  local INPUT_SCRIPT="$PROJECT_DIR/scripts/input-materi.sh"
+  if [ ! -f "$INPUT_SCRIPT" ]; then
+    err "Script input-materi.sh tidak ditemukan di $INPUT_SCRIPT"
+    pause; return
+  fi
+  bash "$INPUT_SCRIPT"
+}
+
+# ====================================================================
 # MENU UTAMA
 # ====================================================================
 while true; do
@@ -1128,6 +1142,7 @@ while true; do
   echo ""
   echo -e "${C}${BOLD}── AI & FITUR ──────────────────────────────────────────────────${N}"
   echo -e "  ${G}5${N}) AI Cost Tracking      ${G}21${N}) Feature Flags"
+  echo -e "  ${G}28${N}) Input Materi (PDF/DOCX + AI)"
   echo ""
   echo -e "${C}${BOLD}── DATABASE ────────────────────────────────────────────────────${N}"
   echo -e "  ${G}9${N}) Lihat Tabel           ${G}10${N}) Run SQL Query"
@@ -1143,7 +1158,7 @@ while true; do
   echo ""
   echo -e "  ${R}0${N}) Keluar"
   echo ""
-  read -r -p "$(echo -e "${H}${BOLD}Pilih [0-27]:${N} ")" CHOICE
+  read -r -p "$(echo -e "${H}${BOLD}Pilih [0-28]:${N} ")" CHOICE
 
   case "$CHOICE" in
     1) dashboard ;;
@@ -1173,6 +1188,7 @@ while true; do
     25) analytics ;;
     26) check_koneksi ;;
     27) bantuan ;;
+    28) input_materi ;;
     0) echo -e "\n${G}${BOLD}✦ AKAL Center — Sampai jumpa! ✦${N}\n"; exit 0 ;;
     *) err "Pilihan tidak valid."; sleep 1 ;;
   esac

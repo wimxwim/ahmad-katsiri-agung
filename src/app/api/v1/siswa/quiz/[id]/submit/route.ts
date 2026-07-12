@@ -119,6 +119,7 @@ export async function POST(
         waktuMulai: new Date(Date.now() - parsed.data.durasiDetik * 1000),
         waktuSelesai: new Date(),
         durasiDetik: parsed.data.durasiDetik,
+        jawaban: parsed.data.jawaban,
       })
       .returning();
 

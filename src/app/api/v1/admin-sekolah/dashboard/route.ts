@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { apiError } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { users, kursus, siswaKursus } from "@/lib/db/schema";
 import { eq, sql } from "drizzle-orm";
@@ -10,6 +11,9 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
     const session = await requireGuru(request);
+
+    const rl = await checkRateLimitPerUser(`admin-dashboard:${session.userId}`, 10, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const [u] = await db
       .select({ sekolahId: users.sekolahId })

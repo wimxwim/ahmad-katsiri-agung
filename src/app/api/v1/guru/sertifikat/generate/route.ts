@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { apiError } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { checkRateLimit, checkRateLimitPerUser, checkConcurrentLimit, releaseConcurrent, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { sertifikat, siswaKursus, quizAttempt, users } from "@/lib/db/schema";
+import { sertifikat, siswaKursus, quizAttempt, users, kursus } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { generateQRHash } from "@/lib/sertifikat/generateQRHash";
 import crypto from "crypto";
@@ -11,11 +12,34 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    await requireGuru(request);
+    const session = await requireGuru(request);
+
+    const ip = ipFromRequest(request);
+    const ipRl = await checkRateLimit(`sertifikat-gen-ip:${ip}`, 5, 60_000);
+    if (!ipRl.allowed) return apiRateLimit(ipRl.retryAfter);
+
+    const userRl = await checkRateLimitPerUser(`sertifikat-gen:${session.userId}`, 3, 60_000);
+    if (!userRl.allowed) return apiRateLimit(userRl.retryAfter);
+
     const { kursusId } = await request.json();
 
     if (!kursusId || typeof kursusId !== "string") {
       return apiError("kursusId wajib diisi", 400);
+    }
+
+    const [owned] = await db
+      .select({ id: kursus.id })
+      .from(kursus)
+      .where(and(eq(kursus.id, kursusId), eq(kursus.guruId, session.userId!)))
+      .limit(1);
+
+    if (!owned) {
+      return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+    }
+
+    const concRl = await checkConcurrentLimit(`sertifikat-gen:${session.userId}`, 1, 300_000);
+    if (!concRl.allowed) {
+      return apiError("Sedang ada generate sertifikat berjalan. Tunggu selesai.", 429);
     }
 
     const eligible = await db
@@ -55,6 +79,8 @@ export async function POST(request: NextRequest) {
 
       generated++;
     }
+
+    releaseConcurrent(`sertifikat-gen:${session.userId}`);
 
     return NextResponse.json({
       success: true,

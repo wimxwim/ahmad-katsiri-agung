@@ -1,4 +1,7 @@
-import { getSession } from "@/lib/dal";
+import { NextRequest, NextResponse } from "next/server";
+import { requireOwner } from "@/lib/route-guard-v2";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import {
   users,
@@ -13,15 +16,14 @@ import {
   aiRequests,
 } from "@/lib/db/schema";
 import { and, eq, sql, gte, inArray } from "drizzle-orm";
-import { NextResponse } from "next/server";
 import { calculateTRI, getTRILabel } from "@/lib/analytics/calculateTRI";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-  const session = await getSession();
-  if (!session || session.role !== "owner") {
-    return NextResponse.json({ data: null, error: "Hanya owner" }, { status: 403 });
-  }
+  const session = await requireOwner(request);
+
+  const rl = await checkRateLimitPerUser(`owner-tri:${session.userId}`, 5, 60_000);
+  if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -169,6 +171,6 @@ export async function GET() {
   });
   } catch (e) {
     console.error("Owner TRI error:", e);
-    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 });
+    return apiError("Terjadi kesalahan server", 500);
   }
 }

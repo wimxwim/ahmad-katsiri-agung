@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { hashPassword } from "@/lib/auth-password";
-import { getSession } from "@/lib/dal";
+import { requireSession } from "@/lib/route-guard-v2";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
-import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 import { logAuthEvent } from "@/lib/auth-audit";
 
 const SetPasswordSchema = z.object({
@@ -27,8 +27,7 @@ export async function POST(request: NextRequest) {
     const rl = await checkRateLimit(`set-password:${ip}`, 5, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const session = await getSession();
-    if (!session) return apiUnauthorized();
+    const session = await requireSession(request);
 
     const body = await request.json();
     const parsed = SetPasswordSchema.safeParse(body);

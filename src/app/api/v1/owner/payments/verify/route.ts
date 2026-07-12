@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOwner, GuardError } from "@/lib/route-guard-v2";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { payments } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { apiError } from "@/lib/api-response";
 
 export async function POST(request: NextRequest) {
   try {
     const session = await requireOwner(request);
+
+    const rl = await checkRateLimitPerUser(`payment-verify:${session.userId}`, 20, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
+
     const body = await request.json();
     const { paymentId, action } = body as { paymentId: string; action: "confirm" | "reject" };
 

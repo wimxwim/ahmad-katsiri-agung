@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldCheck, School, Users, Sparkles, AlertTriangle, CheckCircle, Info, Activity, CreditCard, Check, X } from "lucide-react";
+import { ShieldCheck, School, Users, Sparkles, AlertTriangle, CheckCircle, Info, Activity, CreditCard, Check, X, FileText, Clock, Bell } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
@@ -91,11 +91,30 @@ interface OwnerMetrics {
   activeGurus7d: number;
 }
 
+interface UploadNotif {
+  id: string;
+  type: string;
+  payload: {
+    guruId: string;
+    guruNama: string;
+    fileName: string;
+    fileId: string;
+    kursusId: string;
+    sizeBytes: number;
+    ext: string;
+    link: string;
+    at: string;
+  };
+  createdAt: string;
+}
+
 export default function OwnerIndex() {
   const [triData, setTriData] = useState<TRIResult[] | null>(null);
   const [metrics, setMetrics] = useState<OwnerMetrics | null>(null);
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(false);
+  const [notifications, setNotifications] = useState<UploadNotif[]>([]);
+  const [notifLoading, setNotifLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,19 +129,31 @@ export default function OwnerIndex() {
 
   useEffect(() => {
     setLoading(true);
-    fetch("/api/v1/owner/tri")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) setError(d.error);
-        else {
-          setTriData(d.data);
-          setMetrics(d.metrics ?? null);
-        }
-      })
-      .catch(() => setError("Gagal mengambil data TRI"))
-      .finally(() => setLoading(false));
-    fetchPayments();
-  }, [fetchPayments]);
+    Promise.all([
+      fetch("/api/v1/owner/tri")
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.error) setError(d.error);
+          else {
+            setTriData(d.data);
+            setMetrics(d.metrics ?? null);
+          }
+        })
+        .catch(() => setError("Gagal mengambil data TRI")),
+      fetch("/api/v1/owner/payments?status=pending")
+        .then((r) => r.json())
+        .then((d) => setPayments(d.data || []))
+        .catch(() => {}),
+      fetch("/api/v1/owner/notifications?limit=10")
+        .then((r) => r.json())
+        .then((d) => setNotifications(d.data || []))
+        .catch(() => {}),
+    ]).finally(() => {
+      setLoading(false);
+      setPaymentsLoading(false);
+      setNotifLoading(false);
+    });
+  }, []);
 
   async function handleVerify(paymentId: string, action: "confirm" | "reject") {
     await fetch("/api/v1/owner/payments/verify", {
@@ -208,6 +239,63 @@ export default function OwnerIndex() {
           </p>
           <p className="text-xs text-on-surface-variant mt-1">total token</p>
         </div>
+      </div>
+
+      {/* Upload Masuk — Notifikasi */}
+      <div className="mb-8 bg-glass border border-border-precision rounded-2xl p-6 sm:p-8 shadow-glass-lg">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+            <Bell className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <h2 className="font-heading font-bold text-lg text-on-surface">Upload Masuk</h2>
+            <p className="text-xs text-on-surface-variant">Dokumen yang diupload guru — menunggu diproses jadi materi, kuis, dan soal</p>
+          </div>
+        </div>
+
+        {notifLoading ? (
+          <div className="mt-6 py-8 flex items-center justify-center">
+            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="mt-6">
+            <EmptyState icon={FileText} title="Belum ada upload baru" description="Guru belum mengupload dokumen. Notifikasi akan muncul di sini saat ada upload." />
+          </div>
+        ) : (
+          <div className="mt-6 space-y-3">
+            {notifications.map((n) => {
+              const p = n.payload;
+              const sizeKB = (p.sizeBytes / 1024).toFixed(1);
+              const waktu = n.createdAt ? new Date(n.createdAt).toLocaleString("id-ID") : p.at;
+              return (
+                <div
+                  key={n.id}
+                  className="rounded-tab border border-border-precision bg-white/40 p-5 flex flex-wrap items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-on-surface truncate">
+                        {p.guruNama} upload <span className="text-primary">{p.fileName}</span>
+                      </p>
+                      <p className="text-xs text-on-surface-variant flex items-center gap-2 mt-0.5">
+                        <Clock className="w-3 h-3" />
+                        {waktu}
+                        <span>•</span>
+                        {sizeKB} KB · .{p.ext}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 whitespace-nowrap">
+                    Menunggu Diproses
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* TRI Section */}

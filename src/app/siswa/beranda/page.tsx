@@ -77,7 +77,7 @@ export default function SiswaBerandaPage() {
       })
       .catch(() => {});
 
-    Promise.all([
+    Promise.allSettled([
       fetch("/api/v1/siswa/feed", { credentials: "include" }).then((r) =>
         r.ok ? r.json() : null
       ),
@@ -88,10 +88,11 @@ export default function SiswaBerandaPage() {
         r.ok ? r.json() : null
       ),
     ])
-      .then(([feedData, pengum, quiz]) => {
-        if (feedData) setFeed(feedData);
-        if (pengum?.data) setPengumuman(pengum.data);
-        if (quiz?.data) setQuizList(quiz.data);
+      .then((results) => {
+        const [feedResult, pengumResult, quizResult] = results;
+        if (feedResult.status === "fulfilled" && feedResult.value) setFeed(feedResult.value);
+        if (pengumResult.status === "fulfilled" && pengumResult.value?.data) setPengumuman(pengumResult.value.data);
+        if (quizResult.status === "fulfilled" && quizResult.value?.data) setQuizList(quizResult.value.data);
         setLoading(false);
       })
       .catch(() => {

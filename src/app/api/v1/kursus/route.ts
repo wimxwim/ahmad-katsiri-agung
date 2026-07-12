@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { cookies } from "next/headers";
+import { verifySession } from "@/lib/auth";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { requireRole } from "@/lib/route-guard-v2";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
-import { getSession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { kursus } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
-import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 
 const KursusSchema = z.object({
   judul: z.string().min(1).max(200),
@@ -26,14 +29,13 @@ export async function GET(request: NextRequest) {
     const rl = await checkRateLimit(`kursus-list:${ip}`, 30, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const session = await getSession();
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
+    const result = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+    const session = result?.success ? result.data : null;
 
-    if (!session) {
-      return apiUnauthorized();
-    }
-
-    const isOwner = session.role === "owner";
-    const isGuruLike = session.role === "guru" || isOwner || session.role === "admin_sekolah";
+    const isOwner = session?.role === "owner";
+    const isGuruLike = session?.role === "guru" || isOwner || session?.role === "admin_sekolah";
 
     const slug = request.nextUrl.searchParams.get("slug");
     const scope = request.nextUrl.searchParams.get("scope");
@@ -41,8 +43,7 @@ export async function GET(request: NextRequest) {
 
     if (isGuruLike) {
       if (isOwner && scope === "all") {
-        // owner dengan scope=all → lihat semua kursus
-      } else if (session.userId) {
+      } else if (session?.userId) {
         query = query.where(eq(kursus.guruId, session.userId));
       }
     } else {
@@ -62,11 +63,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) return apiUnauthorized();
-    if (session.role !== "guru" && session.role !== "owner") {
-      return apiError("Hanya guru yang dapat membuat kursus", 403);
-    }
+    const session = await requireRole(request, ["guru", "owner"]);
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`kursus-create:${ip}`, 5, 60000);

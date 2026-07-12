@@ -14,7 +14,7 @@ import {
   unique,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { uuidv7 } from "@/lib/uuid";
 
 export const roleEnum = pgEnum("role", [
@@ -60,6 +60,7 @@ export const users = pgTable(
     tanggalLahir: timestamp("tanggal_lahir", { withTimezone: true }),
     kelas: varchar("kelas", { length: 10 }),
     noAbsen: varchar("no_absen", { length: 5 }),
+    nis: varchar("nis", { length: 30 }),
     sekolahId: uuid("sekolah_id").references(() => sekolah.id),
     parentId: uuid("parent_id").references((): AnyPgColumn => users.id),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -965,6 +966,7 @@ export const quizAttempt = pgTable(
     waktuMulai: timestamp("waktu_mulai", { withTimezone: true }).notNull().defaultNow(),
     waktuSelesai: timestamp("waktu_selesai", { withTimezone: true }),
     durasiDetik: integer("durasi_detik").notNull().default(0),
+    jawaban: jsonb("jawaban").default(sql`'{}'::jsonb`),
   },
   (t) => ({
     siswaIdx: index("quiz_attempt_siswa_idx").on(t.siswaId, t.waktuMulai),

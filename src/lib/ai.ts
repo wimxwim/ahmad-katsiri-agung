@@ -34,11 +34,11 @@ function getApiKey(): string {
 }
 
 export function getModelName(): string {
-  return process.env.AI_MODEL || "deepseek-v4-flash";
+  return process.env.AI_MODEL || "gpt-5.6-luna";
 }
 
 export function getFlashModel(): string {
-  return process.env.AI_FLASH_MODEL || "deepseek-v4-flash";
+  return process.env.AI_FLASH_MODEL || "gpt-5.6-luna";
 }
 
 export type AiTaskComplexity = "heavy" | "light";

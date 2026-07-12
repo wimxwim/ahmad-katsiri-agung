@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getSession } from "@/lib/dal";
+import { requireSession } from "@/lib/route-guard-v2";
 import { checkRateLimitSync, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { pengumuman } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
-import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 
 const UpdateSchema = z.object({
   judul: z.string().min(1).max(255).optional(),
@@ -18,12 +18,11 @@ const UpdateSchema = z.object({
 const GURU_ROLES = new Set(["guru", "owner", "admin_sekolah"]);
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-  const session = await getSession();
-  if (!session) return apiUnauthorized();
+  const session = await requireSession(request);
 
   const { id } = await params;
   const [row] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
@@ -43,12 +42,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-  const session = await getSession();
-  if (!session) return apiUnauthorized();
-
-  if (!GURU_ROLES.has(session.role)) {
-    return apiError("Tidak diizinkan", 403);
-  }
+  const session = await requireSession(request);
 
   const { id } = await params;
   const [existing] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
@@ -90,16 +84,11 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-  const session = await getSession();
-  if (!session) return apiUnauthorized();
-
-  if (!GURU_ROLES.has(session.role)) {
-    return apiError("Tidak diizinkan", 403);
-  }
+  const session = await requireSession(request);
 
   const { id } = await params;
   const [existing] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);

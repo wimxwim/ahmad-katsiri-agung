@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { Typography, Space } from "antd";
 import type { CmsNavigation } from "@/components/providers/CmsProvider";
 
 const FOOTER_LINKS_FALLBACK = [
@@ -41,82 +44,67 @@ export function Footer({
               <Image src="/logo.webp" alt="Logo PAI" width={32} height={32} className="object-contain" />
               <span>AKAL Center</span>
             </Link>
-            <p className="mt-3 text-sm text-on-surface-variant leading-relaxed max-w-xs">
+            <Typography.Paragraph type="secondary" className="mt-3 !mb-0 max-w-xs">
               Platform multi-guru dengan AI Document Generator. Ubah dokumen jadi
               materi, quiz, dan soal — guru tetap memegang kendali penuh.
-            </p>
+            </Typography.Paragraph>
           </div>
 
           <div>
-            <h4 className="font-heading font-semibold text-sm text-on-surface mb-4">
-              Navigasi
-            </h4>
-            <ul className="space-y-3">
+            <Typography.Title level={5} className="!mb-4">Navigasi</Typography.Title>
+            <Space direction="vertical" size="middle">
               {footerLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-on-surface-variant hover:text-primary transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
+                <Link key={link.href} href={link.href} className="text-sm text-on-surface-variant hover:text-primary transition-colors">
+                  {link.label}
+                </Link>
               ))}
-            </ul>
+            </Space>
           </div>
 
           <div>
-            <h4 className="font-heading font-semibold text-sm text-on-surface mb-4">
-              Kontak
-            </h4>
-            <ul className="space-y-3 text-sm text-on-surface-variant">
-              <li>{pendiriNamaProp || CONTACT_FALLBACK.pendiriNama}</li>
-              <li>
-                <a
-                  href={`https://wa.me/${contact.waNumber}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors"
-                >
-                  WA: {contact.waNumber.replace(/^(\d{2})(\d{3})(\d{4})(\d{4})$/, "$1$2-$3-$4")}
-                </a>
-              </li>
-              <li>
-                <a
-                  href={`https://instagram.com/${contact.igHandle.replace("@", "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors"
-                >
-                  IG: {contact.igHandle}
-                </a>
-              </li>
-              <li>
-                <a
-                  href={`https://tiktok.com/@${contact.tiktokHandle.replace("@", "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors"
-                >
-                  TikTok: {contact.tiktokHandle}
-                </a>
-              </li>
-              <li>
-                <a
-                  href={`https://youtube.com/@${contact.youtubeChannel.toLowerCase().replace(/\s+/g, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors"
-                >
-                  YouTube: {contact.youtubeChannel}
-                </a>
-              </li>
-            </ul>
+            <Typography.Title level={5} className="!mb-4">Kontak</Typography.Title>
+            <Space direction="vertical" size="middle">
+              <Typography.Text type="secondary">{pendiriNamaProp || CONTACT_FALLBACK.pendiriNama}</Typography.Text>
+              <a
+                href={`https://wa.me/${contact.waNumber}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-on-surface-variant hover:text-primary transition-colors"
+              >
+                WA: {contact.waNumber.replace(/^(\d{2})(\d{3})(\d{4})(\d{4})$/, "$1$2-$3-$4")}
+              </a>
+              <a
+                href={`https://instagram.com/${contact.igHandle.replace("@", "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-on-surface-variant hover:text-primary transition-colors"
+              >
+                IG: {contact.igHandle}
+              </a>
+              <a
+                href={`https://tiktok.com/@${contact.tiktokHandle.replace("@", "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-on-surface-variant hover:text-primary transition-colors"
+              >
+                TikTok: {contact.tiktokHandle}
+              </a>
+              <a
+                href={`https://youtube.com/@${contact.youtubeChannel.toLowerCase().replace(/\s+/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-on-surface-variant hover:text-primary transition-colors"
+              >
+                YouTube: {contact.youtubeChannel}
+              </a>
+            </Space>
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-border-precision text-center text-xs text-on-surface-variant">
-          &copy; {new Date().getFullYear()} AKAL Center. Hak Cipta Dilindungi.
+        <div className="mt-12 pt-6 border-t border-border-precision text-center">
+          <Typography.Text type="secondary" className="text-xs">
+            &copy; {new Date().getFullYear()} AKAL Center. Hak Cipta Dilindungi.
+          </Typography.Text>
         </div>
       </div>
     </footer>

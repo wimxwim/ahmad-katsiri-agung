@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { eq, and, inArray } from "drizzle-orm";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { getSession } from "@/lib/dal";
+import { requireRole } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
 import { sertifikat, kursus, jawabanLog, skill, soal } from "@/lib/db/schema";
 import { generateQRHash } from "@/lib/sertifikat/generateQRHash";
-import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 
 const GenerateSertifikatSchema = z.object({
   siswaId: z.string().uuid(),
@@ -21,11 +21,7 @@ function generateNomorSertifikat(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session) return apiUnauthorized();
-    if (session.role !== "guru" && session.role !== "owner") {
-      return apiError("Hanya guru yang dapat membuat sertifikat", 403);
-    }
+    const session = await requireRole(request, ["guru", "owner"]);
 
     const rl = await checkRateLimit(`sertifikat-gen:${session.userId}`, 10, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

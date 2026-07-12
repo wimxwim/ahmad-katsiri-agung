@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["unpdf"],
+  images: {
+    qualities: [75],
+  },
   experimental: {
     viewTransition: true,
     optimizePackageImports: ["lucide-react"],

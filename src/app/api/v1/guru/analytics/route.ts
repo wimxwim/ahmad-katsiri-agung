@@ -13,7 +13,8 @@ import {
 import { and, desc, eq, gte, sql, like, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { apiError } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
@@ -21,6 +22,9 @@ export async function GET(request: NextRequest) {
     const session = await requireGuru(request);
 
     const guruId = session.userId;
+
+    const rl = await checkRateLimitPerUser(`analytics:${guruId}`, 5, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
   const [kursusList, siswaList, draftsList, kuisList] = await Promise.all([
     db

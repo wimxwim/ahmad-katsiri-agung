@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOwner, GuardError } from "@/lib/route-guard-v2";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { payments, users } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { apiError } from "@/lib/api-response";
 
 export async function GET(request: NextRequest) {
   try {
     await requireOwner(request);
+
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`owner-payments:${ip}`, 20, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
+
     const status = request.nextUrl.searchParams.get("status") || "pending";
 
     const data = await db

@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { aiGeneration } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { apiError } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {
     const session = await requireGuru(request);
+
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`drafts-list:${ip}`, 30, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const rows = await db
       .select()

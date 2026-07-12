@@ -1,4 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { requireOwner } from "@/lib/route-guard-v2";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 const MODELS = [
   "deepseek-v4-pro",
@@ -23,9 +26,16 @@ interface BenchResult {
   error: string | null;
 }
 
-export async function GET() {
-  const { chat } = await import("@/lib/ai");
-  const results: BenchResult[] = [];
+export async function GET(request: NextRequest) {
+  try {
+    await requireOwner(request);
+
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`benchmark:${ip}`, 1, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
+
+    const { chat } = await import("@/lib/ai");
+    const results: BenchResult[] = [];
 
   for (const model of MODELS) {
     const t0 = performance.now();
@@ -64,4 +74,8 @@ export async function GET() {
 
   const sorted = [...results].sort((a, b) => a.timeMs - b.timeMs);
   return NextResponse.json({ results, sorted, total: results.length });
+  } catch (e) {
+    console.error("Benchmark error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
 }

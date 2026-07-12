@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Clock, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock, AlertCircle, Loader2, AlertTriangle } from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf";
 import { useToast } from "@/components/ui/Toast";
 
@@ -45,6 +45,7 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<SubmitResult | null>(null);
   const [startedAt, setStartedAt] = useState<number>(0);
+  const [showWarning, setShowWarning] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -289,7 +290,13 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
             Batal
           </button>
           <button
-            onClick={submit}
+            onClick={() => {
+              if (answered < total) {
+                setShowWarning(true);
+              } else {
+                submit();
+              }
+            }}
             disabled={submitting || answered === 0}
             className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 disabled:opacity-50"
           >
@@ -298,6 +305,37 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
           </button>
         </div>
       </div>
+
+      {showWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs px-4">
+          <div className="bg-white rounded-2xl border border-border-precision shadow-glass-xl p-6 max-w-sm w-full text-center">
+            <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto mb-3" />
+            <h3 className="font-heading font-bold text-lg text-on-surface mb-2">
+              Yakin submit sekarang?
+            </h3>
+            <p className="text-sm text-on-surface-variant mb-2">
+              Kamu baru menjawab <b>{answered}</b> dari <b>{total}</b> soal.
+            </p>
+            <p className="text-xs text-amber-700 bg-amber-50 rounded-xl p-2 mb-5">
+              Soal yang tidak dijawab akan dihitung salah.
+            </p>
+            <div className="flex gap-2 justify-center">
+              <button
+                onClick={() => setShowWarning(false)}
+                className="px-4 py-2 rounded-full text-sm font-semibold border border-border-precision text-on-surface-variant hover:bg-surface"
+              >
+                Kembali
+              </button>
+              <button
+                onClick={() => { setShowWarning(false); submit(); }}
+                className="px-4 py-2 rounded-full text-sm font-semibold bg-primary text-white hover:brightness-110"
+              >
+                Tetap Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

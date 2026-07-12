@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
-import { getSession } from "@/lib/dal";
+import { requireSiswa } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
 import { kursus, transaksi } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
@@ -14,10 +14,7 @@ const PaymentCreateSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession();
-    if (!session || session.role !== "murid") {
-      return apiError("Hanya siswa yang dapat melakukan pembayaran", 403);
-    }
+    const session = await requireSiswa(request);
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`payment-create:${ip}`, 3, 30000);

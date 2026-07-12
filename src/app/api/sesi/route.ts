@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/dal";
+import { cookies } from "next/headers";
+import { verifySession } from "@/lib/auth";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { apiRateLimit } from "@/lib/api-response";
 
@@ -9,7 +11,10 @@ export async function GET(request: NextRequest) {
     const rl = await checkRateLimit(`sesi:${ip}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const payload = await getSession();
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
+    const result = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+    const payload = result?.success ? result.data : null;
     if (!payload) {
       return NextResponse.json({ session: null });
     }

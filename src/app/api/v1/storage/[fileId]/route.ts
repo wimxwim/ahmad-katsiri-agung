@@ -1,18 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/dal";
-import { apiError, apiUnauthorized } from "@/lib/api-response";
+import { requireSession } from "@/lib/route-guard-v2";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { fileMateri } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ fileId: string }> },
 ) {
   try {
-  const session = await getSession();
-  if (!session) return apiUnauthorized();
+  const session = await requireSession(request);
+
+  const ip = ipFromRequest(request);
+  const rl = await checkRateLimit(`storage:${ip}`, 60, 60_000);
+  if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
   const { fileId } = await params;
 

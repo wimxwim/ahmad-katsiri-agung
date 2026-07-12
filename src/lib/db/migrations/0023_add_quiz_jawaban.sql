@@ -1,0 +1,1 @@
+ALTER TABLE quiz_attempt ADD COLUMN IF NOT EXISTS jawaban jsonb DEFAULT '{}'::jsonb;

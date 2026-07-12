@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getSession } from "@/lib/dal";
+import { cookies } from "next/headers";
+import { verifySession } from "@/lib/auth";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { requireRole } from "@/lib/route-guard-v2";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { pengumuman } from "@/lib/db/schema";
 import { desc, eq, or, and, gte, sql } from "drizzle-orm";
-import { apiError, apiRateLimit, apiUnauthorized } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 
 const CreateSchema = z.object({
   judul: z.string().min(1).max(255),
@@ -22,7 +25,10 @@ export async function GET(request: NextRequest) {
   const rl = await checkRateLimit(`pengumuman-list:${ip}`, 30, 15000);
   if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-  const session = await getSession();
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
+  const result = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+  const session = result?.success ? result.data : null;
 
   const now = new Date();
   const rows = await db
@@ -52,12 +58,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-  const session = await getSession();
-  if (!session) return apiUnauthorized();
-
-  if (session.role !== "guru" && session.role !== "owner" && session.role !== "admin_sekolah") {
-    return apiError("Hanya guru yang bisa membuat pengumuman", 403);
-  }
+  const session = await requireRole(request, ["guru", "owner", "admin_sekolah"]);
 
   const ip = ipFromRequest(request);
   const rl = await checkRateLimit(`pengumuman-create:${ip}`, 10, 60000);

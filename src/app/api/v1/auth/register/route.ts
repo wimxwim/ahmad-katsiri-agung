@@ -23,6 +23,7 @@ const RegisterSchema = z.object({
   role: z.enum(["SISWA", "GURU", "ASISTEN_GURU", "ORANG_TUA"]).optional().default("SISWA"),
   kelas: z.string().max(10).optional(),
   noAbsen: z.string().max(5).optional(),
+  nis: z.string().max(30).optional(),
   portal: z.enum(["guru", "siswa"]).optional(),
   redirectTo: z.string().startsWith("/").optional(),
 });
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
       return apiError("VALIDATION_ERROR", "Data tidak valid", parsed.error.flatten(), 400);
     }
 
-    const { nama, password, kelas, noAbsen, role, portal: portalRaw, redirectTo } = parsed.data;
+    const { nama, password, kelas, noAbsen, nis, role, portal: portalRaw, redirectTo } = parsed.data;
     const portal = portalRaw ?? "siswa";
     const email = parsed.data.email.toLowerCase();
 
@@ -71,6 +72,7 @@ export async function POST(request: NextRequest) {
         role,
         kelas: kelas || null,
         noAbsen: noAbsen || null,
+        nis: nis || null,
       })
       .returning({ id: users.id, nama: users.nama, role: users.role, email: users.email });
 
@@ -81,6 +83,9 @@ export async function POST(request: NextRequest) {
       nama: user.nama,
       email: user.email,
     });
+
+    const { createRefreshToken } = await import("@/lib/refresh-token");
+    const refreshToken = await createRefreshToken(user.id);
 
     const target = (redirectTo && !redirectTo.startsWith("//"))
       ? redirectTo
@@ -97,6 +102,13 @@ export async function POST(request: NextRequest) {
       sameSite: "lax",
       path: "/",
       maxAge: SESSION_DURATION_SECONDS,
+    });
+    response.cookies.set("akal_refresh", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/api/v1/auth/refresh",
+      maxAge: 30 * 24 * 60 * 60,
     });
     await logAuthEvent("auth.register.success", {
       userId: user.id,

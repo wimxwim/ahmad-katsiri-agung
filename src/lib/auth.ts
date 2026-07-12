@@ -56,7 +56,7 @@ export const verifySession = cache(async (token: string): Promise<AuthResult<Ses
   if (hasES256Keys()) {
     try {
       const key = await getVerifyingKey();
-      const { payload } = await jwtVerify(token, key);
+      const { payload } = await jwtVerify(token, key, { audience: "akal-center-api" });
       return { success: true, data: payload as SesiPayload };
     } catch (err) {
       if (err instanceof errors.JWTExpired) {
@@ -69,7 +69,7 @@ export const verifySession = cache(async (token: string): Promise<AuthResult<Ses
     }
   }
   try {
-    const { payload } = await jwtVerify<SesiPayload>(token, hs256Secret(), { algorithms: ["HS256"] });
+    const { payload } = await jwtVerify<SesiPayload>(token, hs256Secret(), { algorithms: ["HS256"], audience: "akal-center-api" });
     return { success: true, data: payload };
   } catch (err) {
     if (err instanceof errors.JWTExpired) {
