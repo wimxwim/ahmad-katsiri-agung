@@ -6,7 +6,6 @@ import { MotionConfig } from "motion/react";
 import { QueryProvider } from "./QueryProvider";
 import { CmsProvider, type CmsData } from "./CmsProvider";
 import { SessionProvider } from "./SessionProvider";
-import { ToastProvider } from "@/components/ui/Toast";
 import { ServiceWorkerRegister } from "./ServiceWorkerRegister";
 import { antdTheme } from "@/lib/antd-theme";
 
@@ -23,14 +22,12 @@ export function Providers({
         <AntApp>
           <MotionConfig reducedMotion="user">
             <QueryProvider>
-              <ToastProvider>
-                <CmsProvider data={cmsData}>
-                  <SessionProvider>
-                    <ServiceWorkerRegister />
-                    {children}
-                  </SessionProvider>
-                </CmsProvider>
-              </ToastProvider>
+              <CmsProvider data={cmsData}>
+                <SessionProvider>
+                  <ServiceWorkerRegister />
+                  {children}
+                </SessionProvider>
+              </CmsProvider>
             </QueryProvider>
           </MotionConfig>
         </AntApp>

@@ -25,16 +25,16 @@ export function Navbar() {
   const session = useSession();
   const isLoading = useSessionLoading();
 
-  if (
-    pathname.startsWith("/masuk") ||
+  const isAuthPage = pathname.startsWith("/masuk") || pathname.startsWith("/daftar");
+  const isDashboard =
     pathname.startsWith("/guru") ||
     pathname.startsWith("/siswa") ||
     pathname.startsWith("/owner") ||
     pathname.startsWith("/admin-sekolah") ||
     pathname.startsWith("/orang-tua") ||
-    pathname.startsWith("/profil")
-  )
-    return null;
+    pathname.startsWith("/profil");
+
+  if (isAuthPage) return null;
 
   const navItems = navigation?.navbarItems ?? NAV_ITEMS_FALLBACK;
 
@@ -70,6 +70,30 @@ export function Navbar() {
       ]
     : [];
 
+  if (isDashboard) {
+    return (
+      <header className="fixed top-0 inset-x-0 z-50 flex justify-center pt-4 px-4">
+        <nav className="w-full max-w-5xl bg-glass backdrop-blur-2xl border border-border-precision rounded-full flex items-center justify-between px-6 h-14 shadow-glass">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-heading font-bold text-primary text-lg tracking-tight shrink-0"
+          >
+            <Image src="/logo.webp" alt="Logo PAI" width={28} height={28} className="object-contain" />
+            <span className="truncate">AKAL Center</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            {session && (
+              <span className="text-sm text-on-surface-variant font-medium max-w-[160px] truncate">
+                {session.nama?.split(" ")[0]}
+              </span>
+            )}
+            {session && <LogoutButton role={session.role} />}
+          </div>
+        </nav>
+      </header>
+    );
+  }
+
   return (
     <header className="fixed top-0 inset-x-0 z-50 flex justify-center pt-4 px-4">
       <nav className="w-full max-w-5xl bg-glass backdrop-blur-2xl border border-border-precision rounded-full flex items-center justify-between px-6 h-14 shadow-glass">
@@ -92,7 +116,7 @@ export function Navbar() {
             />
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
+          <div className="flex items-center gap-2">
             {session && (
               <>
                 <span className="hidden xl:flex px-3 py-2 text-sm text-on-surface-variant/70 font-medium max-w-[120px] truncate">
@@ -108,14 +132,14 @@ export function Navbar() {
               </>
             )}
             {!session && !isLoading && (
-              <>
-                <Link href="/masuk">
+              <div className="flex items-center gap-2">
+                <Link href="/masuk" className="hidden sm:inline-flex">
                   <Button size="small" className="rounded-full">Masuk</Button>
                 </Link>
                 <Link href="/daftar">
-                  <Button type="primary" size="small" className="rounded-full">Daftar Gratis</Button>
+                  <Button type="primary" size="small" className="rounded-full text-xs sm:text-sm">Daftar</Button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
           {session && (
