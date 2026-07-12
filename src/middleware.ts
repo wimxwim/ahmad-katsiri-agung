@@ -53,12 +53,14 @@ export async function middleware(request: NextRequest) {
 
   const scriptSrc = [
     "'self'",
+    "'unsafe-inline'",
     "https://www.youtube.com",
     "https://www.youtube-nocookie.com",
     "https://www.googletagmanager.com",
     "https://*.google-analytics.com",
     "https://va.vercel-scripts.com",
     "https://cdn.equran.id",
+    "https://static.cloudflareinsights.com",
   ].join(" ");
 
   const csp = [
