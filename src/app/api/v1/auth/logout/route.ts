@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { logAuthEvent } from "@/lib/auth-audit";
@@ -35,18 +36,18 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Revoke refresh tokens
     if (userId) {
       const { revokeUserRefreshTokens } = await import("@/lib/refresh-token");
-      revokeUserRefreshTokens(userId).catch(() => {});
+      await revokeUserRefreshTokens(userId);
     }
 
-    const response = NextResponse.json({ success: true, redirect: "/" });
-    response.cookies.delete(SESSION_COOKIE_NAME);
-    response.cookies.delete(REFRESH_COOKIE_NAME);
-    response.cookies.delete("akal_google_state");
-    response.cookies.delete("akal_google_portal");
-    response.cookies.delete("akal_google_return");
+    const response = NextResponse.json({ success: true, redirect: "/masuk" });
+    const cookieStore = await cookies();
+    cookieStore.delete(SESSION_COOKIE_NAME);
+    cookieStore.delete(REFRESH_COOKIE_NAME);
+    cookieStore.delete("akal_google_state");
+    cookieStore.delete("akal_google_portal");
+    cookieStore.delete("akal_google_return");
     return response;
   } catch (e) {
     console.error("Logout error:", e);

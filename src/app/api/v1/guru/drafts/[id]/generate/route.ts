@@ -70,19 +70,32 @@ export async function POST(
       return NextResponse.json({ success: false, error: "Teks hasil ekstraksi terlalu pendek. Upload ulang file." }, { status: 400 });
     }
 
-    void (async () => {
-      try {
-        await runGenerationFromText(id, text, session.userId!);
-      } catch (e) {
-        console.error("Generate error:", e);
-      } finally {
-        releaseConcurrent(`gen:${session.userId}`);
-      }
-    })();
-
     await appendEvent(`gen:${session.userId}`, "gen.queued", { generationId: id });
 
-    return NextResponse.json({ success: true, message: "AI generation dimulai. Draft siap dalam beberapa menit.", generationId: id });
+    try {
+      await runGenerationFromText(id, text, session.userId!);
+    } catch (e) {
+      console.error("Generate error:", e);
+    } finally {
+      releaseConcurrent(`gen:${session.userId}`);
+    }
+
+    const [updated] = await db
+      .select()
+      .from(aiGeneration)
+      .where(eq(aiGeneration.id, id))
+      .limit(1);
+
+    return NextResponse.json({
+      success: true,
+      message: updated?.status === "ready" ? "Draft siap direview." : "Draft diproses.",
+      generationId: id,
+      status: updated?.status,
+      materiStatus: updated?.materiStatus,
+      quizStatus: updated?.quizStatus,
+      soalStatus: updated?.soalStatus,
+      errorMessage: updated?.errorMessage,
+    });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Generate trigger error:", e);
