@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, RefreshCw, XCircle, Loader2, FileText, BookOpen, ClipboardList, Edit3, Save, Check } from "lucide-react";
+import { ArrowLeft, CheckCircle2, RefreshCw, XCircle, Loader2, FileText, BookOpen, ClipboardList, Edit3, Save, Check, ListChecks } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 import { csrfHeaders } from "@/lib/csrf";
@@ -12,6 +12,13 @@ interface GeneratedSoal {
   tipe: "PG" | "ISIAN" | "ESSAY";
   opsi?: Record<string, string>;
   kunci: string;
+}
+
+interface StructuredMateri {
+  ringkasan?: string;
+  pendahuluan?: string;
+  konten?: { judul: string; isi: string }[];
+  poinPenting?: string[];
 }
 
 interface DraftDetail {
@@ -42,6 +49,18 @@ interface DraftDetail {
 }
 
 type TabKey = "materi" | "quiz" | "soal";
+
+function parseStructuredMateri(raw: string): StructuredMateri | null {
+  try {
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === "object" && (parsed.konten || parsed.pendahuluan || parsed.poinPenting)) {
+      return parsed as StructuredMateri;
+    }
+  } catch {
+    // not JSON — old format flat text
+  }
+  return null;
+}
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   not_generated: { label: "Belum ada", color: "bg-surface text-on-surface-variant" },
@@ -186,6 +205,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
   const canClose = allApproved && isReady;
 
   const materiKonten = draft.materiEditedKonten ?? draft.materiKonten ?? "";
+  const structuredMateri = parseStructuredMateri(materiKonten);
   const quizSoal = draft.quizEditedSoal ?? draft.quizSoal ?? [];
   const soalItems = draft.soalEditedItems ?? draft.soalItems ?? [];
 
@@ -314,9 +334,47 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                       {draft.materiJudul}
                     </h2>
                   )}
-                  <p className="text-sm text-on-surface-variant whitespace-pre-wrap leading-relaxed">
-                    {materiKonten || "Belum ada materi."}
-                  </p>
+                  {structuredMateri ? (
+                    <div className="space-y-4">
+                      {structuredMateri.ringkasan && (
+                        <div className="p-3 rounded-xl bg-primary/5 border border-primary/10">
+                          <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-1">Ringkasan</p>
+                          <p className="text-sm text-on-surface leading-relaxed">{structuredMateri.ringkasan}</p>
+                        </div>
+                      )}
+                      {structuredMateri.pendahuluan && (
+                        <div>
+                          <p className="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Pendahuluan</p>
+                          <p className="text-sm text-on-surface-variant leading-relaxed">{structuredMateri.pendahuluan}</p>
+                        </div>
+                      )}
+                      {structuredMateri.konten?.map((section, i) => (
+                        <div key={i}>
+                          <h3 className="text-sm font-bold text-on-surface mb-1">{section.judul}</h3>
+                          <p className="text-sm text-on-surface-variant leading-relaxed">{section.isi}</p>
+                        </div>
+                      ))}
+                      {structuredMateri.poinPenting && structuredMateri.poinPenting.length > 0 && (
+                        <div className="p-3 rounded-xl bg-tertiary/5 border border-tertiary/10">
+                          <p className="text-xs font-semibold text-tertiary uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <ListChecks className="w-3.5 h-3.5" /> Poin Penting
+                          </p>
+                          <ul className="space-y-1">
+                            {structuredMateri.poinPenting.map((poin, i) => (
+                              <li key={i} className="text-sm text-on-surface-variant flex items-start gap-2">
+                                <span className="text-tertiary font-bold shrink-0">{i + 1}.</span>
+                                <span>{poin}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-on-surface-variant whitespace-pre-wrap leading-relaxed">
+                      {materiKonten || "Belum ada materi."}
+                    </p>
+                  )}
                   <div className="mt-4 pt-4 border-t border-border-precision/40 flex flex-wrap gap-2">
                     <button
                       onClick={startEditMateri}

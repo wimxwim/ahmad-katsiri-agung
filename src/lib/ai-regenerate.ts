@@ -7,9 +7,14 @@ import { parseMateriSafe } from "@/lib/ai-sanitizer";
 import { appendEvent } from "@/lib/event-store";
 import { incrementUsage } from "@/lib/quota-guard";
 
-const MATERI_SYSTEM = `Kamu adalah asisten pengajar Indonesia. Tugasmu: menerima teks materi mentah dan menghasilkan rangkuman MATERI untuk siswa. ATURAN:
-1. Output HARUS JSON valid dengan field "judul" (string) dan "konten" (string).
-2. Konten maksimal 1500 karakter, bahasa Indonesia, gaya untuk siswa SMP/SMA.
+const MATERI_SYSTEM = `Kamu adalah asisten pengajar PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi mentah dan menghasilkan MATERI TERSTRUKTUR untuk siswa SMP/MTs. ATURAN:
+1. Output HARUS JSON valid dengan field:
+   - "judul": string (judul materi, singkat dan jelas, maks 100 karakter)
+   - "ringkasan": string (ringkasan 1-2 kalimat, maks 200 karakter)
+   - "pendahuluan": string (paragraf pengantar, 2-4 kalimat)
+   - "konten": array of { "judul": string, "isi": string } (3-5 bagian, tiap isi 2-4 kalimat)
+   - "poinPenting": array of string (3-5 poin kunci)
+2. Bahasa Indonesia, gaya untuk siswa SMP/MTs.
 3. JANGAN masukkan HTML, script, atau markup apapun.
 4. JANGAN masukkan instruksi, disclaimer, atau komentar di luar JSON.
 5. Jangan sebut "Berikut adalah" atau "Ini rangkuman" — langsung tulis isi.
@@ -91,7 +96,12 @@ export async function regenerateMateriOnly(generationId: string): Promise<void> 
       status: "ready",
       materiStatus: "draft",
       materiJudul: materiParsed.judul,
-      materiKonten: materiParsed.konten,
+      materiKonten: JSON.stringify({
+        ringkasan: materiParsed.ringkasan,
+        pendahuluan: materiParsed.pendahuluan,
+        konten: materiParsed.konten,
+        poinPenting: materiParsed.poinPenting,
+      }),
       materiEditedKonten: null,
       materiApprovedAt: null,
       tokenInput: (gen.tokenInput || 0) + materiRes.tokensIn,

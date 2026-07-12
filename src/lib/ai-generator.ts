@@ -27,33 +27,40 @@ export interface GenerationResult {
   modelName: string;
 }
 
-const MATERI_SYSTEM = `Kamu adalah asisten pengajar Indonesia. Tugasmu: menerima teks materi mentah dan menghasilkan rangkuman MATERI untuk siswa. ATURAN:
-1. Output HARUS JSON valid dengan field "judul" (string) dan "konten" (string).
-2. Konten maksimal 1500 karakter, bahasa Indonesia, gaya untuk siswa SMP/SMA.
+const MATERI_SYSTEM = `Kamu adalah asisten pengajar PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi mentah dan menghasilkan MATERI TERSTRUKTUR untuk siswa SMP/MTs. ATURAN:
+1. Output HARUS JSON valid dengan field:
+   - "judul": string (judul materi, singkat dan jelas, maks 100 karakter)
+   - "ringkasan": string (ringkasan 1-2 kalimat, maks 200 karakter)
+   - "pendahuluan": string (paragraf pengantar, 2-4 kalimat)
+   - "konten": array of { "judul": string, "isi": string } (3-5 bagian, tiap isi 2-4 kalimat)
+   - "poinPenting": array of string (3-5 poin kunci)
+2. Bahasa Indonesia, gaya untuk siswa SMP/MTs.
 3. JANGAN masukkan HTML, script, atau markup apapun.
 4. JANGAN masukkan instruksi, disclaimer, atau komentar di luar JSON.
 5. Jangan sebut "Berikut adalah" atau "Ini rangkuman" — langsung tulis isi.
 6. JANGAN gunakan data siswa asli (nama, NISN, nilai) dalam output.
 7. Data yang dikirim HANYA untuk generasi konten — tidak untuk training model.`;
 
-const QUIZ_SYSTEM = `Kamu adalah penulis soal Indonesia. Tugasmu: menerima teks materi dan menghasilkan 5 soal PILIHAN GANDA berkualitas. ATURAN:
+const QUIZ_SYSTEM = `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan 5 soal PILIHAN GANDA berkualitas untuk kuis singkat. ATURAN:
 1. Output HARUS JSON valid dengan field "judul" (string) dan "soal" (array 5 item).
 2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
 3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
-4. Bahasa Indonesia, sesuai materi.
-5. Tidak ada markup, tidak ada komentar di luar JSON.
-6. JANGAN gunakan data siswa asli dalam soal.
-7. Data dikirim HANYA untuk generasi konten — tidak untuk training model.`;
-
-const SOAL_SYSTEM = `Kamu adalah penulis soal Indonesia. Tugasmu: menerima teks materi dan menghasilkan 5 soal CAMPURAN (2 PG, 2 isian, 1 essay). ATURAN:
-1. Output HARUS JSON valid dengan field "soal" (array 5 item).
-2. PG: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": ..., "B": ..., "C": ..., "D": ...}, "kunci": "A"|"B"|"C"|"D" }
-3. Isian: { "pertanyaan": string, "tipe": "ISIAN", "kunci": string }
-4. Essay: { "pertanyaan": string, "tipe": "ESSAY", "kunci": "kriteria jawaban" }
-5. Kunci PG HARUS salah satu opsi yang ada.
-6. Tidak ada markup. Tidak ada komentar di luar JSON.
+4. Buat distraktor (opsi salah) yang masuk akal dan menantang.
+5. Bahasa Indonesia, sesuai materi, untuk siswa SMP/MTs.
+6. Tidak ada markup, tidak ada komentar di luar JSON.
 7. JANGAN gunakan data siswa asli dalam soal.
 8. Data dikirim HANYA untuk generasi konten — tidak untuk training model.`;
+
+const SOAL_SYSTEM = `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan 10 soal PILIHAN GANDA berkualitas untuk latihan siswa SMP/MTs. ATURAN:
+1. Output HARUS JSON valid dengan field "soal" (array 10 item).
+2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
+3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
+4. Buat distraktor (opsi salah) yang masuk akal dan menantang — jangan terlalu mudah.
+5. Variasikan tingkat kesulitan: 3 mudah, 4 sedang, 3 sulit.
+6. Bahasa Indonesia, sesuai materi, untuk siswa SMP/MTs.
+7. Tidak ada markup, tidak ada komentar di luar JSON.
+8. JANGAN gunakan data siswa asli dalam soal.
+9. Data dikirim HANYA untuk generasi konten — tidak untuk training model.`;
 
 export class GenerationTimeoutError extends Error {
   constructor(public readonly stage: "extract" | "ai" | "ai-materi" | "ai-quiz" | "ai-soal" | "save") {
@@ -108,13 +115,12 @@ function fallbackAiResults(sourceText: string): [ChatResult, ChatResult, ChatRes
   const sentences = sentencePool(sourceText);
   const topic = fallbackTopic(sourceText);
   const basis = sentences.length > 0 ? sentences : [topic];
-  const konten = basis.slice(0, 5).join(" ").slice(0, 1500);
   const quizItems = Array.from({ length: 5 }, (_, index) => {
     const seed = basis[index % basis.length];
     const kunci = ["A", "B", "C", "D", "A"][index];
     return {
       pertanyaan: fallbackQuestion(seed, index),
-      tipe: "PG",
+      tipe: "PG" as const,
       opsi: {
         A: seed.slice(0, 180) || "Memahami inti materi",
         B: "Mengabaikan pesan utama materi",
@@ -124,16 +130,34 @@ function fallbackAiResults(sourceText: string): [ChatResult, ChatResult, ChatRes
       kunci,
     };
   });
-  const soalItems = [
-    quizItems[0],
-    quizItems[1],
-    { pertanyaan: `Tuliskan satu nilai utama dari materi ${topic}.`, tipe: "ISIAN", kunci: "Menjelaskan nilai utama sesuai materi" },
-    { pertanyaan: `Sebutkan contoh penerapan materi ${topic} dalam kehidupan sehari-hari.`, tipe: "ISIAN", kunci: "Contoh penerapan yang relevan" },
-    { pertanyaan: `Jelaskan hikmah mempelajari materi ${topic}.`, tipe: "ESSAY", kunci: "Jawaban memuat pemahaman, hikmah, dan contoh sikap" },
-  ];
+  const soalItems = Array.from({ length: 10 }, (_, index) => {
+    const seed = basis[index % basis.length];
+    const kunci = ["A", "B", "C", "D"][index % 4];
+    return {
+      pertanyaan: fallbackQuestion(seed, index),
+      tipe: "PG" as const,
+      opsi: {
+        A: seed.slice(0, 180) || "Memahami inti materi",
+        B: "Mengabaikan pesan utama materi",
+        C: "Menghafal tanpa memahami makna",
+        D: "Menunda penerapan materi dalam kehidupan",
+      },
+      kunci,
+    };
+  });
+  const materiStructured = {
+    judul: topic,
+    ringkasan: basis[0]?.slice(0, 200) || topic,
+    pendahuluan: basis.slice(0, 2).join(" ") || topic,
+    konten: basis.slice(0, 3).map((s, i) => ({
+      judul: `Bagian ${i + 1}`,
+      isi: s.slice(0, 500),
+    })),
+    poinPenting: basis.slice(0, 3).map((s) => s.slice(0, 150)),
+  };
   return [
-    { content: JSON.stringify({ judul: topic, konten: konten || topic }), tokensIn: 0, tokensOut: 0, model: "local-fallback" },
-    { content: JSON.stringify({ judul: `Quiz ${topic}`, soal: quizItems }), tokensIn: 0, tokensOut: 0, model: "local-fallback" },
+    { content: JSON.stringify(materiStructured), tokensIn: 0, tokensOut: 0, model: "local-fallback" },
+    { content: JSON.stringify({ judul: `Kuis ${topic}`, soal: quizItems }), tokensIn: 0, tokensOut: 0, model: "local-fallback" },
     { content: JSON.stringify({ soal: soalItems }), tokensIn: 0, tokensOut: 0, model: "local-fallback" },
   ];
 }
@@ -276,7 +300,12 @@ export async function runGeneration(
           quizStatus: "draft",
           soalStatus: soalParsed ? "draft" : "not_generated",
           materiJudul: materiParsed.judul,
-          materiKonten: materiParsed.konten,
+          materiKonten: JSON.stringify({
+            ringkasan: materiParsed.ringkasan,
+            pendahuluan: materiParsed.pendahuluan,
+            konten: materiParsed.konten,
+            poinPenting: materiParsed.poinPenting,
+          }),
           quizJudul: quizParsed.judul,
           quizSoal: quizParsed.soal,
           soalItems: soalParsed?.soal ?? [],
@@ -331,8 +360,7 @@ export async function runGeneration(
       modelName: u.modelName || getModelName(),
     };
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Generation gagal";
-    await db
+    const message = e instanceof Error ? e.message : "Generation gagal";    await db
       .update(aiGeneration)
       .set({ status: "failed", errorMessage: message.slice(0, 500), updatedAt: new Date() })
       .where(eq(aiGeneration.id, generationId));
@@ -426,7 +454,12 @@ export async function runGenerationFromText(
       quizStatus: "draft",
       soalStatus: soalParsed ? "draft" : "not_generated",
       materiJudul: materiParsed.judul,
-      materiKonten: materiParsed.konten,
+      materiKonten: JSON.stringify({
+        ringkasan: materiParsed.ringkasan,
+        pendahuluan: materiParsed.pendahuluan,
+        konten: materiParsed.konten,
+        poinPenting: materiParsed.poinPenting,
+      }),
       quizJudul: quizParsed.judul,
       quizSoal: quizParsed.soal,
       soalItems: soalParsed?.soal ?? [],

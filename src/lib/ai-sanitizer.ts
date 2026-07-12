@@ -96,7 +96,21 @@ const GeneratedQuizSchema = GeneratedSoalSchema;
 
 export const MateriResultSchema = z.object({
   judul: z.string().transform((v) => cleanText(v, SAFE_TEXT_LIMITS.judul)).pipe(z.string().min(3)),
-  konten: z.string().transform((v) => cleanText(v, SAFE_TEXT_LIMITS.konten)).pipe(z.string().min(20)),
+  ringkasan: z.string().transform((v) => cleanText(v, 300)).pipe(z.string().min(10)),
+  pendahuluan: z.string().transform((v) => cleanText(v, 2000)).pipe(z.string().min(20)),
+  konten: z
+    .array(
+      z.object({
+        judul: z.string().transform((v) => cleanText(v, 200)),
+        isi: z.string().transform((v) => cleanText(v, 2000)).pipe(z.string().min(20)),
+      }),
+    )
+    .min(1)
+    .max(10),
+  poinPenting: z
+    .array(z.string().transform((v) => cleanText(v, 300)))
+    .min(1)
+    .max(10),
 });
 
 export const QuizResultSchema = z.object({
