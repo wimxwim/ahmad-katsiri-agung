@@ -13,6 +13,27 @@ const PUBLIC_PREFIXES = [
   "/api/v1/payment/webhook",
 ];
 
+const PUBLIC_PATHS = new Set([
+  "/",
+  "/fitur",
+  "/harga",
+  "/tentang",
+  "/kursus",
+  "/quran",
+  "/game",
+  "/pembayaran",
+  "/kebijakan-privasi",
+  "/syarat-layanan",
+  "/panduan-ai",
+  "/profil",
+  "/verify",
+  "/undang",
+  "/icon.png",
+  "/icon.svg",
+  "/opengraph-image.png",
+  "/sitemap.xml",
+]);
+
 const GURU_PREFIXES = ["/guru", "/pendidik"];
 const SISWA_PREFIXES = ["/siswa"];
 const OWNER_PREFIXES = ["/owner"];
@@ -77,9 +98,12 @@ export async function middleware(request: NextRequest) {
     "camera=(), microphone=(), geolocation=()"
   );
 
-  const isPublic = PUBLIC_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
-  );
+  const isPublic =
+    PUBLIC_PATHS.has(pathname) ||
+    PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+    pathname.startsWith("/kursus/") ||
+    pathname.startsWith("/verify/") ||
+    pathname.startsWith("/undang/");
   if (isPublic) return response;
 
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
