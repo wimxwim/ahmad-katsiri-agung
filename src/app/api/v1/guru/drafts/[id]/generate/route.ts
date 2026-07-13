@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { aiGeneration, fileMateri, eventStore } from "@/lib/db/schema";
 import { eq, and, gte, sql } from "drizzle-orm";
 import { runGenerationFromText } from "@/lib/ai-generator";
-import { checkGenerateBalance, deductGenerateCost, getBalance, refundBalance, getGenerateCost } from "@/lib/token-service";
+import { checkGenerateBalance, deductGenerateCost, getBalance, refundBalance, getGenerateCost, InsufficientBalanceError } from "@/lib/token-service";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import {
   checkRateLimit,
@@ -116,6 +116,15 @@ export async function POST(
       await deductGenerateCost(session.userId!);
       await runGenerationFromText(id, text, session.userId!, soalCount, quizCount);
     } catch (e) {
+      if (e instanceof InsufficientBalanceError) {
+        releaseConcurrent(`gen:${session.userId}`);
+        return NextResponse.json({
+          success: false,
+          error: "Saldo token tidak cukup. Top-up sekarang?",
+          balance: e.currentBalance,
+          required: e.required,
+        }, { status: 402 });
+      }
       const errMsg = e instanceof Error ? e.message : String(e);
       console.error("Generate error:", errMsg);
       if (errMsg.includes("timeout") || errMsg.includes("Timeout")) {

@@ -11,17 +11,19 @@ import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import { validateCsrf } from "@/lib/csrf-server";
-import { checkGenerateBalance, deductGenerateCost, getBalance, refundBalance, getGenerateCost } from "@/lib/token-service";
+import { checkGenerateBalance, deductGenerateCost, getBalance, refundBalance, getGenerateCost, InsufficientBalanceError } from "@/lib/token-service";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  let sessionUserId: string | null = null;
   try {
     const csrfError = validateCsrf(request);
     if (csrfError) return csrfError;
 
     const session = await requireGuru(request);
+    sessionUserId = session.userId;
 
     const { id } = await params;
 
@@ -120,6 +122,15 @@ export async function POST(
         { success: false, error: e.message, quota: { limit: e.limitValue, used: e.currentUsage } },
         { status: 429 },
       );
+    }
+    if (e instanceof InsufficientBalanceError) {
+      releaseConcurrent(`gen:${sessionUserId}`);
+      return NextResponse.json({
+        success: false,
+        error: "Saldo token tidak cukup. Top-up sekarang?",
+        balance: e.currentBalance,
+        required: e.required,
+      }, { status: 402 });
     }
     console.error("Regenerate error:", e);
     const msg = e instanceof Error ? e.message : "Terjadi kesalahan server";

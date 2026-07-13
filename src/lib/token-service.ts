@@ -1,8 +1,19 @@
 import { db } from "@/lib/db";
 import { tokenBalances } from "@/lib/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and, gte } from "drizzle-orm";
 
 const GENERATE_COST = 132;
+
+export class InsufficientBalanceError extends Error {
+  constructor(
+    message: string,
+    public currentBalance: number,
+    public required: number,
+  ) {
+    super(message);
+    this.name = "InsufficientBalanceError";
+  }
+}
 
 export interface TokenBalance {
   userId: string;
@@ -43,14 +54,29 @@ export async function checkGenerateBalance(userId: string): Promise<boolean> {
 }
 
 export async function deductBalance(userId: string, amount: number): Promise<TokenBalance> {
-  await db
+  const [result] = await db
     .update(tokenBalances)
     .set({
       balance: sql`${tokenBalances.balance} - ${amount}`,
       totalSpent: sql`${tokenBalances.totalSpent} + ${amount}`,
       updatedAt: new Date(),
     })
-    .where(eq(tokenBalances.userId, userId));
+    .where(
+      and(
+        eq(tokenBalances.userId, userId),
+        gte(tokenBalances.balance, amount),
+      ),
+    )
+    .returning({ balance: tokenBalances.balance });
+
+  if (!result) {
+    const bal = await getBalance(userId);
+    throw new InsufficientBalanceError(
+      `Saldo tidak cukup. Butuh Rp${amount}, saldo sekarang Rp${bal.balance}.`,
+      bal.balance,
+      amount,
+    );
+  }
 
   return getBalance(userId);
 }
