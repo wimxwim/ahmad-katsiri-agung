@@ -3,7 +3,7 @@ import { jwtVerify, errors } from "jose";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { siswaKursus, kursus } from "@/lib/db/schema";
+import { siswaKursus, kursus, inviteTokens } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { hs256Secret } from "@/lib/auth-keys";
@@ -12,6 +12,7 @@ interface InvitePayload {
   kursusId: string;
   guruId: string;
   action: string;
+  jti?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -46,6 +47,12 @@ export async function POST(request: NextRequest) {
     if (k.statusPublikasi !== "PUBLIK") return apiError("Kursus belum dipublikasikan oleh guru", 400);
     if (k.guruId !== payload.guruId) return apiError("Link undangan sudah tidak berlaku (kursus telah dialihkan)", 400);
 
+    const [inviteRow] = await db
+      .select({ id: inviteTokens.id })
+      .from(inviteTokens)
+      .where(eq(inviteTokens.jti, payload.jti!))
+      .limit(1);
+
     const existing = await db
       .select({ id: siswaKursus.id })
       .from(siswaKursus)
@@ -66,6 +73,7 @@ export async function POST(request: NextRequest) {
         siswaId: session.userId!,
         kursusId: k.id,
         status: "AKTIF",
+        inviteTokenId: inviteRow?.id ?? null,
       });
     } catch (e: unknown) {
       const pgErr = e as { code?: string };

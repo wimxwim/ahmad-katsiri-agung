@@ -5,7 +5,7 @@ import { verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { hs256Secret } from "@/lib/auth-keys";
 import { db } from "@/lib/db";
-import { siswaKursus, kursus } from "@/lib/db/schema";
+import { siswaKursus, kursus, inviteTokens } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { AlertTriangle, LogOut } from "lucide-react";
 import Link from "next/link";
@@ -14,6 +14,7 @@ interface InvitePayload {
   kursusId: string;
   guruId: string;
   action: string;
+  jti?: string;
 }
 
 export default async function UndangPage({
@@ -111,6 +112,12 @@ export default async function UndangPage({
     redirect("/siswa/beranda?error=invite_kursus_dialihkan");
   }
 
+  const [inviteRow] = await db
+    .select({ id: inviteTokens.id })
+    .from(inviteTokens)
+    .where(eq(inviteTokens.jti, payload.jti!))
+    .limit(1);
+
   const existing = await db
     .select({ id: siswaKursus.id })
     .from(siswaKursus)
@@ -123,6 +130,7 @@ export default async function UndangPage({
         siswaId: session.userId,
         kursusId: k.id,
         status: "AKTIF",
+        inviteTokenId: inviteRow?.id ?? null,
       });
     } catch (e: unknown) {
       const pgErr = e as { code?: string };

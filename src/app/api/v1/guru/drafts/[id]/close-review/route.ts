@@ -9,6 +9,7 @@ import {
   quizPublished,
   soalPublished,
   kursus,
+  fileMateri,
 } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
@@ -177,6 +178,13 @@ export async function POST(
       generationId: id,
       fullyApproved: allApproved,
     });
+
+    if (allApproved && row.fileMateriId) {
+      await db
+        .update(fileMateri)
+        .set({ extractionText: null, updatedAt: new Date() })
+        .where(eq(fileMateri.id, row.fileMateriId));
+    }
 
     return NextResponse.json({
       success: true,

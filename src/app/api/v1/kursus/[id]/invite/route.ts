@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { kursus } from "@/lib/db/schema";
+import { kursus, inviteTokens } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { hs256Secret } from "@/lib/auth-keys";
@@ -32,6 +32,7 @@ export async function POST(
       .limit(1);
     if (!k) return apiError("Kursus tidak ditemukan", 404);
 
+    const tokenJti = randomUUID();
     const token = await new SignJWT({
       kursusId: k.id,
       guruId: k.guruId,
@@ -40,13 +41,24 @@ export async function POST(
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
       .setExpirationTime("24h")
-      .setJti(randomUUID())
+      .setJti(tokenJti)
       .sign(hs256Secret());
+
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const [saved] = await db
+      .insert(inviteTokens)
+      .values({
+        kursusId: k.id,
+        guruId: session.userId,
+        jti: tokenJti,
+        expiresAt,
+      })
+      .returning();
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
     const inviteLink = `${baseUrl}/undang?token=${token}`;
 
-    return NextResponse.json({ data: { token, inviteLink, kursusJudul: k.judul } });
+    return NextResponse.json({ data: { token, inviteLink, kursusJudul: k.judul, inviteTokenId: saved.id } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Kursus invite error:", e);

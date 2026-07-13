@@ -43,7 +43,7 @@ export async function PATCH(
       return apiError("Anda tidak punya akses ke kursus ini", 403);
     }
 
-    const publishedAt = parsed.data.status === "PUBLIK" ? new Date() : null;
+    const publishedAt = parsed.data.status === "PUBLIK" ? new Date() : parsed.data.status === "ARSIP" ? existing.publishedAt : null;
     const where = session.role === "owner"
       ? eq(kursus.id, id)
       : and(eq(kursus.id, id), eq(kursus.guruId, session.userId));

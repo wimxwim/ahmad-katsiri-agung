@@ -158,6 +158,7 @@ export const siswaKursus = pgTable(
       .notNull()
       .references(() => kursus.id, { onDelete: "cascade" }),
     status: varchar("status", { length: 20 }).notNull().default("AKTIF"),
+    inviteTokenId: uuid("invite_token_id"),
     tanggalDaftar: timestamp("tanggal_daftar", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -167,6 +168,22 @@ export const siswaKursus = pgTable(
     index("siswa_kursus_kursus_id_idx").on(table.kursusId),
     index("siswa_kursus_status_idx").on(table.status),
   ]
+);
+
+export const inviteTokens = pgTable(
+  "invite_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+    kursusId: uuid("kursus_id").notNull().references(() => kursus.id, { onDelete: "cascade" }),
+    guruId: uuid("guru_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    jti: varchar("jti", { length: 255 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (t) => ({
+    kursusIdx: index("invite_tokens_kursus_idx").on(t.kursusId),
+    guruIdx: index("invite_tokens_guru_idx").on(t.guruId),
+  }),
 );
 
 export const soal = pgTable(
