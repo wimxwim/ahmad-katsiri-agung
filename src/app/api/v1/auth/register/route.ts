@@ -21,7 +21,7 @@ const RegisterSchema = z.object({
   nama: z.string().min(2).max(100),
   email: z.string().email().max(255),
   password: z.string().min(8).max(128),
-  role: z.enum(["SISWA", "GURU", "ASISTEN_GURU", "ORANG_TUA"]).optional().default("SISWA"),
+  role: z.enum(["SISWA", "ORANG_TUA"]).optional().default("SISWA"),
   kelas: z.string().max(10).optional(),
   noAbsen: z.string().max(5).optional(),
   nis: z.string().max(30).optional(),

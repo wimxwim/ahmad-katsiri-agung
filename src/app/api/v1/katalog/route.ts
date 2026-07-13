@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .offset(offset);
 
-    return NextResponse.json({ data: rows, limit, offset });
+    return NextResponse.json({ data: rows, limit, offset }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
   } catch (e) {
     console.error("Katalog error:", e);
     return apiError("Terjadi kesalahan server", 500);

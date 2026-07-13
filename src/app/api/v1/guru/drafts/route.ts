@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       .orderBy(desc(aiGeneration.createdAt))
       .limit(50);
 
-    return NextResponse.json({ data: rows });
+    return NextResponse.json({ data: rows }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Drafts list error:", e);

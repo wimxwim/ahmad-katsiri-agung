@@ -74,14 +74,14 @@ export default function KatalogKursusPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: EASE_CURVE }}
       >
-        <div className="text-center mb-10">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+        <div className="text-left mb-10">
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
             <BookOpen className="w-8 h-8 text-primary" />
           </div>
           <h1 className="font-heading font-bold text-3xl text-on-surface mb-3">
             Katalog Kursus
           </h1>
-          <p className="text-on-surface-variant max-w-lg mx-auto text-sm">
+          <p className="text-on-surface-variant max-w-lg text-sm">
             Jelajahi kursus yang tersedia. Setiap kursus dibuat dan dipublikasikan oleh guru secara mandiri.
           </p>
         </div>

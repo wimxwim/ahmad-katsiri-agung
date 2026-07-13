@@ -99,6 +99,7 @@ export default function PembayaranPage() {
               alt="QRIS GoPay"
               width={280}
               height={280}
+              sizes="(max-width: 768px) 100vw, 50vw"
               className="rounded-xl"
               priority
             />
@@ -122,7 +123,7 @@ export default function PembayaranPage() {
               <div className="border-2 border-dashed border-border-precision rounded-2xl p-6 text-center hover:border-primary/30 transition-colors">
                 {preview ? (
                   <div className="space-y-3">
-                    <Image src={preview} alt="Preview" width={200} height={200} className="rounded-xl mx-auto max-h-48 object-cover" />
+                    <Image src={preview} alt="Preview" width={200} height={200} sizes="(max-width: 768px) 100vw, 50vw" className="rounded-xl mx-auto max-h-48 object-cover" />
                     <button type="button" onClick={() => { setFile(null); setPreview(null); }} className="text-xs text-primary hover:underline">Ganti file</button>
                   </div>
                 ) : (

@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         totalMateri: 0,
         totalSelesai: 0,
         terdaftar: false,
-      });
+      }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
     }
 
     const kursusList = await db
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
       terdaftar: true,
       limit,
       offset,
-    });
+    }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Feed siswa error:", e);

@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
       query = query.where(eq(kursus.slug, slug));
     }
     const data = await query.orderBy(desc(kursus.createdAt)).limit(limit).offset(offset);
-    return NextResponse.json({ data, limit, offset });
+    return NextResponse.json({ data, limit, offset }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
   } catch (e) {
     console.error("Kursus GET error:", e);
     return apiError("Terjadi kesalahan server", 500);

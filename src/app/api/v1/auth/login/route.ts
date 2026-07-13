@@ -106,9 +106,6 @@ export async function POST(request: NextRequest) {
         ip,
         portal: portalIntent || "unknown",
       });
-      if (result.error) {
-        return apiError(result.error, 500);
-      }
       return apiError("Email atau kata sandi salah", 401);
     }
 

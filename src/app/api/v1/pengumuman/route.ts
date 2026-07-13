@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     .orderBy(desc(pengumuman.isPinned), desc(pengumuman.publishedAt))
     .limit(50);
 
-  return NextResponse.json(rows.map(({ konten: _, ...rest }) => rest));
+  return NextResponse.json({ data: rows.map(({ konten: _, ...rest }) => rest) }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
   } catch (e) {
     console.error("Pengumuman GET error:", e);
     return apiError("Terjadi kesalahan server", 500);

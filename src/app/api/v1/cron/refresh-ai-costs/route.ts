@@ -6,7 +6,7 @@ import { apiError } from "@/lib/api-response";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (!secret) {
     return apiError("CRON_SECRET not configured", 500);
