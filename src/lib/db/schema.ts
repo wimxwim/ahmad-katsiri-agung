@@ -420,6 +420,7 @@ export const fileMateri = pgTable(
     linkAkses: text("link_akses").notNull(),
     status: varchar("status", { length: 20 }).notNull().default("uploaded"),
     extractionText: text("extraction_text"),
+    kategori: varchar("kategori", { length: 20 }).notNull().default("materi"),
     guruId: uuid("guru_id").references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -1048,6 +1049,22 @@ export const googleDriveAuthRelations = relations(googleDriveAuth, ({ one }) => 
 export const teacherReadinessSnapshotRelations = relations(teacherReadinessSnapshot, ({ one }) => ({
   guru: one(users, {
     fields: [teacherReadinessSnapshot.guruId],
+    references: [users.id],
+  }),
+}));
+
+export const tokenBalances = pgTable("token_balances", {
+  userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  balance: integer("balance").notNull().default(0),
+  totalTopup: integer("total_topup").notNull().default(0),
+  totalSpent: integer("total_spent").notNull().default(0),
+  lastTopupAt: timestamp("last_topup_at", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+});
+
+export const tokenBalancesRelations = relations(tokenBalances, ({ one }) => ({
+  user: one(users, {
+    fields: [tokenBalances.userId],
     references: [users.id],
   }),
 }));

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimit, checkRateLimitPerUser, ipFromRequest } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf-server";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { db } from "@/lib/db";
 import { payments } from "@/lib/db/schema";
@@ -17,6 +18,9 @@ const SubmitSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const session = await requireSiswa(request);
 
     const ip = ipFromRequest(request);

@@ -7,6 +7,7 @@ import { sanitizeText } from "@/lib/sanitize";
 import { kelas } from "@/lib/db/schema";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
+import { validateCsrf } from "@/lib/csrf-server";
 
 const CreateKelasSchema = z.object({
   nama: z.string().min(1).max(50),
@@ -37,6 +38,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const session = await requireGuru(request);
 
     const ip = ipFromRequest(request);

@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { aiGeneration } from "@/lib/db/schema";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
+import { validateCsrf } from "@/lib/csrf-server";
 
 const EditSchema = z.object({
   judul: z.string().min(1).max(200).optional(),
@@ -18,6 +19,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const session = await requireGuru(request);
 
     const { id } = await params;

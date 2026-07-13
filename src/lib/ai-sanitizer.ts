@@ -118,7 +118,7 @@ export const QuizResultSchema = z.object({
   soal: z
     .array(GeneratedQuizSchema)
     .min(1)
-    .max(20)
+    .max(15)
     .transform((arr) =>
       arr.map((s) => {
         if (s.tipe === "PG" && s.opsi) {
@@ -139,7 +139,7 @@ export const SoalResultSchema = z.object({
   soal: z
     .array(GeneratedSoalSchema)
     .min(1)
-    .max(20)
+    .max(35)
     .transform((arr) =>
       arr.map((s) => {
         if (s.tipe === "PG" && s.opsi) {

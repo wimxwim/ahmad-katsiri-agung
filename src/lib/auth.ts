@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { SignJWT, jwtVerify, errors, type JWTPayload } from "jose";
-import { randomUUID } from "crypto";
+
 import type { SesiPayload } from "./session";
 import {
   getSigningKey,
@@ -48,7 +48,7 @@ export async function signSession(payload: Omit<SesiPayload, "iss" | "exp" | "ia
     .setIssuedAt()
     .setExpirationTime("8h")
     .setAudience("akal-center-api")
-    .setJti(randomUUID())
+    .setJti(crypto.randomUUID())
     .sign(key);
 }
 

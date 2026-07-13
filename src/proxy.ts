@@ -48,7 +48,7 @@ const ROLE_ROUTE_MAP: Record<string, string[]> = {
   orang_tua: ORANG_TUA_PREFIXES,
 };
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const scriptSrc = [
@@ -82,6 +82,17 @@ export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
+
+  const existingCsrf = request.cookies.get("__Host-psrf")?.value;
+  const csrfToken = existingCsrf || crypto.randomUUID();
+  response.cookies.set("__Host-psrf", csrfToken, {
+    httpOnly: false,
+    secure: true,
+    sameSite: "strict",
+    path: "/",
+    maxAge: 86400,
+  });
+
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set(
     "Strict-Transport-Security",
@@ -94,6 +105,16 @@ export async function middleware(request: NextRequest) {
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=()"
   );
+
+  const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+  const CSRF_EXEMPT = ["/api/v1/auth", "/api/v1/payment/webhook", "/api/health", "/api/readyz", "/api/csp-report", "/api/keystatic"];
+  if (!SAFE_METHODS.has(request.method) && !CSRF_EXEMPT.some((p) => pathname.startsWith(p))) {
+    const csrfCookie = request.cookies.get("__Host-psrf")?.value;
+    const csrfHeader = request.headers.get("x-csrf-token");
+    if (!csrfCookie || !csrfHeader || csrfCookie !== csrfHeader) {
+      return NextResponse.json({ error: "CSRF token tidak valid" }, { status: 403 });
+    }
+  }
 
   const isPublic =
     PUBLIC_PATHS.has(pathname) ||

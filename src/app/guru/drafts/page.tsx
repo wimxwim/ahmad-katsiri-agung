@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Sparkles, FileText, CheckCircle2, XCircle, RefreshCw, Clock, AlertCircle, Loader2, Search, Filter, Zap } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
+import { csrfHeaders } from "@/lib/csrf";
 
 interface DraftItem {
   id: string;
@@ -15,6 +16,7 @@ interface DraftItem {
   tokenInput: number | null;
   tokenOutput: number | null;
   errorMessage: string | null;
+  kategori: string | null;
 }
 
 const STATUS_META: Record<string, { label: string; color: string; icon: typeof Sparkles }> = {
@@ -34,6 +36,7 @@ export default function GuruDraftsPage() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [kategoriFilter, setKategoriFilter] = useState("");
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
   const [generateError, setGenerateError] = useState("");
 
@@ -43,7 +46,7 @@ export default function GuruDraftsPage() {
     try {
       const res = await fetch(`/api/v1/guru/drafts/${draftId}/generate`, {
         method: "POST",
-        headers: { "x-csrf-token": document.cookie.split("__Host-psrf=")[1]?.split(";")[0] || "" },
+        headers: csrfHeaders(),
         credentials: "include",
       });
       if (!res.ok) {
@@ -90,13 +93,19 @@ export default function GuruDraftsPage() {
         (d.materiJudul || "").toLowerCase().includes(q) ||
         d.sourceFileName.toLowerCase().includes(q);
       const matchStatus = !statusFilter || d.status === statusFilter;
-      return matchSearch && matchStatus;
+      const matchKategori = !kategoriFilter || d.kategori === kategoriFilter;
+      return matchSearch && matchStatus && matchKategori;
     });
-  }, [drafts, search, statusFilter]);
+  }, [drafts, search, statusFilter, kategoriFilter]);
 
   const uniqueStatuses = useMemo(() => {
     const set = new Set(drafts.map((d) => d.status));
     return Array.from(set);
+  }, [drafts]);
+
+  const uniqueKategoris = useMemo(() => {
+    const set = new Set(drafts.map((d) => d.kategori).filter(Boolean));
+    return Array.from(set) as string[];
   }, [drafts]);
 
   const draftsRef = useRef(drafts);
@@ -181,6 +190,21 @@ export default function GuruDraftsPage() {
                 ))}
               </select>
             </div>
+            {uniqueKategoris.length > 0 && (
+              <div className="relative">
+                <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/40" />
+                <select
+                  value={kategoriFilter}
+                  onChange={(e) => setKategoriFilter(e.target.value)}
+                  className="pl-10 pr-4 py-2.5 rounded-xl border border-border-precision bg-white text-sm outline-hidden focus:border-primary/40 appearance-none cursor-pointer min-w-[140px]"
+                >
+                  <option value="">Semua Kategori</option>
+                  {uniqueKategoris.map((k) => (
+                    <option key={k} value={k}>{k}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
           <div className="space-y-3">
           {filtered.length === 0 ? (

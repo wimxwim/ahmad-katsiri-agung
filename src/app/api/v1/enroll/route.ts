@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { siswaKursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
+import { validateCsrf } from "@/lib/csrf-server";
 
 const EnrollSchema = z.object({
   kursusId: z.string().min(1),
@@ -13,6 +14,9 @@ const EnrollSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const session = await requireSiswa(request);
 
     const ip = ipFromRequest(request);

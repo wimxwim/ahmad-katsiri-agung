@@ -41,23 +41,6 @@ const MATERI_SYSTEM = `Kamu adalah asisten pengajar PAI/Akidah Akhlak Indonesia.
 6. JANGAN gunakan data siswa asli (nama, NISN, nilai) dalam output.
 7. Data yang dikirim HANYA untuk generasi konten — tidak untuk training model.`;
 
-const QUIZ_SYSTEM = `Kamu adalah penulis kuis PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan soal PILIHAN GANDA untuk kuis singkat. ATURAN:
-1. Output HARUS JSON valid dengan field "judul" (string) dan "soal" (array).
-2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
-3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
-4. Buat distraktor yang masuk akal.
-5. Bahasa Indonesia, untuk siswa SMP/MTs.
-6. Tidak ada markup, tidak ada komentar di luar JSON.`;
-
-const SOAL_SYSTEM = `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan soal PILIHAN GANDA untuk latihan siswa SMP/MTs. ATURAN:
-1. Output HARUS JSON valid dengan field "soal" (array).
-2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
-3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
-4. Buat distraktor yang masuk akal dan menantang.
-5. Variasikan tingkat kesulitan: mudah, sedang, sulit.
-6. Bahasa Indonesia, untuk siswa SMP/MTs.
-7. Tidak ada markup, tidak ada komentar di luar JSON.`;
-
 export function buildSoalSystemPrompt(count: number): string {
   return `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan ${count} soal PILIHAN GANDA berkualitas untuk latihan siswa SMP/MTs. ATURAN:
 1. Output HARUS JSON valid dengan field "soal" (array ${count} item).
@@ -69,6 +52,16 @@ export function buildSoalSystemPrompt(count: number): string {
 7. Tidak ada markup, tidak ada komentar di luar JSON.
 8. JANGAN gunakan data siswa asli dalam soal.
 9. Data dikirim HANYA untuk generasi konten — tidak untuk training model.`;
+}
+
+export function buildQuizSystemPrompt(count: number): string {
+  return `Kamu adalah penulis kuis PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan ${count} soal PILIHAN GANDA untuk kuis singkat. ATURAN:
+1. Output HARUS JSON valid dengan field "judul" (string) dan "soal" (array ${count} item).
+2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
+3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
+4. Buat distraktor yang masuk akal.
+5. Bahasa Indonesia, untuk siswa SMP/MTs.
+6. Tidak ada markup, tidak ada komentar di luar JSON.`;
 }
 
 export class GenerationTimeoutError extends Error {
@@ -120,13 +113,13 @@ function fallbackQuestion(seed: string, index: number): string {
   return `Mengapa siswa perlu memahami materi tentang ${cleaned.toLowerCase()}?`;
 }
 
-function fallbackAiResults(sourceText: string): [ChatResult, ChatResult, ChatResult] {
+function fallbackAiResults(sourceText: string, quizCount = 5, soalCount = 10): [ChatResult, ChatResult, ChatResult] {
   const sentences = sentencePool(sourceText);
   const topic = fallbackTopic(sourceText);
   const basis = sentences.length > 0 ? sentences : [topic];
-  const quizItems = Array.from({ length: 5 }, (_, index) => {
+  const quizItems = Array.from({ length: quizCount }, (_, index) => {
     const seed = basis[index % basis.length];
-    const kunci = ["A", "B", "C", "D", "A"][index];
+    const kunci = ["A", "B", "C", "D"][index % 4];
     return {
       pertanyaan: fallbackQuestion(seed, index),
       tipe: "PG" as const,
@@ -139,7 +132,7 @@ function fallbackAiResults(sourceText: string): [ChatResult, ChatResult, ChatRes
       kunci,
     };
   });
-  const soalItems = Array.from({ length: 10 }, (_, index) => {
+  const soalItems = Array.from({ length: soalCount }, (_, index) => {
     const seed = basis[index % basis.length];
     const kunci = ["A", "B", "C", "D"][index % 4];
     return {
@@ -175,6 +168,8 @@ export async function runGeneration(
   generationId: string,
   fileBytes: Buffer,
   ext: string,
+  soalCount = 10,
+  quizCount = 5,
 ): Promise<GenerationResult> {
   const [gen] = await db
     .select()
@@ -246,10 +241,10 @@ export async function runGeneration(
       const quizRes = await withTimeout(
         chatWithFallback(
           [
-            { role: "system", content: QUIZ_SYSTEM },
+            { role: "system", content: buildQuizSystemPrompt(quizCount) },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60) },
         ),
         AI_TIMEOUT_MS,
         "ai-quiz",
@@ -257,10 +252,10 @@ export async function runGeneration(
       const soalRes = await withTimeout(
         chatWithFallback(
           [
-            { role: "system", content: SOAL_SYSTEM },
+            { role: "system", content: buildSoalSystemPrompt(soalCount) },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, soalCount * 50) },
         ),
         AI_TIMEOUT_MS,
         "ai-soal",
@@ -270,7 +265,7 @@ export async function runGeneration(
       const errMsg = error instanceof Error ? error.message : String(error);
       console.error("[ai-generator] upstream AI failed:", errMsg);
       console.error("[ai-generator] error stack:", error instanceof Error ? (error.stack ?? "").slice(0, 500) : "");
-      aiResults = fallbackAiResults(truncatedSource);
+      aiResults = fallbackAiResults(truncatedSource, quizCount, soalCount);
     }
 
     const [materiRes, quizRes, soalRes] = aiResults;
@@ -388,6 +383,8 @@ export async function runGenerationFromText(
   generationId: string,
   sourceText: string,
   guruId: string,
+  soalCount = 10,
+  quizCount = 5,
 ): Promise<void> {
   const [gen] = await db
     .select()
@@ -414,10 +411,10 @@ export async function runGenerationFromText(
     const quizRes = await withTimeout(
       chatWithFallback(
         [
-          { role: "system", content: QUIZ_SYSTEM },
+          { role: "system", content: buildQuizSystemPrompt(quizCount) },
           { role: "user", content: `Materi:\n\n${truncatedSource}` },
         ],
-        { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
+        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60) },
       ),
       AI_TIMEOUT_MS,
       "ai-quiz",
@@ -425,10 +422,10 @@ export async function runGenerationFromText(
     const soalRes = await withTimeout(
       chatWithFallback(
         [
-          { role: "system", content: SOAL_SYSTEM },
+          { role: "system", content: buildSoalSystemPrompt(soalCount) },
           { role: "user", content: `Materi:\n\n${truncatedSource}` },
         ],
-        { model: getModelForTask("light"), temperature: 0.5, maxTokens: 1500 },
+        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, soalCount * 50) },
       ),
       AI_TIMEOUT_MS,
       "ai-soal",
@@ -436,7 +433,7 @@ export async function runGenerationFromText(
     aiResults = [materiRes, quizRes, soalRes];
   } catch (error) {
     console.error("[ai-generator] upstream AI failed:", error);
-    aiResults = fallbackAiResults(truncatedSource);
+    aiResults = fallbackAiResults(truncatedSource, quizCount, soalCount);
   }
 
   const [materiRes, quizRes, soalRes] = aiResults;

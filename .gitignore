@@ -14,6 +14,10 @@ dist/
 *secret*
 *password*
 *token*
+!src/lib/token-service.ts
+!src/lib/telegram-notif.ts
+!src/app/api/v1/guru/token/
+!src/lib/db/migrations/*token*
 *.pem
 *.key
 id_rsa*

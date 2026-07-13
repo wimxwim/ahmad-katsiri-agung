@@ -7,6 +7,7 @@ import { kursus, transaksi } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { createSnapTransaction, IS_MIDTRANS_READY } from "@/lib/midtrans";
 import { apiError, apiRateLimit } from "@/lib/api-response";
+import { validateCsrf } from "@/lib/csrf-server";
 
 const PaymentCreateSchema = z.object({
   kursusId: z.string().min(1),
@@ -14,6 +15,9 @@ const PaymentCreateSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const session = await requireSiswa(request);
 
     const ip = ipFromRequest(request);

@@ -6,12 +6,14 @@ import {
   ipFromRequest,
 } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
+import { validateCsrf } from "@/lib/csrf-server";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { aiGeneration, fileMateri, kursus, users } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { extractText } from "@/lib/text-extractor";
+import { runGenerationFromText } from "@/lib/ai-generator";
 import { uuidv7 } from "@/lib/uuid";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +31,15 @@ const MAGIC_BYTES: { ext: string; bytes: number[] }[] = [
   { ext: "docx", bytes: [0x50, 0x4b, 0x03, 0x04] },
 ];
 
+function detectKategori(fileName: string, ext: string): string {
+  const lower = fileName.toLowerCase();
+  if (lower.includes("-ppt") || lower.includes("_ppt") || lower.includes(" presentasi")) return "ppt";
+  if (lower.includes("-soal") || lower.includes("_soal") || lower.includes(" latihan")) return "soal";
+  if (lower.includes("modul ajar") || lower.includes("modul-ajar") || lower.includes("rpp")) return "modul_ajar";
+  if (ext === "docx") return "docs";
+  return "materi";
+}
+
 function detectExtension(buf: Buffer): string | null {
   for (const m of MAGIC_BYTES) {
     if (m.bytes.every((b, i) => buf[i] === b)) return m.ext;
@@ -38,6 +49,9 @@ function detectExtension(buf: Buffer): string | null {
 
 export async function POST(request: NextRequest) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const session = await requireGuru(request);
 
     const ip = ipFromRequest(request);
@@ -113,6 +127,7 @@ export async function POST(request: NextRequest) {
         kursusId,
         guruId: session.userId!,
         status: "uploaded",
+        kategori: detectKategori(originalName, detected),
       })
       .returning({ id: fileMateri.id });
 
@@ -143,6 +158,12 @@ export async function POST(request: NextRequest) {
       sourceFileName: originalName,
       status: genStatus,
     });
+
+    if (extractionText && extractionText.length >= 50) {
+      runGenerationFromText(genId, extractionText, session.userId!).catch((e) => {
+        console.error("Auto-generate after upload failed:", e instanceof Error ? e.message : String(e));
+      });
+    }
 
     const guru = await db.query.users.findFirst({
       where: eq(users.id, session.userId!),
@@ -192,7 +213,7 @@ export async function POST(request: NextRequest) {
       sizeBytes: file.size,
       ext: detected,
       message: extractionText
-        ? "File berhasil diupload. Draft siap di-generate dari halaman Draft AI."
+        ? "File berhasil diupload. AI sedang memproses draft — cek halaman Draft AI dalam beberapa menit."
         : "File berhasil diupload. Ekstraksi teks akan diproses sebelum generate.",
     });
   } catch (e) {

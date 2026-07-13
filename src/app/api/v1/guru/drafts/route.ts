@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { aiGeneration } from "@/lib/db/schema";
+import { aiGeneration, fileMateri } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
@@ -15,8 +15,22 @@ export async function GET(request: NextRequest) {
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const rows = await db
-      .select()
+      .select({
+        id: aiGeneration.id,
+        sourceFileName: aiGeneration.sourceFileName,
+        status: aiGeneration.status,
+        materiJudul: aiGeneration.materiJudul,
+        materiStatus: aiGeneration.materiStatus,
+        quizStatus: aiGeneration.quizStatus,
+        soalStatus: aiGeneration.soalStatus,
+        tokenInput: aiGeneration.tokenInput,
+        tokenOutput: aiGeneration.tokenOutput,
+        errorMessage: aiGeneration.errorMessage,
+        createdAt: aiGeneration.createdAt,
+        kategori: fileMateri.kategori,
+      })
       .from(aiGeneration)
+      .leftJoin(fileMateri, eq(aiGeneration.fileMateriId, fileMateri.id))
       .where(eq(aiGeneration.guruId, session.userId))
       .orderBy(desc(aiGeneration.createdAt))
       .limit(50);

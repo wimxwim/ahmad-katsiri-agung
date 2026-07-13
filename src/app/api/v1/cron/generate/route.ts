@@ -8,8 +8,12 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json({ error: "CRON_SECRET tidak dikonfigurasi" }, { status: 500 });
+  }
   const auth = request.headers.get("Authorization");
-  const expected = `Bearer ${process.env.CRON_SECRET || "akal-cron-secret"}`;
+  const expected = `Bearer ${cronSecret}`;
   if (auth !== expected) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

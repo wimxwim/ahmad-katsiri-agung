@@ -13,12 +13,16 @@ import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
 import { sanitizeText } from "@/lib/sanitize";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
+import { validateCsrf } from "@/lib/csrf-server";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const session = await requireGuru(request);
 
     const { id } = await params;

@@ -10,6 +10,7 @@ import { db } from "@/lib/db";
 import { kursus } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
+import { validateCsrf } from "@/lib/csrf-server";
 
 const KursusSchema = z.object({
   judul: z.string().min(1).max(200),
@@ -63,6 +64,9 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const session = await requireRole(request, ["guru", "owner"]);
 
     const ip = ipFromRequest(request);

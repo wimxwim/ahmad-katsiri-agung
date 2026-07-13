@@ -11,7 +11,7 @@ import {
 } from "@/lib/session";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { users, tokenBalances } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { logAuthEvent } from "@/lib/auth-audit";
@@ -75,6 +75,10 @@ export async function POST(request: NextRequest) {
         nis: nis || null,
       })
       .returning({ id: users.id, nama: users.nama, role: users.role, email: users.email });
+
+    await db.insert(tokenBalances).values({ userId: user.id, balance: 0 }).catch((e) => {
+      console.error("Failed to create token_balances for new user:", e instanceof Error ? e.message : String(e));
+    });
 
     const sessionRole = roleToSessionRole(user.role);
     const token = await signSession({

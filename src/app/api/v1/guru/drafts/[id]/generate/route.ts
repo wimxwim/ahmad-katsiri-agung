@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError } from "@/lib/api-response";
+import { validateCsrf } from "@/lib/csrf-server";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { aiGeneration, fileMateri } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { runGenerationFromText } from "@/lib/ai-generator";
+import { checkGenerateBalance, deductGenerateCost, getBalance } from "@/lib/token-service";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import {
   checkRateLimit,
@@ -24,6 +26,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const session = await requireGuru(request);
     const { id } = await params;
 
@@ -70,10 +75,31 @@ export async function POST(
       return NextResponse.json({ success: false, error: "Teks hasil ekstraksi terlalu pendek. Upload ulang file." }, { status: 400 });
     }
 
-    await appendEvent(`gen:${session.userId}`, "gen.queued", { generationId: id });
+    const sp = request.nextUrl.searchParams;
+    const rawSoal = sp.get("soalCount");
+    const rawQuiz = sp.get("quizCount");
+    const soalCount = rawSoal ? Math.min(35, Math.max(10, parseInt(rawSoal, 10) || 10)) : 10;
+    const quizCount = rawQuiz ? Math.min(15, Math.max(5, parseInt(rawQuiz, 10) || 5)) : 5;
+
+    const hasBalance = await checkGenerateBalance(session.userId!);
+    if (!hasBalance) {
+      releaseConcurrent(`gen:${session.userId}`);
+      const bal = await getBalance(session.userId!);
+      return NextResponse.json({
+        success: false,
+        error: "Saldo token tidak cukup. Minimal Rp132/generate. Top-up sekarang?",
+        balance: bal.balance,
+        required: 132,
+      }, { status: 402 });
+    }
+
+    await appendEvent(`gen:${session.userId}`, "gen.queued", { generationId: id, soalCount, quizCount });
 
     try {
-      await runGenerationFromText(id, text, session.userId!);
+      await runGenerationFromText(id, text, session.userId!, soalCount, quizCount);
+      await deductGenerateCost(session.userId!).catch((e) => {
+        console.error("Token deduction failed:", e instanceof Error ? e.message : String(e));
+      });
     } catch (e) {
       console.error("Generate error:", e);
     } finally {
@@ -94,6 +120,8 @@ export async function POST(
       materiStatus: updated?.materiStatus,
       quizStatus: updated?.quizStatus,
       soalStatus: updated?.soalStatus,
+      soalCount,
+      quizCount,
       errorMessage: updated?.errorMessage,
     });
   } catch (e) {
