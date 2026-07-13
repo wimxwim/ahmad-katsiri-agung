@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         totalMateri: 0,
         totalSelesai: 0,
         terdaftar: false,
-      }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
+}, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=120" } });
     }
 
     const kursusList = await db

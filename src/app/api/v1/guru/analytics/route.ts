@@ -273,7 +273,7 @@ export async function GET(request: NextRequest) {
       remedialList,
       weakTopics,
     },
-  });
+  }, { headers: { "Cache-Control": "private, max-age=120, stale-while-revalidate=300" } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Analytics guru error:", e);

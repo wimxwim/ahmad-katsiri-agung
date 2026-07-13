@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
       },
       limit,
       offset,
-    }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
+    }, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=120" } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Siswa progres error:", e);

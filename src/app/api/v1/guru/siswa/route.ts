@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const kursusIds = allKursus.map((k) => k.id);
 
     if (!kursusIds.length) {
-      return NextResponse.json({ data: [], kursusOptions: [] }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
+      return NextResponse.json({ data: [], kursusOptions: [] }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } });
     }
 
     let query = db
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       data: Array.from(siswaMap.values()),
       total: siswaMap.size,
       kursusOptions: allKursus,
-    }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
+    }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Guru siswa error:", e);

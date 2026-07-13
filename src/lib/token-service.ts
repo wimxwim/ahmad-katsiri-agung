@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { tokenBalances } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 const GENERATE_COST = 132;
 
@@ -43,13 +43,11 @@ export async function checkGenerateBalance(userId: string): Promise<boolean> {
 }
 
 export async function deductBalance(userId: string, amount: number): Promise<TokenBalance> {
-  const current = await getBalance(userId);
-
   await db
     .update(tokenBalances)
     .set({
-      balance: current.balance - amount,
-      totalSpent: current.totalSpent + amount,
+      balance: sql`${tokenBalances.balance} - ${amount}`,
+      totalSpent: sql`${tokenBalances.totalSpent} + ${amount}`,
       updatedAt: new Date(),
     })
     .where(eq(tokenBalances.userId, userId));
@@ -61,14 +59,24 @@ export async function deductGenerateCost(userId: string): Promise<TokenBalance> 
   return deductBalance(userId, GENERATE_COST);
 }
 
-export async function creditBalance(userId: string, amount: number): Promise<TokenBalance> {
-  const current = await getBalance(userId);
-
+export async function refundBalance(userId: string, amount: number): Promise<TokenBalance> {
   await db
     .update(tokenBalances)
     .set({
-      balance: current.balance + amount,
-      totalTopup: current.totalTopup + amount,
+      balance: sql`${tokenBalances.balance} + ${amount}`,
+      updatedAt: new Date(),
+    })
+    .where(eq(tokenBalances.userId, userId));
+
+  return getBalance(userId);
+}
+
+export async function topUpBalance(userId: string, amount: number): Promise<TokenBalance> {
+  await db
+    .update(tokenBalances)
+    .set({
+      balance: sql`${tokenBalances.balance} + ${amount}`,
+      totalTopup: sql`${tokenBalances.totalTopup} + ${amount}`,
       lastTopupAt: new Date(),
       updatedAt: new Date(),
     })

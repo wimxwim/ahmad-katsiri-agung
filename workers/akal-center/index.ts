@@ -86,8 +86,22 @@ function isHtmlPage(pathname: string): boolean {
     && !STATIC_ASSET_EXTS.test(pathname);
 }
 
+function hasSessionCookie(request: Request): boolean {
+  const cookie = request.headers.get('Cookie') || '';
+  return cookie.includes('akal_sesi=');
+}
+
+function isCacheablePublicApi(pathname: string, method: string, request: Request): { cacheable: boolean; ttl: number } {
+  if (method !== 'GET') return { cacheable: false, ttl: 0 };
+  if (pathname === '/api/v1/katalog') return { cacheable: true, ttl: 300 };
+  if (pathname === '/api/v1/auth/jwks') return { cacheable: true, ttl: 3600 };
+  if (pathname.startsWith('/api/v1/kursus') && !hasSessionCookie(request)) return { cacheable: true, ttl: 120 };
+  if (pathname.startsWith('/api/v1/pengumuman') && !hasSessionCookie(request)) return { cacheable: true, ttl: 60 };
+  return { cacheable: false, ttl: 0 };
+}
+
 export default {
-  async fetch(request) {
+  async fetch(request: Request, env: Record<string, unknown>, ctx: ExecutionContext) {
     if (!ALLOWED_METHODS.includes(request.method)) {
       return new Response(null, { status: 405, statusText: 'Method Not Allowed' });
     }
@@ -107,7 +121,7 @@ export default {
           headers: { 'Content-Type': 'application/json' },
         });
       }
-      const aiBaseUrl = process.env.AI_BASE_URL || 'https://router.bynara.id/v1';
+      const aiBaseUrl = (process.env.AI_BASE_URL as string) || 'https://router.bynara.id/v1';
       const aiUrl = `${aiBaseUrl}/chat/completions`;
       const body = await request.text();
       const aiReq = new Request(aiUrl, {
@@ -133,7 +147,7 @@ export default {
     if (url.pathname === '/v1/ai/generate' && request.method === 'POST') {
       const body = await request.text();
       const msg = JSON.parse(body);
-      await env.AI_GENERATION.send(msg);
+      await (env as { AI_GENERATION: Queue }).AI_GENERATION.send(msg);
       return new Response(JSON.stringify({ ok: true }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
@@ -154,6 +168,19 @@ export default {
           status: 429,
           headers: { 'Content-Type': 'application/json', 'Retry-After': String(Math.ceil(windowMs / 1000)) },
         });
+      }
+    }
+
+    // ── Cache API: public content endpoints ──
+    const cacheCheck = isCacheablePublicApi(url.pathname, request.method, request);
+    if (cacheCheck.cacheable) {
+      const cacheKey = new Request(url.toString(), request);
+      const cache = caches.default;
+      const cachedResponse = await cache.match(cacheKey);
+      if (cachedResponse) {
+        const response = new Response(cachedResponse.body, cachedResponse);
+        response.headers.set('X-Cache', 'HIT');
+        return response;
       }
     }
 
@@ -188,9 +215,10 @@ export default {
     let response;
     try {
       response = await fetch(upstreamRequest);
-    } catch (err) {
+    } catch (err: unknown) {
       clearTimeout(timeout);
-      if (err.name === 'AbortError') {
+      const e = err as Error;
+      if (e.name === 'AbortError') {
         console.error(JSON.stringify({ event: 'worker.upstream_timeout', method: request.method, path: url.pathname, timeout_ms: TIMEOUT_MS }));
         return new Response(JSON.stringify({ error: 'Upstream timeout' }), {
           status: 504,
@@ -210,9 +238,9 @@ export default {
       if (location) {
         const actualOrigin = `${url.protocol}//${url.host}`;
         const originStr = getOrigin();
-for (const originVariant of [originStr, encodeURIComponent(originStr)]) {
-  if (location.includes(originVariant)) {
-    const fixed = location.replaceAll(originVariant, originVariant === originStr ? actualOrigin : encodeURIComponent(actualOrigin));
+        for (const originVariant of [originStr, encodeURIComponent(originStr)]) {
+          if (location.includes(originVariant)) {
+            const fixed = location.replaceAll(originVariant, originVariant === originStr ? actualOrigin : encodeURIComponent(actualOrigin));
             response = new Response(response.body, response);
             response.headers.set('location', fixed);
             break;
@@ -221,10 +249,17 @@ for (const originVariant of [originStr, encodeURIComponent(originStr)]) {
       }
     }
 
-    // After the redirect-fix block above, response is still immutable
-    // if the redirect Location was relative (no ORIGIN to replace).
-    // Clone unconditionally so header mutations below work.
     response = new Response(response.body, response);
+
+    // ── Cache API: store response for public endpoints ──
+    if (cacheCheck.cacheable && response.status === 200) {
+      const cacheKey = new Request(url.toString(), request);
+      const cache = caches.default;
+      const cachedResponse = new Response(response.body, response);
+      cachedResponse.headers.set('Cache-Control', `public, max-age=${cacheCheck.ttl}, s-maxage=${cacheCheck.ttl}`);
+      cachedResponse.headers.set('X-Cache', 'MISS');
+      ctx.waitUntil(cache.put(cacheKey, cachedResponse));
+    }
 
     // Cache-Control
     if (url.pathname.startsWith('/_next/static/')) {
@@ -233,7 +268,7 @@ for (const originVariant of [originStr, encodeURIComponent(originStr)]) {
       response.headers.set('Cache-Control', 'public, max-age=604800');
     } else if (page && request.method === 'GET') {
       response.headers.set('Cache-Control', 'private, no-cache, must-revalidate');
-    } else {
+    } else if (!cacheCheck.cacheable) {
       response.headers.set('Cache-Control', 'no-cache');
     }
 
@@ -253,7 +288,6 @@ for (const originVariant of [originStr, encodeURIComponent(originStr)]) {
       );
       response.headers.set('Content-Security-Policy', fixedCsp);
     }
-    // If no CSP at all, inject our own with 'unsafe-inline'
     if (!cspHeader) {
       response.headers.set('Content-Security-Policy', [
         "default-src 'self'",
@@ -278,5 +312,54 @@ for (const originVariant of [originStr, encodeURIComponent(originStr)]) {
     response.headers.set('X-Worker', 'akal-center');
 
     return response;
+  },
+
+  async scheduled(_event: ScheduledEvent, env: Record<string, unknown>, _ctx: ExecutionContext) {
+    const cronSecret = (env.CRON_SECRET as string) || (process.env.CRON_SECRET as string);
+    const origin = getOrigin();
+
+    // Anti-pause: ping health endpoint setiap 6 jam
+    try {
+      const healthUrl = `${origin}/api/health`;
+      const healthRes = await fetch(healthUrl);
+      console.log(JSON.stringify({
+        event: 'cron.health_ping',
+        status: healthRes.status,
+        timestamp: new Date().toISOString(),
+      }));
+    } catch (err: unknown) {
+      console.error(JSON.stringify({
+        event: 'cron.health_ping_failed',
+        error: (err as Error).message,
+        timestamp: new Date().toISOString(),
+      }));
+    }
+
+    // Prune event_store: hapus auth events >30 hari, gen events >90 hari
+    if (cronSecret) {
+      try {
+        const pruneUrl = `${origin}/api/v1/cron/prune-events`;
+        const pruneRes = await fetch(pruneUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${cronSecret}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        const pruneBody = await pruneRes.text();
+        console.log(JSON.stringify({
+          event: 'cron.prune_events',
+          status: pruneRes.status,
+          body: pruneBody,
+          timestamp: new Date().toISOString(),
+        }));
+      } catch (err: unknown) {
+        console.error(JSON.stringify({
+          event: 'cron.prune_events_failed',
+          error: (err as Error).message,
+          timestamp: new Date().toISOString(),
+        }));
+      }
+    }
   },
 };
