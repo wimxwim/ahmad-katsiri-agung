@@ -43,7 +43,8 @@ export async function POST(
       .setJti(randomUUID())
       .sign(hs256Secret());
 
-    const inviteLink = `${request.nextUrl.origin}/undang?token=${token}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
+    const inviteLink = `${baseUrl}/undang?token=${token}`;
 
     return NextResponse.json({ data: { token, inviteLink, kursusJudul: k.judul } });
   } catch (e) {
