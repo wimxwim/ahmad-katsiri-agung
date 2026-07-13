@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, CheckCircle2, Circle, ArrowRight } from "lucide-react";
+import { BookOpen, CheckCircle2, Circle, ArrowRight, PartyPopper, X } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 
@@ -24,9 +24,12 @@ export default function SiswaMateriListPage() {
   const [data, setData] = useState<MateriItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
     const kursusId = searchParams.get("kursusId");
+    const welcome = searchParams.get("welcome");
+    if (welcome === "1") setShowWelcome(true);
     const url = new URL("/api/v1/siswa/materi", window.location.origin);
     if (kursusId) url.searchParams.set("kursusId", kursusId);
     fetch(url.toString(), { credentials: "include" })
@@ -62,6 +65,18 @@ export default function SiswaMateriListPage() {
 
   return (
     <div>
+      {showWelcome && (
+        <div className="mb-5 bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3">
+          <PartyPopper className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="font-heading font-bold text-emerald-800 text-sm">Selamat bergabung!</p>
+            <p className="text-emerald-700 text-sm mt-0.5">Kamu berhasil mendaftar ke kursus ini. Selamat belajar!</p>
+          </div>
+          <button onClick={() => setShowWelcome(false)} className="shrink-0 text-emerald-500 hover:text-emerald-700">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       <h1 className="font-heading font-bold text-2xl text-on-surface mb-6">Materi Belajar</h1>
 
       {data.length === 0 ? (

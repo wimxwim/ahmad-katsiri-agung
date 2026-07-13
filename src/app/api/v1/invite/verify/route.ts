@@ -38,11 +38,13 @@ export async function POST(request: NextRequest) {
     if (payload.action !== "enroll") return apiError("Link undangan tidak valid", 400);
 
     const [k] = await db
-      .select({ id: kursus.id, judul: kursus.judul, slug: kursus.slug })
+      .select({ id: kursus.id, judul: kursus.judul, slug: kursus.slug, guruId: kursus.guruId, statusPublikasi: kursus.statusPublikasi })
       .from(kursus)
       .where(eq(kursus.id, payload.kursusId))
       .limit(1);
     if (!k) return apiError("Kursus tidak ditemukan", 404);
+    if (k.statusPublikasi !== "PUBLIK") return apiError("Kursus belum dipublikasikan oleh guru", 400);
+    if (k.guruId !== payload.guruId) return apiError("Link undangan sudah tidak berlaku (kursus telah dialihkan)", 400);
 
     const existing = await db
       .select({ id: siswaKursus.id })
@@ -59,11 +61,24 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    await db.insert(siswaKursus).values({
-      siswaId: session.userId!,
-      kursusId: k.id,
-      status: "AKTIF",
-    });
+    try {
+      await db.insert(siswaKursus).values({
+        siswaId: session.userId!,
+        kursusId: k.id,
+        status: "AKTIF",
+      });
+    } catch (e: unknown) {
+      const pgErr = e as { code?: string };
+      if (pgErr.code === "23505") {
+        return NextResponse.json({
+          success: true,
+          alreadyEnrolled: true,
+          redirectTo: `/siswa/materi?kursusId=${k.id}`,
+          kursusJudul: k.judul,
+        });
+      }
+      throw e;
+    }
 
     return NextResponse.json({
       success: true,
