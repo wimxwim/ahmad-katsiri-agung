@@ -45,7 +45,7 @@ export async function POST(_req: NextRequest) {
       { model: getModelForTask("light"), maxTokens: 20 },
     );
     return NextResponse.json({ ok: true, result });
-  } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e.message }, { status: 500 });
+  } catch (e: unknown) {
+    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : "Unknown error" }, { status: 500 });
   }
 }

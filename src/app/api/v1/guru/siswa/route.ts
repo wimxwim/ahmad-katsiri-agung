@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const filterKursusId = request.nextUrl.searchParams.get("kursusId");
+    const limit = Math.min(parseInt(request.nextUrl.searchParams.get("limit") || "50", 10), 200);
+    const offset = Math.max(parseInt(request.nextUrl.searchParams.get("offset") || "0", 10), 0);
 
     const allKursus = await db
       .select({ id: kursus.id, judul: kursus.judul })
@@ -40,7 +42,7 @@ export async function GET(request: NextRequest) {
       .leftJoin(users, and(eq(siswaKursus.siswaId, users.id), isNull(users.deletedAt)))
       .leftJoin(kursus, eq(siswaKursus.kursusId, kursus.id));
 
-    const enrolledSiswa = await query;
+    const enrolledSiswa = await query.limit(limit).offset(offset);
 
     const filtered = filterKursusId
       ? enrolledSiswa.filter((item) => item.kursusId === filterKursusId)

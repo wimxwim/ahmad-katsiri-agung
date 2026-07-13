@@ -102,7 +102,7 @@ export async function POST(
       await runGenerationFromText(id, text, session.userId!, soalCount, quizCount);
     } catch (e) {
       console.error("Generate error:", e);
-      generateError = e instanceof Error ? e.message : "Gagal generate konten AI";
+      generateError = "Gagal generate konten AI";
     } finally {
       releaseConcurrent(`gen:${session.userId}`);
     }

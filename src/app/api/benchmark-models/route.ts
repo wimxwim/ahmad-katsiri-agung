@@ -56,9 +56,9 @@ export async function GET(request: NextRequest) {
         content: result.content.trim(),
         error: null,
       });
-    } catch (e: any) {
+    } catch (e: unknown) {
       const timeMs = Math.round(performance.now() - t0);
-      const msg = e.message || String(e);
+      const msg = e instanceof Error ? e.message : String(e);
       results.push({
         model,
         status: msg.includes("401") ? 401 : msg.includes("429") ? 429 : 500,

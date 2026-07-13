@@ -40,7 +40,17 @@ export async function GET(request: NextRequest) {
 
     const slug = request.nextUrl.searchParams.get("slug");
     const scope = request.nextUrl.searchParams.get("scope");
-    let query = db.select().from(kursus).$dynamic();
+    const limit = Math.min(parseInt(request.nextUrl.searchParams.get("limit") || "50", 10), 100);
+    const offset = Math.max(parseInt(request.nextUrl.searchParams.get("offset") || "0", 10), 0);
+    let query = db.select({
+      id: kursus.id,
+      judul: kursus.judul,
+      slug: kursus.slug,
+      deskripsi: kursus.deskripsi,
+      isPublic: kursus.isPublic,
+      guruId: kursus.guruId,
+      createdAt: kursus.createdAt,
+    }).from(kursus).$dynamic();
 
     if (isGuruLike) {
       if (isOwner && scope === "all") {
@@ -54,8 +64,8 @@ export async function GET(request: NextRequest) {
     if (slug) {
       query = query.where(eq(kursus.slug, slug));
     }
-    const data = await query.orderBy(desc(kursus.createdAt));
-    return NextResponse.json({ data });
+    const data = await query.orderBy(desc(kursus.createdAt)).limit(limit).offset(offset);
+    return NextResponse.json({ data, limit, offset });
   } catch (e) {
     console.error("Kursus GET error:", e);
     return apiError("Terjadi kesalahan server", 500);

@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
         .update(aiGeneration)
         .set({ status: "failed", errorMessage: msg.slice(0, 500), updatedAt: new Date() })
         .where(eq(aiGeneration.id, gen.id));
-      results.push({ id: gen.id, status: "failed", error: msg });
+      results.push({ id: gen.id, status: "failed", error: "Internal generation error" });
     }
   }
 

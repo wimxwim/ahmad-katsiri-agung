@@ -71,7 +71,7 @@ export async function chat(
     body.temperature = options.temperature ?? 0.4;
   }
 
-  let lastError: Error | null = null;
+  let lastError: unknown = null;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -106,7 +106,7 @@ export async function chat(
         tokensOut: json.usage?.completion_tokens || 0,
         model: json.model,
       };
-    } catch (e: any) {
+    } catch (e: unknown) {
       if (e instanceof Error && e.message.startsWith("NaraRouter error")) throw e;
       if (attempt < retries) {
         lastError = e;
@@ -117,7 +117,8 @@ export async function chat(
     }
   }
 
-  throw lastError || new Error("NaraRouter failed after all retries");
+  if (lastError) throw lastError;
+  throw new Error("NaraRouter failed after all retries");
 }
 
 export async function chatWithFallback(
