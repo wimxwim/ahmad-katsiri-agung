@@ -1069,6 +1069,81 @@ export const tokenBalancesRelations = relations(tokenBalances, ({ one }) => ({
   }),
 }));
 
+export const visibilityEnum = pgEnum("visibility", [
+  "PRIVAT",
+  "PUBLIK",
+  "KRABAT",
+  "ARSIP",
+]);
+
+export const approvalStatusEnum = pgEnum("approval_status", [
+  "PENDING",
+  "APPROVED",
+  "REJECTED",
+]);
+
+export const krabatStatusEnum = pgEnum("krabat_status", [
+  "PENDING",
+  "ACTIVE",
+  "REJECTED",
+]);
+
+export const materiSharing = pgTable("materi_sharing", {
+  materiPublishedId: uuid("materi_published_id")
+    .primaryKey()
+    .references(() => materiPublished.id, { onDelete: "cascade" }),
+  visibility: visibilityEnum("visibility").notNull().default("PRIVAT"),
+  approvalStatus: approvalStatusEnum("approval_status").notNull().default("PENDING"),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
+export const krabatConnections = pgTable(
+  "krabat_connections",
+  {
+    id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+    guruId: uuid("guru_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    connectedGuruId: uuid("connected_guru_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    status: krabatStatusEnum("status").notNull().default("PENDING"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => ({
+    guruPairUnique: unique("krabat_connections_pair_unique").on(t.guruId, t.connectedGuruId),
+    guruIdx: index("krabat_connections_guru_idx").on(t.guruId, t.status),
+    connectedIdx: index("krabat_connections_connected_idx").on(t.connectedGuruId, t.status),
+  }),
+);
+
+export const materiSharingRelations = relations(materiSharing, ({ one }) => ({
+  materiPublished: one(materiPublished, {
+    fields: [materiSharing.materiPublishedId],
+    references: [materiPublished.id],
+  }),
+}));
+
+export const krabatConnectionsRelations = relations(krabatConnections, ({ one }) => ({
+  guru: one(users, {
+    fields: [krabatConnections.guruId],
+    references: [users.id],
+  }),
+  connectedGuru: one(users, {
+    fields: [krabatConnections.connectedGuruId],
+    references: [users.id],
+  }),
+}));
+
 // ============================================================
 // FASE BISNIS — Kuota, AI Tracking, Taksonomi, Payment, Onboarding
 // ============================================================

@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import {
   aiGeneration,
   materiPublished,
+  materiSharing,
   quizPublished,
   soalPublished,
   kursus,
@@ -78,6 +79,12 @@ export async function POST(
         })
         .returning({ id: materiPublished.id });
       materiId = m.id;
+
+      await db.insert(materiSharing).values({
+        materiPublishedId: m.id,
+        visibility: "PRIVAT",
+        approvalStatus: "APPROVED",
+      }).onConflictDoNothing();
     }
 
     if (row.quizStatus === "approved" && row.quizSoal && row.quizSoal.length > 0 && row.kursusId) {

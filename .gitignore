@@ -29,4 +29,8 @@ id_rsa*
 *~
 *.swp
 *.swo
-.agents/
+.agents/aws/
+.agents/skills/
+.agents/agent-skills-hub/
+awscliv2.zip
+aws/
