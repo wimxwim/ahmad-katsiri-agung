@@ -138,9 +138,11 @@ export default function GuruUploadPage() {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setJob({ state: "failed", progress: 0, message: json.error || "Upload gagal" });
-        setError(json.error || "Upload gagal");
-        toast("error", json.error || "Upload gagal");
+        const err = json.error;
+        const msg = (typeof err === "string" ? err : err?.message) || "Upload gagal";
+        setJob({ state: "failed", progress: 0, message: msg });
+        setError(msg);
+        toast("error", msg);
         return;
       }
 

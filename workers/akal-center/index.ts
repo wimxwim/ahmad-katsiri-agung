@@ -139,9 +139,6 @@ export default {
         headers: { 'Content-Type': 'application/json' },
       });
     }
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
 
     // Rate limiting for API endpoints (worker-level; defense-in-depth)
     if (url.pathname.startsWith('/api/')) {
@@ -245,7 +242,35 @@ for (const originVariant of [originStr, encodeURIComponent(originStr)]) {
       response.headers.set('Vary', 'Accept-Encoding');
     }
 
-    // Security headers (don't override existing CSP)
+    // CSP: Next.js 16 auto-injects nonce for Server Actions on static pre-rendered pages,
+    // causing nonce mismatch → all inline hydration scripts blocked → blank white screen.
+    // Replace any nonce-based CSP with 'unsafe-inline' version.
+    const cspHeader = response.headers.get('Content-Security-Policy');
+    if (cspHeader && cspHeader.includes("'nonce-")) {
+      const fixedCsp = cspHeader.replace(
+        /script-src\s+'self'\s+'nonce-[^']+'/,
+        "script-src 'self' 'unsafe-inline'"
+      );
+      response.headers.set('Content-Security-Policy', fixedCsp);
+    }
+    // If no CSP at all, inject our own with 'unsafe-inline'
+    if (!cspHeader) {
+      response.headers.set('Content-Security-Policy', [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' https://www.youtube.com https://www.youtube-nocookie.com https://www.googletagmanager.com https://*.google-analytics.com https://va.vercel-scripts.com https://cdn.equran.id https://static.cloudflareinsights.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "img-src 'self' data: blob: https:",
+        "font-src 'self' https://fonts.gstatic.com data:",
+        "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
+        "media-src 'self' https://cdn.equran.id https://*.youtube.com https://*.googlevideo.com",
+        "connect-src 'self' https://equran.id https://*.vercel.app https://*.vercel-insights.com https://*.googleapis.com https://*.google-analytics.com https://*.youtube.com https://*.googlevideo.com https://api.github.com https://*.githubusercontent.com",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+      ].join("; "));
+    }
+
+    // Security headers (don't override existing)
     for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
       if (!response.headers.has(key)) response.headers.set(key, value);
     }

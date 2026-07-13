@@ -87,7 +87,8 @@ export default function MonitoringPage() {
         setData(json.data);
         setError(null);
       } else {
-        setError(json.error || "Unknown error");
+        const err = json.error;
+        setError((typeof err === "string" ? err : err?.message) || "Unknown error");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");

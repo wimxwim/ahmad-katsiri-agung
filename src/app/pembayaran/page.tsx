@@ -48,7 +48,11 @@ export default function PembayaranPage() {
       fd.set("jumlah", String(jumlah));
       const res = await fetch("/api/v1/payment/submit", { method: "POST", body: fd });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Gagal mengirim");
+      if (!res.ok) {
+        const err = data.error;
+        const msg = (typeof err === "string" ? err : err?.message) || "Gagal mengirim";
+        throw new Error(msg);
+      }
       setSuccess(true);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Terjadi kesalahan");
