@@ -8,6 +8,7 @@ import { and, eq } from "drizzle-orm";
 import { createSnapTransaction, IS_MIDTRANS_READY } from "@/lib/midtrans";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
+import { randomInt } from "crypto";
 
 const PaymentCreateSchema = z.object({
   kursusId: z.string().min(1),
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     const ts = Date.now();
-    const random4 = Math.floor(1000 + Math.random() * 9000);
+    const random4 = randomInt(1000, 9999);
     const orderId = `AKAL-${ts}-${random4}`;
 
     const [tx] = await db

@@ -39,7 +39,7 @@ export async function POST(
     })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime("7d")
+      .setExpirationTime("24h")
       .setJti(randomUUID())
       .sign(hs256Secret());
 

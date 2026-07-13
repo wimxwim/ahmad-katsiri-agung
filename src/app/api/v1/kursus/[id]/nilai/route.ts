@@ -39,7 +39,7 @@ export async function GET(
           .from(jawabanLog)
           .innerJoin(quizSession, eq(jawabanLog.quizSessionId, quizSession.id))
           .leftJoin(users, and(eq(jawabanLog.siswaId, users.id), isNull(users.deletedAt)))
-          .where(eq(quizSession.kursusId, id));
+.where(and(eq(quizSession.kursusId, id), eq(jawabanLog.siswaId, session.userId)));
         const filtered = logs.filter((l) => l.siswaId === session.userId);
         return NextResponse.json({ data: filtered, total: filtered.length });
       }

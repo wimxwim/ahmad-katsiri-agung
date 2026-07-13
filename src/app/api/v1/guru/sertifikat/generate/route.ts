@@ -5,7 +5,7 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimit, checkRateLimitPerUser, checkConcurrentLimit, releaseConcurrent, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { sertifikat, siswaKursus, quizAttempt, users, kursus } from "@/lib/db/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
 import { generateQRHash } from "@/lib/sertifikat/generateQRHash";
 import crypto from "crypto";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -62,27 +62,31 @@ export async function POST(request: NextRequest) {
 
     let generated = 0;
 
-    for (const s of eligible) {
-      const existing = await db
-        .select({ id: sertifikat.id })
-        .from(sertifikat)
-        .where(and(eq(sertifikat.siswaId, s.siswaId), eq(sertifikat.kursusId, kursusId)))
-        .limit(1);
+    const siswaIds = eligible.map((s) => s.siswaId);
 
-      if (existing.length > 0) continue;
+    const existingCerts = await db
+      .select({ siswaId: sertifikat.siswaId })
+      .from(sertifikat)
+      .where(and(
+        inArray(sertifikat.siswaId, siswaIds),
+        eq(sertifikat.kursusId, kursusId),
+      ));
 
-      const nomor = `AKAL-${kursusId.slice(0, 8)}-${s.siswaId.slice(0, 8)}-${crypto.randomInt(1000, 9999)}`;
-      const qrHash = generateQRHash(nomor, s.siswaId);
+    const existingSet = new Set(existingCerts.map((c) => c.siswaId));
 
-      await db.insert(sertifikat).values({
-        siswaId: s.siswaId,
-        kursusId,
-        nomorSertifikat: nomor,
-        qrSecretHash: qrHash,
+    const toInsert = eligible
+      .filter((s) => !existingSet.has(s.siswaId))
+      .map((s) => {
+        const nomor = `AKAL-${kursusId.slice(0, 8)}-${s.siswaId.slice(0, 8)}-${crypto.randomInt(1000, 9999)}`;
+        const qrHash = generateQRHash(nomor, s.siswaId);
+        return { siswaId: s.siswaId, kursusId, nomorSertifikat: nomor, qrSecretHash: qrHash };
       });
 
-      generated++;
+    if (toInsert.length > 0) {
+      await db.insert(sertifikat).values(toInsert);
     }
+
+    generated = toInsert.length;
 
     releaseConcurrent(`sertifikat-gen:${session.userId}`);
 

@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
 import { sertifikat, kursus, jawabanLog, skill, soal } from "@/lib/db/schema";
 import { generateQRHash } from "@/lib/sertifikat/generateQRHash";
+import { randomBytes } from "crypto";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 
@@ -16,7 +17,7 @@ const GenerateSertifikatSchema = z.object({
 
 function generateNomorSertifikat(): string {
   const ts = Date.now().toString(36).toUpperCase();
-  const rand = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const rand = randomBytes(4).toString("hex").toUpperCase();
   return `AKAL-${ts}-${rand}`;
 }
 

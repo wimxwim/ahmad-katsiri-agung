@@ -7,6 +7,7 @@ import { pengumuman } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
+import { sanitizeText } from "@/lib/sanitize";
 
 const UpdateSchema = z.object({
   judul: z.string().min(1).max(255).optional(),
@@ -79,6 +80,8 @@ export async function PUT(
   if (!parsed.success) return apiError("Data tidak valid", 400);
 
   const { judul, konten, target, isPinned, expiresAt } = parsed.data;
+  const sanitizedJudul = judul ? sanitizeText(judul, 255) : undefined;
+  const sanitizedKonten = konten ? sanitizeText(konten, 5000) : undefined;
   const where = session.role === "owner"
     ? eq(pengumuman.id, id)
     : and(eq(pengumuman.id, id), eq(pengumuman.guruId, session.userId));
@@ -86,8 +89,8 @@ export async function PUT(
   const [updated] = await db
     .update(pengumuman)
     .set({
-      judul,
-      konten,
+      judul: sanitizedJudul,
+      konten: sanitizedKonten,
       target,
       isPinned,
       ...(expiresAt !== undefined ? { expiresAt: expiresAt ? new Date(expiresAt) : null } : {}),

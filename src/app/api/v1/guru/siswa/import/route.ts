@@ -52,89 +52,112 @@ export async function POST(request: NextRequest) {
       .select({ id: users.id, email: users.email, role: users.role, nama: users.nama })
       .from(users)
       .where(and(inArray(users.email, emails), isNull(users.deletedAt)));
-    const existingByEmail = new Map(existing.map((u) => [u.email.toLowerCase(), u]));
 
     const result: ImportResult = { created: 0, reEnrolled: 0, skipped: [] };
 
+    const newUsers: { nama: string; email: string; passwordHash: string; kelas: string | null }[] = [];
+    const userRowMap = new Map<string, typeof existing[number]>();
+    for (const u of existing) userRowMap.set(u.email.toLowerCase(), u);
+
     for (const row of parsed.data.rows) {
       const email = row.email.toLowerCase();
-      const existingUser = existingByEmail.get(email);
-
-      let userId: string;
+      const existingUser = userRowMap.get(email);
       if (existingUser) {
         if (existingUser.role !== "SISWA") {
           result.skipped.push({ email, reason: `email terdaftar sebagai ${existingUser.role}` });
-          continue;
         }
-        userId = existingUser.id;
-      } else {
-        const passwordHash = await hashPassword(row.password || defaultPassword);
-        const [created] = await db
-          .insert(users)
-          .values({
-            nama: row.nama,
-            email,
-            role: "SISWA",
-            passwordHash,
-            kelas: row.kelas || parsed.data.defaultKelasNama || null,
-          })
-          .returning({ id: users.id });
-        userId = created.id;
-        existingByEmail.set(email, {
-          id: userId,
-          email,
-          role: "SISWA",
-          nama: row.nama,
-        });
+        continue;
+      }
+      newUsers.push({
+        nama: row.nama,
+        email,
+        passwordHash: row.password || defaultPassword,
+        kelas: row.kelas || parsed.data.defaultKelasNama || null,
+      });
+    }
+
+    if (newUsers.length > 0) {
+      const passwordHashes = await Promise.all(newUsers.map((u) => hashPassword(u.passwordHash)));
+      const created = await db
+        .insert(users)
+        .values(newUsers.map((u, i) => ({
+          nama: u.nama,
+          email: u.email,
+          role: "SISWA" as const,
+          passwordHash: passwordHashes[i],
+          kelas: u.kelas,
+        })))
+        .returning({ id: users.id, email: users.email, nama: users.nama });
+      for (const c of created) {
+        userRowMap.set(c.email.toLowerCase(), { id: c.id, email: c.email, role: "SISWA", nama: c.nama });
         result.created += 1;
         await logAuthEvent("auth.register.success", {
-          userId,
-          email,
+          userId: c.id,
+          email: c.email,
           method: "csv_import",
           ip,
           portal: "siswa",
         });
       }
+    }
 
+    const kelasNames = new Set<string>();
+    for (const row of parsed.data.rows) {
+      const email = row.email.toLowerCase();
+      const existingUser = userRowMap.get(email);
+      if (!existingUser || existingUser.role !== "SISWA") continue;
       const targetKelasNama = row.kelas || parsed.data.defaultKelasNama;
-      if (targetKelasNama) {
-        const ownedKelas = await db
-          .select()
-          .from(kelas)
-          .where(
-            and(
-              eq(kelas.guruId, session.userId!),
-              eq(kelas.nama, targetKelasNama),
-              isNull(kelas.deletedAt),
-            ),
-          )
-          .limit(1);
+      if (targetKelasNama) kelasNames.add(targetKelasNama);
+    }
 
-        let kelasId: string;
-        if (ownedKelas.length) {
-          kelasId = ownedKelas[0].id;
-        } else {
-          const [auto] = await db
-            .insert(kelas)
-            .values({
-              nama: targetKelasNama,
-              tingkat: 7,
-              guruId: session.userId!,
-            })
-            .returning({ id: kelas.id });
-          kelasId = auto.id;
-        }
+    if (kelasNames.size > 0) {
+      const existingKelas = await db
+        .select({ id: kelas.id, nama: kelas.nama })
+        .from(kelas)
+        .where(and(
+          eq(kelas.guruId, session.userId!),
+          inArray(kelas.nama, [...kelasNames]),
+          isNull(kelas.deletedAt),
+        ));
+      const kelasByName = new Map(existingKelas.map((k) => [k.nama, k.id]));
 
-        const existingRel = await db
-          .select()
-          .from(siswaKelas)
-          .where(and(eq(siswaKelas.siswaId, userId), eq(siswaKelas.kelasId, kelasId)))
-          .limit(1);
+      const newKelasNames = [...kelasNames].filter((n) => !kelasByName.has(n));
+      if (newKelasNames.length > 0) {
+        const createdKelas = await db
+          .insert(kelas)
+          .values(newKelasNames.map((nama) => ({ nama, tingkat: 7, guruId: session.userId! })))
+          .returning({ id: kelas.id, nama: kelas.nama });
+        for (const k of createdKelas) kelasByName.set(k.nama, k.id);
+      }
 
-        if (!existingRel.length) {
-          await db.insert(siswaKelas).values({ siswaId: userId, kelasId });
-          result.reEnrolled += 1;
-        }
+      const relToInsert: { siswaId: string; kelasId: string }[] = [];
+      const seenRels = new Set<string>();
+
+      const existingRels = await db
+        .select({ siswaId: siswaKelas.siswaId, kelasId: siswaKelas.kelasId })
+        .from(siswaKelas)
+        .where(and(
+          inArray(siswaKelas.kelasId, [...kelasByName.values()]),
+        ));
+      const relSet = new Set(existingRels.map((r) => `${r.siswaId}:${r.kelasId}`));
+
+      for (const row of parsed.data.rows) {
+        const email = row.email.toLowerCase();
+        const existingUser = userRowMap.get(email);
+        if (!existingUser || existingUser.role !== "SISWA") continue;
+        const targetKelasNama = row.kelas || parsed.data.defaultKelasNama;
+        if (!targetKelasNama) continue;
+        const kelasId = kelasByName.get(targetKelasNama);
+        if (!kelasId) continue;
+        const key = `${existingUser.id}:${kelasId}`;
+        if (relSet.has(key) || seenRels.has(key)) continue;
+        relToInsert.push({ siswaId: existingUser.id, kelasId });
+        seenRels.add(key);
+        result.reEnrolled += 1;
+      }
+
+      if (relToInsert.length > 0) {
+        await db.insert(siswaKelas).values(relToInsert);
       }
     }
 

@@ -8,6 +8,7 @@ import { aiGeneration } from "@/lib/db/schema";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
+import { sanitizeText } from "@/lib/sanitize";
 
 const EditSchema = z.object({
   judul: z.string().min(1).max(200).optional(),
@@ -51,8 +52,8 @@ export async function POST(
       materiStatus: "edited";
       updatedAt: Date;
     } = { materiStatus: "edited", updatedAt: new Date() };
-    if (parsed.data.konten !== undefined) updates.materiEditedKonten = parsed.data.konten;
-    if (parsed.data.judul !== undefined) updates.materiJudul = parsed.data.judul;
+    if (parsed.data.konten !== undefined) updates.materiEditedKonten = sanitizeText(parsed.data.konten, 8000);
+    if (parsed.data.judul !== undefined) updates.materiJudul = sanitizeText(parsed.data.judul, 200);
 
     const [updated] = await db
       .update(aiGeneration)

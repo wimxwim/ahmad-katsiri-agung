@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { aiGeneration, fileMateri } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { runGenerationFromText } from "@/lib/ai-generator";
-import { checkGenerateBalance, deductGenerateCost, getBalance } from "@/lib/token-service";
+import { checkGenerateBalance, deductGenerateCost, getBalance, creditBalance, getGenerateCost } from "@/lib/token-service";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import {
   checkRateLimit,
@@ -103,6 +103,7 @@ export async function POST(
     } catch (e) {
       console.error("Generate error:", e);
       generateError = "Gagal generate konten AI";
+      try { await creditBalance(session.userId!, getGenerateCost()); } catch { /* refund best-effort */ }
     } finally {
       releaseConcurrent(`gen:${session.userId}`);
     }

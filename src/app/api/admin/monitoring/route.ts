@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import {
   quizAttempt,
@@ -8,11 +8,14 @@ import {
   users,
 } from "@/lib/db/schema";
 import { eq, and, gte, sql, desc, count } from "drizzle-orm";
+import { requireOwner, GuardError } from "@/lib/route-guard-v2";
+import { apiError } from "@/lib/api-response";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    await requireOwner(request);
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
@@ -127,6 +130,7 @@ export async function GET() {
       },
     });
   } catch (error) {
+    if (error instanceof GuardError) return apiError(error.message, error.status);
     console.error("Monitoring API error:", error);
     return NextResponse.json(
       {

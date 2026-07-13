@@ -11,7 +11,7 @@ import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import { validateCsrf } from "@/lib/csrf-server";
-import { checkGenerateBalance, deductGenerateCost, getBalance } from "@/lib/token-service";
+import { checkGenerateBalance, deductGenerateCost, getBalance, creditBalance, getGenerateCost } from "@/lib/token-service";
 
 export async function POST(
   request: NextRequest,
@@ -106,6 +106,7 @@ export async function POST(
     runGeneration(id, bytes, ext)
       .catch((e) => {
         console.error("Regenerate async error:", e);
+        creditBalance(session.userId!, getGenerateCost()).catch(() => {});
       })
       .finally(() => {
         releaseConcurrent(`gen:${session.userId}`);

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { logAuthEvent } from "@/lib/auth-audit";
@@ -42,12 +41,11 @@ export async function POST(request: NextRequest) {
     }
 
     const response = NextResponse.json({ success: true, redirect: "/masuk" });
-    const cookieStore = await cookies();
-    cookieStore.delete(SESSION_COOKIE_NAME);
-    cookieStore.delete(REFRESH_COOKIE_NAME);
-    cookieStore.delete("akal_google_state");
-    cookieStore.delete("akal_google_portal");
-    cookieStore.delete("akal_google_return");
+    response.cookies.set(SESSION_COOKIE_NAME, "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
+    response.cookies.set(REFRESH_COOKIE_NAME, "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
+    response.cookies.set("akal_google_state", "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
+    response.cookies.set("akal_google_portal", "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
+    response.cookies.set("akal_google_return", "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
     return response;
   } catch (e) {
     console.error("Logout error:", e);
