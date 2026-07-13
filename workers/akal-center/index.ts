@@ -268,7 +268,9 @@ export default {
       response.headers.set('Cache-Control', 'public, max-age=604800');
     } else if (page && request.method === 'GET') {
       response.headers.set('Cache-Control', 'private, no-cache, must-revalidate');
-    } else if (!cacheCheck.cacheable) {
+    } else if (cacheCheck.cacheable) {
+      response.headers.set('Cache-Control', `public, max-age=${cacheCheck.ttl}, s-maxage=${cacheCheck.ttl}`);
+    } else {
       response.headers.set('Cache-Control', 'no-cache');
     }
 
