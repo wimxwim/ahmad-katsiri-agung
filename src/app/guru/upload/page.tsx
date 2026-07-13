@@ -249,7 +249,7 @@ export default function GuruUploadPage() {
             <button
               type="button"
               onClick={(e) => { e.preventDefault(); pickFile(null); }}
-              className="ml-2 p-1.5 rounded-lg text-on-surface-variant hover:bg-red-50 hover:text-red-600"
+              className="ml-2 p-1.5 rounded-lg text-on-surface-variant hover:bg-red-50 hover:text-red-600 active:scale-[0.98]"
               aria-label="Buang file"
             >
               <X className="w-4 h-4" />
@@ -296,7 +296,7 @@ export default function GuruUploadPage() {
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               onClick={reset}
-              className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
+              className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
             >
               <FilePlus className="w-4 h-4" />
               Upload Dokumen Lain
@@ -309,7 +309,7 @@ export default function GuruUploadPage() {
         <button
           onClick={handleUpload}
           disabled={!file || !selectedKursus || (job.state !== "idle" && job.state !== "failed" && job.state !== "ready")}
-          className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {job.state === "uploading" || job.state === "extracting" ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -321,7 +321,7 @@ export default function GuruUploadPage() {
         {file && (job.state === "idle" || job.state === "failed" || job.state === "ready") && (
           <button
             onClick={reset}
-            className="text-xs text-on-surface-variant hover:text-primary transition-colors"
+            className="text-xs text-on-surface-variant hover:text-primary active:scale-[0.98] transition-colors"
           >
             Bersihkan pilihan
           </button>

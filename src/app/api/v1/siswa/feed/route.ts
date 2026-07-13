@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
     const rl = await checkRateLimit(`siswa-feed:${session.userId}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
+    const limit = Math.min(parseInt(request.nextUrl.searchParams.get("limit") || "20", 10), 100);
+    const offset = Math.max(parseInt(request.nextUrl.searchParams.get("offset") || "0", 10), 0);
+
     const myEnrollments = await db
       .select({ kursusId: siswaKursus.kursusId })
       .from(siswaKursus)
@@ -47,12 +50,19 @@ export async function GET(request: NextRequest) {
       })
       .from(materiPublished)
       .where(inArray(materiPublished.kursusId, enrolledIds))
-      .orderBy(asc(materiPublished.kursusId), asc(materiPublished.urutan));
+      .orderBy(asc(materiPublished.kursusId), asc(materiPublished.urutan))
+      .limit(limit)
+      .offset(offset);
 
     const readMap = new Map<string, { readAt: Date; progress: number; selesai: boolean }>();
     if (materiList.length > 0) {
       const reads = await db
-        .select()
+        .select({
+          materiPublishedId: materiRead.materiPublishedId,
+          readAt: materiRead.readAt,
+          progressPersen: materiRead.progressPersen,
+          selesai: materiRead.selesai,
+        })
         .from(materiRead)
         .where(
           and(
@@ -102,6 +112,8 @@ export async function GET(request: NextRequest) {
       totalMateri: enriched.length,
       totalSelesai,
       terdaftar: true,
+      limit,
+      offset,
     });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);

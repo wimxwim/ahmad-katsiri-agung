@@ -117,7 +117,7 @@ function DoubleBezelStatCard({ label, value, icon: Icon, color, delay = 0 }: Dou
       <div className="absolute inset-0 rounded-card bg-gradient-to-br from-white/40 to-transparent border border-border-precision shadow-glass" />
       <motion.div
         animate={{ scale: [1, 1.015, 1] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: delay * 0.3 }}
+        transition={{ duration: 3, repeat: Infinity, ease: EASE_CURVE, delay: delay * 0.3 }}
         className="relative rounded-card bg-glass backdrop-blur-2xl p-5"
       >
         <div className="rounded-portal bg-gradient-to-br from-primary/[0.04] to-transparent border border-primary/[0.08] p-4">
@@ -130,7 +130,7 @@ function DoubleBezelStatCard({ label, value, icon: Icon, color, delay = 0 }: Dou
             </div>
             <motion.div
               animate={{ rotate: [0, 5, 0, -5, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: delay * 0.4 }}
+              transition={{ duration: 6, repeat: Infinity, ease: EASE_CURVE, delay: delay * 0.4 }}
               className="w-1.5 h-1.5 rounded-full"
               style={{ backgroundColor: color }}
             />
@@ -165,7 +165,7 @@ function QuickActionCard({
         transition={{
           duration: 2.5 + index * 0.3,
           repeat: Infinity,
-          ease: "easeInOut",
+          ease: EASE_CURVE,
           delay: index * 0.2,
         }}
       >

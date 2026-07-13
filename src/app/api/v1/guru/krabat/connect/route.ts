@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -7,6 +8,10 @@ import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { krabatConnections, users } from "@/lib/db/schema";
 import { and, eq, or } from "drizzle-orm";
+
+const KrabatConnectSchema = z.object({
+  connectedGuruId: z.string().min(1),
+});
 
 export const dynamic = "force-dynamic";
 
@@ -22,12 +27,7 @@ export async function POST(request: NextRequest) {
       return apiError("Terlalu banyak request koneksi. Coba lagi nanti.", 429);
     }
 
-    const body = await request.json().catch(() => null);
-    if (!body || typeof body.connectedGuruId !== "string" || !body.connectedGuruId) {
-      return apiError("connectedGuruId wajib diisi", 400);
-    }
-
-    const { connectedGuruId } = body;
+    const { connectedGuruId } = KrabatConnectSchema.parse(await request.json());
 
     if (connectedGuruId === session.userId) {
       return apiError("Tidak bisa connect ke diri sendiri", 400);

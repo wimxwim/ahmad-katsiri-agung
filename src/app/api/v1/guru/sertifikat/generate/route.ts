@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimit, checkRateLimitPerUser, checkConcurrentLimit, releaseConcurrent, ipFromRequest } from "@/lib/rate-limit";
@@ -8,6 +9,10 @@ import { eq, and, sql } from "drizzle-orm";
 import { generateQRHash } from "@/lib/sertifikat/generateQRHash";
 import crypto from "crypto";
 import { validateCsrf } from "@/lib/csrf-server";
+
+const SertifikatGenerateSchema = z.object({
+  kursusId: z.string().min(1),
+});
 
 export const dynamic = "force-dynamic";
 
@@ -24,11 +29,7 @@ export async function POST(request: NextRequest) {
     const userRl = await checkRateLimitPerUser(`sertifikat-gen:${session.userId}`, 3, 60_000);
     if (!userRl.allowed) return apiRateLimit(userRl.retryAfter);
 
-    const { kursusId } = await request.json();
-
-    if (!kursusId || typeof kursusId !== "string") {
-      return apiError("kursusId wajib diisi", 400);
-    }
+    const { kursusId } = SertifikatGenerateSchema.parse(await request.json());
 
     const [owned] = await db
       .select({ id: kursus.id })

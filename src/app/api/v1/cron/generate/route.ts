@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { aiGeneration, fileMateri } from "@/lib/db/schema";
 import { eq, asc, and } from "drizzle-orm";
 import { runGenerationFromText } from "@/lib/ai-generator";
+import { apiError } from "@/lib/api-response";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -10,12 +11,12 @@ export const maxDuration = 300;
 export async function POST(request: NextRequest) {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
-    return NextResponse.json({ error: "CRON_SECRET tidak dikonfigurasi" }, { status: 500 });
+    return apiError("CRON_SECRET tidak dikonfigurasi", 500);
   }
   const auth = request.headers.get("Authorization");
   const expected = `Bearer ${cronSecret}`;
   if (auth !== expected) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const [pending] = await db

@@ -75,86 +75,98 @@ export async function GET(request: NextRequest) {
     const totalSiswa = enrolledRows.length;
     const siswaYangPunyaAttempt = quizAttemptRows.length;
 
-    let weakTopics: { pertanyaan: string; errorRate: number; totalJawab: number }[] = [];
-    try {
-      const jawabanStats = await db
-        .select({
-          soalId: jawabanLog.soalId,
-          totalJawab: sql<number>`cast(count(*) as integer)`,
-          totalSalah: sql<number>`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as integer)`,
-        })
-        .from(jawabanLog)
-        .groupBy(jawabanLog.soalId)
-        .having(sql`count(*) >= 3`)
-        .orderBy(desc(sql`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as real) / cast(count(*) as real)`))
-        .limit(3);
+    type DashboardWeakTopic = { pertanyaan: string; errorRate: number; totalJawab: number };
+    type DashboardRiskResult = { siswaBerisiko: number; siswaKritis: number };
 
-      if (jawabanStats.length > 0) {
-        const soalIds = jawabanStats.map((s) => s.soalId);
-        const soalMap = await db
-          .select({ id: soal.id, teks: soal.teks })
-          .from(soal)
-          .where(inArray(soal.id, soalIds));
-        const soalLookup = new Map(soalMap.map((s) => [s.id, s]));
-        for (const stat of jawabanStats) {
-          const s = soalLookup.get(stat.soalId);
-          weakTopics.push({
-            pertanyaan: s?.teks ?? "Soal tidak ditemukan",
-            errorRate: Math.round((stat.totalSalah / stat.totalJawab) * 100),
-            totalJawab: stat.totalJawab,
-          });
-        }
-      }
-    } catch {
-      // best-effort
-    }
-
-    let siswaBerisiko = 0;
-    let siswaKritis = 0;
-    try {
-      const enrolledSiswaIds = enrolledRows.map((r) => r.siswaId);
-      if (enrolledSiswaIds.length > 0) {
-        const [quizStats, userRows] = await Promise.all([
-          db
+    const [weakTopics, riskResult] = await Promise.all([
+      (async (): Promise<DashboardWeakTopic[]> => {
+        try {
+          const jawabanStats = await db
             .select({
-              siswaId: quizAttempt.siswaId,
-              total: sql<number>`cast(count(*) as integer)`,
-              benar: sql<number>`cast(sum(case when ${quizAttempt.nilai} >= 70 then 1 else 0 end) as integer)`,
+              soalId: jawabanLog.soalId,
+              totalJawab: sql<number>`cast(count(*) as integer)`,
+              totalSalah: sql<number>`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as integer)`,
             })
-            .from(quizAttempt)
-            .where(inArray(quizAttempt.siswaId, enrolledSiswaIds))
-            .groupBy(quizAttempt.siswaId),
-          db.execute<{ id: string; last_active_at: string | null }>(sql`
-            SELECT id, last_active_at FROM users WHERE id = ANY(${enrolledSiswaIds}::uuid[])
-          `),
-        ]);
+            .from(jawabanLog)
+            .groupBy(jawabanLog.soalId)
+            .having(sql`count(*) >= 3`)
+            .orderBy(desc(sql`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as real) / cast(count(*) as real)`))
+            .limit(3);
 
-        const quizMap = new Map(quizStats.map((s) => [s.siswaId, s]));
-        const loginMap = new Map((userRows.rows ?? []).map((u) => [u.id, u.last_active_at]));
-        const now = Date.now();
-        const DAY_MS = 86_400_000;
-
-        for (const siswaId of enrolledSiswaIds) {
-          const qs = quizMap.get(siswaId);
-          const quizPerf = qs && qs.total > 0 ? qs.benar / qs.total : 0;
-          const lastLogin = loginMap.get(siswaId);
-          const loginGap = lastLogin ? Math.max(0, (now - new Date(lastLogin).getTime()) / DAY_MS) : 30;
-          const risk = calculateRiskScore({
-            completionRate: quizPerf,
-            quizPerformance: quizPerf,
-            attendanceRate: 0.5,
-            loginGap,
-            timelinessRate: 0.5,
-            participationRate: qs && qs.total > 0 ? 1 : 0,
-          });
-          const label = getRiskLabel(risk);
-          if (label === "berisiko") siswaBerisiko++;
-          if (label === "kritis") siswaKritis++;
+          if (jawabanStats.length === 0) return [];
+          const soalIds = jawabanStats.map((s) => s.soalId);
+          const soalMap = await db
+            .select({ id: soal.id, teks: soal.teks })
+            .from(soal)
+            .where(inArray(soal.id, soalIds));
+          const soalLookup = new Map(soalMap.map((s) => [s.id, s]));
+          const topics: DashboardWeakTopic[] = [];
+          for (const stat of jawabanStats) {
+            const s = soalLookup.get(stat.soalId);
+            topics.push({
+              pertanyaan: s?.teks ?? "Soal tidak ditemukan",
+              errorRate: Math.round((stat.totalSalah / stat.totalJawab) * 100),
+              totalJawab: stat.totalJawab,
+            });
+          }
+          return topics;
+        } catch {
+          return [];
         }
-      }
-    } catch {
-      // best-effort
-    }
+      })(),
+      (async (): Promise<DashboardRiskResult> => {
+        let siswaBerisiko = 0;
+        let siswaKritis = 0;
+        try {
+          const enrolledSiswaIds = enrolledRows.map((r) => r.siswaId);
+          if (enrolledSiswaIds.length > 0) {
+            const [quizStats, userRows] = await Promise.all([
+              db
+                .select({
+                  siswaId: quizAttempt.siswaId,
+                  total: sql<number>`cast(count(*) as integer)`,
+                  benar: sql<number>`cast(sum(case when ${quizAttempt.nilai} >= 70 then 1 else 0 end) as integer)`,
+                })
+                .from(quizAttempt)
+                .where(inArray(quizAttempt.siswaId, enrolledSiswaIds))
+                .groupBy(quizAttempt.siswaId),
+              db.execute<{ id: string; last_active_at: string | null }>(sql`
+                SELECT id, last_active_at FROM users WHERE id = ANY(${enrolledSiswaIds}::uuid[])
+              `),
+            ]);
+
+            const quizMap = new Map(quizStats.map((s) => [s.siswaId, s]));
+            const loginMap = new Map((userRows.rows ?? []).map((u) => [u.id, u.last_active_at]));
+            const now = Date.now();
+            const DAY_MS = 86_400_000;
+
+            for (const siswaId of enrolledSiswaIds) {
+              const qs = quizMap.get(siswaId);
+              const quizPerf = qs && qs.total > 0 ? qs.benar / qs.total : 0;
+              const lastLogin = loginMap.get(siswaId);
+              const loginGap = lastLogin ? Math.max(0, (now - new Date(lastLogin).getTime()) / DAY_MS) : 30;
+              const risk = calculateRiskScore({
+                completionRate: quizPerf,
+                quizPerformance: quizPerf,
+                attendanceRate: 0.5,
+                loginGap,
+                timelinessRate: 0.5,
+                participationRate: qs && qs.total > 0 ? 1 : 0,
+              });
+              const label = getRiskLabel(risk);
+              if (label === "berisiko") siswaBerisiko++;
+              if (label === "kritis") siswaKritis++;
+            }
+          }
+        } catch {
+          // best-effort
+        }
+        return { siswaBerisiko, siswaKritis };
+      })(),
+    ]);
+
+    const siswaBerisiko = riskResult.siswaBerisiko;
+    const siswaKritis = riskResult.siswaKritis;
 
     const aiQuotaUsed = quotaRow?.[0]?.currentUsage ?? 0;
     const aiQuotaLimit = quotaRow?.[0]?.limitValue ?? 0;

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireOwner, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -7,6 +8,10 @@ import { db } from "@/lib/db";
 import { materiSharing, materiPublished, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+
+const SharingApproveSchema = z.object({
+  materiPublishedId: z.string().min(1),
+});
 
 export const dynamic = "force-dynamic";
 
@@ -21,12 +26,7 @@ export async function POST(request: NextRequest) {
     const rl = await checkRateLimit(`owner-sharing-approve:${ip}`, 10, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const body = await request.json().catch(() => null);
-    if (!body || typeof body.materiPublishedId !== "string" || !body.materiPublishedId) {
-      return apiError("materiPublishedId wajib diisi", 400);
-    }
-
-    const { materiPublishedId } = body;
+    const { materiPublishedId } = SharingApproveSchema.parse(await request.json());
 
     const [sharing] = await db
       .select()

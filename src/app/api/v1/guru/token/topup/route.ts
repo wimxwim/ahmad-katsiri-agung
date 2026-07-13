@@ -5,11 +5,8 @@ import { validateCsrf } from "@/lib/csrf-server";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
-import { payments, users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { payments } from "@/lib/db/schema";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
-import { creditBalance, getBalance } from "@/lib/token-service";
-import { sendTopupNotification } from "@/lib/telegram-notif";
 
 export const dynamic = "force-dynamic";
 
@@ -69,13 +66,6 @@ export async function POST(request: NextRequest) {
       proofImageUrl: uploadResult.link,
     });
 
-    const [guru] = await db
-      .select({ nama: users.nama })
-      .from(users)
-      .where(eq(users.id, session.userId!))
-      .limit(1);
-    const guruNama = guru?.nama ?? "Guru";
-
     await appendEvent(`topup:${session.userId}`, "token.topup_requested", {
       userId: session.userId,
       amount,
@@ -83,31 +73,9 @@ export async function POST(request: NextRequest) {
       at: new Date().toISOString(),
     });
 
-    setTimeout(async () => {
-      try {
-        await creditBalance(session.userId!, amount);
-        const newBalance = await getBalance(session.userId!);
-        await sendTopupNotification({
-          userId: session.userId!,
-          nama: guruNama,
-          amount,
-          proofUrl: uploadResult.link,
-          newBalance: newBalance.balance,
-        });
-        await appendEvent(`topup:${session.userId}`, "token.topup_credited", {
-          userId: session.userId,
-          amount,
-          newBalance: newBalance.balance,
-          at: new Date().toISOString(),
-        });
-      } catch (e) {
-        console.error("Auto-credit failed:", e instanceof Error ? e.message : String(e));
-      }
-    }, 15000);
-
     return NextResponse.json({
       success: true,
-      message: `Top-up Rp${amount.toLocaleString("id-ID")} sedang diproses. Saldo akan bertambah dalam 15 detik.`,
+      message: `Top-up Rp${amount.toLocaleString("id-ID")} sedang diverifikasi. Saldo akan bertambah setelah disetujui.`,
       amount,
       proofUrl: uploadResult.link,
     });

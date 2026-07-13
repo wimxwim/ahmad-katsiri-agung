@@ -274,7 +274,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors active:scale-[0.98] ${
                     tab === t
                       ? "bg-white text-on-surface shadow-glass"
                       : "text-on-surface-variant hover:text-on-surface"
@@ -321,7 +321,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                     </button>
                     <button
                       onClick={() => setEditingMateri(false)}
-                      className="text-xs text-on-surface-variant hover:text-on-surface"
+                      className="text-xs text-on-surface-variant hover:text-on-surface active:scale-[0.98]"
                     >
                       Batal
                     </button>
@@ -378,28 +378,28 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                   <div className="mt-4 pt-4 border-t border-border-precision/40 flex flex-wrap gap-2">
                     <button
                       onClick={startEditMateri}
-                      className="inline-flex items-center gap-1.5 bg-white text-primary border border-primary/20 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-primary/5"
+                      className="inline-flex items-center gap-1.5 bg-white text-primary border border-primary/20 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-primary/5 active:scale-[0.98]"
                     >
                       <Edit3 className="w-3 h-3" /> Edit
                     </button>
                     <button
                       onClick={() => act("/approve-materi", "approve-materi")}
                       disabled={busy === "approve-materi" || draft.materiStatus === "approved"}
-                      className="inline-flex items-center gap-1.5 bg-primary text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:brightness-110 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 bg-primary text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
                     >
                       <CheckCircle2 className="w-3 h-3" /> Approve Materi
                     </button>
                     <button
                       onClick={() => act("/reject-materi", "reject-materi")}
                       disabled={busy === "reject-materi"}
-                      className="inline-flex items-center gap-1.5 bg-white text-red-600 border border-red-200 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-red-50"
+                      className="inline-flex items-center gap-1.5 bg-white text-red-600 border border-red-200 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-red-50 active:scale-[0.98]"
                     >
                       <XCircle className="w-3 h-3" /> Tolak
                     </button>
                     <button
                       onClick={() => act("/regenerate-materi", "regen-materi")}
                       disabled={busy === "regen-materi"}
-                      className="inline-flex items-center gap-1.5 bg-white text-on-surface border border-border-precision px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-surface"
+                      className="inline-flex items-center gap-1.5 bg-white text-on-surface border border-border-precision px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-surface active:scale-[0.98]"
                     >
                       <RefreshCw className="w-3 h-3" /> Regenerate
                     </button>
@@ -440,14 +440,14 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                     <button
                       onClick={() => act("/approve-quiz", "approve-quiz")}
                       disabled={busy === "approve-quiz" || draft.quizStatus === "approved"}
-                      className="inline-flex items-center gap-1.5 bg-primary text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:brightness-110 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 bg-primary text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
                     >
                       <CheckCircle2 className="w-3 h-3" /> Approve Quiz
                     </button>
                     <button
                       onClick={() => act("/reject-quiz", "reject-quiz")}
                       disabled={busy === "reject-quiz"}
-                      className="inline-flex items-center gap-1.5 bg-white text-red-600 border border-red-200 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-red-50"
+                      className="inline-flex items-center gap-1.5 bg-white text-red-600 border border-red-200 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-red-50 active:scale-[0.98]"
                     >
                       <XCircle className="w-3 h-3" /> Tolak
                     </button>
@@ -486,14 +486,14 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                     <button
                       onClick={() => act("/approve-soal", "approve-soal")}
                       disabled={busy === "approve-soal" || draft.soalStatus === "approved"}
-                      className="inline-flex items-center gap-1.5 bg-primary text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:brightness-110 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 bg-primary text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
                     >
                       <CheckCircle2 className="w-3 h-3" /> Approve Soal
                     </button>
                     <button
                       onClick={() => act("/reject-soal", "reject-soal")}
                       disabled={busy === "reject-soal"}
-                      className="inline-flex items-center gap-1.5 bg-white text-red-600 border border-red-200 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-red-50"
+                      className="inline-flex items-center gap-1.5 bg-white text-red-600 border border-red-200 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-red-50 active:scale-[0.98]"
                     >
                       <XCircle className="w-3 h-3" /> Tolak
                     </button>
@@ -514,7 +514,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
               <button
                 onClick={() => act("/close-review", "close-review")}
                 disabled={!canClose || busy === "close-review"}
-                className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 disabled:opacity-50"
+                className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 {busy === "close-review" ? "Menyimpan..." : "Tutup Review & Teruskan"}

@@ -34,7 +34,7 @@ export async function POST(
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`gen-trigger:${ip}`, 10, 60_000);
-    if (!rl.allowed) return NextResponse.json({ error: "Terlalu banyak permintaan" }, { status: 429, headers: { "Retry-After": String(Math.ceil(rl.retryAfter / 1000)) } });
+    if (!rl.allowed) return apiError("Terlalu banyak permintaan", 429, undefined, undefined, { "Retry-After": String(Math.ceil(rl.retryAfter / 1000)) });
 
     const [gen] = await db
       .select()

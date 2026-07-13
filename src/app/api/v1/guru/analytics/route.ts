@@ -26,7 +26,11 @@ export async function GET(request: NextRequest) {
     const rl = await checkRateLimitPerUser(`analytics:${guruId}`, 5, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-  const [kursusList, siswaList, draftsList, kuisList] = await Promise.all([
+  const now = new Date();
+  const fourWeeksAgo = new Date(now);
+  fourWeeksAgo.setDate(now.getDate() - 28);
+
+  const [kursusList, siswaList, draftsList, kuisList, weekData] = await Promise.all([
     db
       .select({ id: kursus.id, judul: kursus.judul })
       .from(kursus)
@@ -50,26 +54,21 @@ export async function GET(request: NextRequest) {
       .from(quizSession)
       .innerJoin(kursus, eq(quizSession.kursusId, kursus.id))
       .where(and(eq(kursus.guruId, guruId), eq(quizSession.isActive, true))),
+    db
+      .select({
+        week: sql<string>`to_char(date_trunc('week', ${eventStore.createdAt}), 'YYYY-MM-DD')`,
+        total: sql<number>`cast(count(*) as integer)`,
+      })
+      .from(eventStore)
+      .where(
+        and(
+          eq(eventStore.streamId, `upload:${guruId}`),
+          gte(eventStore.createdAt, fourWeeksAgo),
+        ),
+      )
+      .groupBy(sql`date_trunc('week', ${eventStore.createdAt})`)
+      .orderBy(sql`date_trunc('week', ${eventStore.createdAt})`),
   ]);
-
-  const now = new Date();
-  const fourWeeksAgo = new Date(now);
-  fourWeeksAgo.setDate(now.getDate() - 28);
-
-  const weekData = await db
-    .select({
-      week: sql<string>`to_char(date_trunc('week', ${eventStore.createdAt}), 'YYYY-MM-DD')`,
-      total: sql<number>`cast(count(*) as integer)`,
-    })
-    .from(eventStore)
-    .where(
-      and(
-        eq(eventStore.streamId, `upload:${guruId}`),
-        gte(eventStore.createdAt, fourWeeksAgo),
-      ),
-    )
-    .groupBy(sql`date_trunc('week', ${eventStore.createdAt})`)
-    .orderBy(sql`date_trunc('week', ${eventStore.createdAt})`);
 
   const trend: { minggu: string; total: number }[] = [];
   for (let i = 0; i < 4; i++) {
@@ -164,41 +163,15 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const remedialList: {
+  type RemedialEntry = {
     siswaId: string;
     nama: string;
     rataNilai: number;
     totalAttempt: number;
     kursus: string[];
-  }[] = [];
-  if (remedialSiswaIds.size > 0) {
-    const remedialUsers = await db
-      .select({ id: users.id, nama: users.nama })
-      .from(users)
-      .where(inArray(users.id, Array.from(remedialSiswaIds)));
-    const userMap = new Map(remedialUsers.map((u) => [u.id, u.nama]));
-    for (const siswaId of remedialSiswaIds) {
-      const score = remedialScores.get(siswaId)!;
-      const avg = Math.round(score.total / score.count);
-      const studentCourseIds = new Set(
-        allAttempts.filter((a) => a.siswaId === siswaId).map((a) => {
-          const q = quizPubs.find((qp) => qp.id === a.quizPublishedId);
-          return q?.kursusId;
-        }).filter(Boolean),
-      );
-      const studentCourses = kursusList.filter((k) => studentCourseIds.has(k.id)).map((k) => k.judul);
-      remedialList.push({
-        siswaId,
-        nama: userMap.get(siswaId) ?? "Siswa",
-        rataNilai: avg,
-        totalAttempt: score.count,
-        kursus: studentCourses,
-      });
-    }
-    remedialList.sort((a, b) => a.rataNilai - b.rataNilai);
-  }
+  };
 
-  const weakTopics: {
+  type WeakTopic = {
     soalId: string;
     pertanyaan: string;
     tipe: string;
@@ -206,44 +179,79 @@ export async function GET(request: NextRequest) {
     totalBenar: number;
     totalSalah: number;
     errorRate: number;
-  }[] = [];
-  try {
-    const jawabanStats = await db
-      .select({
-        soalId: jawabanLog.soalId,
-        totalJawab: sql<number>`cast(count(*) as integer)`,
-        totalBenar: sql<number>`cast(sum(case when ${jawabanLog.isBenar} then 1 else 0 end) as integer)`,
-        totalSalah: sql<number>`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as integer)`,
-      })
-      .from(jawabanLog)
-      .groupBy(jawabanLog.soalId)
-      .having(sql`count(*) >= 3`)
-      .orderBy(desc(sql`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as real) / cast(count(*) as real)`))
-      .limit(10);
+  };
 
-    if (jawabanStats.length > 0) {
-      const soalIds = jawabanStats.map((s) => s.soalId);
-      const soalMap = await db
-        .select({ id: soal.id, teks: soal.teks, tipe: soal.tipe })
-        .from(soal)
-        .where(inArray(soal.id, soalIds));
-      const soalLookup = new Map(soalMap.map((s) => [s.id, s]));
-      for (const stat of jawabanStats) {
-        const s = soalLookup.get(stat.soalId);
-        weakTopics.push({
-          soalId: stat.soalId,
-          pertanyaan: s?.teks ?? "Soal tidak ditemukan",
-          tipe: s?.tipe ?? "PG",
-          totalJawab: stat.totalJawab,
-          totalBenar: stat.totalBenar,
-          totalSalah: stat.totalSalah,
-          errorRate: Math.round((stat.totalSalah / stat.totalJawab) * 100),
+  const [remedialList, weakTopics] = await Promise.all([
+    (async (): Promise<RemedialEntry[]> => {
+      const list: RemedialEntry[] = [];
+      if (remedialSiswaIds.size === 0) return list;
+      const remedialUsers = await db
+        .select({ id: users.id, nama: users.nama })
+        .from(users)
+        .where(inArray(users.id, Array.from(remedialSiswaIds)));
+      const userMap = new Map(remedialUsers.map((u) => [u.id, u.nama]));
+      for (const siswaId of remedialSiswaIds) {
+        const score = remedialScores.get(siswaId)!;
+        const avg = Math.round(score.total / score.count);
+        const studentCourseIds = new Set(
+          allAttempts.filter((a) => a.siswaId === siswaId).map((a) => {
+            const q = quizPubs.find((qp) => qp.id === a.quizPublishedId);
+            return q?.kursusId;
+          }).filter(Boolean),
+        );
+        const studentCourses = kursusList.filter((k) => studentCourseIds.has(k.id)).map((k) => k.judul);
+        list.push({
+          siswaId,
+          nama: userMap.get(siswaId) ?? "Siswa",
+          rataNilai: avg,
+          totalAttempt: score.count,
+          kursus: studentCourses,
         });
       }
-    }
-  } catch {
-    // jawabanLog weak topics is best-effort
-  }
+      list.sort((a, b) => a.rataNilai - b.rataNilai);
+      return list;
+    })(),
+    (async (): Promise<WeakTopic[]> => {
+      try {
+        const jawabanStats = await db
+          .select({
+            soalId: jawabanLog.soalId,
+            totalJawab: sql<number>`cast(count(*) as integer)`,
+            totalBenar: sql<number>`cast(sum(case when ${jawabanLog.isBenar} then 1 else 0 end) as integer)`,
+            totalSalah: sql<number>`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as integer)`,
+          })
+          .from(jawabanLog)
+          .groupBy(jawabanLog.soalId)
+          .having(sql`count(*) >= 3`)
+          .orderBy(desc(sql`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as real) / cast(count(*) as real)`))
+          .limit(10);
+
+        if (jawabanStats.length === 0) return [];
+        const soalIds = jawabanStats.map((s) => s.soalId);
+        const soalMap = await db
+          .select({ id: soal.id, teks: soal.teks, tipe: soal.tipe })
+          .from(soal)
+          .where(inArray(soal.id, soalIds));
+        const soalLookup = new Map(soalMap.map((s) => [s.id, s]));
+        const topics: WeakTopic[] = [];
+        for (const stat of jawabanStats) {
+          const s = soalLookup.get(stat.soalId);
+          topics.push({
+            soalId: stat.soalId,
+            pertanyaan: s?.teks ?? "Soal tidak ditemukan",
+            tipe: s?.tipe ?? "PG",
+            totalJawab: stat.totalJawab,
+            totalBenar: stat.totalBenar,
+            totalSalah: stat.totalSalah,
+            errorRate: Math.round((stat.totalSalah / stat.totalJawab) * 100),
+          });
+        }
+        return topics;
+      } catch {
+        return [];
+      }
+    })(),
+  ]);
 
   const totalSemuaNilai = kursusBreakdown.reduce((s, k) => s + k.rataNilai * k.totalAttempt, 0);
   const rataNilaiKeseluruhan = totalAttemptAll > 0

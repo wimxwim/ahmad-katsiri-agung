@@ -45,6 +45,11 @@ export async function GET(
       );
 
     const enrolledKursusIds = enrollments.map((e) => e.kursusId);
+
+    if (enrolledKursusIds.length === 0) {
+      return apiError("Siswa tidak terdaftar di kursus Anda", 403);
+    }
+
     const enrolledKursus = guruKursus.filter((k) => enrolledKursusIds.includes(k.id));
 
     const quizPubs = await db

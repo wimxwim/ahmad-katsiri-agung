@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
     const rl = await checkRateLimit(`siswa-progres:${session.userId}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
+    const limit = Math.min(parseInt(request.nextUrl.searchParams.get("limit") || "20", 10), 100);
+    const offset = Math.max(parseInt(request.nextUrl.searchParams.get("offset") || "0", 10), 0);
+
     const attempts = await db
       .select({
         id: quizAttempt.id,
@@ -28,12 +31,18 @@ export async function GET(request: NextRequest) {
       .from(quizAttempt)
       .where(eq(quizAttempt.siswaId, session.userId!))
       .orderBy(desc(quizAttempt.waktuMulai))
-      .limit(50);
+      .limit(limit)
+      .offset(offset);
 
     const quizIds = [...new Set(attempts.map((a) => a.quizPublishedId))];
     const quizList = quizIds.length
       ? await db
-          .select()
+          .select({
+            id: quizPublished.id,
+            kursusId: quizPublished.kursusId,
+            judul: quizPublished.judul,
+            modeEvaluasi: quizPublished.modeEvaluasi,
+          })
           .from(quizPublished)
           .where(inArray(quizPublished.id, quizIds))
       : [];
@@ -81,6 +90,8 @@ export async function GET(request: NextRequest) {
         totalSelesai,
         rataNilai: totalRata,
       },
+      limit,
+      offset,
     });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);

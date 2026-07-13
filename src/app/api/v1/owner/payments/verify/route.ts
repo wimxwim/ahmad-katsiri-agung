@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireOwner, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
@@ -6,6 +7,11 @@ import { db } from "@/lib/db";
 import { payments } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { validateCsrf } from "@/lib/csrf-server";
+
+const PaymentVerifySchema = z.object({
+  paymentId: z.string().min(1),
+  action: z.enum(["confirm", "reject"]),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,12 +23,7 @@ export async function POST(request: NextRequest) {
     const rl = await checkRateLimitPerUser(`payment-verify:${session.userId}`, 20, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const body = await request.json();
-    const { paymentId, action } = body as { paymentId: string; action: "confirm" | "reject" };
-
-    if (!paymentId || !["confirm", "reject"].includes(action)) {
-      return apiError("paymentId dan action (confirm/reject) wajib", 400);
-    }
+    const { paymentId, action } = PaymentVerifySchema.parse(await request.json());
 
     const newStatus = action === "confirm" ? "confirmed" : "rejected";
 

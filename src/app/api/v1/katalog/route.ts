@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { materiPublished, materiSharing, users, kursus } from "@/lib/db/schema";
 import { and, eq, desc } from "drizzle-orm";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
-import { apiRateLimit } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +46,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: rows, limit, offset });
   } catch (e) {
     console.error("Katalog error:", e);
-    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 });
+    return apiError("Terjadi kesalahan server", 500);
   }
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
 import { onboardingProgress } from "@/lib/db/schema";
@@ -16,6 +17,10 @@ const STEPS = [
   "first_ai",
   "first_publish",
 ] as const;
+
+const OnboardingStepSchema = z.object({
+  step: z.enum(STEPS),
+});
 
 type Step = (typeof STEPS)[number];
 
@@ -86,12 +91,7 @@ export async function POST(request: NextRequest) {
     const rl2 = await checkRateLimit(`onboarding-write:${ip2}`, 10, 60_000);
     if (!rl2.allowed) return apiRateLimit(rl2.retryAfter);
 
-    const body = await request.json();
-    const { step } = body as { step: Step };
-
-    if (!step || !STEPS.includes(step)) {
-      return apiError(`Step tidak valid. Gunakan: ${STEPS.join(", ")}`, 400);
-    }
+    const { step } = OnboardingStepSchema.parse(await request.json());
 
     const stepIndex = STEPS.indexOf(step);
     const fieldMap: Record<Step, string> = {

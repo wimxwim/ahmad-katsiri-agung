@@ -7,6 +7,7 @@ import { quizAttempt, quizPublished, soalPublished, siswaKursus } from "@/lib/db
 import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
+import { validateCsrf } from "@/lib/csrf-server";
 
 const SubmitSchema = z.object({
   durasiDetik: z.number().int().min(0).max(60 * 60 * 4),
@@ -21,6 +22,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
     const session = await requireSiswa(request);
 
     const { id } = await params;

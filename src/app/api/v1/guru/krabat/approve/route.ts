@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -7,6 +8,11 @@ import { db } from "@/lib/db";
 import { krabatConnections, users } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+
+const KrabatApproveSchema = z.object({
+  connectionId: z.string().min(1),
+  action: z.enum(["approve", "reject"]),
+});
 
 export const dynamic = "force-dynamic";
 
@@ -21,15 +27,7 @@ export async function POST(request: NextRequest) {
     const rl = await checkRateLimit(`krabat-approve:${ip}`, 10, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const body = await request.json().catch(() => null);
-    if (!body || typeof body.connectionId !== "string" || !body.connectionId) {
-      return apiError("connectionId wajib diisi", 400);
-    }
-    if (!body.action || !["approve", "reject"].includes(body.action)) {
-      return apiError("action harus 'approve' atau 'reject'", 400);
-    }
-
-    const { connectionId, action } = body;
+    const { connectionId, action } = KrabatApproveSchema.parse(await request.json());
 
     const [conn] = await db
       .select()
