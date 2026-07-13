@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     const response = NextResponse.redirect(authUrl);
     response.cookies.set("akal_google_state", state, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: "lax",
       path: "/",
       maxAge: 600,
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     if (portal) {
       response.cookies.set("akal_google_portal", portal, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
         sameSite: "lax",
         path: "/",
         maxAge: 600,
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) {
       response.cookies.set("akal_google_return", returnTo, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
         sameSite: "lax",
         path: "/",
         maxAge: 600,

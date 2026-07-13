@@ -249,7 +249,7 @@ for (const originVariant of [originStr, encodeURIComponent(originStr)]) {
     if (cspHeader && cspHeader.includes("'nonce-")) {
       const fixedCsp = cspHeader.replace(
         /script-src\s+'self'\s+'nonce-[^']+'/,
-        "script-src 'self' 'unsafe-inline'"
+        "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com"
       );
       response.headers.set('Content-Security-Policy', fixedCsp);
     }

@@ -149,14 +149,14 @@ export async function GET(request: NextRequest) {
       clearTempCookies(resp);
       resp.cookies.set(SESSION_COOKIE_NAME, token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
         sameSite: "lax",
         path: "/",
         maxAge: SESSION_DURATION_SECONDS,
       });
       resp.cookies.set(REFRESH_COOKIE_NAME, refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
         sameSite: "lax",
         path: "/api/v1/auth/refresh",
         maxAge: 30 * 24 * 60 * 60,
@@ -218,14 +218,14 @@ export async function GET(request: NextRequest) {
     clearTempCookies(resp);
     resp.cookies.set(SESSION_COOKIE_NAME, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: "lax",
       path: "/",
       maxAge: SESSION_DURATION_SECONDS,
     });
     resp.cookies.set(REFRESH_COOKIE_NAME, refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: "lax",
       path: "/api/v1/auth/refresh",
       maxAge: 30 * 24 * 60 * 60,
