@@ -30,7 +30,17 @@ export async function GET(
   if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
   const { id } = await params;
-  const [row] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
+  const [row] = await db.select({
+    id: pengumuman.id,
+    judul: pengumuman.judul,
+    konten: pengumuman.konten,
+    target: pengumuman.target,
+    guruId: pengumuman.guruId,
+    isPinned: pengumuman.isPinned,
+    publishedAt: pengumuman.publishedAt,
+    expiresAt: pengumuman.expiresAt,
+    createdAt: pengumuman.createdAt,
+  }).from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
   if (!row) return apiError("Pengumuman tidak ditemukan", 404);
   if (row.target === "GURU" && !GURU_ROLES.has(session.role)) {
     return apiError("Tidak diizinkan", 403);
@@ -53,7 +63,8 @@ export async function PUT(
   if (csrfError) return csrfError;
 
   const { id } = await params;
-  const [existing] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
+  const [existing] = await db.select({ id: pengumuman.id, guruId: pengumuman.guruId })
+    .from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
   if (!existing) return apiError("Pengumuman tidak ditemukan", 404);
   if (existing.guruId !== session.userId && session.role !== "owner") {
     return apiError("Hanya pembuat yang bisa mengubah", 403);
@@ -102,7 +113,8 @@ export async function DELETE(
   if (csrfError) return csrfError;
 
   const { id } = await params;
-  const [existing] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
+  const [existing] = await db.select({ id: pengumuman.id, guruId: pengumuman.guruId })
+    .from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
   if (!existing) return apiError("Pengumuman tidak ditemukan", 404);
   if (existing.guruId !== session.userId && session.role !== "owner") {
     return apiError("Hanya pembuat yang bisa menghapus", 403);

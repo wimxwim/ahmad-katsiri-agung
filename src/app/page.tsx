@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { WA_NUMBER } from "@/lib/constants";
+import { WA_NUMBER, EASE_CURVE } from "@/lib/constants";
 import { motion } from "motion/react";
 import { Button, Card, Tag, Steps, Collapse, Typography } from "antd";
 import {
@@ -31,7 +31,7 @@ const fadeUp = {
     transition: {
       duration: 0.7,
       delay: i * 0.1,
-      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+      ease: EASE_CURVE,
     },
   }),
 };

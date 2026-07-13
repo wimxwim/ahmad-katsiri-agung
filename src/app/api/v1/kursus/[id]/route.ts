@@ -17,7 +17,12 @@ export async function GET(
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const { id } = await params;
-    const result = await db.select().from(kursus).where(eq(kursus.id, id)).limit(1);
+    const result = await db.select({
+    id: kursus.id, guruId: kursus.guruId, judul: kursus.judul, slug: kursus.slug,
+    deskripsi: kursus.deskripsi, harga: kursus.harga, isPublic: kursus.isPublic,
+    statusPublikasi: kursus.statusPublikasi, publishedAt: kursus.publishedAt,
+    createdAt: kursus.createdAt, updatedAt: kursus.updatedAt,
+  }).from(kursus).where(eq(kursus.id, id)).limit(1);
     if (!result.length) {
       return apiError("Kursus tidak ditemukan", 404);
     }
