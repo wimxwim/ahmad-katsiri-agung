@@ -85,6 +85,7 @@ export async function POST(
     let jumlahSalah = 0;
     let totalPoin = 0;
     let totalPoinDiperoleh = 0;
+    let essayCount = 0;
 
     for (const s of soals) {
       totalPoin += s.poin || 1;
@@ -98,11 +99,14 @@ export async function POST(
         const c = correctAnswer.trim().toLowerCase();
         isCorrect = u === c;
       } else {
-        isCorrect = typeof userAnswer === "string" && userAnswer.length >= 5;
+        essayCount += 1;
+        isCorrect = false;
       }
       if (isCorrect) {
         jumlahBenar += 1;
         totalPoinDiperoleh += s.poin || 1;
+      } else if (s.tipe !== "PG" && s.tipe !== "ISIAN") {
+        jumlahSalah += 0;
       } else {
         jumlahSalah += 1;
       }
@@ -142,8 +146,12 @@ export async function POST(
         jumlahSalah,
         totalSoal: soals.length,
         mode: quiz.modeEvaluasi,
+        essayCount,
+        needsManualReview: essayCount > 0,
         tampilkanNilai: quiz.modeEvaluasi !== "CBT",
-        ringkasan: `Kamu menjawab ${jumlahBenar} dari ${soals.length} soal dengan benar.`,
+        ringkasan: essayCount > 0
+          ? `Kamu menjawab ${jumlahBenar} dari ${soals.length - essayCount} soal PG/ISIAN dengan benar. ${essayCount} essay menunggu penilaian guru.`
+          : `Kamu menjawab ${jumlahBenar} dari ${soals.length} soal dengan benar.`,
       },
     });
   } catch (e) {

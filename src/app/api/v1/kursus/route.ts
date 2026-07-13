@@ -48,6 +48,7 @@ export async function GET(request: NextRequest) {
       slug: kursus.slug,
       deskripsi: kursus.deskripsi,
       isPublic: kursus.isPublic,
+      statusPublikasi: kursus.statusPublikasi,
       guruId: kursus.guruId,
       createdAt: kursus.createdAt,
     }).from(kursus).$dynamic();

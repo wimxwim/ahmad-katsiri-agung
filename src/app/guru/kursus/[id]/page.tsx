@@ -11,6 +11,8 @@ interface KursusDetail {
   id: string;
   judul: string;
   deskripsi: string | null;
+  enrolledCount?: number;
+  quizSelesaiCount?: number;
 }
 interface SiswaItem { siswaId: string; nama: string; skorRataRata: number }
 
@@ -119,8 +121,8 @@ export default function KursusDetailPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-        <StatCard label="Siswa Terdaftar" value={siswa.length} icon={Users} color="#005231" />
-        <StatCard label="Quiz Selesai" value="-" icon={FileText} color="#005231" trend="Segera" />
+        <StatCard label="Siswa Terdaftar" value={kursus.enrolledCount ?? siswa.length} icon={Users} color="#005231" />
+        <StatCard label="Quiz Selesai" value={kursus.quizSelesaiCount ?? "-"} icon={FileText} color="#005231" trend="Segera" />
         <StatCard label="Rata-rata Skor" value={avgSkor > 0 ? `${avgSkor}%` : "-"} icon={BarChart3} color="#005231" />
       </div>
 

@@ -4,8 +4,8 @@ import { apiError } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
-import { aiGeneration, fileMateri } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { aiGeneration, fileMateri, eventStore } from "@/lib/db/schema";
+import { eq, and, gte, sql } from "drizzle-orm";
 import { runGenerationFromText } from "@/lib/ai-generator";
 import { checkGenerateBalance, deductGenerateCost, getBalance, refundBalance, getGenerateCost } from "@/lib/token-service";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
@@ -46,6 +46,21 @@ export async function POST(
     if (gen.guruId !== session.userId) return apiError("Akses ditolak", 403);
     if (gen.status === "ready") return NextResponse.json({ success: true, message: "Draft sudah siap", generationId: id });
     if (gen.status === "generating") return NextResponse.json({ success: true, message: "AI sedang generating", generationId: id });
+
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+    const [recentGen] = await db
+      .select({ id: eventStore.id })
+      .from(eventStore)
+      .where(and(
+        eq(eventStore.streamId, `gen:${session.userId}`),
+        eq(eventStore.eventType, "gen.queued"),
+        gte(eventStore.createdAt, fiveMinAgo),
+        sql`${eventStore.payload}->>'generationId' = ${id}`,
+      ))
+      .limit(1);
+    if (recentGen) {
+      return NextResponse.json({ success: true, message: "Generate sudah dalam antrian", generationId: id });
+    }
 
     const [file] = await db
       .select()
@@ -101,8 +116,13 @@ export async function POST(
       await deductGenerateCost(session.userId!);
       await runGenerationFromText(id, text, session.userId!, soalCount, quizCount);
     } catch (e) {
-      console.error("Generate error:", e);
-      generateError = "Gagal generate konten AI";
+      const errMsg = e instanceof Error ? e.message : String(e);
+      console.error("Generate error:", errMsg);
+      if (errMsg.includes("timeout") || errMsg.includes("Timeout")) {
+        generateError = "Generate membutuhkan waktu lebih lama. Token sudah dikembalikan. Coba generate ulang atau kurangi jumlah soal.";
+      } else {
+        generateError = "Gagal generate konten AI. Token sudah dikembalikan.";
+      }
       try { await refundBalance(session.userId!, getGenerateCost()); } catch { /* refund best-effort */ }
     } finally {
       releaseConcurrent(`gen:${session.userId}`);

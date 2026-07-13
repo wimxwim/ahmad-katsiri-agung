@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { kursus } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { kursus, siswaKursus } from "@/lib/db/schema";
+import { and, eq, sql } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { requireSession, GuardError } from "@/lib/route-guard-v2";
 
@@ -36,7 +36,30 @@ export async function GET(
       return apiError("Anda tidak punya akses ke kursus ini", 403);
     }
 
-    return NextResponse.json({ data: k });
+    let enrolledCount = 0;
+    try {
+      const [count] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(siswaKursus)
+        .where(and(eq(siswaKursus.kursusId, id), eq(siswaKursus.status, "AKTIF")));
+      enrolledCount = count?.count ?? 0;
+    } catch (e) {
+      console.error("enrolledCount query failed:", e);
+    }
+
+    let quizSelesaiCount = 0;
+    try {
+      const [count] = await db
+        .select({ count: sql<number>`count(distinct ${siswaKursus.siswaId})::int` })
+        .from(siswaKursus)
+        .innerJoin(sql`quiz_attempt qa`, sql`qa.siswa_id = ${siswaKursus.siswaId}`)
+        .where(and(eq(siswaKursus.kursusId, id), eq(siswaKursus.status, "AKTIF"), sql`qa.status = 'SELESAI'`));
+      quizSelesaiCount = count?.count ?? 0;
+    } catch (e) {
+      console.error("quizSelesaiCount query failed:", e);
+    }
+
+    return NextResponse.json({ data: { ...k, enrolledCount, quizSelesaiCount } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Kursus detail error:", e);

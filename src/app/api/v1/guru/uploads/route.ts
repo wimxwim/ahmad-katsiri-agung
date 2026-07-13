@@ -14,6 +14,7 @@ import { and, eq } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { extractText } from "@/lib/text-extractor";
 import { runGenerationFromText } from "@/lib/ai-generator";
+import { checkGenerateBalance, deductGenerateCost } from "@/lib/token-service";
 import { uuidv7 } from "@/lib/uuid";
 
 export const dynamic = "force-dynamic";
@@ -160,9 +161,20 @@ export async function POST(request: NextRequest) {
     });
 
     if (extractionText && extractionText.length >= 50) {
-      runGenerationFromText(genId, extractionText, session.userId!).catch((e) => {
-        console.error("Auto-generate after upload failed:", e instanceof Error ? e.message : String(e));
-      });
+      let hasBalance = false;
+      try {
+        hasBalance = await checkGenerateBalance(session.userId!);
+      } catch (e) {
+        console.error("Token balance check failed, skipping auto-generate:", e);
+      }
+      if (hasBalance) {
+        try { await deductGenerateCost(session.userId!); } catch { /* best-effort */ }
+        runGenerationFromText(genId, extractionText, session.userId!).catch((e) => {
+          console.error("Auto-generate after upload failed:", e instanceof Error ? e.message : String(e));
+        });
+      } else {
+        console.log("Auto-generate skipped: insufficient balance for user", session.userId);
+      }
     }
 
     const guru = await db.query.users.findFirst({

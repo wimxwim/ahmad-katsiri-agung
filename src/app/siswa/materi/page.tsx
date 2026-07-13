@@ -118,13 +118,18 @@ export default function SiswaMateriListPage() {
                         <div className="w-full bg-border-precision rounded-full h-1.5">
                           <div
                             className="bg-primary h-1.5 rounded-full transition-all"
-                            style={{ width: `${m.progressPersen}%` }}
+                            style={{ width: `${Math.max(m.progressPersen, 4)}%` }}
                           />
                         </div>
                       </div>
                       <span className="text-xs font-bold text-primary tabular-nums">
-                        {m.progressPersen}%
+                        {m.progressPersen > 0 ? `${m.progressPersen}%` : "Baru dibuka"}
                       </span>
+                    </div>
+                  )}
+                  {!m.sudahDibaca && (
+                    <div className="mt-2 ml-6">
+                      <span className="text-xs text-on-surface-variant/60">Belum dibaca</span>
                     </div>
                   )}
                 </div>

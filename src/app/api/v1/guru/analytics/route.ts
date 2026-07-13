@@ -136,11 +136,30 @@ export async function GET(request: NextRequest) {
       rataNilai,
       siswaTuntas: siswaTuntas.size,
       siswaBelumTuntas: siswaBelumTuntas.size,
+      _siswaTuntasIds: Array.from(siswaTuntas),
+      _siswaBelumTuntasIds: Array.from(siswaBelumTuntas),
     };
   });
 
-  const totalSiswaBelumTuntas = kursusBreakdown.reduce((s, k) => s + k.siswaBelumTuntas, 0);
-  const totalSiswaTuntas = kursusBreakdown.reduce((s, k) => s + k.siswaTuntas, 0);
+  const USE_DISTINCT = process.env.USE_DISTINCT_ANALYTICS === "true";
+
+  let totalSiswaTuntas: number;
+  let totalSiswaBelumTuntas: number;
+
+  if (USE_DISTINCT) {
+    const allTuntas = new Set<string>();
+    const allBelumTuntas = new Set<string>();
+    for (const k of kursusBreakdown) {
+      for (const id of k._siswaTuntasIds) allTuntas.add(id);
+      for (const id of k._siswaBelumTuntasIds) allBelumTuntas.add(id);
+    }
+    totalSiswaTuntas = allTuntas.size;
+    totalSiswaBelumTuntas = allBelumTuntas.size;
+  } else {
+    totalSiswaTuntas = kursusBreakdown.reduce((s, k) => s + k.siswaTuntas, 0);
+    totalSiswaBelumTuntas = kursusBreakdown.reduce((s, k) => s + k.siswaBelumTuntas, 0);
+  }
+
   const totalAttemptAll = kursusBreakdown.reduce((s, k) => s + k.totalAttempt, 0);
 
   const remedialSiswaIds = new Set<string>();
