@@ -8,6 +8,7 @@ import { db } from "@/lib/db";
 import { users, siswaKelas, kelas } from "@/lib/db/schema";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { logAuthEvent } from "@/lib/auth-audit";
+import { validateCsrf } from "@/lib/csrf-server";
 
 const RowSchema = z.object({
   nama: z.string().min(2).max(100),
@@ -29,6 +30,8 @@ interface ImportResult {
 
 export async function POST(request: NextRequest) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
     const session = await requireRole(request, ["guru", "owner"]);
 
     const ip = ipFromRequest(request);

@@ -11,6 +11,7 @@ import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import { validateCsrf } from "@/lib/csrf-server";
+import { checkGenerateBalance, deductGenerateCost, getBalance } from "@/lib/token-service";
 
 export async function POST(
   request: NextRequest,
@@ -87,6 +88,20 @@ export async function POST(
       }
       throw e;
     }
+
+    const hasBalance = await checkGenerateBalance(session.userId!);
+    if (!hasBalance) {
+      releaseConcurrent(`gen:${session.userId}`);
+      const bal = await getBalance(session.userId!);
+      return NextResponse.json({
+        success: false,
+        error: "Saldo token tidak cukup. Minimal Rp132/generate. Top-up sekarang?",
+        balance: bal.balance,
+        required: 132,
+      }, { status: 402 });
+    }
+
+    await deductGenerateCost(session.userId!);
 
     runGeneration(id, bytes, ext)
       .catch((e) => {

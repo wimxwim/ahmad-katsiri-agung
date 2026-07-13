@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { apiError } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { materiPublished, materiSharing } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,10 @@ export async function POST(
     if (csrfError) return csrfError;
 
     const session = await requireGuru(request);
+
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`materi-sharing-write:${ip}`, 10, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const { id } = await params;
 
@@ -95,6 +100,10 @@ export async function GET(
 ) {
   try {
     const session = await requireGuru(request);
+
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`materi-sharing:${ip}`, 30, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const { id } = await params;
 

@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
     }
 
     const genId = uuidv7();
-    const genStatus = extractionText ? "extracted" : "queued";
+    const genStatus = "queued";
 
     await db.insert(aiGeneration).values({
       id: genId,

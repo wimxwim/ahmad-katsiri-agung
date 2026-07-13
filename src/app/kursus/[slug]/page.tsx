@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
 import { ArrowLeft, BookOpen, CheckCircle, ArrowRight, GraduationCap } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import { csrfHeaders } from "@/lib/csrf";
 
 interface KursusItem {
   id: string;
@@ -59,7 +60,7 @@ export default function KursusDetailPage() {
     try {
       const res = await fetch("/api/v1/enroll", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         credentials: "include",
         body: JSON.stringify({ kursusId: kursus.id }),
       });

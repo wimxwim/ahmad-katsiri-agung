@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { kelas } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import crypto from "crypto";
+import { validateCsrf } from "@/lib/csrf-server";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
     const session = await requireGuru(request);
 
     const rl = await checkRateLimitPerUser(`kelas-invite:${session.userId}`, 10, 60_000);

@@ -22,7 +22,12 @@ export async function getStorageAdapter(_guruId?: string): Promise<IStorageAdapt
     Boolean(process.env.IMAGEKIT_URL_ENDPOINT);
 
   if (hasImageKit) {
-    cached = new ImageKitAdapter();
+    try {
+      cached = new ImageKitAdapter();
+    } catch (e) {
+      console.error("[StorageFactory] ImageKit init failed, falling back to local:", e);
+      cached = new LocalAdapter();
+    }
   } else {
     cached = new LocalAdapter();
   }

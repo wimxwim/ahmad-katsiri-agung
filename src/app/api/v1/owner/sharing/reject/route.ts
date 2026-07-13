@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireOwner, GuardError } from "@/lib/route-guard-v2";
-import { apiError } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { materiSharing, materiPublished, users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,10 @@ export async function POST(request: NextRequest) {
     if (csrfError) return csrfError;
 
     const session = await requireOwner(request);
+
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`owner-sharing-reject:${ip}`, 10, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const body = await request.json().catch(() => null);
     if (!body || typeof body.materiPublishedId !== "string" || !body.materiPublishedId) {

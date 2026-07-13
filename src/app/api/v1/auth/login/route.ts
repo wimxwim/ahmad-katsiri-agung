@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 import { verifyPassword, hashPassword } from "@/lib/auth-password";
 import { signSession } from "@/lib/auth";
 import {
   SESSION_COOKIE_NAME,
+  REFRESH_COOKIE_NAME,
   SESSION_DURATION_SECONDS,
   ROLE_HOME_PATHS,
   INTENT_PORTAL,
@@ -41,6 +43,9 @@ export async function POST(request: NextRequest) {
     const { password, redirectTo: customRedirect, portalIntent } = parsed.data;
     const email = parsed.data.email.toLowerCase();
 
+    const emailRl = await checkRateLimit(`login-email:${email}`, 5, 900_000);
+    if (!emailRl.allowed) return apiRateLimit(emailRl.retryAfter);
+
     const rows = await db
       .select()
       .from(users)
@@ -48,6 +53,7 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (rows.length === 0) {
+      await bcrypt.hash("akal-dummy-timing", 10);
       await logAuthEvent("auth.login.failed", {
         email,
         reason: "user_not_found",
@@ -135,7 +141,7 @@ export async function POST(request: NextRequest) {
       path: "/",
       maxAge: SESSION_DURATION_SECONDS,
     });
-    response.cookies.set("akal_refresh", refreshToken, {
+    response.cookies.set(REFRESH_COOKIE_NAME, refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

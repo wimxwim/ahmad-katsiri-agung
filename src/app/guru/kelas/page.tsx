@@ -32,6 +32,8 @@ export default function GuruKelasPage() {
     });
     if (result.ok && result.data) {
       setInviteKode((prev) => ({ ...prev, [kelasId]: (result.data as { kode: string }).kode }));
+    } else {
+      setError(result.error || "Gagal membuat kode undangan");
     }
   }
 

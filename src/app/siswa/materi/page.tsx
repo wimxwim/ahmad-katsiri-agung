@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, CheckCircle2, Circle, ArrowRight } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -20,12 +20,16 @@ interface MateriItem {
 
 export default function SiswaMateriListPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [data, setData] = useState<MateriItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/v1/siswa/materi", { credentials: "include" })
+    const kursusId = searchParams.get("kursusId");
+    const url = new URL("/api/v1/siswa/materi", window.location.origin);
+    if (kursusId) url.searchParams.set("kursusId", kursusId);
+    fetch(url.toString(), { credentials: "include" })
       .then(async (r) => {
         if (!r.ok) {
           const j = await r.json().catch(() => ({}));

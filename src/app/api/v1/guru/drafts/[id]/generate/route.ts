@@ -95,13 +95,14 @@ export async function POST(
 
     await appendEvent(`gen:${session.userId}`, "gen.queued", { generationId: id, soalCount, quizCount });
 
+    let generateError: string | null = null;
+
     try {
+      await deductGenerateCost(session.userId!);
       await runGenerationFromText(id, text, session.userId!, soalCount, quizCount);
-      await deductGenerateCost(session.userId!).catch((e) => {
-        console.error("Token deduction failed:", e instanceof Error ? e.message : String(e));
-      });
     } catch (e) {
       console.error("Generate error:", e);
+      generateError = e instanceof Error ? e.message : "Gagal generate konten AI";
     } finally {
       releaseConcurrent(`gen:${session.userId}`);
     }
@@ -113,8 +114,12 @@ export async function POST(
       .limit(1);
 
     return NextResponse.json({
-      success: true,
-      message: updated?.status === "ready" ? "Draft siap direview." : "Draft diproses.",
+      success: !generateError,
+      message: generateError
+        ? generateError
+        : updated?.status === "ready"
+          ? "Draft siap direview."
+          : "Draft diproses.",
       generationId: id,
       status: updated?.status,
       materiStatus: updated?.materiStatus,
@@ -122,7 +127,7 @@ export async function POST(
       soalStatus: updated?.soalStatus,
       soalCount,
       quizCount,
-      errorMessage: updated?.errorMessage,
+      errorMessage: generateError || updated?.errorMessage,
     });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);

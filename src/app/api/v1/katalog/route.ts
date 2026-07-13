@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { materiPublished, materiSharing, users, kursus } from "@/lib/db/schema";
 import { and, eq, desc } from "drizzle-orm";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { apiRateLimit } from "@/lib/api-response";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +12,10 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const limit = Math.min(parseInt(url.searchParams.get("limit") ?? "20", 10) || 20, 50);
     const offset = parseInt(url.searchParams.get("offset") ?? "0", 10) || 0;
+
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`katalog:${ip}`, 60, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const rows = await db
       .select({

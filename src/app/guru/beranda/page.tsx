@@ -26,7 +26,6 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api-helpers";
 import { cn } from "@/lib/utils";
 
@@ -514,32 +513,33 @@ function AnimatedSkeleton() {
 }
 
 export default function GuruBerandaPage() {
-  const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [onboarding, setOnboarding] = useState<OnboardingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const aliveRef = useRef(true);
+
+  async function fetchData() {
+    const [dashResult, onboardResult] = await Promise.all([
+      apiFetch<DashboardData>("/api/v1/guru/dashboard"),
+      apiFetch<OnboardingData>("/api/v1/guru/onboarding"),
+    ]);
+    if (!aliveRef.current) return;
+    if (!dashResult.ok) {
+      setError(dashResult.error);
+    } else {
+      setData(dashResult.data ?? null);
+    }
+    if (onboardResult.ok && onboardResult.data) {
+      setOnboarding(onboardResult.data);
+    }
+    setLoading(false);
+  }
 
   useEffect(() => {
-    let alive = true;
-    async function fetchData() {
-      const [dashResult, onboardResult] = await Promise.all([
-        apiFetch<DashboardData>("/api/v1/guru/dashboard"),
-        apiFetch<OnboardingData>("/api/v1/guru/onboarding"),
-      ]);
-      if (!alive) return;
-      if (!dashResult.ok) {
-        setError(dashResult.error);
-      } else {
-        setData(dashResult.data ?? null);
-      }
-      if (onboardResult.ok && onboardResult.data) {
-        setOnboarding(onboardResult.data);
-      }
-      setLoading(false);
-    }
+    aliveRef.current = true;
     fetchData();
-    return () => { alive = false; };
+    return () => { aliveRef.current = false; };
   }, []);
 
   if (loading) return <AnimatedSkeleton />;
@@ -561,7 +561,7 @@ export default function GuruBerandaPage() {
           onClick={() => {
             setLoading(true);
             setError("");
-            router.refresh();
+            fetchData();
           }}
           className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
         >

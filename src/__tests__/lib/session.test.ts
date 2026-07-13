@@ -64,8 +64,8 @@ describe("session", () => {
   });
 
   describe("constants", () => {
-    it("SESSION_COOKIE_NAME = akal_sesi", () => {
-      expect(SESSION_COOKIE_NAME).toBe("akal_sesi");
+    it("SESSION_COOKIE_NAME = __Host-akal_sesi", () => {
+      expect(SESSION_COOKIE_NAME).toBe("__Host-akal_sesi");
     });
 
     it("SESSION_DURATION_SECONDS = 8 jam", () => {

@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { kelas } from "@/lib/db/schema";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { requireSession, GuardError } from "@/lib/route-guard-v2";
+import { validateCsrf } from "@/lib/csrf-server";
 
 const UpdateKelasSchema = z.object({
   nama: z.string().min(1).max(50).optional(),
@@ -18,6 +19,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
     const session = await requireSession(request);
 
     const { id } = await params;
@@ -66,6 +69,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
     const session = await requireSession(request);
 
     const { id } = await params;

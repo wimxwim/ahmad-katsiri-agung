@@ -73,15 +73,14 @@ export default function GuruDraftsPage() {
       if (!res.ok) {
         setError("Gagal memuat draft. Coba lagi.");
         setDrafts([]);
-        setLoading(false);
         return;
       }
       const { data } = await res.json();
       setDrafts(data || []);
-      setLoading(false);
     } catch (error) {
       if (process.env.NODE_ENV !== "production") console.error("[guru/drafts] load failed:", error);
       setError("Terjadi kesalahan saat memuat draft.");
+    } finally {
       setLoading(false);
     }
   }

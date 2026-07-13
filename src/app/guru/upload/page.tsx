@@ -40,6 +40,7 @@ export default function GuruUploadPage() {
   const [error, setError] = useState("");
   const [history, setHistory] = useState<FileHistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [historyError, setHistoryError] = useState("");
   const [successFileName, setSuccessFileName] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -49,9 +50,12 @@ export default function GuruUploadPage() {
       if (res.ok) {
         const { data } = await res.json();
         setHistory(data || []);
+      } else {
+        setHistoryError("Gagal memuat riwayat upload");
       }
     } catch (error) {
       if (process.env.NODE_ENV !== "production") console.error("[guru/upload] loadHistory failed:", error);
+      setHistoryError("Gagal memuat riwayat upload");
     } finally {
       setLoadingHistory(false);
     }
@@ -147,7 +151,6 @@ export default function GuruUploadPage() {
       }
 
       setJob({ state: "extracting", progress: 70, message: "Mengekstrak teks..." });
-      await new Promise((r) => setTimeout(r, 600));
       setJob({ state: "ready", progress: 100, message: "Upload selesai!" });
       setSuccessFileName(file.name);
       toast("success", "File berhasil diupload! Sistem AI sedang memproses dokumen Anda. Draft materi, kuis, dan soal akan muncul di halaman Draft dalam beberapa menit.");
@@ -330,7 +333,12 @@ export default function GuruUploadPage() {
           <History className="w-4 h-4 text-on-surface-variant" />
           <h2 className="font-heading font-semibold text-on-surface">Riwayat Upload</h2>
         </div>
-        {loadingHistory ? (
+        {historyError ? (
+          <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
+            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+            <span>{historyError}</span>
+          </div>
+        ) : loadingHistory ? (
           <div className="space-y-2">
             {[1, 2].map((i) => (
               <div key={i} className="bg-glass rounded-2xl p-4 h-16 animate-pulse" />

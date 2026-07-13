@@ -4,6 +4,7 @@ import { exchangeCodeAndGetProfile } from "@/lib/google-oauth";
 import { signSession } from "@/lib/auth";
 import {
   SESSION_COOKIE_NAME,
+  REFRESH_COOKIE_NAME,
   SESSION_DURATION_SECONDS,
   ROLE_HOME_PATHS,
   INTENT_PORTAL,
@@ -153,7 +154,7 @@ export async function GET(request: NextRequest) {
         path: "/",
         maxAge: SESSION_DURATION_SECONDS,
       });
-      resp.cookies.set("akal_refresh", refreshToken, {
+      resp.cookies.set(REFRESH_COOKIE_NAME, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
@@ -222,7 +223,7 @@ export async function GET(request: NextRequest) {
       path: "/",
       maxAge: SESSION_DURATION_SECONDS,
     });
-    resp.cookies.set("akal_refresh", refreshToken, {
+    resp.cookies.set(REFRESH_COOKIE_NAME, refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

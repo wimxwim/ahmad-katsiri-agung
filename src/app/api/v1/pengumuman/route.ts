@@ -9,6 +9,7 @@ import { db } from "@/lib/db";
 import { pengumuman } from "@/lib/db/schema";
 import { desc, eq, or, and, gte, sql } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
+import { validateCsrf } from "@/lib/csrf-server";
 
 const CreateSchema = z.object({
   judul: z.string().min(1).max(255),
@@ -58,6 +59,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+  const csrfError = validateCsrf(request);
+  if (csrfError) return csrfError;
   const session = await requireRole(request, ["guru", "owner", "admin_sekolah"]);
 
   const ip = ipFromRequest(request);

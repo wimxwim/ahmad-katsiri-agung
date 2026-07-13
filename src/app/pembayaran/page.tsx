@@ -5,6 +5,7 @@ import { WA_NUMBER } from "@/lib/constants";
 import Image from "next/image";
 import { Upload, CheckCircle, AlertCircle, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { csrfHeaders } from "@/lib/csrf";
 
 export default function PembayaranPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -46,7 +47,7 @@ export default function PembayaranPage() {
       const jumlah = parseInt(search.get("harga") || "0", 10) || 50000;
       fd.set("paket", paket);
       fd.set("jumlah", String(jumlah));
-      const res = await fetch("/api/v1/payment/submit", { method: "POST", body: fd });
+      const res = await fetch("/api/v1/payment/submit", { method: "POST", headers: csrfHeaders(), credentials: "include", body: fd });
       const data = await res.json();
       if (!res.ok) {
         const err = data.error;

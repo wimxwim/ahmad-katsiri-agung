@@ -93,6 +93,10 @@ export default function SiswaBerandaPage() {
         if (feedResult.status === "fulfilled" && feedResult.value) setFeed(feedResult.value);
         if (pengumResult.status === "fulfilled" && pengumResult.value?.data) setPengumuman(pengumResult.value.data);
         if (quizResult.status === "fulfilled" && quizResult.value?.data) setQuizList(quizResult.value.data);
+        const allFailed = results.every((r) => r.status === "rejected");
+        if (allFailed) {
+          setError("Terjadi kesalahan saat memuat data. Coba lagi.");
+        }
         setLoading(false);
       })
       .catch(() => {

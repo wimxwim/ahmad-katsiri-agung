@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { materiPublished, materiRead, siswaKursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
+import { validateCsrf } from "@/lib/csrf-server";
 
 export async function GET(
   request: NextRequest,
@@ -74,6 +75,9 @@ export async function POST(
 ) {
   try {
     const session = await requireSiswa(request);
+
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
 
     const { id } = await params;
 

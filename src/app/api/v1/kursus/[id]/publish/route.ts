@@ -7,6 +7,7 @@ import { kursus } from "@/lib/db/schema";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
+import { validateCsrf } from "@/lib/csrf-server";
 
 const PublishSchema = z.object({
   status: z.enum(["DRAFT", "PUBLIK", "ARSIP"]),
@@ -17,6 +18,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
     const session = await requireGuru(request);
 
     const ip = ipFromRequest(request);

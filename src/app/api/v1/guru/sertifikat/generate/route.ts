@@ -7,11 +7,14 @@ import { sertifikat, siswaKursus, quizAttempt, users, kursus } from "@/lib/db/sc
 import { eq, and, sql } from "drizzle-orm";
 import { generateQRHash } from "@/lib/sertifikat/generateQRHash";
 import crypto from "crypto";
+import { validateCsrf } from "@/lib/csrf-server";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
     const session = await requireGuru(request);
 
     const ip = ipFromRequest(request);

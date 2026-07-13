@@ -26,7 +26,7 @@ CREATE POLICY materi_sharing_owner_policy ON materi_sharing
     EXISTS (
       SELECT 1 FROM materi_published mp
       WHERE mp.id = materi_sharing.materi_published_id
-      AND mp.guru_id = current_setting('request.jwt.claims', true)::json->>'userId'
+      AND mp.guru_id = app.current_user_id()
     )
   );
 
@@ -38,7 +38,7 @@ CREATE POLICY materi_sharing_view_policy ON materi_sharing
     EXISTS (
       SELECT 1 FROM materi_published mp
       WHERE mp.id = materi_sharing.materi_published_id
-      AND mp.guru_id = current_setting('request.jwt.claims', true)::json->>'userId'
+      AND mp.guru_id = app.current_user_id()
     )
     OR
     (
@@ -48,7 +48,7 @@ CREATE POLICY materi_sharing_view_policy ON materi_sharing
         WHERE kc.connected_guru_id = (
           SELECT mp2.guru_id FROM materi_published mp2 WHERE mp2.id = materi_sharing.materi_published_id
         )
-        AND kc.guru_id = current_setting('request.jwt.claims', true)::json->>'userId'
+        AND kc.guru_id = app.current_user_id()
         AND kc.status = 'ACTIVE'
       )
     )

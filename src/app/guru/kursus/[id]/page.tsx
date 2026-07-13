@@ -29,7 +29,8 @@ export default function KursusDetailPage() {
           fetch(`/api/v1/kursus/${params.id}`, { credentials: "include" }),
           fetch(`/api/v1/kursus/${params.id}/nilai`, { credentials: "include" }),
         ]);
-        if (kursusRes.status === 404) { setKursus(null); return; }
+        if (kursusRes.status === 404) { setKursus(null); setLoading(false); return; }
+        if (!kursusRes.ok) throw new Error("Gagal memuat kursus");
         const kursusData = await kursusRes.json();
         setKursus(kursusData.data);
         const nilaiData = await nilaiRes.json().catch(() => ({ data: [] }));

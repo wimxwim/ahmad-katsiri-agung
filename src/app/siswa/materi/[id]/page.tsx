@@ -51,7 +51,14 @@ export default function SiswaMateriPage() {
         credentials: "include",
         body: JSON.stringify({ progress: 100, selesai: true }),
       });
-      if (res.ok) setDone(true);
+      if (res.ok) {
+        setDone(true);
+      } else {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || "Gagal menandai selesai");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menandai selesai");
     } finally {
       setMarking(false);
     }

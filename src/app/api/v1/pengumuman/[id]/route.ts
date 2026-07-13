@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { pengumuman } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
+import { validateCsrf } from "@/lib/csrf-server";
 
 const UpdateSchema = z.object({
   judul: z.string().min(1).max(255).optional(),
@@ -23,6 +24,10 @@ export async function GET(
 ) {
   try {
   const session = await requireSession(request);
+
+  const ip = ipFromRequest(request);
+  const rl = checkRateLimitSync(`pengumuman:${ip}`, 30, 60_000);
+  if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
   const { id } = await params;
   const [row] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
@@ -43,6 +48,9 @@ export async function PUT(
 ) {
   try {
   const session = await requireSession(request);
+
+  const csrfError = validateCsrf(request);
+  if (csrfError) return csrfError;
 
   const { id } = await params;
   const [existing] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);
@@ -89,6 +97,9 @@ export async function DELETE(
 ) {
   try {
   const session = await requireSession(request);
+
+  const csrfError = validateCsrf(request);
+  if (csrfError) return csrfError;
 
   const { id } = await params;
   const [existing] = await db.select().from(pengumuman).where(eq(pengumuman.id, id)).limit(1);

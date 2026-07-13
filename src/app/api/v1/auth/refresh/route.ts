@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
-import { SESSION_COOKIE_NAME, SESSION_DURATION_SECONDS } from "@/lib/session";
-
-const REFRESH_COOKIE_NAME = "akal_refresh";
+import { SESSION_COOKIE_NAME, REFRESH_COOKIE_NAME, SESSION_DURATION_SECONDS } from "@/lib/session";
 
 export async function POST(request: NextRequest) {
   try {

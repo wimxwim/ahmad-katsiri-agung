@@ -15,8 +15,8 @@ export interface SesiPayload extends JWTPayload {
   sekolah?: string;
 }
 
-export const SESSION_COOKIE_NAME = "akal_sesi";
-export const REFRESH_COOKIE_NAME = "akal_refresh";
+export const SESSION_COOKIE_NAME = "__Host-akal_sesi";
+export const REFRESH_COOKIE_NAME = "__Host-akal_refresh";
 export const SESSION_DURATION_SECONDS = 8 * 60 * 60;
 
 export function roleToSessionRole(role: string): SesiRole {

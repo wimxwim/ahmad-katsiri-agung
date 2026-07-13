@@ -5,10 +5,14 @@ import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { payments } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { validateCsrf } from "@/lib/csrf-server";
 
 export async function POST(request: NextRequest) {
   try {
     const session = await requireOwner(request);
+
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
 
     const rl = await checkRateLimitPerUser(`payment-verify:${session.userId}`, 20, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

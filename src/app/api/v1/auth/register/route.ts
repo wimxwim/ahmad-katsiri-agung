@@ -4,6 +4,7 @@ import { hashPassword } from "@/lib/auth-password";
 import { signSession } from "@/lib/auth";
 import {
   SESSION_COOKIE_NAME,
+  REFRESH_COOKIE_NAME,
   SESSION_DURATION_SECONDS,
   ROLE_HOME_PATHS,
   INTENT_PORTAL,
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
       path: "/",
       maxAge: SESSION_DURATION_SECONDS,
     });
-    response.cookies.set("akal_refresh", refreshToken, {
+    response.cookies.set(REFRESH_COOKIE_NAME, refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

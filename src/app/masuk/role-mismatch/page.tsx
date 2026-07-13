@@ -3,6 +3,7 @@ import { WA_NUMBER } from "@/lib/constants";
 import { cookies } from "next/headers";
 import { ShieldAlert, ArrowRight, LogIn, UserCog } from "lucide-react";
 import { redirect } from "next/navigation";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
 
 export const metadata = {
   title: "Akun tidak cocok dengan portal — AKAL Center",
@@ -41,7 +42,7 @@ export default async function RoleMismatchPage({ searchParams }: PageProps) {
   const reason = params.reason || null;
 
   const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get("akal_sesi");
+  const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
   if (!sessionCookie?.value) {
     redirect("/masuk");
   }

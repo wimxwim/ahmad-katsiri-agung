@@ -45,10 +45,6 @@ export default function SiswaListPage() {
   }
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
     fetchData(filterKursus);
   }, [filterKursus]);
 

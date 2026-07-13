@@ -24,13 +24,13 @@ ALTER TABLE krabat_connections ENABLE ROW LEVEL SECURITY;
 CREATE POLICY krabat_connections_owner_policy ON krabat_connections
   FOR ALL
   USING (
-    guru_id = current_setting('request.jwt.claims', true)::json->>'userId'
-    OR connected_guru_id = current_setting('request.jwt.claims', true)::json->>'userId'
+    guru_id = app.current_user_id()
+    OR connected_guru_id = app.current_user_id()
   );
 
 CREATE POLICY krabat_connections_view_policy ON krabat_connections
   FOR SELECT
   USING (
-    guru_id = current_setting('request.jwt.claims', true)::json->>'userId'
-    OR connected_guru_id = current_setting('request.jwt.claims', true)::json->>'userId'
+    guru_id = app.current_user_id()
+    OR connected_guru_id = app.current_user_id()
   );

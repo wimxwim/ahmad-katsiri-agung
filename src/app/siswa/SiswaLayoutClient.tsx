@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { DashboardLayoutClient } from "@/components/dashboard/DashboardLayoutClient";
 import type { SidebarItem } from "@/components/dashboard/DashboardLayoutClient";
+import { ToastProvider } from "@/components/ui/Toast";
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/siswa/beranda", label: "Beranda", icon: LayoutDashboard },
@@ -26,7 +27,7 @@ export function SiswaLayoutClient({ children }: { children: React.ReactNode }) {
       defaultNama="Siswa"
       homeHref="/siswa/beranda"
     >
-      {children}
+      <ToastProvider>{children}</ToastProvider>
     </DashboardLayoutClient>
   );
 }

@@ -8,12 +8,15 @@ import { kursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { hs256Secret } from "@/lib/auth-keys";
+import { validateCsrf } from "@/lib/csrf-server";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
     const session = await requireGuru(request);
 
     const ip = ipFromRequest(request);

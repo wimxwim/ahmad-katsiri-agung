@@ -5,6 +5,8 @@ import { users } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { requireSession, GuardError } from "@/lib/route-guard-v2";
+import { validateCsrf } from "@/lib/csrf-server";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
 
 export async function GET(request: NextRequest) {
   try {
@@ -58,6 +60,9 @@ export async function DELETE(request: NextRequest) {
   try {
     const session = await requireSession(request);
 
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const rl = await checkRateLimit(`account-delete:${session.userId}`, 3, 300000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
@@ -72,7 +77,7 @@ export async function DELETE(request: NextRequest) {
       .where(eq(users.id, session.userId));
 
     const response = NextResponse.json({ message: "Akun berhasil dihapus" });
-    response.cookies.set("akal_sesi", "", { httpOnly: true, path: "/", maxAge: 0 });
+    response.cookies.set(SESSION_COOKIE_NAME, "", { httpOnly: true, path: "/", maxAge: 0 });
     return response;
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);

@@ -35,7 +35,8 @@ export default function QuranPage() {
   const [playing, setPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
   const [audioDuration, setAudioDuration] = useState(0);
-  const [activeSurahNo, setActiveSurahNo] = useState<number | null>(null);
+const [activeSurahNo, setActiveSurahNo] = useState<number | null>(null);
+  const [detailError, setDetailError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const detailRef = useRef<HTMLDivElement>(null);
 
@@ -69,6 +70,7 @@ export default function QuranPage() {
 
   async function openSurah(nomor: number) {
     setDetailLoading(true);
+    setDetailError(false);
     setSelected(null);
     try {
       const res = await fetch(`https://equran.id/api/surat/${nomor}`);
@@ -77,6 +79,7 @@ export default function QuranPage() {
       detailRef.current?.scrollIntoView({ behavior: "smooth" });
     } catch (error) {
       console.error("[quran] openSurah failed:", error);
+      setDetailError(true);
     } finally {
       setDetailLoading(false);
     }
@@ -172,6 +175,20 @@ export default function QuranPage() {
             </div>
           )}
 
+          {detailError && !detailLoading && (
+            <div className="text-center py-16 animate-fade-up">
+              <p className="text-on-surface-variant mb-4">
+                Gagal memuat detail surah. Silakan coba lagi.
+              </p>
+              <button
+                onClick={() => selected && openSurah(selected.nomor)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-on-primary text-sm font-semibold hover:brightness-110 transition-all"
+              >
+                Coba Lagi
+              </button>
+            </div>
+          )}
+
           {selected && !detailLoading && (
             <div className="mb-10 animate-fade-up">
               <button
@@ -242,7 +259,7 @@ export default function QuranPage() {
                 </div>
 
                 <p className="text-sm text-on-surface-variant leading-relaxed mb-8 text-center max-w-3xl mx-auto">
-                  {selected.deskripsi.replace(/<[^>]*>/g, "")}
+                  {selected.deskripsi?.replace(/<[^>]*>/g, "") ?? ""}
                 </p>
 
                 <div className="border-t border-border-precision pt-8">

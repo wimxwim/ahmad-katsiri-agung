@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { sertifikat, kursus, jawabanLog, skill, soal } from "@/lib/db/schema";
 import { generateQRHash } from "@/lib/sertifikat/generateQRHash";
 import { apiError, apiRateLimit } from "@/lib/api-response";
+import { validateCsrf } from "@/lib/csrf-server";
 
 const GenerateSertifikatSchema = z.object({
   siswaId: z.string().uuid(),
@@ -22,6 +23,9 @@ function generateNomorSertifikat(): string {
 export async function POST(request: NextRequest) {
   try {
     const session = await requireRole(request, ["guru", "owner"]);
+
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
 
     const rl = await checkRateLimit(`sertifikat-gen:${session.userId}`, 10, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
