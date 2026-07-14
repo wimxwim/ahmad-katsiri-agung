@@ -7,6 +7,7 @@ import { EASE_CURVE } from "@/lib/constants";
 import { ClipboardList, Clock, AlertCircle, RefreshCw, ArrowRight, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
+import { getCached, setCache } from "@/lib/data-cache";
 
 interface QuizItem {
   id: string;
@@ -75,6 +76,12 @@ export default function SiswaQuizListPage() {
   const [error, setError] = useState("");
 
   const load = useCallback(() => {
+    const cached = getCached<QuizItem[]>("quiz:list");
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError("");
     fetch("/api/v1/siswa/quiz", { credentials: "include" })
@@ -86,6 +93,7 @@ export default function SiswaQuizListPage() {
         return r.json();
       })
       .then((j) => {
+        setCache("quiz:list", j.data || [], 60_000);
         setData(j.data || []);
         setLoading(false);
       })

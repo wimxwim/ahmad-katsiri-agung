@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
+import { getCached, setCache } from "@/lib/data-cache";
 import {
   BookOpen,
   CheckCircle2,
@@ -59,6 +60,8 @@ interface PengumumanItem {
   publishedAt: string;
 }
 
+const CACHE_TTL = 60_000;
+
 export default function SiswaBerandaPage() {
   const router = useRouter();
   const [feed, setFeed] = useState<FeedResponse | null>(null);
@@ -69,10 +72,27 @@ export default function SiswaBerandaPage() {
   const [nama, setNama] = useState("Siswa");
 
   useEffect(() => {
+    const cachedFeed = getCached<FeedResponse>("beranda:feed");
+    const cachedPengumuman = getCached<PengumumanItem[]>("beranda:pengumuman");
+    const cachedQuiz = getCached<QuizItem[]>("beranda:quiz");
+    const cachedNama = getCached<string>("beranda:nama");
+
+    if (cachedFeed && cachedPengumuman && cachedQuiz) {
+      setFeed(cachedFeed);
+      setPengumuman(cachedPengumuman);
+      setQuizList(cachedQuiz);
+      if (cachedNama) setNama(cachedNama);
+      setLoading(false);
+      return;
+    }
+
     fetch("/api/v1/account/me", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => {
-        if (j?.data?.nama) setNama(j.data.nama);
+        if (j?.data?.nama) {
+          setNama(j.data.nama);
+          setCache("beranda:nama", j.data.nama, CACHE_TTL);
+        }
       })
       .catch(() => {});
 
@@ -89,9 +109,18 @@ export default function SiswaBerandaPage() {
     ])
       .then((results) => {
         const [feedResult, pengumResult, quizResult] = results;
-        if (feedResult.status === "fulfilled" && feedResult.value) setFeed(feedResult.value);
-        if (pengumResult.status === "fulfilled" && pengumResult.value?.data) setPengumuman(pengumResult.value.data);
-        if (quizResult.status === "fulfilled" && quizResult.value?.data) setQuizList(quizResult.value.data);
+        if (feedResult.status === "fulfilled" && feedResult.value) {
+          setFeed(feedResult.value);
+          setCache("beranda:feed", feedResult.value, CACHE_TTL);
+        }
+        if (pengumResult.status === "fulfilled" && pengumResult.value?.data) {
+          setPengumuman(pengumResult.value.data);
+          setCache("beranda:pengumuman", pengumResult.value.data, CACHE_TTL);
+        }
+        if (quizResult.status === "fulfilled" && quizResult.value?.data) {
+          setQuizList(quizResult.value.data);
+          setCache("beranda:quiz", quizResult.value.data, CACHE_TTL);
+        }
         const allFailed = results.every((r) => r.status === "rejected");
         if (allFailed) {
           setError("Terjadi kesalahan saat memuat data. Coba lagi.");

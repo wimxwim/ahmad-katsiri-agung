@@ -18,6 +18,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 import { EASE_CURVE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { getCached, setCache } from "@/lib/data-cache";
 
 interface MateriItem {
   id: string;
@@ -51,6 +52,14 @@ function MateriContent() {
   useEffect(() => {
     if (welcome === "1") setShowWelcome(true);
 
+    const cacheKey = `materi:${kursusId || 'all'}`;
+    const cached = getCached<MateriItem[]>(cacheKey);
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+      return;
+    }
+
     const url = new URL("/api/v1/siswa/materi", window.location.origin);
     if (kursusId) url.searchParams.set("kursusId", kursusId);
 
@@ -66,6 +75,7 @@ function MateriContent() {
         return r.json();
       })
       .then((j) => {
+        setCache(cacheKey, j.data || [], 60_000);
         setData(j.data || []);
         setLoading(false);
       })
@@ -76,11 +86,17 @@ function MateriContent() {
   }, [kursusId, welcome]);
 
   useEffect(() => {
+    const cached = getCached<KursusOption[]>("materi:kursusList");
+    if (cached) {
+      setKursusList(cached);
+      return;
+    }
     fetch("/api/v1/siswa/feed", { credentials: "include" })
       .then(async (r) => {
         if (!r.ok) return;
         const j = await r.json();
         if (j.kursusList) {
+          setCache("materi:kursusList", j.kursusList, 120_000);
           setKursusList(j.kursusList);
         }
       })
@@ -99,6 +115,13 @@ function MateriContent() {
   const handleRetry = useCallback(() => {
     setLoading(true);
     setError("");
+    const cacheKey = `materi:${kursusId || 'all'}`;
+    const cached = getCached<MateriItem[]>(cacheKey);
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+      return;
+    }
     const url = new URL("/api/v1/siswa/materi", window.location.origin);
     if (kursusId) url.searchParams.set("kursusId", kursusId);
     fetch(url.toString(), { credentials: "include" })
@@ -110,6 +133,7 @@ function MateriContent() {
         return r.json();
       })
       .then((j) => {
+        setCache(cacheKey, j.data || [], 60_000);
         setData(j.data || []);
         setLoading(false);
       })
