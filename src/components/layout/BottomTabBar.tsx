@@ -9,6 +9,8 @@ import {
   Home,
   BookOpen,
   Grid3x3,
+  BarChart3,
+  Megaphone,
   Info,
   LogOut,
   GraduationCap,
@@ -19,10 +21,17 @@ import {
 import { useSession, useSessionLoading } from "@/components/providers/SessionProvider";
 import { handleLogout } from "@/lib/logout";
 
-const SHEET_ITEMS: { href: string; label: string; icon: LucideIcon; desc: string }[] = [
+const SHEET_ITEMS_PUBLIC: { href: string; label: string; icon: LucideIcon; desc: string }[] = [
   { href: "/fitur", label: "Fitur", icon: Sparkles, desc: "Lihat semua fitur platform" },
   { href: "/tentang", label: "Tentang", icon: Info, desc: "Tentang AKAL Center" },
   { href: "/kursus", label: "Kursus", icon: BookOpen, desc: "Jelajahi katalog kursus" },
+];
+
+const SHEET_ITEMS_SISWA: { href: string; label: string; icon: LucideIcon; desc: string }[] = [
+  { href: "/siswa/kursus", label: "Kursus Saya", icon: GraduationCap, desc: "Kursus yang sudah diikuti" },
+  { href: "/siswa/materi", label: "Materi", icon: BookOpen, desc: "Materi pembelajaran" },
+  { href: "/siswa/pengumuman", label: "Pengumuman", icon: Megaphone, desc: "Info dari guru" },
+  { href: "/kursus", label: "Katalog Kursus", icon: Sparkles, desc: "Cari kursus baru" },
 ];
 
 export function BottomTabBar() {
@@ -33,38 +42,47 @@ export function BottomTabBar() {
 
   if (pathname.startsWith("/masuk")) return null;
 
-  const DASHBOARD_PREFIXES = ["/siswa", "/guru", "/owner", "/admin-sekolah", "/orang-tua"];
+  const DASHBOARD_PREFIXES = ["/guru", "/owner", "/admin-sekolah", "/orang-tua"];
   if (DASHBOARD_PREFIXES.some((p) => pathname.startsWith(p))) return null;
+
+  const isSiswa = pathname.startsWith("/siswa");
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
 
-  const navTabs = [
-    { href: "/", label: "Beranda", icon: Home },
-    { href: "/fitur", label: "Fitur", icon: Sparkles },
-    { href: "/kursus", label: "Kursus", icon: BookOpen, highlight: true },
-    ...(session
-      ? [
-          {
-            href:
-              session.role === "guru"
-                ? "/guru/beranda"
-                : session.role === "owner"
-                ? "/owner"
-                : session.role === "admin_sekolah"
-                ? "/admin-sekolah"
-                : session.role === "orang_tua"
-                ? "/orang-tua"
-                : "/siswa/beranda",
-            label: "Dashboard",
-            icon: GraduationCap,
-            sessionOnly: true,
-          },
-        ]
-      : []),
-  ];
+  const navTabs = isSiswa
+    ? [
+        { href: "/siswa/beranda", label: "Beranda", icon: Home },
+        { href: "/kursus", label: "Kursus", icon: BookOpen, highlight: true },
+        { href: "/siswa/quiz", label: "Kuis", icon: Sparkles },
+        { href: "/siswa/progres", label: "Progres", icon: BarChart3 },
+      ]
+    : [
+        { href: "/", label: "Beranda", icon: Home },
+        { href: "/fitur", label: "Fitur", icon: Sparkles },
+        { href: "/kursus", label: "Kursus", icon: BookOpen, highlight: true },
+        ...(session
+          ? [
+              {
+                href:
+                  session.role === "guru"
+                    ? "/guru/beranda"
+                    : session.role === "owner"
+                    ? "/owner"
+                    : session.role === "admin_sekolah"
+                    ? "/admin-sekolah"
+                    : session.role === "orang_tua"
+                    ? "/orang-tua"
+                    : "/siswa/beranda",
+                label: "Dashboard",
+                icon: GraduationCap,
+                sessionOnly: true,
+              },
+            ]
+          : []),
+      ];
 
   return (
     <>
@@ -98,7 +116,7 @@ export function BottomTabBar() {
 
         <div className="px-6 pb-6 overflow-y-auto max-h-[70dvh]">
           <div className="grid grid-cols-2 gap-3">
-            {SHEET_ITEMS.map((item) => {
+            {(isSiswa ? SHEET_ITEMS_SISWA : SHEET_ITEMS_PUBLIC).map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
               return (
@@ -164,7 +182,7 @@ export function BottomTabBar() {
         className="md:hidden fixed bottom-3 inset-x-0 z-40 flex justify-center pointer-events-none"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
-        <div className="pointer-events-auto flex items-center gap-0.5 bg-white/80 backdrop-blur-2xl border border-white/20 rounded-xl px-1.5 py-1.5 shadow-glass">
+        <div className="pointer-events-auto flex items-center gap-2 bg-white/80 backdrop-blur-2xl border border-white/20 rounded-xl px-2 py-1.5 shadow-glass">
           {navTabs.map((tab) => {
             const active = tab.href !== null && isActive(tab.href);
             const Icon = tab.icon;
@@ -173,7 +191,7 @@ export function BottomTabBar() {
               <Link
                 key={tab.href}
                 href={tab.href}
-                className="relative flex flex-col items-center justify-center gap-0.5 min-w-[52px] min-h-11 px-2.5 rounded-tab transition-colors duration-200 cursor-pointer"
+                className="relative flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-11 px-3 rounded-tab transition-colors duration-200 cursor-pointer"
               >
                 {active && (
                   <motion.span
@@ -205,7 +223,7 @@ export function BottomTabBar() {
 
           <button
             onClick={() => setSheetOpen(true)}
-            className="relative flex flex-col items-center justify-center gap-0.5 min-w-[52px] min-h-11 px-2.5 rounded-tab text-on-surface-variant/70 hover:text-on-surface-variant transition-colors duration-200 cursor-pointer"
+            className="relative flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-11 px-3 rounded-tab text-on-surface-variant/70 hover:text-on-surface-variant transition-colors duration-200 cursor-pointer"
             aria-label="Menu lainnya"
           >
             <Grid3x3 className="w-5 h-5" strokeWidth={2} aria-hidden="true" />

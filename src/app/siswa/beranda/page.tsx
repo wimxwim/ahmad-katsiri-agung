@@ -157,13 +157,39 @@ export default function SiswaBerandaPage() {
 
   if (feed && feed.terdaftar === false) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <EmptyState
-          icon={BookOpen}
-          title="Kamu belum terdaftar di kursus"
-          description="Kamu belum terdaftar di kursus mana pun. Yuk cari kursus dulu atau minta bantuan gurumu."
-          action={{ label: "Cari Kursus", href: "/kursus" }}
-        />
+      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE_CURVE }}
+          className="max-w-sm"
+        >
+          <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
+            <BookOpen className="w-12 h-12 text-primary" />
+          </div>
+          <h2 className="font-heading text-2xl font-bold text-on-surface mb-3">
+            Yuk, mulai belajar! 📚
+          </h2>
+          <p className="text-on-surface-variant mb-2 leading-relaxed">
+            Kamu belum terdaftar di kursus manapun.
+          </p>
+          <p className="text-sm text-on-surface-variant/70 mb-8">
+            Cari kursus gratis di katalog atau tanya gurumu untuk dibantu.
+          </p>
+          <Link
+            href="/kursus"
+            className="inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-full text-lg font-bold hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/25"
+          >
+            <Sparkles className="w-5 h-5" />
+            Cari Kursus Gratis
+          </Link>
+          <p className="text-xs text-on-surface-variant/50 mt-6">
+            Butuh bantuan?{" "}
+            <a href="https://wa.me/6285158795502" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+              Chat WhatsApp
+            </a>
+          </p>
+        </motion.div>
       </div>
     );
   }

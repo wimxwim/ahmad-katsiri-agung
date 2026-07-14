@@ -56,7 +56,7 @@ export function FloatingActionMenu() {
   }, [pathname]);
 
   return (
-    <div ref={ref} className="fixed left-4 bottom-8 z-50 flex flex-col-reverse items-start gap-2">
+    <div ref={ref} className="fixed left-4 bottom-24 z-50 flex flex-col-reverse items-start gap-2">
       <AnimatePresence>
         {open && (
           <motion.div

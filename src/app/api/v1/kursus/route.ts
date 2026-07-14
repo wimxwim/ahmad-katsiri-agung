@@ -8,7 +8,7 @@ import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
 import { db } from "@/lib/db";
 import { kursus } from "@/lib/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
         query = query.where(eq(kursus.guruId, session.userId));
       }
     } else {
-      query = query.where(eq(kursus.isPublic, true));
+      query = query.where(and(eq(kursus.isPublic, true), eq(kursus.statusPublikasi, "PUBLIK")));
     }
 
     if (slug) {

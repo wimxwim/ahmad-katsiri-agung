@@ -1,19 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { verifySession } from "@/lib/auth";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { kursus, siswaKursus } from "@/lib/db/schema";
 import { and, eq, sql } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
-import { requireSession, GuardError } from "@/lib/route-guard-v2";
+import { GuardError } from "@/lib/route-guard-v2";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await requireSession(_req);
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
+    const sessionResult = sessionCookie?.value ? await verifySession(sessionCookie.value) : null;
+    const session = sessionResult?.success ? sessionResult.data : null;
 
-    const rl = await checkRateLimit(`kursus-detail:${session.userId}`, 30, 15000);
+    const uid = session?.userId || "anon";
+    const rl = await checkRateLimit(`kursus-detail:${uid}`, 30, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const { id } = await params;
@@ -28,11 +35,12 @@ export async function GET(
     }
     const k = result[0];
 
-    const isOwner = session.role === "owner";
-    const isGuruPemilik = session.role === "guru" && k.guruId === session.userId;
-    const isSiswaPublic = session.role === "murid" && k.isPublic;
+    const isOwner = session?.role === "owner";
+    const isGuruPemilik = session?.role === "guru" && k.guruId === session?.userId;
+    const isSiswaPublic = session?.role === "murid" && k.isPublic;
+    const isPublicCourse = k.isPublic && k.statusPublikasi === "PUBLIK";
 
-    if (!isOwner && !isGuruPemilik && !isSiswaPublic) {
+    if (!isOwner && !isGuruPemilik && !isSiswaPublic && !isPublicCourse) {
       return apiError("Anda tidak punya akses ke kursus ini", 403);
     }
 
@@ -59,7 +67,8 @@ export async function GET(
       console.error("quizSelesaiCount query failed:", e);
     }
 
-    return NextResponse.json({ data: { ...k, enrolledCount, quizSelesaiCount } });
+    const cc = session ? "private, max-age=30, stale-while-revalidate=60" : "public, max-age=60, stale-while-revalidate=120";
+    return NextResponse.json({ data: { ...k, enrolledCount, quizSelesaiCount } }, { headers: { "Cache-Control": cc, "Vary": "Cookie" } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Kursus detail error:", e);

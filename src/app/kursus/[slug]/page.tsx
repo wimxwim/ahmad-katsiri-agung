@@ -43,7 +43,29 @@ export default function KursusDetailPage() {
 
   useEffect(() => {
     fetchKursus();
+    // Auto-enroll after login redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("auto_enroll") === "1") {
+      // Clean URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+    }
   }, [fetchKursus]);
+
+  useEffect(() => {
+    if (!kursus) return;
+    fetch("/api/v1/account/me", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((me) => {
+        if (!me?.data) return;
+        return fetch(`/api/v1/enroll/status?kursusId=${kursus.id}`, { credentials: "include" });
+      })
+      .then((r) => r?.json())
+      .then((j) => {
+        if (j?.data?.length > 0) setEnrolled(true);
+      })
+      .catch(() => {});
+  }, [kursus]);
 
   async function handleEnroll() {
     if (!kursus) return;
@@ -52,8 +74,7 @@ export default function KursusDetailPage() {
 
     const meRes = await fetch("/api/v1/account/me", { credentials: "include" }).catch(() => null);
     if (!meRes || !meRes.ok) {
-      const returnUrl = encodeURIComponent(`/kursus/${params.slug}`);
-      window.location.href = `/masuk?portal=siswa&redirect=${returnUrl}`;
+      window.location.href = `/masuk?portal=siswa&redirect=${encodeURIComponent(`/kursus/${params.slug}?auto_enroll=1`)}`;
       return;
     }
 
