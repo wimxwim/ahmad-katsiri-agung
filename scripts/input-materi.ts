@@ -224,8 +224,8 @@ function getAiConfig() {
   return {
     baseUrl: process.env.AI_BASE_URL || "https://router.bynara.id/v1",
     apiKey: process.env.AI_API_KEY || process.env.NARAROUTER_API_KEY || "",
-    model: process.env.AI_MODEL || "deepseek-v4-flash",
-    flashModel: process.env.AI_FLASH_MODEL || "deepseek-v4-flash",
+    model: process.env.AI_MODEL || "deepseek-v4-flash-bynara",
+    flashModel: process.env.AI_FLASH_MODEL || "deepseek-v4-flash-bynara",
   };
 }
 
@@ -237,12 +237,15 @@ async function chatCompletion(
   const model = options.model || cfg.model;
   const url = `${cfg.baseUrl}/chat/completions`;
 
-  const body = {
+  const body: Record<string, unknown> = {
     model,
     messages,
     temperature: options.temperature ?? 0.4,
     max_tokens: options.maxTokens ?? 1500,
   };
+  if (model.includes("deepseek-v4")) {
+    body.thinking = { type: "disabled" };
+  }
 
   let lastError: Error | null = null;
   const retries = 2;
@@ -316,14 +319,27 @@ async function chatWithFallback(
 
 // ── AI Prompts ─────────────────────────────────────────────────────
 
-const MATERI_SYSTEM = `Kamu adalah asisten pengajar Indonesia. Tugasmu: menerima teks materi mentah dan menghasilkan rangkuman MATERI untuk siswa. ATURAN:
-1. Output HARUS JSON valid dengan field "judul" (string) dan "konten" (string).
-2. Konten maksimal 1500 karakter, bahasa Indonesia, gaya untuk siswa SMP/SMA.
-3. JANGAN masukkan HTML, script, atau markup apapun.
-4. JANGAN masukkan instruksi, disclaimer, atau komentar di luar JSON.
-5. Jangan sebut "Berikut adalah" atau "Ini rangkuman" — langsung tulis isi.
-6. JANGAN gunakan data siswa asli (nama, NISN, nilai) dalam output.
-7. Data yang dikirim HANYA untuk generasi konten — tidak untuk training model.`;
+const MATERI_SYSTEM = `Kamu adalah asisten pengajar Indonesia. Tugasmu: menerima teks materi mentah dan menghasilkan rangkuman MATERI untuk siswa SMP/MTs. ATURAN:
+1. Output HARUS JSON valid dengan format:
+{
+  "judul": "Judul Materi",
+  "ringkasan": "Ringkasan singkat 2-3 kalimat",
+  "pendahuluan": "Paragraf pembuka/pendahuluan",
+  "konten": [
+    {"judul": "Sub-bab 1", "isi": "Penjelasan sub-bab 1..."},
+    {"judul": "Sub-bab 2", "isi": "Penjelasan sub-bab 2..."}
+  ],
+  "poinPenting": ["Poin penting 1", "Poin penting 2", "Poin penting 3"]
+}
+2. konten HARUS array of objects (min 1, max 10 sub-bab), masing-masing punya judul & isi.
+3. poinPenting HARUS array of strings (min 1, max 10).
+4. ringkasan min 10 karakter, pendahuluan min 20 karakter.
+5. Bahasa Indonesia, gaya untuk siswa SMP/SMA.
+6. JANGAN masukkan HTML, script, atau markup apapun.
+7. JANGAN masukkan instruksi, disclaimer, atau komentar di luar JSON.
+8. Jangan sebut "Berikut adalah" atau "Ini rangkuman" — langsung tulis isi.
+9. JANGAN gunakan data siswa asli (nama, NISN, nilai) dalam output.
+10. Data yang dikirim HANYA untuk generasi konten — tidak untuk training model.`;
 
 const QUIZ_SYSTEM = `Kamu adalah penulis soal Indonesia. Tugasmu: menerima teks materi dan menghasilkan 5 soal PILIHAN GANDA berkualitas. ATURAN:
 1. Output HARUS JSON valid dengan field "judul" (string) dan "soal" (array 5 item).
@@ -334,8 +350,8 @@ const QUIZ_SYSTEM = `Kamu adalah penulis soal Indonesia. Tugasmu: menerima teks 
 6. JANGAN gunakan data siswa asli dalam soal.
 7. Data dikirim HANYA untuk generasi konten — tidak untuk training model.`;
 
-const SOAL_SYSTEM = `Kamu adalah penulis soal Indonesia. Tugasmu: menerima teks materi dan menghasilkan 5 soal CAMPURAN (2 PG, 2 isian, 1 essay). ATURAN:
-1. Output HARUS JSON valid dengan field "soal" (array 5 item).
+const SOAL_SYSTEM = `Kamu adalah penulis soal Indonesia. Tugasmu: menerima teks materi dan menghasilkan 35 soal CAMPURAN (15 PG, 10 isian, 10 essay). ATURAN:
+1. Output HARUS JSON valid dengan field "soal" (array 35 item).
 2. PG: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": ..., "B": ..., "C": ..., "D": ...}, "kunci": "A"|"B"|"C"|"D" }
 3. Isian: { "pertanyaan": string, "tipe": "ISIAN", "kunci": string }
 4. Essay: { "pertanyaan": string, "tipe": "ESSAY", "kunci": "kriteria jawaban" }
@@ -526,10 +542,10 @@ async function main(): Promise<Summary> {
       [{ role: "system", content: QUIZ_SYSTEM }, { role: "user", content: `Materi:\n\n${truncatedSource}` }],
       { model: getAiConfig().flashModel, temperature: 0.5, maxTokens: 1500 },
     );
-    console.log(`   → Soal...`);
+    console.log(`   → Soal (35 soal)...`);
     const soalRes = await chatWithFallback(
       [{ role: "system", content: SOAL_SYSTEM }, { role: "user", content: `Materi:\n\n${truncatedSource}` }],
-      { model: getAiConfig().flashModel, temperature: 0.5, maxTokens: 1500 },
+      { model: getAiConfig().flashModel, temperature: 0.5, maxTokens: 5000 },
     );
     aiResults = [materiRes, quizRes, soalRes];
   } catch (error) {
@@ -554,8 +570,9 @@ async function main(): Promise<Summary> {
 
   const judulFinal = args.kursusTitle || (args.kelas ? `${args.kelas}. ${materiParsed.judul}` : materiParsed.judul);
   const slugFinal = args.kursusSlug || slugify(judulFinal);
-  const kontenFinal = materiParsed.konten;
-  const ringkasanFinal = (args.kelas ? `[Kelas ${args.kelas}] ` : "") + (kontenFinal.length > 200 ? kontenFinal.slice(0, 200) + "..." : kontenFinal);
+  const kontenFinal = materiParsed.konten.map((k) => `## ${k.judul}\n\n${k.isi}`).join("\n\n");
+  const kontenFlat = materiParsed.konten.map((k) => `${k.judul}: ${k.isi}`).join(" ");
+  const ringkasanFinal = (args.kelas ? `[Kelas ${args.kelas}] ` : "") + (materiParsed.ringkasan || kontenFlat.slice(0, 200) + "...");
   const quizJudulFinal = quizParsed.judul;
   const quizSoalItems = quizParsed.soal;
   const soalItems = soalParsed?.soal ?? [];

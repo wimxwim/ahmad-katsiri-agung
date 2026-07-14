@@ -47,30 +47,40 @@ describe("ai-sanitizer", () => {
   });
 
   describe("parseMateriSafe", () => {
+    const validMateri = {
+      judul: "Bab 1 Akidah Islam",
+      ringkasan: "Ringkasan singkat tentang akidah Islam",
+      pendahuluan: "Pendahuluan materi akidah Islam yang cukup panjang untuk memenuhi minimum",
+      konten: [
+        { judul: "Pengertian Akidah", isi: "Akidah secara bahasa berarti ikatan atau keyakinan yang kokoh minimal dua puluh karakter" },
+      ],
+      poinPenting: ["Iman kepada Allah", "Iman kepada Malaikat"],
+    };
+
     it("memparse JSON valid", () => {
-      const input = JSON.stringify({ judul: "Bab 1 Akidah", konten: "Isi materi tentang akidah Islam yang cukup panjang" });
+      const input = JSON.stringify(validMateri);
       const result = parseMateriSafe(input);
       expect(result).not.toBeNull();
-      expect(result!.judul).toBe("Bab 1 Akidah");
+      expect(result!.judul).toBe("Bab 1 Akidah Islam");
     });
 
     it("menolak judul terlalu pendek", () => {
-      const input = JSON.stringify({ judul: "AB", konten: "Isi materi tentang akidah Islam yang cukup panjang" });
+      const input = JSON.stringify({ ...validMateri, judul: "AB" });
       const result = parseMateriSafe(input);
       expect(result).toBeNull();
     });
 
     it("menolak konten terlalu pendek", () => {
-      const input = JSON.stringify({ judul: "Bab 1", konten: "pendek" });
+      const input = JSON.stringify({ ...validMateri, konten: [{ judul: "Pendek", isi: "pendek" }] });
       const result = parseMateriSafe(input);
       expect(result).toBeNull();
     });
 
     it("mengekstrak JSON dari markdown fence", () => {
-      const input = '```json\n{"judul": "Bab 1 Akidah", "konten": "Isi materi tentang akidah Islam yang cukup panjang"}\n```';
+      const input = '```json\n' + JSON.stringify(validMateri) + '\n```';
       const result = parseMateriSafe(input);
       expect(result).not.toBeNull();
-      expect(result!.judul).toBe("Bab 1 Akidah");
+      expect(result!.judul).toBe("Bab 1 Akidah Islam");
     });
 
     it("mengembalikan null untuk JSON invalid", () => {

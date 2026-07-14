@@ -9,13 +9,11 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
-import { aiGeneration, fileMateri, kursus, users } from "@/lib/db/schema";
+import { fileMateri, kursus, users } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { extractText } from "@/lib/text-extractor";
-import { runGenerationFromText } from "@/lib/ai-generator";
-import { checkGenerateBalance, deductGenerateCost, getGenerateCost, refundBalance, incrementUploadCount, getSubscriptionStatus, requireUnlocked } from "@/lib/token-service";
-import { uuidv7 } from "@/lib/uuid";
+import { incrementUploadCount, getSubscriptionStatus } from "@/lib/token-service";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -160,55 +158,6 @@ export async function POST(request: NextRequest) {
         .where(eq(fileMateri.id, row.id));
     }
 
-    const genId = uuidv7();
-    const genStatus = "queued";
-
-    await db.insert(aiGeneration).values({
-      id: genId,
-      fileMateriId: row.id,
-      guruId: session.userId!,
-      kursusId,
-      sourceFileName: originalName,
-      status: genStatus,
-    });
-
-    if (extractionText && extractionText.length >= 50) {
-      let isUnlocked = false;
-      try {
-        await requireUnlocked(session.userId!);
-        isUnlocked = true;
-      } catch {
-        console.log("Auto-generate skipped: subscription locked for user", session.userId);
-      }
-      if (!isUnlocked) {
-        // skip auto-generate, user belum unlock
-      } else {
-        let hasBalance = false;
-        try {
-          hasBalance = await checkGenerateBalance(session.userId!);
-        } catch (e) {
-          console.error("Token balance check failed, skipping auto-generate:", e);
-        }
-        if (hasBalance) {
-          let deducted = false;
-          try {
-            await deductGenerateCost(session.userId!);
-            deducted = true;
-          } catch (e) {
-            console.error("Token deduction failed, skipping auto-generate:", e instanceof Error ? e.message : String(e));
-          }
-          if (deducted) {
-            runGenerationFromText(genId, extractionText, session.userId!).catch((e) => {
-              console.error("Auto-generate after upload failed:", e instanceof Error ? e.message : String(e));
-              refundBalance(session.userId!, getGenerateCost()).catch(() => {});
-            });
-          }
-        } else {
-          console.log("Auto-generate skipped: insufficient balance for user", session.userId);
-        }
-      }
-    }
-
     const guru = await db.query.users.findFirst({
       where: eq(users.id, session.userId!),
       columns: { nama: true },
@@ -251,13 +200,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       jobId,
-      generationId: genId,
       fileId: row.id,
       fileName: originalName,
       sizeBytes: file.size,
       ext: detected,
       message: extractionText
-        ? "File berhasil diupload. AI sedang memproses draft — cek halaman Draft AI dalam beberapa menit."
+        ? "File berhasil diupload dan teks berhasil diekstrak. Buka halaman Draft AI untuk generate materi."
         : "File berhasil diupload. Ekstraksi teks akan diproses sebelum generate.",
     });
   } catch (e) {

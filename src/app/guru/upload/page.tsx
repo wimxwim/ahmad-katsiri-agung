@@ -153,7 +153,7 @@ export default function GuruUploadPage() {
       setJob({ state: "extracting", progress: 70, message: "Mengekstrak teks..." });
       setJob({ state: "ready", progress: 100, message: "Upload selesai!" });
       setSuccessFileName(file.name);
-      toast("success", "File berhasil diupload! Sistem AI sedang memproses dokumen Anda. Draft materi, kuis, dan soal akan muncul di halaman Draft dalam beberapa menit.");
+      toast("success", "File berhasil diupload! Teks berhasil diekstrak. Buka halaman Draft AI untuk generate materi, kuis, dan soal.");
       await loadHistory();
     } catch (e) {
       setJob({ state: "failed", progress: 0, message: "Gagal" });
@@ -174,7 +174,7 @@ export default function GuruUploadPage() {
       <div className="mb-6">
         <h1 className="font-heading font-bold text-2xl text-on-surface">Upload Dokumen</h1>
         <p className="text-sm text-on-surface-variant mt-1 max-w-2xl">
-          Upload PDF atau DOCX materi pembelajaran. File akan disimpan aman — Sistem AI sedang memproses dokumen Anda. Draft materi, kuis, dan soal akan muncul di halaman Draft dalam beberapa menit.
+          Upload PDF atau DOCX materi pembelajaran. File akan disimpan aman — teks akan diekstrak otomatis. Generate AI bisa dilakukan dari halaman Draft.
         </p>
       </div>
 
@@ -291,7 +291,7 @@ export default function GuruUploadPage() {
             Dokumen berhasil diupload
           </p>
           <p className="text-sm">
-            <b>{successFileName}</b> telah tersimpan. Sistem AI sedang memproses dokumen Anda. Draft materi, kuis, dan soal akan muncul di halaman Draft dalam beberapa menit.
+            <b>{successFileName}</b> telah tersimpan dan teks berhasil diekstrak. Buka halaman <Link href="/guru/drafts" className="text-primary underline">Draft AI</Link> untuk generate materi, kuis, dan soal.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button

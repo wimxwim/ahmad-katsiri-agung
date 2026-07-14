@@ -4,6 +4,12 @@
   "buildCommand": "next build",
   "installCommand": "npm install",
   "devCommand": "next dev",
+  "crons": [
+    {
+      "path": "/api/v1/cron/generate?token=akal-cron-secret",
+      "schedule": "*/1 * * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/session",

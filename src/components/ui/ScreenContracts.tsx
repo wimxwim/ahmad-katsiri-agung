@@ -26,12 +26,11 @@ import { motion } from "motion/react";
 const PIPELINE_STEPS = [
   { key: "uploading", icon: Upload, label: "Upload" },
   { key: "extracting", icon: FileText, label: "Ekstraksi" },
-  { key: "generating", icon: Sparkles, label: "AI Generate" },
   { key: "ready", icon: CheckCircle2, label: "Siap" },
 ] as const;
 
 interface UploadProgressProps {
-  status: "uploading" | "extracting" | "generating" | "ready" | "failed";
+  status: "uploading" | "extracting" | "ready" | "failed";
   progress?: number;
   message?: string;
   fileName?: string;
