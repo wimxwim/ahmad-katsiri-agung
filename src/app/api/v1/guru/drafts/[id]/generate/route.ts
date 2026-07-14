@@ -104,7 +104,7 @@ export async function POST(
     const sp = request.nextUrl.searchParams;
     const rawSoal = sp.get("soalCount");
     const rawQuiz = sp.get("quizCount");
-    const soalCount = rawSoal ? Math.min(35, Math.max(10, parseInt(rawSoal, 10) || 10)) : 10;
+    const soalCount = rawSoal ? Math.min(50, Math.max(5, parseInt(rawSoal, 10) || 35)) : 35;
     const quizCount = rawQuiz ? Math.min(15, Math.max(5, parseInt(rawQuiz, 10) || 5)) : 5;
 
     const hasBalance = await checkGenerateBalance(session.userId!);

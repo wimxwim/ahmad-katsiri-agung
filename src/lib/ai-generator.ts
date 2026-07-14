@@ -135,7 +135,7 @@ function fallbackQuestion(seed: string, index: number): string {
   return `Mengapa siswa perlu memahami materi tentang ${cleaned.toLowerCase()}?`;
 }
 
-function fallbackAiResults(sourceText: string, quizCount = 5, soalCount = 10): [ChatResult, ChatResult, ChatResult] {
+function fallbackAiResults(sourceText: string, quizCount = 5, soalCount = 35): [ChatResult, ChatResult, ChatResult] {
   const sentences = sentencePool(sourceText);
   const topic = fallbackTopic(sourceText);
   const basis = sentences.length > 0 ? sentences : [topic];
@@ -190,7 +190,7 @@ export async function runGeneration(
   generationId: string,
   fileBytes: Buffer,
   ext: string,
-  soalCount = 10,
+  soalCount = 35,
   quizCount = 5,
 ): Promise<GenerationResult> {
   const [gen] = await db
@@ -405,7 +405,7 @@ export async function runGenerationFromText(
   generationId: string,
   sourceText: string,
   guruId: string,
-  soalCount = 10,
+  soalCount = 35,
   quizCount = 5,
 ): Promise<void> {
   const [gen] = await db

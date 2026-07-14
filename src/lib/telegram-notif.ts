@@ -28,6 +28,31 @@ async function sendMessage(text: string): Promise<void> {
   }
 }
 
+async function sendPhoto(photoUrl: string, caption: string): Promise<void> {
+  if (!BOT_TOKEN || !CHAT_ID) return;
+
+  try {
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: CHAT_ID,
+        photo: photoUrl,
+        caption,
+        parse_mode: "HTML",
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text().catch(() => "");
+      console.error("[telegram-notif] Gagal kirim foto:", res.status, err.slice(0, 200));
+    }
+  } catch (e) {
+    console.error("[telegram-notif] Error foto:", e instanceof Error ? e.message : String(e));
+  }
+}
+
 export async function sendTopupNotification(params: {
   userId: string;
   nama: string;
@@ -37,7 +62,7 @@ export async function sendTopupNotification(params: {
   newBalance: number;
   loginTerakhir?: string;
 }): Promise<void> {
-  const message = [
+  const caption = [
     "💰 <b>TOP-UP BARU</b>",
     "",
     `👤 <b>Nama:</b> ${escapeHtml(params.nama)}`,
@@ -45,12 +70,11 @@ export async function sendTopupNotification(params: {
     `🆔 <b>User ID:</b> <code>${params.userId}</code>`,
     `💵 <b>Nominal:</b> Rp${params.amount.toLocaleString("id-ID")}`,
     `🏦 <b>Saldo Sekarang:</b> Rp${params.newBalance.toLocaleString("id-ID")}`,
-    `📎 <b>Bukti:</b> ${params.proofUrl}`,
     params.loginTerakhir ? `🕐 <b>Login Terakhir:</b> ${params.loginTerakhir}` : "",
     `⏰ <b>Waktu:</b> ${new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}`,
   ].filter(Boolean).join("\n");
 
-  await sendMessage(message);
+  await sendPhoto(params.proofUrl, caption);
 }
 
 export async function sendDonationNotification(params: {
@@ -60,18 +84,21 @@ export async function sendDonationNotification(params: {
   proofUrl?: string;
   loginTerakhir?: string;
 }): Promise<void> {
-  const message = [
+  const caption = [
     "🤲 <b>DONASI BARU</b>",
     "",
     `👤 <b>Nama:</b> ${escapeHtml(params.nama)}`,
     `📧 <b>Email:</b> ${escapeHtml(params.email)}`,
     `🆔 <b>User ID:</b> <code>${params.userId}</code>`,
-    params.proofUrl ? `📎 <b>Bukti:</b> ${params.proofUrl}` : "📎 <b>Bukti:</b> Tidak diupload (hamba Allah)",
     params.loginTerakhir ? `🕐 <b>Login Terakhir:</b> ${params.loginTerakhir}` : "",
     `⏰ <b>Waktu:</b> ${new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}`,
   ].filter(Boolean).join("\n");
 
-  await sendMessage(message);
+  if (params.proofUrl) {
+    await sendPhoto(params.proofUrl, caption);
+  } else {
+    await sendMessage(caption + "\n📎 <b>Bukti:</b> Tidak diupload (hamba Allah)");
+  }
 }
 
 export async function sendSuspendNotification(params: {
