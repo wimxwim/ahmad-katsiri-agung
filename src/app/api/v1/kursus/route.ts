@@ -65,13 +65,7 @@ export async function GET(request: NextRequest) {
     if (slug) {
       query = query.where(eq(kursus.slug, slug));
     }
-    let data;
-    try {
-      data = await query.orderBy(desc(kursus.createdAt)).limit(limit).offset(offset);
-    } catch (queryError) {
-      console.error("Kursus query error:", queryError);
-      return NextResponse.json({ error: "Query gagal", detail: String(queryError) }, { status: 500 });
-    }
+    const data = await query.orderBy(desc(kursus.createdAt)).limit(limit).offset(offset);
     return NextResponse.json({ data, limit, offset }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60", "Vary": "Cookie" } });
   } catch (e) {
     console.error("Kursus GET error:", e);
