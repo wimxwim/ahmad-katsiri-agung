@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, after } from "next/server";
 import { requireOwner, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -6,7 +6,6 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { sendSuspendNotification } from "@/lib/telegram-notif";
-import { waitUntil } from "@vercel/functions";
 import { appendEvent } from "@/lib/event-store";
 import { z } from "zod";
 
@@ -47,14 +46,14 @@ export async function POST(request: NextRequest) {
       suspendedBy: session.userId,
     });
 
-    waitUntil(
-      sendSuspendNotification({
+    after(async () => {
+      await sendSuspendNotification({
         userId: body.userId,
         nama: user.nama,
         email: user.email,
         reason: body.reason,
-      }).catch((e) => console.error("Telegram suspend notif gagal:", e)),
-    );
+      }).catch((e) => console.error("Telegram suspend notif gagal:", e));
+    });
 
     return apiSuccess({
       userId: body.userId,

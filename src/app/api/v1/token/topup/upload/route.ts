@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, after } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiSuccess, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -10,7 +10,6 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
-import { waitUntil } from "@vercel/functions";
 
 export const dynamic = "force-dynamic";
 
@@ -109,8 +108,8 @@ export async function POST(request: NextRequest) {
       columns: { nama: true, email: true, lastActiveAt: true },
     });
 
-    waitUntil(
-      sendTopupNotification({
+    after(async () => {
+      await sendTopupNotification({
         userId: session.userId,
         nama: guru?.nama ?? "Guru",
         email: guru?.email ?? session.email ?? "",
@@ -120,8 +119,8 @@ export async function POST(request: NextRequest) {
         loginTerakhir: guru?.lastActiveAt
           ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
           : undefined,
-      }).catch((e) => console.error("Telegram notif gagal:", e)),
-    );
+      }).catch((e) => console.error("Telegram notif gagal:", e));
+    });
 
     return apiSuccess({
       balance: balance.balance,
