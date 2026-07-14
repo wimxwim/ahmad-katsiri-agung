@@ -2,12 +2,12 @@ import { NextRequest } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiSuccess, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
-import { topUpBalance } from "@/lib/token-service";
+import { ensureBalanceRow } from "@/lib/token-service";
 import { MIN_TOPUP, MAX_TOPUP, MAX_TOPUP_PER_DAY } from "@/lib/token-constants";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { sendTopupNotification } from "@/lib/telegram-notif";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { users, tokenTransactions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
 
@@ -96,12 +96,23 @@ export async function POST(request: NextRequest) {
       folder,
     });
 
-    const { balance, transaction } = await topUpBalance(session.userId, amount, {
-      paymentMethod: "QRIS_GOPAY",
-      proofFileId: uploadResult.fileId,
-      proofLink: uploadResult.link,
-      notes: `Top-up Rp${amount.toLocaleString("id-ID")} via QRIS GoPay`,
-    });
+    await ensureBalanceRow(session.userId);
+
+    const [transaction] = await db
+      .insert(tokenTransactions)
+      .values({
+        userId: session.userId,
+        type: "TOPUP",
+        status: "PENDING",
+        amount,
+        balanceBefore: 0,
+        balanceAfter: 0,
+        paymentMethod: "QRIS_GOPAY",
+        proofFileId: uploadResult.fileId,
+        proofLink: uploadResult.link,
+        notes: `Top-up Rp${amount.toLocaleString("id-ID")} via QRIS GoPay — menunggu verifikasi admin`,
+      })
+      .returning();
 
     const guru = await db.query.users.findFirst({
       where: eq(users.id, session.userId),
@@ -114,16 +125,16 @@ export async function POST(request: NextRequest) {
       email: guru?.email ?? session.email ?? "",
       amount,
       proofUrl: uploadResult.link,
-      newBalance: balance.balance,
+      newBalance: 0,
       loginTerakhir: guru?.lastActiveAt
         ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
         : undefined,
     }).catch((e) => console.error("Telegram notif gagal:", e));
 
     return apiSuccess({
-      balance: balance.balance,
       transactionId: transaction.id,
       proofUrl: uploadResult.link,
+      message: "Bukti pembayaran berhasil diupload. Saldo akan ditambahkan setelah verifikasi oleh admin.",
     });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);

@@ -106,7 +106,7 @@ export function DashboardLayoutClient({
             className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-on-surface-variant hover:bg-surface transition-colors min-h-11 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
           >
             <ChevronLeft className="w-4 h-4" />
-            Kembali ke Situs
+            Ke Halaman Utama
           </Link>
           <button
             onClick={() => {
@@ -129,12 +129,13 @@ export function DashboardLayoutClient({
 
       <div className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-20 bg-surface/80 backdrop-blur-md border-b border-border-precision flex items-center gap-3 px-4 py-3">
-<button
+          <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 -ml-2 text-on-surface-variant hover:text-on-surface cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
+            className="lg:hidden flex items-center gap-1.5 p-2 -ml-2 text-on-surface-variant hover:text-on-surface cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
             aria-label="Buka menu"
           >
             <Menu className="w-5 h-5" />
+            <span className="text-xs font-semibold">Menu</span>
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-2 text-sm text-on-surface-variant">
@@ -145,7 +146,7 @@ export function DashboardLayoutClient({
             >
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
                 <span className="text-xs font-bold text-primary font-heading">
-                  {nama.charAt(0).toUpperCase()}
+                  {nama?.charAt(0)?.toUpperCase() || "S"}
                 </span>
               </div>
               <span className="hidden sm:inline">{nama}</span>

@@ -44,7 +44,7 @@ export function BottomTabBar() {
   const navTabs = [
     { href: "/", label: "Beranda", icon: Home },
     { href: "/fitur", label: "Fitur", icon: Sparkles },
-    { href: "/kursus", label: "Kursus", icon: BookOpen },
+    { href: "/kursus", label: "Kursus", icon: BookOpen, highlight: true },
     ...(session
       ? [
           {
@@ -190,11 +190,14 @@ export function BottomTabBar() {
                   />
                 </span>
                 <span
-                  className={`relative z-10 text-[11px] font-semibold leading-none transition-colors duration-200 ${
+                  className={`relative z-10 text-[11px] font-semibold leading-none transition-colors duration-200 flex items-center gap-1 ${
                     active ? "text-on-primary" : "text-on-surface-variant"
                   }`}
                 >
                   {tab.label}
+                  {(tab as { highlight?: boolean }).highlight && !active && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  )}
                 </span>
               </Link>
             );

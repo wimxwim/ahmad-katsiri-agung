@@ -6,7 +6,7 @@
   "devCommand": "next dev",
   "crons": [
     {
-      "path": "/api/v1/cron/generate?token=akal-cron-secret",
+      "path": "/api/v1/cron/generate",
       "schedule": "0 0 * * *"
     }
   ],

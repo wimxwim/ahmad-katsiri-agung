@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify, errors } from "jose";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf-server";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { siswaKursus, kursus, inviteTokens } from "@/lib/db/schema";
@@ -17,6 +18,9 @@ interface InvitePayload {
 
 export async function POST(request: NextRequest) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const session = await requireSiswa(request);
 
     const ip = ipFromRequest(request);

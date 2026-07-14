@@ -112,39 +112,43 @@ export async function deductBalance(
 ): Promise<TokenBalance> {
   const before = await getBalance(userId);
 
-  const [result] = await db
-    .update(tokenBalances)
-    .set({
-      balance: sql`${tokenBalances.balance} - ${amount}`,
-      totalSpent: sql`${tokenBalances.totalSpent} + ${amount}`,
-      updatedAt: new Date(),
-    })
-    .where(
-      and(
-        eq(tokenBalances.userId, userId),
-        gte(tokenBalances.balance, amount),
-      ),
-    )
-    .returning({ balance: tokenBalances.balance });
+  const after = await db.transaction(async (tx) => {
+    const [result] = await tx
+      .update(tokenBalances)
+      .set({
+        balance: sql`${tokenBalances.balance} - ${amount}`,
+        totalSpent: sql`${tokenBalances.totalSpent} + ${amount}`,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(tokenBalances.userId, userId),
+          gte(tokenBalances.balance, amount),
+        ),
+      )
+      .returning({ balance: tokenBalances.balance });
 
-  if (!result) {
-    throw new InsufficientBalanceError(
-      `Saldo tidak cukup. Butuh Rp${amount}, saldo sekarang Rp${before.balance}.`,
-      before.balance,
+    if (!result) {
+      throw new InsufficientBalanceError(
+        `Saldo tidak cukup. Butuh Rp${amount}, saldo sekarang Rp${before.balance}.`,
+        before.balance,
+        amount,
+      );
+    }
+
+    const afterTx = { ...before, balance: result.balance, totalSpent: before.totalSpent + amount };
+
+    await tx.insert(tokenTransactions).values({
+      userId,
+      type: "DEDUCT",
+      status: "COMPLETED",
       amount,
-    );
-  }
+      balanceBefore: before.balance,
+      balanceAfter: afterTx.balance,
+      notes: metadata?.notes ?? null,
+    });
 
-  const after = { ...before, balance: result.balance, totalSpent: before.totalSpent + amount };
-
-  await db.insert(tokenTransactions).values({
-    userId,
-    type: "DEDUCT",
-    status: "COMPLETED",
-    amount,
-    balanceBefore: before.balance,
-    balanceAfter: after.balance,
-    notes: metadata?.notes ?? null,
+    return afterTx;
   });
 
   await appendEvent(`token:${userId}`, "token.deducted", {
@@ -207,56 +211,65 @@ export async function topUpBalance(
     proofLink?: string;
     notes?: string;
   },
-): Promise<{ balance: TokenBalance; transaction: TokenTransaction }> {
+): Promise<{ balance: TokenBalance; transaction: TokenTransaction; isFirstTopUp: boolean; bonusMessage: string | null }> {
   const before = await ensureBalanceRow(userId);
 
-  const [result] = await db
-    .update(tokenBalances)
-    .set({
-      balance: sql`${tokenBalances.balance} + ${amount}`,
-      totalTopup: sql`${tokenBalances.totalTopup} + ${amount}`,
-      lastTopupAt: new Date(),
-      updatedAt: new Date(),
-      isUnlocked: true,
-      unlockedAt: before.isUnlocked ? undefined : new Date(),
-    })
-    .where(eq(tokenBalances.userId, userId))
-    .returning({
-      balance: tokenBalances.balance,
-      totalTopup: tokenBalances.totalTopup,
-      totalSpent: tokenBalances.totalSpent,
-      lastTopupAt: tokenBalances.lastTopupAt,
-      isUnlocked: tokenBalances.isUnlocked,
-      unlockedAt: tokenBalances.unlockedAt,
-    });
+  const isFirstTopUp = before.totalTopup === 0;
+  const bonusMessage = isFirstTopUp
+    ? "Selamat! Top-up pertama berhasil. Akun Anda telah di-unlock untuk akses generate AI unlimited."
+    : null;
 
-  const after: TokenBalance = {
-    userId,
-    balance: result.balance,
-    totalTopup: result.totalTopup,
-    totalSpent: result.totalSpent,
-    lastTopupAt: result.lastTopupAt,
-    isUnlocked: result.isUnlocked,
-    unlockedAt: result.unlockedAt,
-  };
+  const { after, txRecord, wasJustUnlocked } = await db.transaction(async (tx) => {
+    const [result] = await tx
+      .update(tokenBalances)
+      .set({
+        balance: sql`${tokenBalances.balance} + ${amount}`,
+        totalTopup: sql`${tokenBalances.totalTopup} + ${amount}`,
+        lastTopupAt: new Date(),
+        updatedAt: new Date(),
+        isUnlocked: true,
+        unlockedAt: before.isUnlocked ? undefined : new Date(),
+      })
+      .where(eq(tokenBalances.userId, userId))
+      .returning({
+        balance: tokenBalances.balance,
+        totalTopup: tokenBalances.totalTopup,
+        totalSpent: tokenBalances.totalSpent,
+        lastTopupAt: tokenBalances.lastTopupAt,
+        isUnlocked: tokenBalances.isUnlocked,
+        unlockedAt: tokenBalances.unlockedAt,
+      });
 
-  const wasJustUnlocked = !before.isUnlocked && result.isUnlocked;
-
-  const [tx] = await db
-    .insert(tokenTransactions)
-    .values({
+    const afterTx: TokenBalance = {
       userId,
-      type: "TOPUP",
-      status: "COMPLETED",
-      amount,
-      balanceBefore: before.balance,
-      balanceAfter: after.balance,
-      paymentMethod: metadata?.paymentMethod ?? "QRIS_GOPAY",
-      proofFileId: metadata?.proofFileId ?? null,
-      proofLink: metadata?.proofLink ?? null,
-      notes: wasJustUnlocked ? "Top-up pertama — fitur generate di-unlock!" : (metadata?.notes ?? null),
-    })
-    .returning();
+      balance: result.balance,
+      totalTopup: result.totalTopup,
+      totalSpent: result.totalSpent,
+      lastTopupAt: result.lastTopupAt,
+      isUnlocked: result.isUnlocked,
+      unlockedAt: result.unlockedAt,
+    };
+
+    const wasJustUnlockedTx = !before.isUnlocked && result.isUnlocked;
+
+    const [txRecordTx] = await tx
+      .insert(tokenTransactions)
+      .values({
+        userId,
+        type: "TOPUP",
+        status: "COMPLETED",
+        amount,
+        balanceBefore: before.balance,
+        balanceAfter: afterTx.balance,
+        paymentMethod: metadata?.paymentMethod ?? "QRIS_GOPAY",
+        proofFileId: metadata?.proofFileId ?? null,
+        proofLink: metadata?.proofLink ?? null,
+        notes: wasJustUnlockedTx ? "Top-up pertama — fitur generate di-unlock!" : (metadata?.notes ?? null),
+      })
+      .returning();
+
+    return { after: afterTx, txRecord: txRecordTx, wasJustUnlocked: wasJustUnlockedTx };
+  });
 
   await appendEvent(`token:${userId}`, "token.topped_up", {
     amount,
@@ -267,7 +280,7 @@ export async function topUpBalance(
     unlocked: wasJustUnlocked,
   });
 
-  return { balance: after, transaction: tx as TokenTransaction };
+  return { balance: after, transaction: txRecord as TokenTransaction, isFirstTopUp, bonusMessage };
 }
 
 export async function grantInitialBalance(

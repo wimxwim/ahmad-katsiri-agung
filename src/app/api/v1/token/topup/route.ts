@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { apiError, apiSuccess } from "@/lib/api-response";
+import { apiError, apiSuccess, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { MIN_TOPUP, MAX_TOPUP, MAX_TOPUP_PER_DAY } from "@/lib/token-constants";
 import { db } from "@/lib/db";
 import { tokenTransactions } from "@/lib/db/schema";
@@ -18,6 +19,10 @@ export async function POST(request: NextRequest) {
   try {
     const csrfError = validateCsrf(request);
     if (csrfError) return csrfError;
+
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`topup:${ip}`, 5, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const session = await requireGuru(request);
     const body = TopupRequestSchema.parse(await request.json());

@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { requireOwner, GuardError } from "@/lib/route-guard-v2";
-import { apiError, apiSuccess } from "@/lib/api-response";
+import { apiError, apiSuccess, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -20,6 +21,10 @@ export async function POST(request: NextRequest) {
   try {
     const csrfError = validateCsrf(request);
     if (csrfError) return csrfError;
+
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`suspend:${ip}`, 10, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const session = await requireOwner(request);
     const body = SuspendSchema.parse(await request.json());

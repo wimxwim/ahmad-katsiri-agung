@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Search } from "lucide-react";
 
 interface KursusSaya {
   kursusId: string;
@@ -14,26 +13,28 @@ interface KursusSaya {
 }
 
 export default function SiswaKursusPage() {
-  const router = useRouter();
   const [kursus, setKursus] = useState<KursusSaya[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/v1/enroll/status", { credentials: "include" });
-        if (!res.ok) throw new Error("Gagal memuat data");
-        const { data } = await res.json();
-        setKursus(data || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal memuat data");
-      } finally {
-        setLoading(false);
-      }
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/v1/enroll/status", { credentials: "include" });
+      if (!res.ok) throw new Error("Gagal memuat data");
+      const { data } = await res.json();
+      setKursus(data || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memuat data");
+    } finally {
+      setLoading(false);
     }
-    fetchData();
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return (
@@ -49,7 +50,7 @@ export default function SiswaKursusPage() {
     return (
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline">Coba lagi</button>
+        <button onClick={fetchData} className="text-sm text-primary hover:underline cursor-pointer">Coba lagi</button>
       </div>
     );
   }
@@ -62,8 +63,9 @@ export default function SiswaKursusPage() {
         <div className="text-center py-12 bg-glass rounded-2xl border border-border-precision">
           <BookOpen className="w-10 h-10 text-on-surface-variant/30 mx-auto mb-3" />
           <p className="text-on-surface-variant">Belum terdaftar di kursus manapun</p>
-          <Link href="/siswa/materi" className="text-primary text-sm mt-2 inline-block hover:underline">
-            Jelajahi materi
+          <Link href="/kursus" className="inline-flex items-center gap-1.5 bg-primary text-white text-sm font-semibold px-4 py-2.5 rounded-full mt-3 hover:brightness-110 active:scale-[0.98] transition-all duration-200">
+            <Search className="w-4 h-4" />
+            Cari Kursus
           </Link>
         </div>
       ) : (

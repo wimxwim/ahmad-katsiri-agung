@@ -40,7 +40,7 @@ const item = {
 function modeBadge(mode: string, sudah: boolean) {
   if (sudah) {
     return (
-      <span className="text-[10px] font-bold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full">
+      <span className="text-[11px] font-bold tracking-wider text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full">
         SELESAI
       </span>
     );
@@ -49,19 +49,19 @@ function modeBadge(mode: string, sudah: boolean) {
   switch (mode) {
     case "CBT":
       return (
-        <span className="text-[10px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded-full">
+        <span className="text-[11px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded-full">
           CBT
         </span>
       );
     case "ULANGAN":
       return (
-        <span className="text-[10px] font-bold tracking-wider text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">
+        <span className="text-[11px] font-bold tracking-wider text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-full">
           ULANGAN
         </span>
       );
     case "BELAJAR":
       return (
-        <span className="text-[10px] font-bold tracking-wider text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded-full">
+        <span className="text-[11px] font-bold tracking-wider text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded-full">
           BELAJAR
         </span>
       );
@@ -156,8 +156,8 @@ export default function SiswaQuizListPage() {
         transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.05 }}
         className="bg-glass rounded-2xl border border-border-precision p-3.5 mb-4"
       >
-        <p className="text-xs font-semibold text-on-surface mb-2">📋 Cara mengerjakan:</p>
-        <div className="flex gap-3 text-[10px] text-on-surface-variant">
+        <p className="text-xs font-semibold text-on-surface mb-2">Cara mengerjakan:</p>
+        <div className="flex gap-3 text-[11px] text-on-surface-variant">
           <span>1. Pilih kuis</span>
           <span>2. Kerjakan soal</span>
           <span>3. Lihat skor</span>
@@ -202,10 +202,10 @@ export default function SiswaQuizListPage() {
                     <h3 className="font-semibold text-sm text-on-surface truncate">{q.judul}</h3>
                     {modeBadge(q.modeEvaluasi, q.sudahDikerjakan)}
                   </div>
-                  <div className="flex items-center gap-2 mt-1 text-[10px] text-on-surface-variant">
+                  <div className="flex items-center gap-2 mt-1 text-[11px] text-on-surface-variant">
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
-                      {q.durasiMenit} mnt
+                      {q.durasiMenit} menit
                     </span>
                     <span>{q.totalSoal} soal</span>
                     {q.sudahDikerjakan && q.nilaiTerbaik != null && (

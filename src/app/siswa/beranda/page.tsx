@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -14,6 +13,8 @@ import {
   Megaphone,
   AlertTriangle,
   RefreshCw,
+  Library,
+  Globe,
 } from "lucide-react";
 import { SkeletonDashboardSiswa } from "@/components/ui/SkeletonBlocks";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -63,7 +64,6 @@ interface PengumumanItem {
 const CACHE_TTL = 60_000;
 
 export default function SiswaBerandaPage() {
-  const router = useRouter();
   const [feed, setFeed] = useState<FeedResponse | null>(null);
   const [pengumuman, setPengumuman] = useState<PengumumanItem[]>([]);
   const [quizList, setQuizList] = useState<QuizItem[]>([]);
@@ -71,7 +71,7 @@ export default function SiswaBerandaPage() {
   const [error, setError] = useState("");
   const [nama, setNama] = useState("Siswa");
 
-  useEffect(() => {
+  const fetchData = useCallback(async () => {
     const cachedFeed = getCached<FeedResponse>("beranda:feed");
     const cachedPengumuman = getCached<PengumumanItem[]>("beranda:pengumuman");
     const cachedQuiz = getCached<QuizItem[]>("beranda:quiz");
@@ -86,49 +86,53 @@ export default function SiswaBerandaPage() {
       return;
     }
 
-    Promise.allSettled([
-      fetch("/api/v1/account/me", { credentials: "include" }).then((r) =>
-        r.ok ? r.json() : null
-      ),
-      fetch("/api/v1/siswa/feed", { credentials: "include" }).then((r) =>
-        r.ok ? r.json() : null
-      ),
-      fetch("/api/v1/siswa/pengumuman", { credentials: "include" }).then((r) =>
-        r.ok ? r.json() : null
-      ),
-      fetch("/api/v1/siswa/quiz", { credentials: "include" }).then((r) =>
-        r.ok ? r.json() : null
-      ),
-    ])
-      .then((results) => {
-        const [meResult, feedResult, pengumResult, quizResult] = results;
-        if (meResult.status === "fulfilled" && meResult.value?.data?.nama) {
-          setNama(meResult.value.data.nama);
-          setCache("beranda:nama", meResult.value.data.nama, CACHE_TTL);
-        }
-        if (feedResult.status === "fulfilled" && feedResult.value) {
-          setFeed(feedResult.value);
-          setCache("beranda:feed", feedResult.value, CACHE_TTL);
-        }
-        if (pengumResult.status === "fulfilled" && pengumResult.value?.data) {
-          setPengumuman(pengumResult.value.data);
-          setCache("beranda:pengumuman", pengumResult.value.data, CACHE_TTL);
-        }
-        if (quizResult.status === "fulfilled" && quizResult.value?.data) {
-          setQuizList(quizResult.value.data);
-          setCache("beranda:quiz", quizResult.value.data, CACHE_TTL);
-        }
-        const allFailed = results.every((r) => r.status === "rejected");
-        if (allFailed) {
-          setError("Terjadi kesalahan saat memuat data. Coba lagi.");
-        }
-        setLoading(false);
-      })
-      .catch(() => {
+    try {
+      const results = await Promise.allSettled([
+        fetch("/api/v1/account/me", { credentials: "include" }).then((r) =>
+          r.ok ? r.json() : null
+        ),
+        fetch("/api/v1/siswa/feed", { credentials: "include" }).then((r) =>
+          r.ok ? r.json() : null
+        ),
+        fetch("/api/v1/siswa/pengumuman", { credentials: "include" }).then((r) =>
+          r.ok ? r.json() : null
+        ),
+        fetch("/api/v1/siswa/quiz", { credentials: "include" }).then((r) =>
+          r.ok ? r.json() : null
+        ),
+      ]);
+
+      const [meResult, feedResult, pengumResult, quizResult] = results;
+      if (meResult.status === "fulfilled" && meResult.value?.data?.nama) {
+        setNama(meResult.value.data.nama);
+        setCache("beranda:nama", meResult.value.data.nama, CACHE_TTL);
+      }
+      if (feedResult.status === "fulfilled" && feedResult.value) {
+        setFeed(feedResult.value);
+        setCache("beranda:feed", feedResult.value, CACHE_TTL);
+      }
+      if (pengumResult.status === "fulfilled" && pengumResult.value?.data) {
+        setPengumuman(pengumResult.value.data);
+        setCache("beranda:pengumuman", pengumResult.value.data, CACHE_TTL);
+      }
+      if (quizResult.status === "fulfilled" && quizResult.value?.data) {
+        setQuizList(quizResult.value.data);
+        setCache("beranda:quiz", quizResult.value.data, CACHE_TTL);
+      }
+      const allFailed = results.every((r) => r.status === "rejected");
+      if (allFailed) {
         setError("Terjadi kesalahan saat memuat data. Coba lagi.");
-        setLoading(false);
-      });
+      }
+    } catch {
+      setError("Terjadi kesalahan saat memuat data. Coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   if (loading) return <SkeletonDashboardSiswa />;
 
@@ -141,7 +145,7 @@ export default function SiswaBerandaPage() {
         <h2 className="font-heading text-xl text-on-surface mb-2">Gagal Memuat Data</h2>
         <p className="text-on-surface-variant mb-6 max-w-md text-sm">{error}</p>
         <button
-          onClick={() => router.refresh()}
+          onClick={() => { setError(""); setLoading(true); fetchData(); }}
           className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 min-h-[44px] rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
         >
           <RefreshCw className="w-4 h-4" />
@@ -156,8 +160,9 @@ export default function SiswaBerandaPage() {
       <div className="min-h-[60vh] flex items-center justify-center">
         <EmptyState
           icon={BookOpen}
-          title="Kamu belum terdaftar di kelas"
-          description="Kamu belum terdaftar di kelas mana pun. Hubungi gurumu untuk mendapatkan akses materi dan quiz."
+          title="Kamu belum terdaftar di kursus"
+          description="Kamu belum terdaftar di kursus mana pun. Yuk cari kursus dulu atau minta bantuan gurumu."
+          action={{ label: "Cari Kursus", href: "/kursus" }}
         />
       </div>
     );
@@ -169,7 +174,7 @@ export default function SiswaBerandaPage() {
         <EmptyState
           icon={BookOpen}
           title="Belum ada materi"
-          description="Gurumu belum menerbitkan materi. Cek kembali nanti atau hubungi gurumu untuk info lebih lanjut."
+          description="Gurumu belum menerbitkan materi. Sambil menunggu, yuk coba kerjakan kuis yang sudah ada!"
           action={{ label: "Lihat Kuis Tersedia", href: "/siswa/quiz" }}
         />
       </div>
@@ -249,7 +254,7 @@ export default function SiswaBerandaPage() {
                 {feed.continueLearning.judul}
               </p>
               <p className="text-xs text-white/70 mt-1">
-                {feed.continueLearning.kursusJudul}
+                {feed.continueLearning.kursusJudul || "—"}
               </p>
               {feed.continueLearning.progress > 0 && (
                 <div className="mt-3 h-1.5 bg-white/15 rounded-full overflow-hidden">
@@ -319,7 +324,7 @@ export default function SiswaBerandaPage() {
                         {m.judul}
                       </p>
                       <p className="text-xs text-on-surface-variant mt-0.5">
-                        {m.kursusJudul}
+{m.kursusJudul || "—"}
                       </p>
                     </div>
                   </div>
@@ -392,7 +397,7 @@ export default function SiswaBerandaPage() {
                 {m.judul}
               </h3>
               <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-1">
-                {m.kursusJudul}
+                {m.kursusJudul || "—"}
               </p>
               {m.ringkasan && (
                 <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-1">
@@ -407,12 +412,12 @@ export default function SiswaBerandaPage() {
                       style={{ width: `${m.progress}%` }}
                     />
                   </div>
-                  <span className="text-[10px] font-bold text-primary tabular-nums">
+                  <span className="text-[11px] font-bold text-primary tabular-nums">
                     {m.progress}%
                   </span>
                 </div>
               )}
-              <p className="text-[10px] text-on-surface-variant/60 mt-1">
+              <p className="text-[11px] text-on-surface-variant/60 mt-1">
                 {m.selesai
                   ? "✓ Selesai"
                   : m.lastReadAt
@@ -425,29 +430,53 @@ export default function SiswaBerandaPage() {
         ))}
       </div>
 
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Link
           href="/siswa/quiz"
-          className="bg-glass border border-border-precision rounded-2xl p-3.5 flex items-center gap-3 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
+          className="bg-glass border border-border-precision rounded-2xl p-3.5 flex flex-col items-center gap-2 text-center hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
         >
           <span className="w-10 h-10 rounded-xl bg-tertiary/10 text-tertiary grid place-items-center">
             <Sparkles className="w-5 h-5" />
           </span>
           <div>
-            <p className="font-semibold text-on-surface text-sm">Lihat Kuis</p>
-            <p className="text-xs text-on-surface-variant">Uji pemahamanmu</p>
+            <p className="font-semibold text-on-surface text-xs">Lihat Kuis</p>
+            <p className="text-[11px] text-on-surface-variant">Uji pemahaman</p>
           </div>
         </Link>
         <Link
           href="/siswa/progres"
-          className="bg-glass border border-border-precision rounded-2xl p-3.5 flex items-center gap-3 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
+          className="bg-glass border border-border-precision rounded-2xl p-3.5 flex flex-col items-center gap-2 text-center hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
         >
           <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center">
             <CheckCircle2 className="w-5 h-5" />
           </span>
           <div>
-            <p className="font-semibold text-on-surface text-sm">Lihat Progres</p>
-            <p className="text-xs text-on-surface-variant">Riwayat quiz kamu</p>
+            <p className="font-semibold text-on-surface text-xs">Lihat Progres</p>
+            <p className="text-[11px] text-on-surface-variant">Riwayat quiz</p>
+          </div>
+        </Link>
+        <Link
+          href="/siswa/kursus"
+          className="bg-glass border border-primary/20 rounded-2xl p-3.5 flex flex-col items-center gap-2 text-center hover:border-primary/40 hover:bg-primary/5 active:scale-[0.99] transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
+        >
+          <span className="w-10 h-10 rounded-xl bg-primary/10 text-primary grid place-items-center">
+            <Library className="w-5 h-5" />
+          </span>
+          <div>
+            <p className="font-semibold text-on-surface text-xs">Kursus Saya</p>
+            <p className="text-[11px] text-on-surface-variant">Kursus yang diikuti</p>
+          </div>
+        </Link>
+        <Link
+          href="/kursus"
+          className="bg-glass border border-border-precision rounded-2xl p-3.5 flex flex-col items-center gap-2 text-center hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
+        >
+          <span className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 grid place-items-center">
+            <Globe className="w-5 h-5" />
+          </span>
+          <div>
+            <p className="font-semibold text-on-surface text-xs">Katalog Kursus</p>
+            <p className="text-[11px] text-on-surface-variant">Jelajahi kursus baru</p>
           </div>
         </Link>
       </div>

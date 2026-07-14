@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { csrfHeaders } from "@/lib/csrf";
 
 interface MateriDetail {
@@ -12,6 +12,7 @@ interface MateriDetail {
   konten: string;
   ringkasan: string | null;
   publishedAt: string;
+  nextId: string | null;
 }
 
 export default function SiswaMateriPage() {
@@ -22,6 +23,7 @@ export default function SiswaMateriPage() {
   const [error, setError] = useState("");
   const [marking, setMarking] = useState(false);
   const [done, setDone] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -75,10 +77,10 @@ export default function SiswaMateriPage() {
         <h3 className="font-heading font-semibold text-on-surface mb-2">Tidak dapat membuka materi</h3>
         <p className="text-sm text-on-surface-variant mb-4">{error || "Materi tidak ditemukan"}</p>
         <Link
-          href="/siswa/beranda"
+          href="/siswa/materi"
           className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold"
         >
-          Kembali ke Beranda
+          Kembali ke Materi
         </Link>
       </div>
     );
@@ -87,11 +89,11 @@ export default function SiswaMateriPage() {
   return (
     <div>
       <Link
-        href="/siswa/beranda"
+        href="/siswa/materi"
         className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Kembali ke Beranda
+        Kembali ke Materi
       </Link>
 
       <article className="bg-glass border border-border-precision rounded-2xl p-6 sm:p-8 shadow-glass-lg">
@@ -117,23 +119,67 @@ export default function SiswaMateriPage() {
           {done ? (
             <div className="flex items-center gap-3 p-4 rounded-2xl border border-emerald-300 bg-emerald-50/40 text-emerald-900">
               <CheckCircle2 className="w-5 h-5 shrink-0" />
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold">Materi ditandai selesai</p>
                 <p className="text-sm">Progresmu sudah tersimpan. Lanjut ke materi berikutnya?</p>
               </div>
+              {materi.nextId ? (
+                <Link
+                  href={`/siswa/materi/${materi.nextId}`}
+                  className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all shrink-0"
+                >
+                  Lanjut
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              ) : (
+                <Link
+                  href="/siswa/materi"
+                  className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all shrink-0"
+                >
+                  Lihat semua materi
+                </Link>
+              )}
+            </div>
+          ) : showConfirm ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={markSelesai}
+                disabled={marking}
+                className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
+              >
+                {marking ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                Ya, Tandai Selesai
+              </button>
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="inline-flex items-center gap-2 bg-white text-on-surface-variant border border-border-precision px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-surface active:scale-[0.98] transition-all"
+              >
+                Batal
+              </button>
             </div>
           ) : (
             <button
-              onClick={markSelesai}
-              disabled={marking}
-              className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50"
+              onClick={() => setShowConfirm(true)}
+              className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
             >
-              {marking ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+              <CheckCircle2 className="w-4 h-4" />
               Tandai Selesai
             </button>
           )}
         </div>
       </article>
+
+      {materi.nextId && (
+        <div className="mt-6 flex justify-end">
+          <Link
+            href={`/siswa/materi/${materi.nextId}`}
+            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-3 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
+          >
+            Materi Selanjutnya
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

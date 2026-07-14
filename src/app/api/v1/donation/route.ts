@@ -1,7 +1,8 @@
 import { NextRequest } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { apiError, apiSuccess } from "@/lib/api-response";
+import { apiError, apiSuccess, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { recordDonation } from "@/lib/token-service";
 import { sendDonationNotification } from "@/lib/telegram-notif";
 import { db } from "@/lib/db";
@@ -14,6 +15,10 @@ export async function POST(request: NextRequest) {
   try {
     const csrfError = validateCsrf(request);
     if (csrfError) return csrfError;
+
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`donation:${ip}`, 5, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const session = await requireGuru(request);
 

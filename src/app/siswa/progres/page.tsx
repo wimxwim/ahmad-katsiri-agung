@@ -103,7 +103,13 @@ export default function SiswaProgresPage() {
     return (
       <div className="bg-glass border border-border-precision rounded-2xl p-6 text-center">
         <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-        <p className="text-sm text-red-700">{error}</p>
+        <p className="text-sm text-red-700 mb-4">{error}</p>
+        <button
+          onClick={() => { setError(""); setLoading(true); window.location.reload(); }}
+          className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
+        >
+          Coba Lagi
+        </button>
       </div>
     );
   }
@@ -125,7 +131,7 @@ export default function SiswaProgresPage() {
           </p>
         </div>
         <div className="bg-glass border border-border-precision rounded-2xl p-4">
-          <p className="text-xs font-bold tracking-wider text-on-surface-variant">ATTEMPT</p>
+          <p className="text-xs font-bold tracking-wider text-on-surface-variant">KUIS</p>
           <p className="font-heading text-2xl font-bold text-on-surface mt-1">
             {data?.totalAttempt ?? 0}
           </p>
@@ -163,10 +169,10 @@ export default function SiswaProgresPage() {
                   </h2>
                 </div>
                 <span className="text-xs text-on-surface-variant tabular-nums">
-                  {course.attempts.length} attempt{course.attempts.length > 1 ? "s" : ""}
+                  {course.attempts.length} kuis
                   {course.attempts.some((a) => a.nilai !== null) && (
                     <span className="ml-2 font-semibold text-primary">
-                      · Ø {course.rataNilai}
+                      · Rata-rata: {course.rataNilai}
                     </span>
                   )}
                 </span>

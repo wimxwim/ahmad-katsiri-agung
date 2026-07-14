@@ -91,14 +91,18 @@ export async function POST(request: NextRequest) {
       for (const c of created) {
         userRowMap.set(c.email.toLowerCase(), { id: c.id, email: c.email, role: "SISWA", nama: c.nama });
         result.created += 1;
-        await logAuthEvent("auth.register.success", {
-          userId: c.id,
-          email: c.email,
-          method: "csv_import",
-          ip,
-          portal: "siswa",
-        });
       }
+      await Promise.all(
+        created.map(c =>
+          logAuthEvent("auth.register.success", {
+            userId: c.id,
+            email: c.email,
+            method: "csv_import",
+            ip,
+            portal: "siswa",
+          })
+        )
+      );
     }
 
     const kelasNames = new Set<string>();

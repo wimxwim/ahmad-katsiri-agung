@@ -154,7 +154,12 @@ export async function releaseConcurrent(userKey: string): Promise<void> {
 export function ipFromRequest(request: Request): string {
   const cfIp = request.headers.get("cf-connecting-ip");
   if (cfIp) return cfIp;
-  const xForwardedFor = request.headers.get("x-forwarded-for");
-  if (xForwardedFor) return xForwardedFor.split(",")[0]?.trim();
-  return request.headers.get("x-real-ip") || "unknown";
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp;
+  const xff = request.headers.get("x-forwarded-for");
+  if (xff) {
+    const ips = xff.split(",");
+    return ips[ips.length - 1]?.trim() || "unknown";
+  }
+  return "unknown";
 }

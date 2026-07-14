@@ -10,6 +10,8 @@ import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { MainPaddingWrapper } from "@/components/layout/MainPaddingWrapper";
+import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
 import { Toaster } from "@/components/ui/Toaster";
 import "./globals.css";
 
@@ -185,7 +187,7 @@ export default async function RootLayout({
         <Providers cmsData={cmsData}>
           <Navbar />
           <BottomTabBar />
-          <main id="main" className="flex-1 pt-24 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-x-hidden">{children}</main>
+          <MainPaddingWrapper>{children}</MainPaddingWrapper>
           <Footer navigation={cmsData.navigation} pendiriNama={cmsData.about?.pendiriNama} />
           <FloatingWA waNumber={cmsData.navigation?.waNumber} />
           <Toaster />
@@ -193,6 +195,7 @@ export default async function RootLayout({
         <Analytics />
         <SpeedInsights />
         <GoogleAnalytics gaId={cmsData.siteConfig?.googleAnalyticsId || process.env.NEXT_PUBLIC_GA_ID || ""} />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

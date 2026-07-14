@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { hashPassword } from "@/lib/auth-password";
 import { requireSession } from "@/lib/route-guard-v2";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf-server";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { apiError, apiRateLimit } from "@/lib/api-response";
@@ -23,6 +24,9 @@ const SetPasswordSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`set-password:${ip}`, 5, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

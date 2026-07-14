@@ -59,6 +59,11 @@ function SkeletonDashboardSiswa() {
           <SkeletonCard key={i} className="p-4 sm:p-5 h-24" />
         ))}
       </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-8">
+        {[1, 2, 3, 4].map((i) => (
+          <SkeletonCard key={i} className="p-3.5 h-24" />
+        ))}
+      </div>
     </div>
   );
 }

@@ -10,6 +10,8 @@ import {
   RotateCcw,
   Sparkles,
   Trophy,
+  ThumbsUp,
+  Smile,
   BookOpen,
   ArrowLeft,
   Clock,
@@ -35,6 +37,12 @@ interface QuizData {
   totalSoal: number;
   soal: SoalItem[];
 }
+
+const tipeLabel: Record<string, string> = {
+  PG: "Pilihan Ganda",
+  ISIAN: "Isian",
+  ESSAY: "Essay",
+};
 
 function shuffleArray<T>(arr: T[]): T[] {
   const shuffled = [...arr];
@@ -63,6 +71,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isianText, setIsianText] = useState("");
   const timerExpiredRef = useRef(false);
+  const startTimeRef = useRef<number>(0);
   const selectedRef = useRef(selected);
   const soalRef = useRef<SoalItem | null>(null);
   const submittedRef = useRef(false);
@@ -77,6 +86,8 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
   });
 
   isianTextRef.current = isianText;
+
+  const totalSeconds = quiz.durasiMenit * 60;
 
   useEffect(() => {
     if (quizState !== "playing") {
@@ -98,9 +109,23 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
       }
       return;
     }
-    const id = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
+    const id = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      const remaining = Math.max(0, totalSeconds - elapsed);
+      setTimeLeft(remaining);
+    }, 250);
     return () => clearInterval(id);
-  }, [quizState, timeLeft]);
+  }, [quizState, timeLeft, totalSeconds]);
+
+  // Exit confirmation
+  useEffect(() => {
+    if (quizState !== "playing") return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [quizState]);
 
   const soal = shuffledSoal[currentIndex];
   soalRef.current = soal ?? null;
@@ -116,6 +141,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
     setShowReview(false);
     setQuizState("playing");
     setTimeLeft(quiz.durasiMenit * 60);
+    startTimeRef.current = Date.now();
     timerExpiredRef.current = false;
     submittedRef.current = false;
   }, [quiz.soal, quiz.durasiMenit]);
@@ -171,8 +197,15 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
           });
         }
       }
-    } catch {
-      // best-effort, fallback to local scoring
+    } catch (e) {
+      console.error("Submit hasil gagal:", e);
+      setServerResult({
+        nilai: Math.round((hitungSkor() / totalSoal) * 100),
+        jumlahBenar: hitungSkor(),
+        jumlahSalah: totalSoal - hitungSkor(),
+        totalSoal: totalSoal,
+        jawabanBenar: {},
+      });
     }
   }, [quiz.id, quiz.durasiMenit, timeLeft, jawaban]);
 
@@ -198,12 +231,19 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
   const totalSoalDisplay = serverResult ? serverResult.totalSoal : totalSoal;
   const persentase = totalSoalDisplay > 0 ? Math.round((skor / totalSoalDisplay) * 100) : 0;
 
-  const resultEmoji = () => {
-    if (persentase >= 90) return { emoji: "🌟", label: "Luar Biasa!" };
-    if (persentase >= 70) return { emoji: "👍", label: "Bagus!" };
-    if (persentase >= 50) return { emoji: "💪", label: "Cukup, Semangat!" };
-    return { emoji: "📚", label: "Ayo Belajar Lagi!" };
-  };
+  function resultIcon(persentase: number) {
+    if (persentase >= 90) return <Trophy className="w-8 h-8 text-yellow-500" />;
+    if (persentase >= 70) return <ThumbsUp className="w-8 h-8 text-emerald-500" />;
+    if (persentase >= 50) return <Smile className="w-8 h-8 text-amber-500" />;
+    return <BookOpen className="w-8 h-8 text-primary" />;
+  }
+
+  function resultLabel(persentase: number) {
+    if (persentase >= 90) return "Luar Biasa!";
+    if (persentase >= 70) return "Bagus!";
+    if (persentase >= 50) return "Cukup, Semangat!";
+    return "Ayo Belajar Lagi!";
+  }
 
   // ── INTRO ──
   if (quizState === "intro") {
@@ -249,7 +289,8 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
 
   // ── RESULT ──
   if (quizState === "result") {
-    const result = resultEmoji();
+    const result = resultIcon(persentase);
+    const label = resultLabel(persentase);
 
     if (showReview) {
       return (
@@ -277,7 +318,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
                   <div className="flex items-start gap-3 mb-4">
                     {correct ? <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0 mt-0.5" /> : <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />}
                     <div>
-                      <span className="text-xs text-on-surface-variant">{s.tipe} · </span>
+                      <span className="text-xs text-on-surface-variant">{tipeLabel[s.tipe] ?? s.tipe} · </span>
                       <span className="text-on-surface font-medium"><MathRenderer text={s.pertanyaan} /></span>
                     </div>
                   </div>
@@ -328,11 +369,11 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
 
     return (
       <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE_CURVE }} className="max-w-lg mx-auto text-center">
-        <div className="text-6xl mb-6">{result.emoji}</div>
+        <div className="mb-6 flex justify-center">{result}</div>
         <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
           <Trophy className="w-12 h-12 text-primary" />
         </div>
-        <h2 className="font-heading text-3xl md:text-4xl text-on-surface mb-2">{result.label}</h2>
+        <h2 className="font-heading text-3xl md:text-4xl text-on-surface mb-2">{label}</h2>
         <p className="text-on-surface-variant mb-8">{quiz.judul}</p>
         <div className="bg-glass border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass mb-8">
           <div className="text-6xl font-heading font-bold text-primary mb-2">
@@ -378,16 +419,30 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
+  const handleExit = () => {
+    if (Object.keys(jawaban).length > 0) {
+      if (!window.confirm("Kamu punya jawaban yang belum disimpan. Yakin mau keluar?")) return;
+    }
+    onBack();
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
+      <div className="flex items-center justify-between mb-3">
+        <button onClick={handleExit} className="inline-flex items-center gap-1 text-sm text-on-surface-variant hover:text-red-500 transition-colors">
+          <ArrowLeft className="w-4 h-4" />
+          Keluar
+        </button>
+        <span className={cn("text-sm font-medium tabular-nums flex items-center gap-1", timeLeft < 60 ? "text-red-500" : "text-primary")}>
+          <Clock className="w-3.5 h-3.5" />
+          {minutes}:{seconds.toString().padStart(2, "0")}
+        </span>
+      </div>
+
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-on-surface-variant">
             Soal {currentIndex + 1} dari {totalSoal}
-          </span>
-          <span className={cn("text-sm font-medium tabular-nums flex items-center gap-1", timeLeft < 60 ? "text-red-500" : "text-primary")}>
-            <Clock className="w-3.5 h-3.5" />
-            {minutes}:{seconds.toString().padStart(2, "0")}
           </span>
         </div>
         <div className="w-full bg-primary/10 rounded-full h-2 overflow-hidden">
@@ -399,7 +454,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
         <motion.div key={soal.nomor} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25, ease: EASE_CURVE }}>
           <div className="bg-glass border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass mb-6 min-h-[260px]">
             <span className="inline-block px-2 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary mb-3">
-              {soal.tipe}
+              {tipeLabel[soal.tipe] ?? soal.tipe}
             </span>
             <p className="text-on-surface font-heading text-xl leading-relaxed mb-8">
               <MathRenderer text={soal.pertanyaan} />

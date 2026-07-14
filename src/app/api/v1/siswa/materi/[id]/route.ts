@@ -3,7 +3,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { materiPublished, materiRead, siswaKursus } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, gt, asc } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
 
@@ -49,6 +49,18 @@ export async function GET(
       )
       .limit(1);
 
+    const [nextRow] = await db
+      .select({ id: materiPublished.id })
+      .from(materiPublished)
+      .where(
+        and(
+          eq(materiPublished.kursusId, row.kursusId),
+          gt(materiPublished.urutan, row.urutan),
+        ),
+      )
+      .orderBy(asc(materiPublished.urutan))
+      .limit(1);
+
     if (existing) {
       await db
         .update(materiRead)
@@ -61,7 +73,7 @@ export async function GET(
       });
     }
 
-    return NextResponse.json({ data: row });
+    return NextResponse.json({ data: { ...row, nextId: nextRow?.id ?? null } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Materi detail error:", e);

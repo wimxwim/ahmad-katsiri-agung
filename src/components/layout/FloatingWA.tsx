@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const WA_NUMBER_FALLBACK = "6285158795502";
+const WA_NUMBER_FALLBACK = process.env.NEXT_PUBLIC_WA_NUMBER || "";
 
 const DASHBOARD_PREFIXES = ["/guru", "/siswa", "/owner", "/admin-sekolah", "/orang-tua"];
 
@@ -17,7 +17,7 @@ export function FloatingWA({ waNumber }: { waNumber?: string }) {
       href={`https://wa.me/${num}`}
       target="_blank"
       rel="noopener noreferrer"
-      className={`fixed right-3 md:right-6 z-50 w-11 h-11 md:w-14 md:h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-200 ${isDashboard ? "bottom-20" : "bottom-20 md:bottom-6"}`}
+      className={`fixed right-3 md:right-6 z-40 w-11 h-11 md:w-14 md:h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/40 hover:scale-105 active:scale-95 transition-all duration-200 ${isDashboard ? "bottom-28" : "bottom-24 md:bottom-6"}`}
       style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
       aria-label="Hubungi via WhatsApp"
     >

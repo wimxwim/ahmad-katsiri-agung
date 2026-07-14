@@ -86,8 +86,10 @@ export async function POST(
     let totalPoin = 0;
     let totalPoinDiperoleh = 0;
     let essayCount = 0;
+    const weakAreas: number[] = [];
 
     for (const s of soals) {
+      const questionNumber = s.urutan || soals.indexOf(s) + 1;
       totalPoin += s.poin || 1;
       const userAnswer = parsed.data.jawaban[s.id];
       const correctAnswer = s.kunci;
@@ -109,10 +111,18 @@ export async function POST(
         jumlahSalah += 0;
       } else {
         jumlahSalah += 1;
+        weakAreas.push(questionNumber);
       }
     }
 
     const nilai = totalPoin > 0 ? Math.round((totalPoinDiperoleh / totalPoin) * 100) : 0;
+
+    const recommendation =
+      nilai >= 80
+        ? "Luar biasa! Kamu sudah menguasai materi ini. Coba materi selanjutnya."
+        : nilai >= 60
+          ? "Bagus! Sedikit lagi. Coba ulangi materi yang masih salah."
+          : "Semangat! Yuk pelajari lagi materinya. Jangan menyerah!";
 
     const jawabanBenar: Record<string, string> = {};
     for (const s of soals) {
@@ -154,7 +164,14 @@ export async function POST(
         essayCount,
         needsManualReview: essayCount > 0,
         tampilkanNilai: quiz.modeEvaluasi !== "CBT",
-        jawabanBenar,
+        jawabanBenar: quiz.modeEvaluasi !== "CBT" ? jawabanBenar : undefined,
+        recommendation,
+        weakAreas,
+        timeSpent: parsed.data.durasiDetik,
+        materialLink: {
+          url: "/siswa/materi",
+          label: "Pelajari ulang materi",
+        },
         ringkasan: essayCount > 0
           ? `Kamu menjawab ${jumlahBenar} dari ${soals.length - essayCount} soal PG/ISIAN dengan benar. ${essayCount} essay menunggu penilaian guru.`
           : `Kamu menjawab ${jumlahBenar} dari ${soals.length} soal dengan benar.`,

@@ -24,8 +24,6 @@ export async function GET(request: NextRequest) {
         kelas: users.kelas,
         noAbsen: users.noAbsen,
         createdAt: users.createdAt,
-        passwordHash: users.passwordHash,
-        googleId: users.googleId,
       })
       .from(users)
       .where(and(eq(users.id, session.userId), isNull(users.deletedAt)))
@@ -45,8 +43,6 @@ export async function GET(request: NextRequest) {
         kelas: u.kelas || undefined,
         noAbsen: u.noAbsen || undefined,
         createdAt: u.createdAt.toISOString(),
-        hasPassword: Boolean(u.passwordHash),
-        hasGoogle: Boolean(u.googleId),
       },
     });
   } catch (e) {

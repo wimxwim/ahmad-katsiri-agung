@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
-import { requireSession } from "@/lib/route-guard-v2";
+import { requireSiswa } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
 import { siswaKursus, kursus, users } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
@@ -8,7 +8,7 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await requireSession(request);
+    const session = await requireSiswa(request);
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`enroll-status:${ip}`, 20, 15000);

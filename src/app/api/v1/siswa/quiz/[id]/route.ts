@@ -17,7 +17,16 @@ export async function GET(
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const [quiz] = await db
-      .select()
+      .select({
+        id: quizPublished.id,
+        aiGenerationId: quizPublished.aiGenerationId,
+        guruId: quizPublished.guruId,
+        kursusId: quizPublished.kursusId,
+        judul: quizPublished.judul,
+        modeEvaluasi: quizPublished.modeEvaluasi,
+        durasiMenit: quizPublished.durasiMenit,
+        publishedAt: quizPublished.publishedAt,
+      })
       .from(quizPublished)
       .where(eq(quizPublished.id, id))
       .limit(1);

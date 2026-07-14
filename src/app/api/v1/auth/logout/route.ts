@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf-server";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { logAuthEvent } from "@/lib/auth-audit";
 import { SESSION_COOKIE_NAME, REFRESH_COOKIE_NAME } from "@/lib/session";
@@ -17,6 +18,9 @@ import { verifySession } from "@/lib/auth";
  */
 export async function POST(request: NextRequest) {
   try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`logout:${ip}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

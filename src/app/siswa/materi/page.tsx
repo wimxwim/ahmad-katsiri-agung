@@ -280,6 +280,7 @@ function MateriContent() {
           icon={BookOpen}
           title="Belum ada materi"
           description="Gurumu belum menerbitkan materi untuk kursus ini. Cek kembali nanti ya."
+          action={{ label: "Lihat Kuis Tersedia", href: "/siswa/quiz" }}
         />
       ) : (
         /* Materi List */
@@ -331,14 +332,14 @@ function MateriContent() {
                           }}
                         />
                       </div>
-                      <span className="text-[10px] font-bold text-primary tabular-nums">
+                      <span className="text-[11px] font-bold text-primary tabular-nums">
                         {m.progressPersen > 0
                           ? `${m.progressPersen}%`
                           : "Baru"}
                       </span>
                     </div>
                   )}
-                  <p className="text-[10px] text-on-surface-variant/60 mt-1">
+                  <p className="text-[11px] text-on-surface-variant/60 mt-1">
                     {m.selesai
                       ? "✓ Selesai"
                       : m.sudahDibaca

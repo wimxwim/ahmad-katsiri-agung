@@ -14,6 +14,10 @@ export const MIN_TOPUP = 5000;
 export const MAX_TOPUP = 1000000;
 export const MAX_TOPUP_PER_DAY = 5;
 
+/**
+ * Free tier: setiap pengguna baru mendapatkan Rp10.000 (10000 token) gratis.
+ * 1 token = Rp1. Biaya per generate AI = 35 token (Rp35).
+ */
 export const INITIAL_TOKEN_BALANCE = 10000;
 
 export const FREE_TIER_UPLOAD_LIMIT = 15;

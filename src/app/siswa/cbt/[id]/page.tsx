@@ -67,7 +67,13 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
   }, [id]);
 
   if (loading) {
-    return <div className="bg-glass rounded-2xl p-8 h-64 animate-pulse" />;
+    return (
+      <div className="bg-glass border border-border-precision rounded-2xl p-8 shadow-glass-lg text-center">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 animate-pulse mx-auto mb-4" />
+        <div className="h-5 w-48 bg-primary/10 rounded animate-pulse mx-auto mb-2" />
+        <div className="h-4 w-64 bg-primary/5 rounded animate-pulse mx-auto" />
+      </div>
+    );
   }
 
   if (error || !quiz) {

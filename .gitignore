@@ -8,6 +8,7 @@ dist/
 *.tsbuildinfo
 .vercel
 .env*
+.env.docker
 *Environment*
 *environment*
 *credential*
