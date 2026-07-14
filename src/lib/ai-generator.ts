@@ -12,6 +12,28 @@ import {
 } from "@/lib/ai-sanitizer";
 import { incrementUsage } from "@/lib/quota-guard";
 
+const PROMPT_INJECTION_PATTERNS = [
+  /ignore\s+(all\s+)?(previous|prior|above)\s+(instructions?|prompts?|commands?)/gi,
+  /forget\s+(all\s+)?(previous|prior|above)\s+(instructions?|prompts?|commands?)/gi,
+  /system:\s*/gi,
+  /<\|system\|>.*?<\|end\|>/gi,
+  /you\s+are\s+now\s+(an?\s+)?(admin|root|superuser|god|owner)/gi,
+  /act\s+as\s+(an?\s+)?(admin|root|hacker|attacker)/gi,
+  /pretend\s+(you\s+are|to\s+be)\s+(an?\s+)?/gi,
+  /override\s+(all\s+)?(instructions?|prompts?|safety|rules)/gi,
+  /bypass\s+(all\s+)?(instructions?|prompts?|safety|rules|security)/gi,
+  /disregard\s+(all\s+)?(previous|prior|above)\s+(instructions?|prompts?)/gi,
+];
+
+function sanitizeUserText(text: string): string {
+  let sanitized = text;
+  for (const pattern of PROMPT_INJECTION_PATTERNS) {
+    sanitized = sanitized.replace(pattern, "[DIBLOKIR]");
+  }
+  if (sanitized.length < 50) return text;
+  return sanitized;
+}
+
 export type GeneratedSoal = ValidatedSoal;
 export type GeneratedQuiz = ValidatedSoal;
 
@@ -223,7 +245,7 @@ export async function runGeneration(
       .where(eq(aiGeneration.id, generationId));
     await appendEvent(`gen:${gen.guruId}`, "gen.generating", { generationId });
 
-    const truncatedSource = sourceText.slice(0, 12_000);
+    const truncatedSource = sanitizeUserText(sourceText.slice(0, 12_000));
 
     let aiResults: [ChatResult, ChatResult, ChatResult];
     try {
@@ -393,7 +415,7 @@ export async function runGenerationFromText(
     .limit(1);
   if (!gen) throw new Error("Generation record tidak ditemukan");
 
-  const truncatedSource = sourceText.slice(0, 12_000);
+  const truncatedSource = sanitizeUserText(sourceText.slice(0, 12_000));
 
   let aiResults: [ChatResult, ChatResult, ChatResult];
   try {

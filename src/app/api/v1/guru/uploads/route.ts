@@ -14,6 +14,7 @@ import { and, eq } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { extractText } from "@/lib/text-extractor";
 import { incrementUploadCount, getSubscriptionStatus } from "@/lib/token-service";
+import { MIN_TOPUP } from "@/lib/token-constants";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
     if (!subStatus.canUpload) {
       return apiError(
         "SUBSCRIPTION_LOCKED",
-        `Batas upload gratis tercapai (${subStatus.uploadCount}/${subStatus.uploadLimit}). Top-up minimal Rp10.000 untuk upload unlimited.`,
+        `Batas upload gratis tercapai (${subStatus.uploadCount}/${subStatus.uploadLimit}). Top-up minimal Rp${MIN_TOPUP.toLocaleString("id-ID")} untuk upload unlimited.`,
         undefined,
         402,
       );

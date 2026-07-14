@@ -49,7 +49,9 @@ export async function apiFetch<T = unknown>(
   };
 
   if (isMutation) {
-    headers["Content-Type"] = headers["Content-Type"] || "application/json";
+    if (!headers["Content-Type"] && !(options.body instanceof FormData)) {
+      headers["Content-Type"] = "application/json";
+    }
     Object.assign(headers, csrfHeaders());
   }
 

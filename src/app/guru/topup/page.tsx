@@ -87,6 +87,11 @@ export default function GuruTopupPage() {
     setError("");
   };
 
+  const formatCustomDisplay = (raw: string): string => {
+    if (!raw) return "";
+    return parseInt(raw, 10).toLocaleString("id-ID");
+  };
+
   const effectiveAmount = selectedAmount ?? (customAmount ? parseInt(customAmount, 10) : null);
 
   const handleShowQris = () => {
@@ -205,7 +210,7 @@ export default function GuruTopupPage() {
             Generate AI masih terkunci
           </p>
           <p className="text-xs text-amber-700 mt-1">
-            Top-up minimal Rp10.000 untuk membuka akses generate AI unlimited. 
+            Top-up minimal Rp{MIN_TOPUP.toLocaleString("id-ID")} untuk membuka akses generate AI unlimited. 
             {balance.subscription && (
               <> Upload: {balance.subscription.uploadCount}/{balance.subscription.uploadLimit === Infinity ? '∞' : balance.subscription.uploadLimit}.</>
             )}
@@ -274,7 +279,7 @@ export default function GuruTopupPage() {
                 <input
                   type="text"
                   inputMode="numeric"
-                  value={customAmount}
+                  value={formatCustomDisplay(customAmount)}
                   onChange={(e) => handleCustomAmount(e.target.value)}
                   placeholder="Min Rp5.000"
                   className="w-full pl-10 pr-4 py-3 rounded-2xl border border-border-precision bg-white/60 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-sm font-mono"
