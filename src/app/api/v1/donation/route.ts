@@ -4,6 +4,7 @@ import { apiError, apiSuccess } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 import { recordDonation } from "@/lib/token-service";
 import { sendDonationNotification } from "@/lib/telegram-notif";
+import { waitUntil } from "@vercel/functions";
 import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -24,14 +25,16 @@ export async function POST(request: NextRequest) {
       columns: { nama: true, email: true, lastActiveAt: true },
     });
 
-    sendDonationNotification({
-      userId: session.userId,
-      nama: guru?.nama ?? "Guru",
-      email: guru?.email ?? session.email ?? "",
-      loginTerakhir: guru?.lastActiveAt
-        ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
-        : undefined,
-    }).catch((e) => console.error("Telegram donasi notif gagal:", e));
+    waitUntil(
+      sendDonationNotification({
+        userId: session.userId,
+        nama: guru?.nama ?? "Guru",
+        email: guru?.email ?? session.email ?? "",
+        loginTerakhir: guru?.lastActiveAt
+          ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
+          : undefined,
+      }).catch((e) => console.error("Telegram donasi notif gagal:", e)),
+    );
 
     return apiSuccess({
       message: "Terima kasih atas donasi Anda. Semoga menjadi amal jariyah.",

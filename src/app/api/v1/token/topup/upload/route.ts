@@ -10,6 +10,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
+import { waitUntil } from "@vercel/functions";
 
 export const dynamic = "force-dynamic";
 
@@ -108,17 +109,19 @@ export async function POST(request: NextRequest) {
       columns: { nama: true, email: true, lastActiveAt: true },
     });
 
-    await sendTopupNotification({
-      userId: session.userId,
-      nama: guru?.nama ?? "Guru",
-      email: guru?.email ?? session.email ?? "",
-      amount,
-      proofUrl: uploadResult.link,
-      newBalance: balance.balance,
-      loginTerakhir: guru?.lastActiveAt
-        ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
-        : undefined,
-    }).catch((e) => console.error("Telegram notif gagal:", e));
+    waitUntil(
+      sendTopupNotification({
+        userId: session.userId,
+        nama: guru?.nama ?? "Guru",
+        email: guru?.email ?? session.email ?? "",
+        amount,
+        proofUrl: uploadResult.link,
+        newBalance: balance.balance,
+        loginTerakhir: guru?.lastActiveAt
+          ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
+          : undefined,
+      }).catch((e) => console.error("Telegram notif gagal:", e)),
+    );
 
     return apiSuccess({
       balance: balance.balance,

@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { sendSuspendNotification } from "@/lib/telegram-notif";
+import { waitUntil } from "@vercel/functions";
 import { appendEvent } from "@/lib/event-store";
 import { z } from "zod";
 
@@ -46,12 +47,14 @@ export async function POST(request: NextRequest) {
       suspendedBy: session.userId,
     });
 
-    sendSuspendNotification({
-      userId: body.userId,
-      nama: user.nama,
-      email: user.email,
-      reason: body.reason,
-    }).catch((e) => console.error("Telegram suspend notif gagal:", e));
+    waitUntil(
+      sendSuspendNotification({
+        userId: body.userId,
+        nama: user.nama,
+        email: user.email,
+        reason: body.reason,
+      }).catch((e) => console.error("Telegram suspend notif gagal:", e)),
+    );
 
     return apiSuccess({
       userId: body.userId,
