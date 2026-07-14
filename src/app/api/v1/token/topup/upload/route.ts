@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       columns: { nama: true, email: true, lastActiveAt: true },
     });
 
-    sendTopupNotification({
+    await sendTopupNotification({
       userId: session.userId,
       nama: guru?.nama ?? "Guru",
       email: guru?.email ?? session.email ?? "",

@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       columns: { nama: true, email: true, lastActiveAt: true },
     });
 
-    sendDonationNotification({
+    await sendDonationNotification({
       userId: session.userId,
       nama: guru?.nama ?? "Guru",
       email: guru?.email ?? session.email ?? "",
