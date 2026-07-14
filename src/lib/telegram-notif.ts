@@ -29,7 +29,16 @@ async function sendMessage(text: string): Promise<void> {
 }
 
 async function sendPhoto(photoUrl: string, caption: string): Promise<void> {
-  if (!BOT_TOKEN || !CHAT_ID) return;
+  if (!BOT_TOKEN) {
+    console.error("[telegram-notif] TELEGRAM_BOT_TOKEN tidak diset");
+    return;
+  }
+  if (!CHAT_ID) {
+    console.error("[telegram-notif] TELEGRAM_CHAT_ID tidak diset");
+    return;
+  }
+
+  console.log("[telegram-notif] Mengirim foto ke Telegram...", { chatId: CHAT_ID.slice(0, 4) + "..." });
 
   try {
     const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
@@ -44,9 +53,13 @@ async function sendPhoto(photoUrl: string, caption: string): Promise<void> {
       }),
     });
 
+    const body = await res.text().catch(() => "");
+    console.log("[telegram-notif] Response:", res.status, body.slice(0, 100));
+
     if (!res.ok) {
-      const err = await res.text().catch(() => "");
-      console.error("[telegram-notif] Gagal kirim foto:", res.status, err.slice(0, 200));
+      console.error("[telegram-notif] Gagal kirim foto:", res.status, body.slice(0, 200));
+    } else {
+      console.log("[telegram-notif] Foto berhasil dikirim ke Telegram");
     }
   } catch (e) {
     console.error("[telegram-notif] Error foto:", e instanceof Error ? e.message : String(e));
