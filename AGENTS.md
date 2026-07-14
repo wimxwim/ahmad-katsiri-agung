@@ -62,14 +62,14 @@ src/app/api/             # Legacy routes (doa, keystatic) — some deleted, some
 
 ## Critical gotchas
 
-1. **`randomUUID` from `crypto` breaks Edge** — `src/lib/auth.ts:4`. Must use `crypto.randomUUID()` (Web Crypto). Only used in `signSession()`.
-2. **CRON_SECRET hardcoded fallback** — `src/app/api/v1/cron/generate/route.ts:12`: `"akal-cron-secret"` exposed in public repo.
-3. **CSRF token sent but NEVER validated server-side** — `x-csrf-token` header exists but no server check. Double-submit cookie pattern incomplete.
-4. **Upload does NOT auto-trigger generate** — toast "AI sedang memproses" is misleading. Guru must manually click "Generate AI" in Draft AI page.
-5. **`runGenerationFromText()` ignores soalCount/quizCount** — generate route doesn't read query params. Hardcoded 10 soal, 5 quiz.
-6. **`buildQuizSystemPrompt(n)` does not exist** — only `buildSoalSystemPrompt(n)` exists. Quiz prompt is still hardcoded.
-7. **`fallbackAiResults()` hardcodes 5 quiz + 10 soal** — doesn't accept dynamic counts.
-8. **fileMateri has no `kategori` column** — needed for materi/ppt/soal/docs classification.
+1. **`randomUUID` from `crypto` breaks Edge** — ✅ FIXED (14 Jul 2026). `src/lib/auth.ts` now uses `crypto.randomUUID()` (Web Crypto).
+2. **CRON_SECRET hardcoded fallback** — ✅ FIXED (14 Jul 2026). `src/app/api/v1/cron/generate/route.ts` no longer has hardcoded `"akal-cron-secret"`. Uses `process.env.CRON_SECRET` only.
+3. **CSRF token sent but NEVER validated server-side** — `x-csrf-token` header exists but no server-side check. Double-submit cookie pattern incomplete.
+4. **Upload does NOT auto-trigger generate** — ✅ BY DESIGN (14 Jul 2026). Upload only does upload + extraction. Guru manually clicks "Generate AI" in Draft AI page. Cron job (daily midnight) processes stuck queues.
+5. **`runGenerationFromText()` accepts soalCount/quizCount** — ✅ FIXED. `src/lib/ai-generator.ts:runGenerationFromText()` accepts `soalCount` and `quizCount` params.
+6. **`buildQuizSystemPrompt(n)` exists** — ✅ FIXED. `src/lib/ai-generator.ts` has both `buildQuizSystemPrompt(n)` and `buildSoalSystemPrompt(n)`.
+7. **`fallbackAiResults()` accepts dynamic counts** — ✅ FIXED. `src/lib/ai-generator.ts:fallbackAiResults()` accepts `quizCount` and `soalCount` params.
+8. **Model AI default** — ✅ UPDATED (14 Jul 2026). Default model is `deepseek-v4-flash-bynara` (was `gpt-5.6-luna`). Temperature works via `thinking: {type: "disabled"}` auto-injection.
 9. **No `token_balances`, `materi_sharing`, `krabat_connections` tables** — needed for v2 token system + sharing.
 10. **Migration journal desync** — `drizzle/meta/_journal.json` missing entries 0014-0023. Drizzle CLI may conflict.
 11. **DB role uppercase → session role lowercase** — `roleToSessionRole()` in `src/lib/session.ts`. "SISWA" → "murid", "GURU" → "guru".
@@ -80,6 +80,7 @@ src/app/api/             # Legacy routes (doa, keystatic) — some deleted, some
 16. **NEVER delete `vercel.json`**.
 17. **NEVER hardcode `NODE_ENV`** in any .env file.
 18. **NEVER commit credentials** — repo is PUBLIC. Use `.env.example` with placeholders.
+19. **Cron job is daily midnight** (`0 0 * * *`) — Vercel Hobby limit. Processes stuck `aiGeneration` queue. Normal flow: manual generate from Draft AI page (no waiting).
 
 ## Design system (immutable)
 
