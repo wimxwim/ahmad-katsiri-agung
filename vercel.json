@@ -7,7 +7,7 @@
   "crons": [
     {
       "path": "/api/v1/cron/generate?token=akal-cron-secret",
-      "schedule": "*/1 * * * *"
+      "schedule": "0 0 * * *"
     }
   ],
   "rewrites": [
