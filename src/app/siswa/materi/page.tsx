@@ -7,12 +7,11 @@ import Link from "next/link";
 import {
   BookOpen,
   CheckCircle2,
-  Circle,
+  ArrowRight,
   PartyPopper,
   X,
   AlertCircle,
   RefreshCw,
-  Sparkles,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -197,18 +196,19 @@ function MateriContent() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: EASE_CURVE }}
-        className="mb-8"
+        className="flex items-center gap-3 mb-4"
       >
-        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center mb-4 shadow-lg">
-          <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shrink-0">
+          <BookOpen className="w-5 h-5 text-white" />
         </div>
-        <h1 className="font-heading font-bold text-2xl sm:text-3xl text-on-surface mb-2">
-          Materi Belajar
-        </h1>
-        <p className="text-sm sm:text-base text-on-surface-variant max-w-lg">
-          Akses semua materi pembelajaran dari kursus yang kamu ikuti. Pelajari,
-          pahami, dan selesaikan setiap modul.
-        </p>
+        <div>
+          <h1 className="font-heading font-bold text-lg text-on-surface">
+            Materi Belajar
+          </h1>
+          <p className="text-xs text-on-surface-variant">
+            Akses semua materi pembelajaran
+          </p>
+        </div>
       </motion.div>
 
       {/* Kursus Filter */}
@@ -217,12 +217,12 @@ function MateriContent() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.1 }}
-          className="flex flex-wrap gap-2 mb-6"
+          className="flex flex-wrap gap-1.5 mb-4"
         >
           <button
             onClick={() => handleFilterClick(null)}
             className={cn(
-              "px-4 py-2 rounded-full text-sm font-semibold transition-all",
+              "px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
               !kursusId
                 ? "bg-primary text-white"
                 : "bg-primary/10 text-primary hover:bg-primary/15",
@@ -237,7 +237,7 @@ function MateriContent() {
                 key={k.id}
                 onClick={() => handleFilterClick(k.id)}
                 className={cn(
-                  "px-4 py-2 rounded-full text-sm font-semibold transition-all",
+                  "px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
                   kursusId === k.id
                     ? "bg-primary text-white"
                     : "bg-primary/10 text-primary hover:bg-primary/15",
@@ -257,8 +257,8 @@ function MateriContent() {
           description="Gurumu belum menerbitkan materi untuk kursus ini. Cek kembali nanti ya."
         />
       ) : (
-        /* Materi Grid */
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        /* Materi List */
+        <div className="flex flex-col gap-2">
           {data.map((m, i) => (
             <motion.div
               key={m.id}
@@ -272,48 +272,29 @@ function MateriContent() {
             >
               <Link
                 href={`/siswa/materi/${m.id}`}
-                className="block bg-glass rounded-2xl sm:rounded-[32px] border border-border-precision p-5 sm:p-6 shadow-glass hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 group"
+                className="flex items-center gap-3 bg-glass rounded-2xl border border-border-precision p-3.5 shadow-glass hover:bg-white/80 active:scale-[0.99] transition-all"
               >
-                {/* Gradient Card Header */}
-                <div className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center p-6 mb-5 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                  <p className="font-heading text-lg sm:text-xl text-white text-center leading-snug relative z-10">
-                    {m.judul}
-                  </p>
-                  <div className="absolute top-3 right-3 z-10">
-                    {m.selesai ? (
-                      <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        Selesai
-                      </span>
-                    ) : m.sudahDibaca ? (
-                      <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full">
-                        <Circle className="w-3.5 h-3.5" />
-                        Belum Selesai
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full">
-                        <Sparkles className="w-3.5 h-3.5" />
-                        Baru
-                      </span>
-                    )}
-                  </div>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shrink-0">
+                  {m.selesai ? (
+                    <CheckCircle2 className="w-5 h-5 text-white" />
+                  ) : (
+                    <BookOpen className="w-5 h-5 text-white" />
+                  )}
                 </div>
-
-                {/* Ringkasan */}
-                {m.ringkasan && (
-                  <p className="text-sm text-on-surface-variant line-clamp-2 mb-4">
-                    {m.ringkasan}
-                  </p>
-                )}
-
-                {/* Progress */}
-                {m.sudahDibaca && !m.selesai && (
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1">
-                      <div className="w-full bg-border-precision rounded-full h-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm text-on-surface truncate">
+                    {m.judul}
+                  </h3>
+                  {m.ringkasan && (
+                    <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-1">
+                      {m.ringkasan}
+                    </p>
+                  )}
+                  {m.sudahDibaca && !m.selesai && (
+                    <div className="flex items-center gap-2 mt-1.5">
+                      <div className="flex-1 max-w-[120px] h-1 bg-border-precision rounded-full overflow-hidden">
                         <motion.div
-                          className="bg-primary h-2 rounded-full"
+                          className="h-full bg-primary rounded-full"
                           initial={{ width: 0 }}
                           animate={{
                             width: `${Math.max(m.progressPersen, 4)}%`,
@@ -325,32 +306,22 @@ function MateriContent() {
                           }}
                         />
                       </div>
+                      <span className="text-[10px] font-bold text-primary tabular-nums">
+                        {m.progressPersen > 0
+                          ? `${m.progressPersen}%`
+                          : "Baru"}
+                      </span>
                     </div>
-                    <span className="text-xs font-bold text-primary tabular-nums">
-                      {m.progressPersen > 0
-                        ? `${m.progressPersen}%`
-                        : "Baru"}
-                    </span>
-                  </div>
-                )}
-
-                {m.selesai && (
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span className="text-xs font-semibold text-emerald-600">
-                      Selesai dipelajari
-                    </span>
-                  </div>
-                )}
-
-                {!m.sudahDibaca && (
-                  <div className="flex items-center gap-2">
-                    <Circle className="w-4 h-4 text-on-surface-variant/30" />
-                    <span className="text-xs text-on-surface-variant/60">
-                      Belum dibaca
-                    </span>
-                  </div>
-                )}
+                  )}
+                  <p className="text-[10px] text-on-surface-variant/60 mt-1">
+                    {m.selesai
+                      ? "✓ Selesai"
+                      : m.sudahDibaca
+                        ? "Sedang dipelajari"
+                        : "Belum dibaca"}
+                  </p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-on-surface-variant/30 shrink-0" />
               </Link>
             </motion.div>
           ))}
