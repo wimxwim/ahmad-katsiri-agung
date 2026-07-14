@@ -14,21 +14,30 @@ export interface SnapTransactionResult {
   redirect_url: string;
 }
 
-const MIDTRANS_SERVER_KEY = process.env.MIDTRANS_SERVER_KEY || "";
-const MIDTRANS_MERCHANT_ID = process.env.MIDTRANS_MERCHANT_ID || "";
-const MIDTRANS_API_URL =
-  process.env.MIDTRANS_API_URL || "https://app.sandbox.midtrans.com/snap/v1/transactions";
+function getMidtransServerKey(): string {
+  return process.env.MIDTRANS_SERVER_KEY || "";
+}
 
-export const IS_MIDTRANS_READY = Boolean(MIDTRANS_SERVER_KEY && MIDTRANS_MERCHANT_ID);
+function getMidtransMerchantId(): string {
+  return process.env.MIDTRANS_MERCHANT_ID || "";
+}
+
+function getMidtransApiUrl(): string {
+  return process.env.MIDTRANS_API_URL || "https://app.sandbox.midtrans.com/snap/v1/transactions";
+}
+
+export function isMidtransReady(): boolean {
+  return Boolean(getMidtransServerKey() && getMidtransMerchantId());
+}
 
 export async function createSnapTransaction(
   params: SnapTransactionParams
 ): Promise<SnapTransactionResult> {
-  if (!IS_MIDTRANS_READY) {
+  if (!isMidtransReady()) {
     throw new Error("Midtrans is not configured. Set MIDTRANS_SERVER_KEY and MIDTRANS_MERCHANT_ID.");
   }
 
-  const auth = Buffer.from(`${MIDTRANS_SERVER_KEY}:`).toString("base64");
+  const auth = Buffer.from(`${getMidtransServerKey()}:`).toString("base64");
 
   const payload = {
     transaction_details: {
@@ -54,7 +63,7 @@ export async function createSnapTransaction(
     },
   };
 
-  const response = await fetch(MIDTRANS_API_URL, {
+  const response = await fetch(getMidtransApiUrl(), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -82,11 +91,11 @@ export function verifySignature(
   grossAmount: string,
   signatureKey: string
 ): boolean {
-  if (!MIDTRANS_SERVER_KEY) return false;
+  if (!getMidtransServerKey()) return false;
 
   const computed = crypto
     .createHash("sha512")
-    .update(orderId + statusCode + grossAmount + MIDTRANS_SERVER_KEY)
+    .update(orderId + statusCode + grossAmount + getMidtransServerKey())
     .digest("hex");
 
   if (computed.length !== signatureKey.length) return false;

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const SECRET = process.env.CRON_SECRET || "akal-cron-secret";
-
 interface TestResult {
   name: string;
   status: number;
@@ -35,7 +33,8 @@ async function callNaraRouter(
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token");
-  if (token !== SECRET) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || token !== secret) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

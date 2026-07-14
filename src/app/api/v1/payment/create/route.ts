@@ -5,7 +5,7 @@ import { requireSiswa } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
 import { kursus, transaksi } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
-import { createSnapTransaction, IS_MIDTRANS_READY } from "@/lib/midtrans";
+import { createSnapTransaction, isMidtransReady } from "@/lib/midtrans";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 import { randomInt } from "crypto";
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    if (!IS_MIDTRANS_READY) {
+    if (!isMidtransReady()) {
       return NextResponse.json({
         message: "midtrans_not_configured",
         mode: "mock",
