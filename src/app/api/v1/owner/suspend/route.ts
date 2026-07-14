@@ -1,4 +1,4 @@
-import { NextRequest, after } from "next/server";
+import { NextRequest } from "next/server";
 import { requireOwner, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -46,14 +46,12 @@ export async function POST(request: NextRequest) {
       suspendedBy: session.userId,
     });
 
-    after(async () => {
-      await sendSuspendNotification({
-        userId: body.userId,
-        nama: user.nama,
-        email: user.email,
-        reason: body.reason,
-      }).catch((e) => console.error("Telegram suspend notif gagal:", e));
-    });
+    await sendSuspendNotification({
+      userId: body.userId,
+      nama: user.nama,
+      email: user.email,
+      reason: body.reason,
+    }).catch((e) => console.error("Telegram suspend notif gagal:", e));
 
     return apiSuccess({
       userId: body.userId,

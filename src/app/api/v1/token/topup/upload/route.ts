@@ -1,4 +1,4 @@
-import { NextRequest, after } from "next/server";
+import { NextRequest } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiSuccess, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -108,19 +108,17 @@ export async function POST(request: NextRequest) {
       columns: { nama: true, email: true, lastActiveAt: true },
     });
 
-    after(async () => {
-      await sendTopupNotification({
-        userId: session.userId,
-        nama: guru?.nama ?? "Guru",
-        email: guru?.email ?? session.email ?? "",
-        amount,
-        proofUrl: uploadResult.link,
-        newBalance: balance.balance,
-        loginTerakhir: guru?.lastActiveAt
-          ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
-          : undefined,
-      }).catch((e) => console.error("Telegram notif gagal:", e));
-    });
+    await sendTopupNotification({
+      userId: session.userId,
+      nama: guru?.nama ?? "Guru",
+      email: guru?.email ?? session.email ?? "",
+      amount,
+      proofUrl: uploadResult.link,
+      newBalance: balance.balance,
+      loginTerakhir: guru?.lastActiveAt
+        ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
+        : undefined,
+    }).catch((e) => console.error("Telegram notif gagal:", e));
 
     return apiSuccess({
       balance: balance.balance,

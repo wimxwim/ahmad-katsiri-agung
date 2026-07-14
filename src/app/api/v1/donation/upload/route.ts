@@ -1,4 +1,4 @@
-import { NextRequest, after } from "next/server";
+import { NextRequest } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -92,17 +92,15 @@ export async function POST(request: NextRequest) {
       columns: { nama: true, email: true, lastActiveAt: true },
     });
 
-    after(async () => {
-      await sendDonationNotification({
-        userId: session.userId,
-        nama: guru?.nama ?? "Guru",
-        email: guru?.email ?? session.email ?? "",
-        proofUrl: proofLink,
-        loginTerakhir: guru?.lastActiveAt
-          ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
-          : undefined,
-      }).catch((e) => console.error("Telegram donasi notif gagal:", e));
-    });
+    await sendDonationNotification({
+      userId: session.userId,
+      nama: guru?.nama ?? "Guru",
+      email: guru?.email ?? session.email ?? "",
+      proofUrl: proofLink,
+      loginTerakhir: guru?.lastActiveAt
+        ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
+        : undefined,
+    }).catch((e) => console.error("Telegram donasi notif gagal:", e));
 
     return apiSuccess({
       message: "Terima kasih atas donasi Anda. Semoga menjadi amal jariyah.",
