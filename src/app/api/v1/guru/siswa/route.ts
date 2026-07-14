@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
-import { siswaKursus, kursus, users } from "@/lib/db/schema";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { siswaKursus, kursus, users, riskSnapshot } from "@/lib/db/schema";
+import { and, eq, inArray, isNull, desc } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 
 export async function GET(request: NextRequest) {
@@ -44,11 +44,31 @@ export async function GET(request: NextRequest) {
 
     const enrolledSiswa = await query.limit(limit).offset(offset);
 
+    const allSiswaIds = [...new Set(enrolledSiswa.map((s) => s.siswaId))];
+    const latestRisk = allSiswaIds.length > 0
+      ? await db
+          .selectDistinctOn([riskSnapshot.siswaId], {
+            siswaId: riskSnapshot.siswaId,
+            riskScore: riskSnapshot.riskScore,
+            status: riskSnapshot.status,
+          })
+          .from(riskSnapshot)
+          .where(
+            and(
+              inArray(riskSnapshot.siswaId, allSiswaIds),
+              inArray(riskSnapshot.kursusId, kursusIds),
+            ),
+          )
+          .orderBy(riskSnapshot.siswaId, desc(riskSnapshot.snapshotDate))
+      : [];
+
+    const riskMap = new Map(latestRisk.map((r) => [r.siswaId, { riskScore: r.riskScore, status: r.status }]));
+
     const filtered = filterKursusId
       ? enrolledSiswa.filter((item) => item.kursusId === filterKursusId)
       : enrolledSiswa;
 
-    const siswaMap = new Map<string, { siswaId: string; nama: string; kursus: string[]; status: string; tanggalDaftar: Date | null }>();
+    const siswaMap = new Map<string, { siswaId: string; nama: string; kursus: string[]; status: string; tanggalDaftar: Date | null; riskScore: number | null; riskStatus: string | null }>();
     for (const item of filtered) {
       const jk = item.judulKursus ?? "-";
       const existing = siswaMap.get(item.siswaId);
@@ -63,6 +83,8 @@ export async function GET(request: NextRequest) {
           kursus: [jk],
           status: item.status,
           tanggalDaftar: item.tanggalDaftar,
+          riskScore: riskMap.get(item.siswaId)?.riskScore ?? null,
+          riskStatus: riskMap.get(item.siswaId)?.status ?? null,
         });
       }
     }

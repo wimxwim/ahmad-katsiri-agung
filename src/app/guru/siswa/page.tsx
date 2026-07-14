@@ -3,13 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Search, Users, Filter } from "lucide-react";
+import { Search, Users, Filter, ShieldAlert } from "lucide-react";
 
 interface SiswaItem {
   siswaId: string;
   nama: string;
   kursus: string[];
   status: string;
+  riskScore: number | null;
+  riskStatus: string | null;
 }
 
 interface KursusOption {
@@ -23,6 +25,7 @@ export default function SiswaListPage() {
   const [kursusOptions, setKursusOptions] = useState<KursusOption[]>([]);
   const [search, setSearch] = useState("");
   const [filterKursus, setFilterKursus] = useState("");
+  const [filterRisk, setFilterRisk] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -50,7 +53,13 @@ export default function SiswaListPage() {
 
   const filtered = siswa.filter((s) => {
     const q = search.toLowerCase();
-    return s.nama.toLowerCase().includes(q) || s.kursus.some((k) => k.toLowerCase().includes(q));
+    const matchNama = s.nama.toLowerCase().includes(q) || s.kursus.some((k) => k.toLowerCase().includes(q));
+    const matchRisk = filterRisk
+      ? filterRisk === "berisiko"
+        ? s.riskStatus === "berisiko" || s.riskStatus === "kritis"
+        : s.riskStatus === "aman" || s.riskStatus === null || s.riskStatus === undefined
+      : true;
+    return matchNama && matchRisk;
   });
 
   if (loading) {
@@ -99,6 +108,18 @@ export default function SiswaListPage() {
             ))}
           </select>
         </div>
+        <div className="relative">
+          <ShieldAlert className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/40" />
+          <select
+            value={filterRisk}
+            onChange={(e) => setFilterRisk(e.target.value)}
+            className="pl-10 pr-4 py-2.5 rounded-xl border border-border-precision bg-white text-sm outline-hidden focus:border-primary/40 appearance-none cursor-pointer min-w-[140px]"
+          >
+            <option value="">Semua Risiko</option>
+            <option value="aman">Aman</option>
+            <option value="berisiko">Berisiko / Kritis</option>
+          </select>
+        </div>
       </div>
 
       {filtered.length === 0 ? (
@@ -143,6 +164,13 @@ export default function SiswaListPage() {
                     }`}>
                       {s.status}
                     </span>
+                    {s.riskStatus && s.riskStatus !== "aman" && (
+                      <span className={`ml-1.5 inline-flex px-2 py-0.5 text-xs rounded-full font-medium ${
+                        s.riskStatus === "kritis" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"
+                      }`}>
+                        {s.riskStatus === "kritis" ? "KRITIS" : "BERISIKO"}
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
