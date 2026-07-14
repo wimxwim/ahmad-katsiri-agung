@@ -67,11 +67,17 @@ export async function apiFetch<T = unknown>(
   }
 
   if (!res.ok) {
+    let errorMsg = getApiErrorMessage(raw, `Request gagal (${res.status})`);
+    if (res.status === 429) {
+      const retryAfter = res.headers.get("Retry-After");
+      const waitSec = retryAfter ? parseInt(retryAfter, 10) : 30;
+      errorMsg = `Terlalu banyak request. Coba lagi dalam ${waitSec} detik.`;
+    }
     return {
       ok: false,
       status: res.status,
       data: null,
-      error: getApiErrorMessage(raw, `Request gagal (${res.status})`),
+      error: errorMsg,
       raw,
     };
   }

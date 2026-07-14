@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const session = await requireGuru(request);
     const guruId = session.userId;
 
-    const rl = await checkRateLimitPerUser(`dashboard:${guruId}`, 10, 60_000);
+    const rl = await checkRateLimitPerUser(`dashboard:${guruId}`, 20, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const [kursusRows, draftRows, enrolledRows, quizPubRows, quizAttemptRows, materiPubRows, quotaRow] =

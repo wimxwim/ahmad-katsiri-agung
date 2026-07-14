@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const session = await requireGuru(request);
 
     const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`kelas-list:${ip}`, 30, 15000);
+    const rl = await checkRateLimit(`kelas-list:${ip}`, 60, 30000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const data = await db

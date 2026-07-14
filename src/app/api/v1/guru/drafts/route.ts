@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const session = await requireGuru(request);
 
     const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`drafts-list:${ip}`, 30, 60_000);
+    const rl = await checkRateLimit(`drafts-list:${ip}`, 60, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const rows = await db

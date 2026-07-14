@@ -34,11 +34,11 @@ function getApiKey(): string {
 }
 
 export function getModelName(): string {
-  return process.env.AI_MODEL || "gpt-5.6-luna";
+  return process.env.AI_MODEL || "deepseek-v4-flash-bynara";
 }
 
 export function getFlashModel(): string {
-  return process.env.AI_FLASH_MODEL || "gpt-5.6-luna";
+  return process.env.AI_FLASH_MODEL || "deepseek-v4-flash-bynara";
 }
 
 export type AiTaskComplexity = "heavy" | "light";
@@ -48,10 +48,8 @@ export function getModelForTask(complexity: AiTaskComplexity): string {
   return getModelName();
 }
 
-const MODELS_WITHOUT_TEMP = new Set(["gpt-5.6-luna", "gpt-5.6-sol", "gpt-5.6-terra"]);
-
-function supportsTemperature(model: string): boolean {
-  return !MODELS_WITHOUT_TEMP.has(model);
+function isDeepSeekModel(model: string): boolean {
+  return model.includes("deepseek-v4");
 }
 
 export async function chat(
@@ -66,9 +64,10 @@ export async function chat(
     model,
     messages,
     max_tokens: options.maxTokens ?? 1500,
+    temperature: options.temperature ?? 0.4,
   };
-  if (supportsTemperature(model)) {
-    body.temperature = options.temperature ?? 0.4;
+  if (isDeepSeekModel(model)) {
+    body.thinking = { type: "disabled" };
   }
 
   let lastError: unknown = null;

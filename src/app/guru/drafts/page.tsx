@@ -76,7 +76,11 @@ export default function GuruDraftsPage() {
       setError("");
       const res = await fetch("/api/v1/guru/drafts", { credentials: "include" });
       if (!res.ok) {
-        setError("Gagal memuat draft. Coba lagi.");
+        if (res.status === 429) {
+          setError("Terlalu banyak request. Tunggu beberapa detik lalu coba lagi.");
+        } else {
+          setError("Gagal memuat draft. Coba lagi.");
+        }
         setDrafts([]);
         return;
       }
