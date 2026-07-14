@@ -14,7 +14,7 @@ import { and, eq } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { extractText } from "@/lib/text-extractor";
 import { runGenerationFromText } from "@/lib/ai-generator";
-import { checkGenerateBalance, deductGenerateCost } from "@/lib/token-service";
+import { checkGenerateBalance, deductGenerateCost, getGenerateCost, refundBalance, incrementUploadCount, getSubscriptionStatus, requireUnlocked } from "@/lib/token-service";
 import { uuidv7 } from "@/lib/uuid";
 
 export const dynamic = "force-dynamic";
@@ -107,6 +107,16 @@ export async function POST(request: NextRequest) {
       .limit(1);
     if (!ownedKursus) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
 
+    const subStatus = await getSubscriptionStatus(session.userId!);
+    if (!subStatus.canUpload) {
+      return apiError(
+        "SUBSCRIPTION_LOCKED",
+        `Batas upload gratis tercapai (${subStatus.uploadCount}/${subStatus.uploadLimit}). Top-up minimal Rp10.000 untuk upload unlimited.`,
+        undefined,
+        402,
+      );
+    }
+
     const adapter = await getStorageAdapter(session.userId!);
     const folder = `/akal/dokumen/guru-${session.userId}`;
 
@@ -133,6 +143,8 @@ export async function POST(request: NextRequest) {
       .returning({ id: fileMateri.id });
 
     const jobId = row.id;
+
+    incrementUploadCount(session.userId!).catch(() => {});
 
     let extractionText = "";
     try {
@@ -161,19 +173,39 @@ export async function POST(request: NextRequest) {
     });
 
     if (extractionText && extractionText.length >= 50) {
-      let hasBalance = false;
+      let isUnlocked = false;
       try {
-        hasBalance = await checkGenerateBalance(session.userId!);
-      } catch (e) {
-        console.error("Token balance check failed, skipping auto-generate:", e);
+        await requireUnlocked(session.userId!);
+        isUnlocked = true;
+      } catch {
+        console.log("Auto-generate skipped: subscription locked for user", session.userId);
       }
-      if (hasBalance) {
-        try { await deductGenerateCost(session.userId!); } catch { /* best-effort */ }
-        runGenerationFromText(genId, extractionText, session.userId!).catch((e) => {
-          console.error("Auto-generate after upload failed:", e instanceof Error ? e.message : String(e));
-        });
+      if (!isUnlocked) {
+        // skip auto-generate, user belum unlock
       } else {
-        console.log("Auto-generate skipped: insufficient balance for user", session.userId);
+        let hasBalance = false;
+        try {
+          hasBalance = await checkGenerateBalance(session.userId!);
+        } catch (e) {
+          console.error("Token balance check failed, skipping auto-generate:", e);
+        }
+        if (hasBalance) {
+          let deducted = false;
+          try {
+            await deductGenerateCost(session.userId!);
+            deducted = true;
+          } catch (e) {
+            console.error("Token deduction failed, skipping auto-generate:", e instanceof Error ? e.message : String(e));
+          }
+          if (deducted) {
+            runGenerationFromText(genId, extractionText, session.userId!).catch((e) => {
+              console.error("Auto-generate after upload failed:", e instanceof Error ? e.message : String(e));
+              refundBalance(session.userId!, getGenerateCost()).catch(() => {});
+            });
+          }
+        } else {
+          console.log("Auto-generate skipped: insufficient balance for user", session.userId);
+        }
       }
     }
 

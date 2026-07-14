@@ -12,9 +12,11 @@ import {
   type SesiRole,
 } from "@/lib/session";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { users, tokenBalances } from "@/lib/db/schema";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { logAuthEvent } from "@/lib/auth-audit";
+import { appendEvent } from "@/lib/event-store";
+import { INITIAL_TOKEN_BALANCE } from "@/lib/token-constants";
 
 const TEMP_COOKIES = ["akal_google_state", "akal_google_portal", "akal_google_return"];
 
@@ -129,6 +131,15 @@ export async function GET(request: NextRequest) {
         .returning({ id: users.id, role: users.role, email: users.email, nama: users.nama });
 
       const user = inserted[0];
+
+      await db.insert(tokenBalances).values({ userId: user.id, balance: INITIAL_TOKEN_BALANCE });
+
+      await appendEvent("token:system", "token.granted", {
+        userId: user.id,
+        amount: INITIAL_TOKEN_BALANCE,
+        reason: "new_user_bonus_google",
+        at: new Date().toISOString(),
+      });
 
       const token = await signSession({
         userId: user.id,

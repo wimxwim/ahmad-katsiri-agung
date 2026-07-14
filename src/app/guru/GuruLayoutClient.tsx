@@ -11,6 +11,8 @@ import {
   Upload,
   ClipboardCheck,
   Award,
+  Wallet,
+  User,
 } from "lucide-react";
 import { DashboardLayoutClient } from "@/components/dashboard/DashboardLayoutClient";
 import type { SidebarItem } from "@/components/dashboard/DashboardLayoutClient";
@@ -27,7 +29,8 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/guru/nilai", label: "Nilai", icon: ClipboardCheck },
   { href: "/guru/sertifikat", label: "Sertifikat", icon: Award },
   { href: "/guru/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/profil", label: "Profil", icon: GraduationCap },
+  { href: "/guru/topup", label: "Top-Up Saldo", icon: Wallet },
+  { href: "/guru/profil", label: "Profil", icon: User },
   { href: "/guru/buat", label: "Buat Kursus", icon: PlusCircle, primary: true },
 ];
 

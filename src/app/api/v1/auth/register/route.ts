@@ -16,6 +16,8 @@ import { users, tokenBalances } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { logAuthEvent } from "@/lib/auth-audit";
+import { appendEvent } from "@/lib/event-store";
+import { INITIAL_TOKEN_BALANCE } from "@/lib/token-constants";
 
 const RegisterSchema = z.object({
   nama: z.string().min(2).max(100),
@@ -64,21 +66,31 @@ export async function POST(request: NextRequest) {
     }
 
     const passwordHash = await hashPassword(password);
-    const [user] = await db
-      .insert(users)
-      .values({
-        nama,
-        email,
-        passwordHash,
-        role,
-        kelas: kelas || null,
-        noAbsen: noAbsen || null,
-        nis: nis || null,
-      })
-      .returning({ id: users.id, nama: users.nama, role: users.role, email: users.email });
 
-    await db.insert(tokenBalances).values({ userId: user.id, balance: 0 }).catch((e) => {
-      console.error("Failed to create token_balances for new user:", e instanceof Error ? e.message : String(e));
+    const [user] = await db.transaction(async (tx) => {
+      const [newUser] = await tx
+        .insert(users)
+        .values({
+          nama,
+          email,
+          passwordHash,
+          role,
+          kelas: kelas || null,
+          noAbsen: noAbsen || null,
+          nis: nis || null,
+        })
+        .returning({ id: users.id, nama: users.nama, role: users.role, email: users.email });
+
+      await tx.insert(tokenBalances).values({ userId: newUser.id, balance: INITIAL_TOKEN_BALANCE });
+
+      return [newUser];
+    });
+
+    await appendEvent("token:system", "token.granted", {
+      userId: user.id,
+      amount: INITIAL_TOKEN_BALANCE,
+      reason: "new_user_bonus",
+      at: new Date().toISOString(),
     });
 
     const sessionRole = roleToSessionRole(user.role);

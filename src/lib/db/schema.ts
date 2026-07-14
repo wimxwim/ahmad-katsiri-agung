@@ -72,6 +72,8 @@ export const users = pgTable(
       .$onUpdate(() => new Date()),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
+    suspendedAt: timestamp("suspended_at", { withTimezone: true }),
+    uploadCount: integer("upload_count").notNull().default(0),
   },
   (table) => [
     index("users_sekolah_id_idx").on(table.sekolahId),
@@ -449,6 +451,9 @@ export const fileMateri = pgTable(
   },
   (t) => [
     index("file_materi_skill_id_idx").on(t.skillId),
+    index("file_materi_guru_id_idx").on(t.guruId),
+    index("file_materi_kursus_id_idx").on(t.kursusId),
+    index("file_materi_status_idx").on(t.status),
   ]
 );
 
@@ -1077,11 +1082,66 @@ export const tokenBalances = pgTable("token_balances", {
   totalSpent: integer("total_spent").notNull().default(0),
   lastTopupAt: timestamp("last_topup_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  isUnlocked: boolean("is_unlocked").notNull().default(false),
+  unlockedAt: timestamp("unlocked_at", { withTimezone: true }),
 });
 
 export const tokenBalancesRelations = relations(tokenBalances, ({ one }) => ({
   user: one(users, {
     fields: [tokenBalances.userId],
+    references: [users.id],
+  }),
+}));
+
+export const tokenTransactionTypeEnum = pgEnum("token_transaction_type", [
+  "TOPUP",
+  "GRANT",
+  "DEDUCT",
+  "REFUND",
+  "DONATION",
+]);
+
+export const tokenTransactionStatusEnum = pgEnum("token_transaction_status", [
+  "PENDING",
+  "COMPLETED",
+  "FAILED",
+  "CANCELLED",
+]);
+
+export const tokenTransactions = pgTable(
+  "token_transactions",
+  {
+    id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: tokenTransactionTypeEnum("type").notNull(),
+    status: tokenTransactionStatusEnum("status").notNull().default("COMPLETED"),
+    amount: integer("amount").notNull(),
+    balanceBefore: integer("balance_before").notNull().default(0),
+    balanceAfter: integer("balance_after").notNull().default(0),
+    paymentMethod: varchar("payment_method", { length: 50 }),
+    proofFileId: varchar("proof_file_id", { length: 255 }),
+    proofLink: text("proof_link"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    index("token_transactions_user_id_idx").on(t.userId),
+    index("token_transactions_type_idx").on(t.type),
+    index("token_transactions_created_at_idx").on(t.createdAt),
+  ],
+);
+
+export const tokenTransactionsRelations = relations(tokenTransactions, ({ one }) => ({
+  user: one(users, {
+    fields: [tokenTransactions.userId],
     references: [users.id],
   }),
 }));

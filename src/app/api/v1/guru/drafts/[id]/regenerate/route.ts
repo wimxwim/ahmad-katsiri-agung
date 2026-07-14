@@ -11,7 +11,8 @@ import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import { validateCsrf } from "@/lib/csrf-server";
-import { checkGenerateBalance, deductGenerateCost, getBalance, refundBalance, getGenerateCost, InsufficientBalanceError } from "@/lib/token-service";
+import { checkGenerateBalance, deductGenerateCost, getBalance, refundBalance, getGenerateCost, InsufficientBalanceError, requireUnlocked, SubscriptionLockedError } from "@/lib/token-service";
+import { GENERATE_COST } from "@/lib/token-constants";
 
 export async function POST(
   request: NextRequest,
@@ -24,6 +25,15 @@ export async function POST(
 
     const session = await requireGuru(request);
     sessionUserId = session.userId;
+
+    try {
+      await requireUnlocked(session.userId);
+    } catch (e) {
+      if (e instanceof SubscriptionLockedError) {
+        return NextResponse.json({ success: false, error: e.message, locked: true }, { status: 402 });
+      }
+      throw e;
+    }
 
     const { id } = await params;
 
@@ -82,6 +92,7 @@ export async function POST(
     try {
       await checkQuota(session.userId, session.role, "ai_generation");
     } catch (e) {
+      releaseConcurrent(`gen:${session.userId}`);
       if (e instanceof QuotaExceededError) {
         return NextResponse.json(
           { success: false, error: e.message, quota: { limit: e.limitValue, used: e.currentUsage } },
@@ -97,9 +108,9 @@ export async function POST(
       const bal = await getBalance(session.userId!);
       return NextResponse.json({
         success: false,
-        error: "Saldo token tidak cukup. Minimal Rp132/generate. Top-up sekarang?",
+        error: `Saldo token tidak cukup. Minimal Rp${GENERATE_COST}/generate. Top-up sekarang?`,
         balance: bal.balance,
-        required: 132,
+        required: GENERATE_COST,
       }, { status: 402 });
     }
 

@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { payments } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { validateCsrf } from "@/lib/csrf-server";
+import { topUpBalance } from "@/lib/token-service";
 
 const PaymentVerifySchema = z.object({
   paymentId: z.string().min(1),
@@ -25,6 +26,10 @@ export async function POST(request: NextRequest) {
 
     const { paymentId, action } = PaymentVerifySchema.parse(await request.json());
 
+    const [payment] = await db.select().from(payments).where(eq(payments.id, paymentId)).limit(1);
+    if (!payment) return apiError("Pembayaran tidak ditemukan", 404);
+    if (payment.status !== "pending") return apiError("Pembayaran sudah diverifikasi sebelumnya", 409);
+
     const newStatus = action === "confirm" ? "confirmed" : "rejected";
 
     await db
@@ -35,6 +40,14 @@ export async function POST(request: NextRequest) {
         verifiedAt: new Date(),
       })
       .where(eq(payments.id, paymentId));
+
+    if (action === "confirm") {
+      await topUpBalance(payment.userId, payment.amount, {
+        paymentMethod: payment.paymentType,
+        proofLink: payment.proofImageUrl ?? undefined,
+        proofFileId: paymentId,
+      });
+    }
 
     return NextResponse.json({ success: true, status: newStatus });
   } catch (e) {
