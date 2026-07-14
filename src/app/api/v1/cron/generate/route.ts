@@ -9,7 +9,10 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
-  const cronSecret = process.env.CRON_SECRET ?? "akal-cron-secret";
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return apiError("CRON_SECRET tidak dikonfigurasi di environment variable", 500);
+  }
   const tokenParam = request.nextUrl.searchParams.get("token");
   const authHeader = request.headers.get("Authorization");
   const isAuthorized =
