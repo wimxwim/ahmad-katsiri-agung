@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, CheckCircle2, AlertCircle, BarChart3, GraduationCap, Search } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, AlertCircle, BarChart3, GraduationCap, Search, Lightbulb, Send } from "lucide-react";
+import { MasteryChart } from "@/components/guru/MasteryChart";
 
 interface SiswaProfil {
   id: string;
@@ -175,6 +176,43 @@ export default function GuruSiswaDetailPage() {
           </p>
         </div>
       </div>
+
+      <MasteryChart
+        skills={
+          data.attempts.length > 0
+            ? data.attempts.slice(0, 5).map((a) => ({
+                label: a.quizJudul.slice(0, 30),
+                pL: a.nilai !== null ? a.nilai / 100 : 0,
+                totalAttempt: 1,
+              }))
+            : []
+        }
+        className="mb-6"
+      />
+
+      {data.rataNilai !== null && data.rataNilai < 70 && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
+          <Lightbulb className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <p className="font-semibold text-amber-900 text-sm mb-1">Saran Remedial</p>
+            <p className="text-xs text-amber-700">
+              Siswa ini memiliki rata-rata <b>{data.rataNilai}</b> (di bawah KKM 70).
+              Fokuskan remedial pada topik dengan nilai terendah di riwayat quiz.
+            </p>
+            <div className="flex gap-2 mt-3">
+              <button className="inline-flex items-center gap-1.5 bg-amber-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110">
+                <Send className="w-3 h-3" /> Kirim Tugas Remedial
+              </button>
+              <Link
+                href={`/guru/kursus/${data.kursus[0]?.id}/nilai`}
+                className="inline-flex items-center gap-1.5 bg-white text-amber-700 border border-amber-300 px-4 py-2 rounded-full text-xs font-semibold hover:bg-amber-100"
+              >
+                Lihat Nilai Detail
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       <h2 className="font-heading font-semibold text-lg text-on-surface mb-3">Riwayat Quiz</h2>
 
