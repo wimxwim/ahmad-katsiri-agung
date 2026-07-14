@@ -36,46 +36,7 @@ async function sendMessage(text: string): Promise<void> {
   }
 }
 
-async function sendPhoto(photoUrl: string, caption: string): Promise<void> {
-  const BOT_TOKEN = getBotToken();
-  const CHAT_ID = getChatId();
 
-  if (!BOT_TOKEN) {
-    console.error("[telegram-notif] TELEGRAM_BOT_TOKEN tidak diset");
-    return;
-  }
-  if (!CHAT_ID) {
-    console.error("[telegram-notif] TELEGRAM_CHAT_ID tidak diset");
-    return;
-  }
-
-  console.log("[telegram-notif] Mengirim foto ke Telegram...", { chatId: CHAT_ID.slice(0, 4) + "..." });
-
-  try {
-    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: CHAT_ID,
-        photo: photoUrl,
-        caption,
-        parse_mode: "HTML",
-      }),
-    });
-
-    const body = await res.text().catch(() => "");
-    console.log("[telegram-notif] Response:", res.status, body.slice(0, 100));
-
-    if (!res.ok) {
-      console.error("[telegram-notif] Gagal kirim foto:", res.status, body.slice(0, 200));
-    } else {
-      console.log("[telegram-notif] Foto berhasil dikirim ke Telegram");
-    }
-  } catch (e) {
-    console.error("[telegram-notif] Error foto:", e instanceof Error ? e.message : String(e));
-  }
-}
 
 export async function sendTopupNotification(params: {
   userId: string;
@@ -98,7 +59,7 @@ export async function sendTopupNotification(params: {
     `⏰ <b>Waktu:</b> ${new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}`,
   ].filter(Boolean).join("\n");
 
-  await sendPhoto(params.proofUrl, caption);
+  await sendMessage(caption + `\n\n📎 <b>Bukti:</b> ${params.proofUrl}`);
 }
 
 export async function sendDonationNotification(params: {
@@ -119,7 +80,7 @@ export async function sendDonationNotification(params: {
   ].filter(Boolean).join("\n");
 
   if (params.proofUrl) {
-    await sendPhoto(params.proofUrl, caption);
+    await sendMessage(caption + `\n\n📎 <b>Bukti:</b> ${params.proofUrl}`);
   } else {
     await sendMessage(caption + "\n📎 <b>Bukti:</b> Tidak diupload (hamba Allah)");
   }
