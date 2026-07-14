@@ -66,6 +66,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
   const selectedRef = useRef(selected);
   const soalRef = useRef<SoalItem | null>(null);
   const submittedRef = useRef(false);
+  const isianTextRef = useRef(isianText);
   const [serverResult, setServerResult] = useState<{
     nilai: number; jumlahBenar: number; jumlahSalah: number; totalSoal: number;
     jawabanBenar: Record<string, string>;
@@ -74,6 +75,8 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
   useEffect(() => {
     selectedRef.current = selected;
   });
+
+  isianTextRef.current = isianText;
 
   useEffect(() => {
     if (quizState !== "playing") {
@@ -88,8 +91,8 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
         if (s && q) {
           setJawaban((prev) => ({ ...prev, [q.nomor]: s }));
         }
-        if (isianText && soalRef.current) {
-          setJawaban((prev) => ({ ...prev, [soalRef.current!.nomor]: isianText }));
+        if (isianTextRef.current && soalRef.current) {
+          setJawaban((prev) => ({ ...prev, [soalRef.current!.nomor]: isianTextRef.current }));
         }
         setQuizState("result");
       }
@@ -97,7 +100,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
     }
     const id = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearInterval(id);
-  }, [quizState, timeLeft, isianText]);
+  }, [quizState, timeLeft]);
 
   const soal = shuffledSoal[currentIndex];
   soalRef.current = soal ?? null;
@@ -230,7 +233,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
         </div>
         <button
           onClick={startQuiz}
-          className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
+          className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
         >
           Mulai Kuis
           <Sparkles className="w-5 h-5" />
@@ -253,7 +256,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-8">
             <h2 className="font-heading text-2xl text-on-surface">Review Jawaban</h2>
-            <button onClick={() => setShowReview(false)} className="text-sm text-primary font-semibold hover:underline">
+            <button onClick={() => setShowReview(false)} className="text-sm text-primary font-semibold hover:underline focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden">
               Kembali ke Skor
             </button>
           </div>
@@ -310,11 +313,11 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
             })}
           </div>
           <div className="text-center mt-10 space-y-4">
-            <button onClick={startQuiz} className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300">
+<button onClick={startQuiz} className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden">
               <RotateCcw className="w-5 h-5" /> Ulangi Kuis
             </button>
             <div>
-              <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary transition-colors">
+              <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden">
                 <ArrowLeft className="w-4 h-4" /> Kembali ke Daftar Kuis
               </button>
             </div>
@@ -416,7 +419,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
                     cls += " border-primary/5 text-on-surface-variant hover:border-primary/30 hover:bg-primary/5 hover:text-on-surface";
                   }
                   return (
-                    <button key={key} onClick={() => handleSelect(key)} disabled={showFeedback} className={cls}>
+                    <button key={key} onClick={() => handleSelect(key)} disabled={showFeedback} className={cls + " focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"}>
                       <span className={cn("w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0", showFeedback && key === soal.kunci ? "bg-green-500 text-white" : showFeedback && key === selected ? "bg-red-500 text-white" : "bg-primary/10 text-primary")}>
                         {key}
                       </span>
@@ -438,7 +441,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
                   rows={soal.tipe === "ESSAY" ? 5 : 2}
                 />
                 {!showFeedback && (
-                  <button onClick={handleIsianSubmit} disabled={!isianText.trim()} className="w-full bg-primary text-white px-4 py-3 rounded-full text-sm font-semibold hover:brightness-110 disabled:opacity-50">
+                  <button onClick={handleIsianSubmit} disabled={!isianText.trim()} className="w-full bg-primary text-white px-4 py-3 rounded-full text-sm font-semibold hover:brightness-110 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden">
                     Jawab
                   </button>
                 )}
@@ -459,7 +462,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
 
       <div className="flex justify-center min-h-[60px] mb-6">
         {showFeedback ? (
-          <button onClick={handleNext} className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300">
+          <button onClick={handleNext} className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden">
             {currentIndex < totalSoal - 1 ? (
               <>Selanjutnya<ArrowRight className="w-5 h-5" /></>
             ) : (
@@ -487,7 +490,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
                 setCurrentIndex(i);
               }}
               className={cn(
-                "w-8 h-8 rounded-full text-xs font-semibold transition-all",
+                "w-10 h-10 min-w-[44px] min-h-[44px] rounded-full text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden",
                 i === currentIndex && "bg-primary text-white scale-110",
                 i !== currentIndex && jawaban[s.nomor] && "bg-emerald-100 text-emerald-700 border border-emerald-300",
                 i !== currentIndex && !jawaban[s.nomor] && "bg-surface text-on-surface-variant border border-border-precision",

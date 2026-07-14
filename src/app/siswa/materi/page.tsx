@@ -177,7 +177,7 @@ function MateriContent() {
           </p>
           <button
             onClick={handleRetry}
-            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
+            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
           >
             <RefreshCw className="w-4 h-4" />
             Coba Lagi
@@ -208,7 +208,8 @@ function MateriContent() {
           </div>
           <button
             onClick={() => setShowWelcome(false)}
-            className="shrink-0 text-emerald-500 hover:text-emerald-700"
+            className="shrink-0 text-emerald-500 hover:text-emerald-700 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
+            aria-label="Tutup banner"
           >
             <X className="w-4 h-4" />
           </button>
@@ -243,10 +244,10 @@ function MateriContent() {
           transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.1 }}
           className="flex flex-wrap gap-1.5 mb-4"
         >
-          <button
+<button
             onClick={() => handleFilterClick(null)}
             className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
+              "px-3 py-1.5 rounded-full text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden",
               !kursusId
                 ? "bg-primary text-white"
                 : "bg-primary/10 text-primary hover:bg-primary/15",
@@ -256,12 +257,12 @@ function MateriContent() {
           </button>
           {kursusList
             .filter((k) => uniqueKursusIds.includes(k.id))
-            .map((k) => (
+.map((k) => (
               <button
                 key={k.id}
                 onClick={() => handleFilterClick(k.id)}
                 className={cn(
-                  "px-3 py-1.5 rounded-full text-xs font-semibold transition-all",
+                  "px-3 py-1.5 rounded-full text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden",
                   kursusId === k.id
                     ? "bg-primary text-white"
                     : "bg-primary/10 text-primary hover:bg-primary/15",
@@ -294,9 +295,9 @@ function MateriContent() {
                 delay: i * 0.08,
               }}
             >
-              <Link
+<Link
                 href={`/siswa/materi/${m.id}`}
-                className="flex items-center gap-3 bg-glass rounded-2xl border border-border-precision p-3.5 shadow-glass hover:bg-white/80 active:scale-[0.99] transition-all"
+                className="flex items-center gap-3 bg-glass rounded-2xl border border-border-precision p-3.5 shadow-glass hover:bg-white/80 active:scale-[0.99] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
               >
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${m.selesai ? "bg-emerald-50 text-emerald-700" : "bg-primary/10 text-primary"}`}>
                   {m.selesai ? (

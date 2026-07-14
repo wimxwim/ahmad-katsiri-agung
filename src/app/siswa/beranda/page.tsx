@@ -86,17 +86,10 @@ export default function SiswaBerandaPage() {
       return;
     }
 
-    fetch("/api/v1/account/me", { credentials: "include" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => {
-        if (j?.data?.nama) {
-          setNama(j.data.nama);
-          setCache("beranda:nama", j.data.nama, CACHE_TTL);
-        }
-      })
-      .catch(() => {});
-
     Promise.allSettled([
+      fetch("/api/v1/account/me", { credentials: "include" }).then((r) =>
+        r.ok ? r.json() : null
+      ),
       fetch("/api/v1/siswa/feed", { credentials: "include" }).then((r) =>
         r.ok ? r.json() : null
       ),
@@ -108,7 +101,11 @@ export default function SiswaBerandaPage() {
       ),
     ])
       .then((results) => {
-        const [feedResult, pengumResult, quizResult] = results;
+        const [meResult, feedResult, pengumResult, quizResult] = results;
+        if (meResult.status === "fulfilled" && meResult.value?.data?.nama) {
+          setNama(meResult.value.data.nama);
+          setCache("beranda:nama", meResult.value.data.nama, CACHE_TTL);
+        }
         if (feedResult.status === "fulfilled" && feedResult.value) {
           setFeed(feedResult.value);
           setCache("beranda:feed", feedResult.value, CACHE_TTL);
@@ -145,7 +142,7 @@ export default function SiswaBerandaPage() {
         <p className="text-on-surface-variant mb-6 max-w-md text-sm">{error}</p>
         <button
           onClick={() => router.refresh()}
-          className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 cursor-pointer"
+          className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 min-h-[44px] rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
         >
           <RefreshCw className="w-4 h-4" />
           Coba Lagi
@@ -188,6 +185,15 @@ export default function SiswaBerandaPage() {
   const progressPct =
     stats.materi > 0 ? Math.round((stats.selesai / stats.materi) * 100) : 0;
 
+  const pendingQuiz = quizList.find((q) => !q.sudahDikerjakan);
+  const todayMateri =
+    feed?.data.filter((m) => {
+      const pub = new Date(m.publishedAt);
+      const now = new Date();
+      return pub.toDateString() === now.toDateString();
+    }) ?? [];
+  const hasHariIni = pendingQuiz || todayMateri.length > 0;
+
   return (
     <div>
       <motion.div
@@ -229,7 +235,7 @@ export default function SiswaBerandaPage() {
       {feed?.continueLearning && (
         <Link
           href={`/siswa/materi/${feed.continueLearning.id}`}
-          className="block bg-gradient-to-br from-primary to-[#003d24] text-white rounded-2xl p-5 sm:p-6 shadow-glass-lg mb-6 hover:brightness-110 active:scale-[0.99] transition-all duration-200 cursor-pointer"
+          className="block bg-gradient-to-br from-primary to-[#003d24] text-white rounded-2xl p-5 sm:p-6 shadow-glass-lg mb-6 hover:brightness-110 active:scale-[0.99] transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
         >
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-2xl bg-white/15 text-[#eec055] grid place-items-center shrink-0">
@@ -259,16 +265,7 @@ export default function SiswaBerandaPage() {
         </Link>
       )}
 
-      {(() => {
-        const pendingQuiz = quizList.find((q) => !q.sudahDikerjakan);
-        const todayMateri =
-          feed?.data.filter((m) => {
-            const pub = new Date(m.publishedAt);
-            const now = new Date();
-            return pub.toDateString() === now.toDateString();
-          }) ?? [];
-        const hasHariIni = pendingQuiz || todayMateri.length > 0;
-        return hasHariIni ? (
+      {hasHariIni && (
           <section className="mb-6">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="w-4 h-4 text-tertiary" />
@@ -278,7 +275,7 @@ export default function SiswaBerandaPage() {
               {pendingQuiz && (
                 <Link
                   href={`/siswa/cbt/${pendingQuiz.id}`}
-                  className="block bg-glass border border-border-precision rounded-2xl p-3.5 hover:border-primary/30 hover:shadow-glass-lg active:scale-[0.99] transition-all duration-200 cursor-pointer"
+                  className="block bg-glass border border-border-precision rounded-2xl p-3.5 hover:border-primary/30 hover:shadow-glass-lg active:scale-[0.99] transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-10 h-10 rounded-xl bg-tertiary/10 text-tertiary grid place-items-center shrink-0">
@@ -308,7 +305,7 @@ export default function SiswaBerandaPage() {
                 <Link
                   key={m.id}
                   href={`/siswa/materi/${m.id}`}
-                  className="block bg-glass border border-border-precision rounded-2xl p-3.5 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer"
+                  className="block bg-glass border border-border-precision rounded-2xl p-3.5 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-10 h-10 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
@@ -330,8 +327,7 @@ export default function SiswaBerandaPage() {
               ))}
             </div>
           </section>
-        ) : null;
-      })()}
+        )}
 
       {pengumuman.length > 0 && (
         <section className="mb-6">
@@ -376,7 +372,7 @@ export default function SiswaBerandaPage() {
           <Link
             key={m.id}
             href={`/siswa/materi/${m.id}`}
-            className="flex items-center gap-3 bg-glass rounded-2xl border border-border-precision p-3.5 shadow-glass hover:bg-white/80 active:scale-[0.99] transition-all"
+            className="flex items-center gap-3 bg-glass rounded-2xl border border-border-precision p-3.5 shadow-glass hover:bg-white/80 active:scale-[0.99] transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
           >
             <div
               className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
@@ -432,7 +428,7 @@ export default function SiswaBerandaPage() {
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Link
           href="/siswa/quiz"
-          className="bg-glass border border-border-precision rounded-2xl p-3.5 flex items-center gap-3 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer"
+          className="bg-glass border border-border-precision rounded-2xl p-3.5 flex items-center gap-3 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
         >
           <span className="w-10 h-10 rounded-xl bg-tertiary/10 text-tertiary grid place-items-center">
             <Sparkles className="w-5 h-5" />
@@ -444,7 +440,7 @@ export default function SiswaBerandaPage() {
         </Link>
         <Link
           href="/siswa/progres"
-          className="bg-glass border border-border-precision rounded-2xl p-3.5 flex items-center gap-3 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer"
+          className="bg-glass border border-border-precision rounded-2xl p-3.5 flex items-center gap-3 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
         >
           <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center">
             <CheckCircle2 className="w-5 h-5" />

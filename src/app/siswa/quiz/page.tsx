@@ -116,10 +116,10 @@ export default function SiswaQuizListPage() {
       <div className="bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl p-5 text-center">
         <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
         <p className="text-xs text-red-700 mb-3">{error}</p>
-        <button
+<button
           onClick={load}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50 transition-all"
+          className="inline-flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50 transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
         >
           {loading ? (
             <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Memuat...</>
@@ -182,7 +182,7 @@ export default function SiswaQuizListPage() {
             <motion.div key={q.id} variants={item}>
               <Link
                 href={`/siswa/cbt/${q.id}`}
-                className="flex items-center gap-3 bg-glass rounded-2xl border border-border-precision p-3.5 shadow-glass hover:bg-white/80 active:scale-[0.99] transition-all"
+                className="flex items-center gap-3 bg-glass rounded-2xl border border-border-precision p-3.5 shadow-glass hover:bg-white/80 active:scale-[0.99] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
               >
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${

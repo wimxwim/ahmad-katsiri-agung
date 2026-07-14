@@ -64,7 +64,7 @@ export function DashboardLayoutClient({
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden ml-auto p-1 text-on-surface-variant hover:text-on-surface"
+            className="lg:hidden ml-auto p-1 text-on-surface-variant hover:text-on-surface focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
             aria-label="Tutup menu"
           >
             <X className="w-5 h-5" />
@@ -82,7 +82,7 @@ export function DashboardLayoutClient({
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors relative min-h-11",
+                  "flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors relative min-h-11 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden",
                   active && !item.primary
                     ? "bg-primary/10 text-primary"
                     : item.primary
@@ -103,7 +103,7 @@ export function DashboardLayoutClient({
         <div className="px-3 py-4 border-t border-border-precision space-y-1">
           <Link
             href="/"
-            className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-on-surface-variant hover:bg-surface transition-colors min-h-11"
+            className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-on-surface-variant hover:bg-surface transition-colors min-h-11 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
           >
             <ChevronLeft className="w-4 h-4" />
             Kembali ke Situs
@@ -112,7 +112,7 @@ export function DashboardLayoutClient({
             onClick={() => {
               handleLogout().then((redirect) => router.push(redirect));
             }}
-            className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer min-h-11"
+            className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer min-h-11 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
           >
             <LogOut className="w-4 h-4" />
             Keluar
@@ -129,9 +129,9 @@ export function DashboardLayoutClient({
 
       <div className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-20 bg-surface/80 backdrop-blur-md border-b border-border-precision flex items-center gap-3 px-4 py-3">
-          <button
+<button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 -ml-2 text-on-surface-variant hover:text-on-surface cursor-pointer"
+            className="lg:hidden p-2 -ml-2 text-on-surface-variant hover:text-on-surface cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
             aria-label="Buka menu"
           >
             <Menu className="w-5 h-5" />
@@ -140,7 +140,7 @@ export function DashboardLayoutClient({
           <div className="flex items-center gap-2 text-sm text-on-surface-variant">
             <Link
               href="/profil"
-              className="flex items-center gap-2 hover:text-primary transition-colors"
+              className="flex items-center gap-2 hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
               aria-label="Profil"
             >
               <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">

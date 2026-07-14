@@ -77,7 +77,7 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
         <p className="text-sm text-red-700 mb-4">{error || "Kuis tidak ditemukan"}</p>
         <Link
           href="/siswa/quiz"
-          className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold"
+          className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
         >
           Kembali ke Daftar Kuis
         </Link>

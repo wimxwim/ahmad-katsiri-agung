@@ -10,7 +10,7 @@ export function Toaster() {
           background: "white",
           border: "1px solid rgba(27,107,69,0.15)",
           borderRadius: "16px",
-          fontFamily: "Inter, sans-serif",
+          fontFamily: "var(--font-inter), sans-serif",
           fontSize: "14px",
         },
       }}
