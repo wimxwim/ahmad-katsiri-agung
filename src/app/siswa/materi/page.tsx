@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, CheckCircle2, Circle, ArrowRight, PartyPopper, X } from "lucide-react";
@@ -18,7 +19,7 @@ interface MateriItem {
   publishedAt: string;
 }
 
-export default function SiswaMateriListPage() {
+function MateriContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [data, setData] = useState<MateriItem[]>([]);
@@ -140,5 +141,13 @@ export default function SiswaMateriListPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SiswaMateriListPage() {
+  return (
+    <Suspense fallback={<SkeletonList />}>
+      <MateriContent />
+    </Suspense>
   );
 }

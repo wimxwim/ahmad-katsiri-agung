@@ -114,6 +114,11 @@ export async function POST(
 
     const nilai = totalPoin > 0 ? Math.round((totalPoinDiperoleh / totalPoin) * 100) : 0;
 
+    const jawabanBenar: Record<string, string> = {};
+    for (const s of soals) {
+      jawabanBenar[s.id] = s.kunci;
+    }
+
     const [attempt] = await db
       .insert(quizAttempt)
       .values({
@@ -149,6 +154,7 @@ export async function POST(
         essayCount,
         needsManualReview: essayCount > 0,
         tampilkanNilai: quiz.modeEvaluasi !== "CBT",
+        jawabanBenar,
         ringkasan: essayCount > 0
           ? `Kamu menjawab ${jumlahBenar} dari ${soals.length - essayCount} soal PG/ISIAN dengan benar. ${essayCount} essay menunggu penilaian guru.`
           : `Kamu menjawab ${jumlahBenar} dari ${soals.length} soal dengan benar.`,

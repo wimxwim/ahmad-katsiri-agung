@@ -66,6 +66,10 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
   const selectedRef = useRef(selected);
   const soalRef = useRef<SoalItem | null>(null);
   const submittedRef = useRef(false);
+  const [serverResult, setServerResult] = useState<{
+    nilai: number; jumlahBenar: number; jumlahSalah: number; totalSoal: number;
+    jawabanBenar: Record<string, string>;
+  } | null>(null);
 
   useEffect(() => {
     selectedRef.current = selected;
@@ -146,16 +150,28 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
     if (submittedRef.current) return;
     submittedRef.current = true;
     try {
-      await fetch(`/api/v1/siswa/quiz/${quiz.id}/submit`, {
+      const r = await fetch(`/api/v1/siswa/quiz/${quiz.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ jawaban }),
+        body: JSON.stringify({ durasiDetik: quiz.durasiMenit * 60 - timeLeft, jawaban }),
       });
+      if (r.ok) {
+        const j = await r.json();
+        if (j.data) {
+          setServerResult({
+            nilai: j.data.nilai,
+            jumlahBenar: j.data.jumlahBenar,
+            jumlahSalah: j.data.jumlahSalah,
+            totalSoal: j.data.totalSoal,
+            jawabanBenar: j.data.jawabanBenar || {},
+          });
+        }
+      }
     } catch {
-      // best-effort
+      // best-effort, fallback to local scoring
     }
-  }, [quiz.id, jawaban]);
+  }, [quiz.id, quiz.durasiMenit, timeLeft, jawaban]);
 
   useEffect(() => {
     if (quizState === "result") submitHasil();
@@ -175,8 +191,9 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
     return benar;
   }, [shuffledSoal, jawaban]);
 
-  const skor = hitungSkor();
-  const persentase = totalSoal > 0 ? Math.round((skor / totalSoal) * 100) : 0;
+  const skor = serverResult ? serverResult.jumlahBenar : hitungSkor();
+  const totalSoalDisplay = serverResult ? serverResult.totalSoal : totalSoal;
+  const persentase = totalSoalDisplay > 0 ? Math.round((skor / totalSoalDisplay) * 100) : 0;
 
   const resultEmoji = () => {
     if (persentase >= 90) return { emoji: "🌟", label: "Luar Biasa!" };
@@ -243,7 +260,8 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
           <div className="space-y-6">
             {shuffledSoal.map((s, i) => {
               const userAnswer = jawaban[s.nomor];
-              const correct = s.tipe === "PG" ? userAnswer === s.kunci : userAnswer?.toLowerCase().trim() === s.kunci.toLowerCase().trim();
+              const correctAnswer = serverResult?.jawabanBenar[s.id] ?? s.kunci;
+              const correct = s.tipe === "PG" ? userAnswer === correctAnswer : userAnswer?.toLowerCase().trim() === correctAnswer.toLowerCase().trim();
               const opsiEntries = Object.entries(s.opsi);
               return (
                 <motion.div
@@ -264,7 +282,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
                     <div className="ml-8 space-y-2">
                       {opsiEntries.map(([key, val]) => {
                         let cls = "px-4 py-2.5 rounded-xl text-sm border transition-all";
-                        if (key === s.kunci) cls += " bg-green-50 border-green-300 text-green-800 font-semibold";
+                        if (key === correctAnswer) cls += " bg-green-50 border-green-300 text-green-800 font-semibold";
                         else if (key === userAnswer && !correct) cls += " bg-red-50 border-red-300 text-red-800";
                         else cls += " border-primary/10 text-on-surface-variant";
                         return (
@@ -283,7 +301,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
                       </div>
                       <div className="px-4 py-2.5 rounded-xl text-sm border bg-green-50 border-green-300 text-green-800 font-semibold">
                         <span className="text-xs text-green-600">Kunci: </span>
-                        <MathRenderer text={s.kunci} />
+                        <MathRenderer text={correctAnswer} />
                       </div>
                     </div>
                   )}
@@ -315,7 +333,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
         <p className="text-on-surface-variant mb-8">{quiz.judul}</p>
         <div className="bg-glass border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass mb-8">
           <div className="text-6xl font-heading font-bold text-primary mb-2">
-            {skor}<span className="text-2xl text-on-surface-variant">/{totalSoal}</span>
+            {skor}<span className="text-2xl text-on-surface-variant">/{totalSoalDisplay}</span>
           </div>
           <p className="text-sm text-on-surface-variant">{persentase}% Benar</p>
           <div className="w-full bg-primary/10 rounded-full h-3 mt-6 overflow-hidden">
@@ -327,7 +345,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
               <p className="text-xs text-green-600/70">Benar</p>
             </div>
             <div className="bg-red-50 rounded-2xl p-4">
-              <p className="font-heading text-2xl font-bold text-red-600">{totalSoal - skor}</p>
+              <p className="font-heading text-2xl font-bold text-red-600">{totalSoalDisplay - skor}</p>
               <p className="text-xs text-red-600/70">Salah</p>
             </div>
           </div>

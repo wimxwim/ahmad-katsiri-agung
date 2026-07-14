@@ -83,6 +83,9 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
   const [editingMateri, setEditingMateri] = useState(false);
   const [editJudul, setEditJudul] = useState("");
   const [editKonten, setEditKonten] = useState("");
+  const [pgCount, setPgCount] = useState(15);
+  const [isianCount, setIsianCount] = useState(5);
+  const [essayCount, setEssayCount] = useState(5);
 
   async function load() {
     const { id } = await params;
@@ -98,6 +101,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
       setLoading(false);
     } catch (error) {
       console.error("[guru/drafts/[id]] load failed:", error);
+      setError("Gagal memuat draft. Periksa koneksi internet.");
       setLoading(false);
     }
   }
@@ -120,7 +124,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft]);
 
-  async function act(path: string, label: string) {
+  async function act(path: string, label: string, body?: Record<string, unknown>) {
     if (!draft) return;
     setBusy(label);
     setError("");
@@ -128,8 +132,9 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
     try {
       const res = await fetch(`/api/v1/guru/drafts/${draft.id}${path}`, {
         method: "POST",
-        headers: csrfHeaders(),
+        headers: body ? { "Content-Type": "application/json", ...csrfHeaders() } : csrfHeaders(),
         credentials: "include",
+        ...(body ? { body: JSON.stringify(body) } : {}),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
@@ -268,7 +273,8 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                 type="number"
                 min={5}
                 max={35}
-                defaultValue={15}
+                value={pgCount}
+                onChange={(e) => setPgCount(Number(e.target.value))}
                 className="px-3 py-2 rounded-xl border border-border-precision bg-white text-sm"
               />
             </label>
@@ -278,7 +284,8 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                 type="number"
                 min={0}
                 max={15}
-                defaultValue={5}
+                value={isianCount}
+                onChange={(e) => setIsianCount(Number(e.target.value))}
                 className="px-3 py-2 rounded-xl border border-border-precision bg-white text-sm"
               />
             </label>
@@ -288,13 +295,14 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
                 type="number"
                 min={0}
                 max={15}
-                defaultValue={5}
+                value={essayCount}
+                onChange={(e) => setEssayCount(Number(e.target.value))}
                 className="px-3 py-2 rounded-xl border border-border-precision bg-white text-sm"
               />
             </label>
           </div>
           <button
-            onClick={() => act("/generate", "generate-all")}
+            onClick={() => act("/generate", "generate-all", { pgCount, isianCount, essayCount })}
             disabled={busy === "generate-all"}
             className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50 w-full justify-center"
           >

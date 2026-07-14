@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { Sparkles, Clock, CheckCircle2, AlertCircle, ClipboardList } from "lucide-react";
+import { Sparkles, Clock, CheckCircle2, AlertCircle, ClipboardList, RefreshCw } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 
@@ -22,7 +22,9 @@ export default function SiswaQuizListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
+    setError("");
     fetch("/api/v1/siswa/quiz", { credentials: "include" })
       .then(async (r) => {
         if (!r.ok) {
@@ -41,6 +43,10 @@ export default function SiswaQuizListPage() {
       });
   }, []);
 
+  useEffect(() => {
+    load();
+  }, [load]);
+
   if (loading) {
     return <SkeletonList />;
   }
@@ -49,7 +55,18 @@ export default function SiswaQuizListPage() {
     return (
       <div className="bg-glass border border-border-precision rounded-2xl p-6 text-center">
         <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-        <p className="text-sm text-red-700">{error}</p>
+        <p className="text-sm text-red-700 mb-4">{error}</p>
+        <button
+          onClick={load}
+          disabled={loading}
+          className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+        >
+          {loading ? (
+            <><RefreshCw className="w-4 h-4 animate-spin" /> Memuat...</>
+          ) : (
+            <><RefreshCw className="w-4 h-4" /> Coba Lagi</>
+          )}
+        </button>
       </div>
     );
   }
