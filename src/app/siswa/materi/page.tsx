@@ -127,7 +127,7 @@ function MateriContent() {
 
   if (loading) {
     return (
-      <div className="px-3 sm:px-5 lg:px-8 py-5 sm:py-8">
+      <div>
         <SkeletonList />
       </div>
     );
@@ -135,7 +135,7 @@ function MateriContent() {
 
   if (error) {
     return (
-      <div className="px-3 sm:px-5 lg:px-8 py-5 sm:py-8">
+      <div>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -164,7 +164,7 @@ function MateriContent() {
   }
 
   return (
-    <div className="px-3 sm:px-5 lg:px-8 py-5 sm:py-8">
+    <div>
       {/* Welcome Banner */}
       {showWelcome && (
         <motion.div
@@ -274,11 +274,11 @@ function MateriContent() {
                 href={`/siswa/materi/${m.id}`}
                 className="flex items-center gap-3 bg-glass rounded-2xl border border-border-precision p-3.5 shadow-glass hover:bg-white/80 active:scale-[0.99] transition-all"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shrink-0">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${m.selesai ? "bg-emerald-50 text-emerald-700" : "bg-primary/10 text-primary"}`}>
                   {m.selesai ? (
-                    <CheckCircle2 className="w-5 h-5 text-white" />
+                    <CheckCircle2 className="w-5 h-5" />
                   ) : (
-                    <BookOpen className="w-5 h-5 text-white" />
+                    <BookOpen className="w-5 h-5" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -335,7 +335,7 @@ export default function SiswaMateriListPage() {
   return (
     <Suspense
       fallback={
-        <div className="px-3 sm:px-5 lg:px-8 py-5 sm:py-8">
+        <div>
           <SkeletonList />
         </div>
       }

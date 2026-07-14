@@ -124,7 +124,7 @@ export default function SiswaQuizListPage() {
   }
 
   return (
-    <div className="px-3 sm:px-5">
+    <div>
       {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -179,8 +179,8 @@ export default function SiswaQuizListPage() {
                 <div
                   className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                     q.sudahDikerjakan
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-gradient-to-br from-primary to-primary/70 text-white"
+                      ? "bg-emerald-50 text-emerald-700"
+                      : "bg-primary/10 text-primary"
                   }`}
                 >
                   {q.sudahDikerjakan ? (

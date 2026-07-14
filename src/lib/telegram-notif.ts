@@ -1,7 +1,15 @@
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "";
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID || process.env.TELEGRAM_BOT_ID || "";
+function getBotToken(): string {
+  return process.env.TELEGRAM_BOT_TOKEN || "";
+}
+
+function getChatId(): string {
+  return process.env.TELEGRAM_CHAT_ID || process.env.TELEGRAM_BOT_ID || "";
+}
 
 async function sendMessage(text: string): Promise<void> {
+  const BOT_TOKEN = getBotToken();
+  const CHAT_ID = getChatId();
+
   if (!BOT_TOKEN || !CHAT_ID) {
     console.error("[telegram-notif] TELEGRAM_BOT_TOKEN atau TELEGRAM_CHAT_ID belum diset");
     return;
@@ -29,6 +37,9 @@ async function sendMessage(text: string): Promise<void> {
 }
 
 async function sendPhoto(photoUrl: string, caption: string): Promise<void> {
+  const BOT_TOKEN = getBotToken();
+  const CHAT_ID = getChatId();
+
   if (!BOT_TOKEN) {
     console.error("[telegram-notif] TELEGRAM_BOT_TOKEN tidak diset");
     return;

@@ -7,7 +7,6 @@ import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
 import {
   BookOpen,
-  Clock,
   CheckCircle2,
   ArrowRight,
   Sparkles,
@@ -109,7 +108,7 @@ export default function SiswaBerandaPage() {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[40vh] text-center px-4">
+      <div className="flex flex-col items-center justify-center min-h-[40vh] text-center">
         <div className="w-16 h-16 rounded-3xl bg-red-50 flex items-center justify-center mb-6">
           <AlertTriangle className="w-8 h-8 text-red-500" />
         </div>
@@ -128,7 +127,7 @@ export default function SiswaBerandaPage() {
 
   if (feed && feed.terdaftar === false) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <EmptyState
           icon={BookOpen}
           title="Kamu belum terdaftar di kelas"
@@ -140,7 +139,7 @@ export default function SiswaBerandaPage() {
 
   if (feed && feed.data.length === 0) {
     return (
-      <div className="px-4">
+      <div>
         <EmptyState
           icon={BookOpen}
           title="Belum ada materi"
@@ -161,7 +160,7 @@ export default function SiswaBerandaPage() {
     stats.materi > 0 ? Math.round((stats.selesai / stats.materi) * 100) : 0;
 
   return (
-    <div className="pb-20">
+    <div>
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -250,7 +249,7 @@ export default function SiswaBerandaPage() {
               {pendingQuiz && (
                 <Link
                   href={`/siswa/cbt/${pendingQuiz.id}`}
-                  className="block bg-glass border border-border-precision rounded-2xl p-4 hover:border-primary/30 hover:shadow-glass-lg active:scale-[0.99] transition-all duration-200 cursor-pointer"
+                  className="block bg-glass border border-border-precision rounded-2xl p-3.5 hover:border-primary/30 hover:shadow-glass-lg active:scale-[0.99] transition-all duration-200 cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-10 h-10 rounded-xl bg-tertiary/10 text-tertiary grid place-items-center shrink-0">
@@ -280,7 +279,7 @@ export default function SiswaBerandaPage() {
                 <Link
                   key={m.id}
                   href={`/siswa/materi/${m.id}`}
-                  className="block bg-glass border border-border-precision rounded-2xl p-4 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer"
+                  className="block bg-glass border border-border-precision rounded-2xl p-3.5 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-10 h-10 rounded-xl bg-primary/10 text-primary grid place-items-center shrink-0">
@@ -315,7 +314,7 @@ export default function SiswaBerandaPage() {
             {pengumuman.slice(0, 3).map((p) => (
               <div
                 key={p.id}
-                className="bg-glass border border-border-precision rounded-2xl p-4"
+                className="bg-glass border border-border-precision rounded-2xl p-3.5"
               >
                 <div className="flex items-start gap-3">
                   {p.isPinned && (
@@ -343,72 +342,60 @@ export default function SiswaBerandaPage() {
       <h2 className="font-heading font-semibold text-lg text-on-surface mb-3">
         Materi untukmu
       </h2>
-      <div className="space-y-3">
+      <div className="flex flex-col gap-2">
         {feed?.data.map((m) => (
           <Link
             key={m.id}
             href={`/siswa/materi/${m.id}`}
-            className="block bg-glass border border-border-precision rounded-2xl p-4 sm:p-5 hover:border-primary/30 hover:shadow-glass-lg active:scale-[0.99] transition-all duration-200 cursor-pointer"
+            className="flex items-center gap-3 bg-glass rounded-2xl border border-border-precision p-3.5 shadow-glass hover:bg-white/80 active:scale-[0.99] transition-all"
           >
-            <div className="flex items-start gap-3">
-              <span
-                className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 ${
-                  m.selesai
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-primary/10 text-primary"
-                }`}
-              >
-                {m.selesai ? (
-                  <CheckCircle2 className="w-5 h-5" />
-                ) : (
-                  <BookOpen className="w-5 h-5" />
-                )}
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-on-surface truncate">{m.judul}</p>
-                <p className="text-xs text-on-surface-variant mt-0.5">
-                  {m.kursusJudul}
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                m.selesai
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-primary/10 text-primary"
+              }`}
+            >
+              {m.selesai ? (
+                <CheckCircle2 className="w-5 h-5" />
+              ) : (
+                <BookOpen className="w-5 h-5" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm text-on-surface truncate">
+                {m.judul}
+              </h3>
+              <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-1">
+                {m.kursusJudul}
+              </p>
+              {m.ringkasan && (
+                <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-1">
+                  {m.ringkasan}
                 </p>
-                {m.ringkasan && (
-                  <p className="text-sm text-on-surface-variant mt-2 line-clamp-2">
-                    {m.ringkasan}
-                  </p>
-                )}
-                <div className="mt-3 flex items-center gap-3">
-                  {m.progress > 0 && !m.selesai && (
-                    <>
-                      <div className="flex-1 max-w-[160px]">
-                        <div className="h-1.5 bg-surface rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary transition-all"
-                            style={{ width: `${m.progress}%` }}
-                          />
-                        </div>
-                      </div>
-                      <span className="text-xs font-bold text-primary tabular-nums">
-                        {m.progress}%
-                      </span>
-                    </>
-                  )}
-                  <span className="text-xs text-on-surface-variant flex items-center gap-1 ml-auto">
-                    {m.selesai ? (
-                      <>
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Selesai
-                      </>
-                    ) : m.lastReadAt ? (
-                      <>
-                        <Clock className="w-3 h-3" /> Dilanjutkan
-                      </>
-                    ) : (
-                      <>
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />{" "}
-                        Baru
-                      </>
-                    )}
+              )}
+              {m.progress > 0 && !m.selesai && (
+                <div className="flex items-center gap-2 mt-1.5">
+                  <div className="flex-1 max-w-[120px] h-1 bg-border-precision rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full"
+                      style={{ width: `${m.progress}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-primary tabular-nums">
+                    {m.progress}%
                   </span>
                 </div>
-              </div>
+              )}
+              <p className="text-[10px] text-on-surface-variant/60 mt-1">
+                {m.selesai
+                  ? "✓ Selesai"
+                  : m.lastReadAt
+                    ? "Sedang dipelajari"
+                    : "Belum dibaca"}
+              </p>
             </div>
+            <ArrowRight className="w-4 h-4 text-on-surface-variant/30 shrink-0" />
           </Link>
         ))}
       </div>
@@ -416,7 +403,7 @@ export default function SiswaBerandaPage() {
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Link
           href="/siswa/quiz"
-          className="bg-glass border border-border-precision rounded-2xl p-4 flex items-center gap-3 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer"
+          className="bg-glass border border-border-precision rounded-2xl p-3.5 flex items-center gap-3 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer"
         >
           <span className="w-10 h-10 rounded-xl bg-tertiary/10 text-tertiary grid place-items-center">
             <Sparkles className="w-5 h-5" />
@@ -428,7 +415,7 @@ export default function SiswaBerandaPage() {
         </Link>
         <Link
           href="/siswa/progres"
-          className="bg-glass border border-border-precision rounded-2xl p-4 flex items-center gap-3 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer"
+          className="bg-glass border border-border-precision rounded-2xl p-3.5 flex items-center gap-3 hover:border-primary/30 active:scale-[0.99] transition-all duration-200 cursor-pointer"
         >
           <span className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 grid place-items-center">
             <CheckCircle2 className="w-5 h-5" />
