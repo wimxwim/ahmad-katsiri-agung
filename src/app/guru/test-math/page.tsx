@@ -33,7 +33,19 @@ const soal = [
 export default function TestMathPage() {
   return (
     <div className="max-w-2xl mx-auto py-8">
-      <h1 className="font-heading font-bold text-2xl mb-6">Test Math Rendering</h1>
+      <h1 className="font-heading font-bold text-2xl mb-6">Test Math + RTL</h1>
+
+      <div className="space-y-4 mb-8">
+        <h2 className="font-semibold text-lg">RTL Arabic</h2>
+        <div className="bg-glass rounded-2xl p-4">
+          <p dir="rtl" className="font-amiri text-2xl leading-loose text-right mb-4">
+            بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+          </p>
+          <p className="text-sm text-on-surface-variant">
+            Font Amiri — RTL (Right-to-Left) — gunakan <code>dir="rtl"</code> + <code>font-amiri</code>
+          </p>
+        </div>
+      </div>
 
       <div className="space-y-4 mb-8">
         <h2 className="font-semibold text-lg">Inline Math</h2>
