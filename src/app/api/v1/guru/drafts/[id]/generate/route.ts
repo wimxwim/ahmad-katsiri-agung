@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { apiError } from "@/lib/api-response";
+import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
@@ -44,7 +44,7 @@ export async function POST(
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`gen-trigger:${ip}`, 10, 60_000);
-    if (!rl.allowed) return apiError("Terlalu banyak permintaan", 429, undefined, undefined, { "Retry-After": String(Math.ceil(rl.retryAfter / 1000)) });
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const [gen] = await db
       .select()
@@ -123,6 +123,10 @@ export async function POST(
 
     let generateError: string | null = null;
 
+    // NOTE: This pattern is intentionally non-transactional.
+    // AI generation is an external HTTP call to NaraRouter that cannot be rolled back atomically
+    // with the database. The deduction + refund pattern is the best available approach for this
+    // external service pattern — if generation fails after deducting, the token is refunded.
     try {
       await deductGenerateCost(session.userId!);
       await runGenerationFromText(id, text, session.userId!, soalCount, quizCount);

@@ -29,7 +29,16 @@ export async function GET(request: NextRequest) {
       : enrolledIds;
 
     const materiList = await db
-      .select()
+      .select({
+        id: materiPublished.id,
+        judul: materiPublished.judul,
+        ringkasan: materiPublished.ringkasan,
+        urutan: materiPublished.urutan,
+        kursusId: materiPublished.kursusId,
+        guruId: materiPublished.guruId,
+        publishedAt: materiPublished.publishedAt,
+        aiGenerationId: materiPublished.aiGenerationId,
+      })
       .from(materiPublished)
       .where(inArray(materiPublished.kursusId, targetIds))
       .orderBy(asc(materiPublished.urutan));

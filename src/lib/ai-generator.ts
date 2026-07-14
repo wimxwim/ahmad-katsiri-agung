@@ -249,39 +249,41 @@ export async function runGeneration(
 
     let aiResults: [ChatResult, ChatResult, ChatResult];
     try {
-      const materiRes = await withTimeout(
-        chatWithFallback(
-          [
-            { role: "system", content: MATERI_SYSTEM },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
-          ],
-          { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
+      const [materiRes, quizRes, soalRes] = await Promise.all([
+        withTimeout(
+          chatWithFallback(
+            [
+              { role: "system", content: MATERI_SYSTEM },
+              { role: "user", content: `Materi:\n\n${truncatedSource}` },
+            ],
+            { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
+          ),
+          AI_TIMEOUT_MS,
+          "ai-materi",
         ),
-        AI_TIMEOUT_MS,
-        "ai-materi",
-      );
-      const quizRes = await withTimeout(
-        chatWithFallback(
-          [
-            { role: "system", content: buildQuizSystemPrompt(quizCount) },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
-          ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60) },
+        withTimeout(
+          chatWithFallback(
+            [
+              { role: "system", content: buildQuizSystemPrompt(quizCount) },
+              { role: "user", content: `Materi:\n\n${truncatedSource}` },
+            ],
+            { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60) },
+          ),
+          AI_TIMEOUT_MS,
+          "ai-quiz",
         ),
-        AI_TIMEOUT_MS,
-        "ai-quiz",
-      );
-      const soalRes = await withTimeout(
-        chatWithFallback(
-          [
-            { role: "system", content: buildSoalSystemPrompt(soalCount) },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
-          ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, soalCount * 50) },
+        withTimeout(
+          chatWithFallback(
+            [
+              { role: "system", content: buildSoalSystemPrompt(soalCount) },
+              { role: "user", content: `Materi:\n\n${truncatedSource}` },
+            ],
+            { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, soalCount * 50) },
+          ),
+          AI_TIMEOUT_MS,
+          "ai-soal",
         ),
-        AI_TIMEOUT_MS,
-        "ai-soal",
-      );
+      ]);
       aiResults = [materiRes, quizRes, soalRes];
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);

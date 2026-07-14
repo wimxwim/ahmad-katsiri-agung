@@ -225,14 +225,27 @@ export async function GET(request: NextRequest) {
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const data = await db
-      .select()
+      .select({
+        id: fileMateri.id,
+        namaFile: fileMateri.namaFile,
+        tipeMime: fileMateri.tipeMime,
+        ukuranBytes: fileMateri.ukuranBytes,
+        lokasi: fileMateri.lokasi,
+        imagekitFileId: fileMateri.imagekitFileId,
+        status: fileMateri.status,
+        kategori: fileMateri.kategori,
+        guruId: fileMateri.guruId,
+        kursusId: fileMateri.kursusId,
+        skillId: fileMateri.skillId,
+        createdAt: fileMateri.createdAt,
+        updatedAt: fileMateri.updatedAt,
+      })
       .from(fileMateri)
       .where(eq(fileMateri.guruId, session.userId!))
       .orderBy(fileMateri.createdAt);
 
     const sanitized = data.map((f) => ({
       ...f,
-      sizeBytes: f.ukuranBytes,
       linkAkses: `/api/v1/storage/${f.id}`,
     }));
 

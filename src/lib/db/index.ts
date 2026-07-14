@@ -6,9 +6,13 @@ import * as schema from "./schema";
 type DrizzleDb = ReturnType<typeof drizzle<typeof schema>>;
 
 function createDb(): DrizzleDb {
+  // Supavisor transaction mode: connection-per-query, not connection-per-request.
+  // Higher pool max + allowExitOnIdle are safe because Supavisor handles session pooling.
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    max: 8,
+    max: 20,
+    allowExitOnIdle: true,
+    application_name: "akal-center",
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 15000,
     statement_timeout: 30000,

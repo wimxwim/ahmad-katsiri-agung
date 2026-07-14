@@ -454,6 +454,7 @@ export const fileMateri = pgTable(
     index("file_materi_guru_id_idx").on(t.guruId),
     index("file_materi_kursus_id_idx").on(t.kursusId),
     index("file_materi_status_idx").on(t.status),
+    index("file_materi_kategori_idx").on(t.kategori),
   ]
 );
 
@@ -1011,6 +1012,7 @@ export const materiRead = pgTable(
   (t) => ({
     siswaMateriUnique: unique("materi_read_siswa_materi_unique").on(t.siswaId, t.materiPublishedId),
     siswaIdx: index("materi_read_siswa_idx").on(t.siswaId, t.readAt),
+    materiIdx: index("materi_read_materi_published_idx").on(t.materiPublishedId),
   }),
 );
 
@@ -1124,6 +1126,9 @@ export const tokenTransactions = pgTable(
     proofFileId: varchar("proof_file_id", { length: 255 }),
     proofLink: text("proof_link"),
     notes: text("notes"),
+    chainHash: varchar("chain_hash", { length: 64 }),
+    prevHash: varchar("prev_hash", { length: 64 }),
+    nonce: varchar("nonce", { length: 32 }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
