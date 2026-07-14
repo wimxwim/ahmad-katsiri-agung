@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, RefreshCw, XCircle, Loader2, FileText, BookOpen, ClipboardList, Edit3, Save, Check, ListChecks } from "lucide-react";
+import { ArrowLeft, CheckCircle2, RefreshCw, XCircle, Loader2, FileText, BookOpen, ClipboardList, Edit3, Save, Check, ListChecks, Zap, Rocket } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 import { csrfHeaders } from "@/lib/csrf";
@@ -252,6 +252,78 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
         <div className="mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-sm text-emerald-800 flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           {successMsg}
+        </div>
+      )}
+
+      {draft.status === "extracted" && (
+        <div className="mb-6 p-5 bg-glass rounded-2xl border border-border-precision">
+          <h3 className="font-heading font-bold text-lg text-on-surface mb-3">Generate AI</h3>
+          <p className="text-sm text-on-surface-variant mb-4">
+            Pilih jumlah soal yang ingin digenerate. AI akan membuat materi, kuis, dan soal sekaligus.
+          </p>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <label className="flex flex-col gap-1">
+              <span className="text-xs text-on-surface-variant">PG</span>
+              <input
+                type="number"
+                min={5}
+                max={35}
+                defaultValue={15}
+                className="px-3 py-2 rounded-xl border border-border-precision bg-white text-sm"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-xs text-on-surface-variant">Isian</span>
+              <input
+                type="number"
+                min={0}
+                max={15}
+                defaultValue={5}
+                className="px-3 py-2 rounded-xl border border-border-precision bg-white text-sm"
+              />
+            </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-xs text-on-surface-variant">Essay</span>
+              <input
+                type="number"
+                min={0}
+                max={15}
+                defaultValue={5}
+                className="px-3 py-2 rounded-xl border border-border-precision bg-white text-sm"
+              />
+            </label>
+          </div>
+          <button
+            onClick={() => act("/generate", "generate-all")}
+            disabled={busy === "generate-all"}
+            className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50 w-full justify-center"
+          >
+            {busy === "generate-all" ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Menghasilkan AI...</>
+            ) : (
+              <><Zap className="w-4 h-4" /> Generate Semua (Materi + Kuis + Soal)</>
+            )}
+          </button>
+        </div>
+      )}
+
+      {allApproved && isReady && (
+        <div className="mb-6 p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <span className="text-sm font-semibold text-emerald-800">Semua sudah disetujui!</span>
+          </div>
+          <button
+            onClick={() => act("/close-review", "close-review")}
+            disabled={busy === "close-review"}
+            className="inline-flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
+          >
+            {busy === "close-review" ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Menerbitkan...</>
+            ) : (
+              <><Rocket className="w-4 h-4" /> Terbitkan ke Siswa</>
+            )}
+          </button>
         </div>
       )}
 
