@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { cacheGet, cacheSet, cacheKey } from "@/lib/cache-layer";
+import { cacheGet, cacheSet, cacheDel, cacheKey } from "@/lib/cache-layer";
 import {
   kursus,
   siswaKursus,
@@ -17,7 +17,7 @@ import {
 import { and, eq, sql, desc, inArray } from "drizzle-orm";
 import { calculateRiskScore, getRiskLabel } from "@/lib/analytics/calculateRiskScore";
 
-export interface DashboardData {
+export interface DashboardSummary {
   totalKursus: number;
   totalSiswa: number;
   draftMenunggu: number;
@@ -26,9 +26,19 @@ export interface DashboardData {
   totalMateriPublished: number;
   totalQuizPublished: number;
   kursusList: { id: string; judul: string; slug: string; deskripsi: string | null; statusPublikasi: string }[];
-  weakTopics: { pertanyaan: string; errorRate: number; totalJawab: number }[];
   aiQuotaUsed: number;
   aiQuotaLimit: number;
+}
+
+export interface DashboardAnalytics {
+  weakTopics: { pertanyaan: string; errorRate: number; totalJawab: number }[];
+  siswaBerisiko: number;
+  siswaKritis: number;
+  computedAt: string;
+}
+
+export interface DashboardData extends DashboardSummary {
+  weakTopics: { pertanyaan: string; errorRate: number; totalJawab: number }[];
   siswaBerisiko: number;
   siswaKritis: number;
 }
@@ -38,12 +48,21 @@ export async function getCachedDashboard(guruId: string): Promise<DashboardData>
   const cached = await cacheGet<DashboardData>(k);
   if (cached) return cached;
 
-  const data = await computeDashboard(guruId);
-  await cacheSet(k, data, 120);
+  const summary = await computeSummary(guruId);
+
+  const analyticsK = cacheKey("analytics", "guru", guruId);
+  let analytics = await cacheGet<DashboardAnalytics>(analyticsK);
+  if (!analytics) {
+    analytics = await computeAnalytics(guruId);
+    await cacheSet(analyticsK, analytics, 900);
+  }
+
+  const data: DashboardData = { ...summary, ...analytics };
+  await cacheSet(k, data, 90);
   return data;
 }
 
-export async function computeDashboard(guruId: string): Promise<DashboardData> {
+export async function computeSummary(guruId: string): Promise<DashboardSummary> {
   const [kursusRows, draftRows, enrolledRows, quizPubRows, quizAttemptRows, materiPubRows, quotaRow] =
     await Promise.all([
       db
@@ -92,7 +111,28 @@ export async function computeDashboard(guruId: string): Promise<DashboardData> {
   const totalSiswa = enrolledRows.length;
   const siswaYangPunyaAttempt = quizAttemptRows.length;
 
+  return {
+    totalKursus: kursusRows.length,
+    totalSiswa,
+    draftMenunggu: draftRows.length,
+    totalKuisDikerjakan: quizAttemptRows.length,
+    siswaBelumMengerjakan: totalSiswa - siswaYangPunyaAttempt,
+    totalMateriPublished: materiPubRows.length,
+    totalQuizPublished: quizPubRows.length,
+    kursusList: kursusRows,
+    aiQuotaUsed: quotaRow?.[0]?.currentUsage ?? 0,
+    aiQuotaLimit: quotaRow?.[0]?.limitValue ?? 0,
+  };
+}
+
+export async function computeAnalytics(guruId: string): Promise<DashboardAnalytics> {
+  const kursusRows = await db
+    .select({ id: kursus.id })
+    .from(kursus)
+    .where(eq(kursus.guruId, guruId));
+
   const kursusIds = kursusRows.map((k) => k.id);
+
   let weakTopics: { pertanyaan: string; errorRate: number; totalJawab: number }[] = [];
   if (kursusIds.length > 0) {
     try {
@@ -134,6 +174,12 @@ export async function computeDashboard(guruId: string): Promise<DashboardData> {
   let siswaBerisiko = 0;
   let siswaKritis = 0;
   try {
+    const enrolledRows = await db
+      .selectDistinct({ siswaId: siswaKursus.siswaId })
+      .from(siswaKursus)
+      .innerJoin(kursus, eq(siswaKursus.kursusId, kursus.id))
+      .where(eq(kursus.guruId, guruId));
+
     const enrolledSiswaIds = enrolledRows.map((r) => r.siswaId);
     if (enrolledSiswaIds.length > 0) {
       const [quizStats, userRows] = await Promise.all([
@@ -176,22 +222,21 @@ export async function computeDashboard(guruId: string): Promise<DashboardData> {
     }
   } catch { /* best-effort */ }
 
-  const aiQuotaUsed = quotaRow?.[0]?.currentUsage ?? 0;
-  const aiQuotaLimit = quotaRow?.[0]?.limitValue ?? 0;
-
   return {
-    totalKursus: kursusRows.length,
-    totalSiswa,
-    draftMenunggu: draftRows.length,
-    totalKuisDikerjakan: quizAttemptRows.length,
-    siswaBelumMengerjakan: totalSiswa - siswaYangPunyaAttempt,
-    totalMateriPublished: materiPubRows.length,
-    totalQuizPublished: quizPubRows.length,
-    kursusList: kursusRows,
     weakTopics,
-    aiQuotaUsed,
-    aiQuotaLimit,
     siswaBerisiko,
     siswaKritis,
+    computedAt: new Date().toISOString(),
   };
+}
+
+export async function invalidateGuruCache(guruId: string): Promise<void> {
+  await cacheDel(cacheKey("dashboard", "guru", guruId));
+  await cacheDel(cacheKey("analytics", "guru", guruId));
+}
+
+export async function refreshGuruAnalytics(guruId: string): Promise<void> {
+  const analytics = await computeAnalytics(guruId);
+  await cacheSet(cacheKey("analytics", "guru", guruId), analytics, 900);
+  await cacheDel(cacheKey("dashboard", "guru", guruId));
 }

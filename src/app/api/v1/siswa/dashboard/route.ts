@@ -18,6 +18,11 @@ import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { withRetry } from "@/lib/retry";
 import { cacheGet, cacheSet, cacheKey } from "@/lib/cache-layer";
 
+interface StudentScope {
+  enrolledIds: string[];
+  kursusMap: Map<string, { id: string; judul: string; slug: string }>;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await requireSiswa(request);
@@ -33,11 +38,13 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    const scope = await loadStudentScope(session.userId);
+
     const results = await Promise.allSettled([
       fetchProfil(session.userId),
-      fetchFeed(session.userId, request),
-      fetchQuiz(session.userId),
-      fetchPengumuman(session.userId),
+      fetchFeed(scope),
+      fetchQuiz(scope, session.userId),
+      fetchPengumuman(scope),
     ]);
 
     const profil    = results[0].status === "fulfilled" ? results[0].value : null;
@@ -57,6 +64,30 @@ export async function GET(request: NextRequest) {
     console.error("Dashboard siswa error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }
+}
+
+async function loadStudentScope(userId: string): Promise<StudentScope> {
+  return withRetry(async () => {
+    const enrollments = await db
+      .select({ kursusId: siswaKursus.kursusId })
+      .from(siswaKursus)
+      .where(and(eq(siswaKursus.siswaId, userId), eq(siswaKursus.status, "AKTIF")));
+
+    const enrolledIds = enrollments.map((e) => e.kursusId);
+
+    const kursusMap = new Map<string, { id: string; judul: string; slug: string }>();
+    if (enrolledIds.length > 0) {
+      const kursusRows = await db
+        .select({ id: kursus.id, judul: kursus.judul, slug: kursus.slug })
+        .from(kursus)
+        .where(inArray(kursus.id, enrolledIds));
+      for (const k of kursusRows) {
+        kursusMap.set(k.id, k);
+      }
+    }
+
+    return { enrolledIds, kursusMap };
+  });
 }
 
 async function fetchProfil(userId: string) {
@@ -89,19 +120,9 @@ async function fetchProfil(userId: string) {
   });
 }
 
-async function fetchFeed(userId: string, request: NextRequest) {
+async function fetchFeed(scope: StudentScope) {
   return withRetry(async () => {
-    const limit = Math.min(parseInt(request.nextUrl.searchParams.get("limit") || "20", 10), 100);
-    const offset = Math.max(parseInt(request.nextUrl.searchParams.get("offset") || "0", 10), 0);
-
-    const myEnrollments = await db
-      .select({ kursusId: siswaKursus.kursusId })
-      .from(siswaKursus)
-      .where(and(eq(siswaKursus.siswaId, userId), eq(siswaKursus.status, "AKTIF")));
-
-    const enrolledIds = myEnrollments.map((e) => e.kursusId);
-
-    if (enrolledIds.length === 0) {
+    if (scope.enrolledIds.length === 0) {
       return {
         data: [],
         continueLearning: null,
@@ -111,11 +132,6 @@ async function fetchFeed(userId: string, request: NextRequest) {
         terdaftar: false,
       };
     }
-
-    const kursusList = await db
-      .select({ id: kursus.id, judul: kursus.judul, slug: kursus.slug })
-      .from(kursus)
-      .where(inArray(kursus.id, enrolledIds));
 
     const materiList = await db
       .select({
@@ -127,10 +143,9 @@ async function fetchFeed(userId: string, request: NextRequest) {
         publishedAt: materiPublished.publishedAt,
       })
       .from(materiPublished)
-      .where(inArray(materiPublished.kursusId, enrolledIds))
+      .where(inArray(materiPublished.kursusId, scope.enrolledIds))
       .orderBy(asc(materiPublished.kursusId), asc(materiPublished.urutan))
-      .limit(limit)
-      .offset(offset);
+      .limit(50);
 
     const readMap = new Map<string, { readAt: Date; progress: number; selesai: boolean }>();
     if (materiList.length > 0) {
@@ -144,7 +159,7 @@ async function fetchFeed(userId: string, request: NextRequest) {
         .from(materiRead)
         .where(
           and(
-            eq(materiRead.siswaId, userId),
+            eq(materiRead.siswaId, materiRead.siswaId),
             inArray(materiRead.materiPublishedId, materiList.map((m) => m.id)),
           ),
         );
@@ -155,7 +170,7 @@ async function fetchFeed(userId: string, request: NextRequest) {
 
     const enriched = materiList.map((m) => {
       const read = readMap.get(m.id);
-      const k = kursusList.find((x) => x.id === m.kursusId);
+      const k = scope.kursusMap.get(m.kursusId);
       return {
         ...m,
         kursusJudul: k?.judul || null,
@@ -179,29 +194,22 @@ async function fetchFeed(userId: string, request: NextRequest) {
     return {
       data: enriched,
       continueLearning,
-      totalKursus: kursusList.length,
+      totalKursus: scope.kursusMap.size,
       totalMateri: enriched.length,
       totalSelesai,
       terdaftar: true,
-      limit,
-      offset,
     };
   });
 }
 
-async function fetchQuiz(userId: string) {
+async function fetchQuiz(scope: StudentScope, userId: string) {
   return withRetry(async () => {
-    const enrollments = await db
-      .select({ kursusId: siswaKursus.kursusId })
-      .from(siswaKursus)
-      .where(and(eq(siswaKursus.siswaId, userId), eq(siswaKursus.status, "AKTIF")));
-    const enrolledIds = enrollments.map((e) => e.kursusId);
-    if (enrolledIds.length === 0) return { data: [], totalAttempt: 0 };
+    if (scope.enrolledIds.length === 0) return { data: [], totalAttempt: 0 };
 
     const quizList = await db
       .select()
       .from(quizPublished)
-      .where(inArray(quizPublished.kursusId, enrolledIds))
+      .where(inArray(quizPublished.kursusId, scope.enrolledIds))
       .orderBy(asc(quizPublished.publishedAt))
       .limit(100);
 
@@ -250,15 +258,9 @@ async function fetchQuiz(userId: string) {
   });
 }
 
-async function fetchPengumuman(userId: string) {
+async function fetchPengumuman(scope: StudentScope) {
   return withRetry(async () => {
-    const enrollments = await db
-      .select({ kursusId: siswaKursus.kursusId })
-      .from(siswaKursus)
-      .where(eq(siswaKursus.siswaId, userId));
-    const enrolledIds = enrollments.map((e) => e.kursusId);
-
-    if (enrolledIds.length === 0) return { data: [] };
+    if (scope.enrolledIds.length === 0) return { data: [] };
 
     const rows = await db
       .select({
@@ -274,7 +276,7 @@ async function fetchPengumuman(userId: string) {
       })
       .from(pengumuman)
       .leftJoin(users, eq(pengumuman.guruId, users.id))
-      .where(or(eq(pengumuman.target, "SEMUA"), inArray(pengumuman.kursusId, enrolledIds)))
+      .where(or(eq(pengumuman.target, "SEMUA"), inArray(pengumuman.kursusId, scope.enrolledIds)))
       .orderBy(desc(pengumuman.isPinned), desc(pengumuman.publishedAt))
       .limit(20);
 
