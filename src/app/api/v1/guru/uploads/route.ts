@@ -9,12 +9,13 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
-import { fileMateri, kursus, users } from "@/lib/db/schema";
+import { fileMateri, kursus, users, aiGeneration } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { extractText } from "@/lib/text-extractor";
 import { incrementUploadCount, getSubscriptionStatus } from "@/lib/token-service";
 import { MIN_TOPUP } from "@/lib/token-constants";
+import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -47,7 +48,14 @@ function detectExtension(buf: Buffer): string | null {
   return null;
 }
 
+function sha256(buf: Buffer): string {
+  return crypto.createHash("sha256").update(buf).digest("hex");
+}
+
 export async function POST(request: NextRequest) {
+  let imagekitFileId: string | null = null;
+  let imagekitLink: string | null = null;
+
   try {
     const csrfError = validateCsrf(request);
     if (csrfError) return csrfError;
@@ -99,6 +107,8 @@ export async function POST(request: NextRequest) {
       return apiError(`Ekstensi .${extFromName} tidak cocok dengan isi file (.${detected})`, 415);
     }
 
+    const fileHash = sha256(bytes);
+
     const [ownedKursus] = await db
       .select({ id: kursus.id })
       .from(kursus)
@@ -125,39 +135,41 @@ export async function POST(request: NextRequest) {
       folder,
     });
 
-    const [row] = await db
-      .insert(fileMateri)
-      .values({
-        namaFile: originalName,
-        tipeMime: file.type || `application/${detected}`,
-        ukuranBytes: file.size,
-        lokasi: "IMAGEKIT",
-        imagekitFileId: uploadResult.fileId,
-        linkAkses: uploadResult.link,
-        kursusId,
-        guruId: session.userId!,
-        status: "uploaded",
-        kategori: detectKategori(originalName, detected),
-      })
-      .returning({ id: fileMateri.id });
+    imagekitFileId = uploadResult.fileId;
+    imagekitLink = uploadResult.link;
 
-    const jobId = row.id;
+    const job = await db.transaction(async (tx) => {
+      const [fm] = await tx
+        .insert(fileMateri)
+        .values({
+          namaFile: originalName,
+          tipeMime: file.type || `application/${detected}`,
+          ukuranBytes: file.size,
+          lokasi: "IMAGEKIT",
+          imagekitFileId: uploadResult.fileId,
+          linkAkses: uploadResult.link,
+          kursusId,
+          guruId: session.userId!,
+          status: "uploaded",
+          kategori: detectKategori(originalName, detected),
+        })
+        .returning({ id: fileMateri.id });
+
+      const [gen] = await tx
+        .insert(aiGeneration)
+        .values({
+          fileMateriId: fm.id,
+          guruId: session.userId!,
+          kursusId,
+          sourceFileName: originalName,
+          status: "queued",
+        })
+        .returning({ id: aiGeneration.id });
+
+      return { fileId: fm.id, generationId: gen.id };
+    });
 
     incrementUploadCount(session.userId!).catch(() => {});
-
-    let extractionText = "";
-    try {
-      extractionText = await extractText(bytes, detected);
-    } catch (e) {
-      console.error("Extraction failed:", e);
-    }
-
-    if (extractionText) {
-      await db
-        .update(fileMateri)
-        .set({ extractionText, status: "extracted", updatedAt: new Date() })
-        .where(eq(fileMateri.id, row.id));
-    }
 
     const guru = await db.query.users.findFirst({
       where: eq(users.id, session.userId!),
@@ -165,55 +177,119 @@ export async function POST(request: NextRequest) {
     });
     const guruNama = guru?.nama ?? "Guru";
 
-    await appendEvent(
-      `upload:${session.userId}`,
-      "doc.uploaded",
-      {
-        jobId,
-        guruId: session.userId,
-        kursusId,
-        fileName: originalName,
-        sizeBytes: file.size,
-        mime: file.type || null,
-        ext: detected,
-        imagekitFileId: uploadResult.fileId,
-        link: uploadResult.link,
-        at: new Date().toISOString(),
-      },
-    );
+    appendEvent(`upload:${session.userId}`, "doc.uploaded", {
+      jobId: job.fileId,
+      generationId: job.generationId,
+      guruId: session.userId,
+      kursusId,
+      fileName: originalName,
+      sizeBytes: file.size,
+      mime: file.type || null,
+      ext: detected,
+      fileHash,
+      imagekitFileId: uploadResult.fileId,
+      link: uploadResult.link,
+      at: new Date().toISOString(),
+    }).catch(() => {});
 
-    await appendEvent(
-      "owner:notif",
-      "upload.masuk",
-      {
-        guruId: session.userId,
-        guruNama,
-        fileName: originalName,
-        fileId: row.id,
-        kursusId,
-        sizeBytes: file.size,
-        ext: detected,
-        link: uploadResult.link,
-        at: new Date().toISOString(),
-      },
-    );
+    appendEvent("owner:notif", "upload.masuk", {
+      guruId: session.userId,
+      guruNama,
+      fileName: originalName,
+      fileId: job.fileId,
+      generationId: job.generationId,
+      kursusId,
+      sizeBytes: file.size,
+      ext: detected,
+      link: uploadResult.link,
+      at: new Date().toISOString(),
+    }).catch(() => {});
+
+    queueExtraction(job.fileId, job.generationId, bytes, detected, session.userId!);
 
     return NextResponse.json({
       success: true,
-      jobId,
-      fileId: row.id,
+      fileId: job.fileId,
+      jobId: job.generationId,
       fileName: originalName,
-      sizeBytes: file.size,
-      ext: detected,
-      message: extractionText
-        ? "File berhasil diupload dan teks berhasil diekstrak. Buka halaman Draft AI untuk generate materi."
-        : "File berhasil diupload. Ekstraksi teks akan diproses sebelum generate.",
-    });
+      status: "queued",
+      message: "Dokumen diterima. Teks akan diekstrak secara otomatis. Buka halaman Draft AI untuk generate materi.",
+    }, { status: 202 });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
+
+    if (imagekitFileId && imagekitLink) {
+      try {
+        const adapter = await getStorageAdapter("cleanup");
+        await adapter.delete(imagekitFileId);
+      } catch (cleanupErr) {
+        console.error("Gagal menghapus file orphan di ImageKit:", cleanupErr);
+      }
+    }
+
     console.error("Upload error:", e);
     const msg = e instanceof Error ? e.message : "Terjadi kesalahan server";
     return apiError(msg, 500);
   }
+}
+
+function queueExtraction(
+  fileId: string,
+  generationId: string,
+  bytes: Buffer,
+  ext: string,
+  guruId: string,
+): void {
+  Promise.resolve().then(async () => {
+    try {
+      await db
+        .update(aiGeneration)
+        .set({ status: "extracting", updatedAt: new Date() })
+        .where(eq(aiGeneration.id, generationId));
+
+      await db
+        .update(fileMateri)
+        .set({ status: "extracting", updatedAt: new Date() })
+        .where(eq(fileMateri.id, fileId));
+
+      const text = await extractText(bytes, ext);
+
+      if (text && text.length >= 50) {
+        await db
+          .update(fileMateri)
+          .set({ extractionText: text, status: "extracted", updatedAt: new Date() })
+          .where(eq(fileMateri.id, fileId));
+
+        await db
+          .update(aiGeneration)
+          .set({ status: "extracted", updatedAt: new Date() })
+          .where(eq(aiGeneration.id, generationId));
+
+        await appendEvent(`gen:${guruId}`, "gen.extracted", { generationId, textLength: text.length });
+      } else {
+        await db
+          .update(fileMateri)
+          .set({ status: "failed", updatedAt: new Date() })
+          .where(eq(fileMateri.id, fileId));
+
+        await db
+          .update(aiGeneration)
+          .set({ status: "failed", errorMessage: "Teks hasil ekstraksi terlalu pendek", updatedAt: new Date() })
+          .where(eq(aiGeneration.id, generationId));
+      }
+    } catch (err) {
+      console.error("Background extraction failed:", err);
+      await db
+        .update(fileMateri)
+        .set({ status: "failed", updatedAt: new Date() })
+        .where(eq(fileMateri.id, fileId));
+
+      await db
+        .update(aiGeneration)
+        .set({ status: "failed", errorMessage: "Ekstraksi gagal: " + (err instanceof Error ? err.message.slice(0, 200) : "unknown"), updatedAt: new Date() })
+        .where(eq(aiGeneration.id, generationId));
+    }
+  });
 }
 
 export async function GET(request: NextRequest) {
@@ -223,6 +299,9 @@ export async function GET(request: NextRequest) {
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`upload-list:${ip}`, 30, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
+
+    const url = new URL(request.url);
+    const limit = Math.min(50, Math.max(5, parseInt(url.searchParams.get("limit") || "20", 10)));
 
     const data = await db
       .select({
@@ -242,7 +321,8 @@ export async function GET(request: NextRequest) {
       })
       .from(fileMateri)
       .where(eq(fileMateri.guruId, session.userId!))
-      .orderBy(fileMateri.createdAt);
+      .orderBy(fileMateri.createdAt)
+      .limit(limit);
 
     const sanitized = data.map((f) => ({
       ...f,

@@ -481,7 +481,7 @@ export async function requireUnlocked(userId: string): Promise<void> {
   const unlocked = await isUserUnlocked(userId);
   if (!unlocked) {
     throw new SubscriptionLockedError(
-      "Fitur generate AI terkunci. Silakan top-up minimal Rp10.000 untuk membuka akses unlimited.",
+      "Fitur generate AI terkunci. Silakan top-up minimal Rp5.000 untuk membuka akses unlimited.",
     );
   }
 }
