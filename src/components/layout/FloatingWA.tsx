@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { WA_NUMBER } from "@/lib/constants";
 
-const WA_NUMBER_FALLBACK = process.env.NEXT_PUBLIC_WA_NUMBER || "";
+const WA_NUMBER_FALLBACK = process.env.NEXT_PUBLIC_WA_NUMBER || WA_NUMBER;
 
 const DASHBOARD_PREFIXES = ["/guru", "/siswa", "/owner", "/admin-sekolah", "/orang-tua"];
 
