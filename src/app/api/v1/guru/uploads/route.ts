@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import {
   checkRateLimit,
@@ -205,7 +205,9 @@ export async function POST(request: NextRequest) {
       at: new Date().toISOString(),
     }).catch(() => {});
 
-    queueExtraction(job.fileId, job.generationId, uploadResult.link, detected, session.userId!);
+    after(() => {
+      queueExtraction(job.fileId, job.generationId, uploadResult.link, detected, session.userId!);
+    });
 
     return NextResponse.json({
       success: true,

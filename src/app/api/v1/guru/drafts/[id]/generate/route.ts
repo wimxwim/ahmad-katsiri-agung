@@ -226,22 +226,6 @@ export async function POST(
       quizCount,
     });
 
-    try {
-      await deductGenerateCost(session.userId!, id);
-    } catch (e) {
-      releaseConcurrent(concKey);
-      if (e instanceof InsufficientBalanceError) {
-        return NextResponse.json({
-          success: false,
-          error: "Saldo token tidak cukup.",
-          errorCode: "INSUFFICIENT_BALANCE",
-          balance: e.currentBalance,
-          required: e.required,
-        }, { status: 402 });
-      }
-      throw e;
-    }
-
     const [claimed] = await db
       .update(aiGeneration)
       .set({ status: "generating", updatedAt: new Date() })
@@ -256,12 +240,32 @@ export async function POST(
 
     if (!claimed) {
       releaseConcurrent(concKey);
-      await refundBalance(session.userId!, getGenerateCost(), { notes: "Generate sudah berjalan di request lain", referenceId: `refund:${id}` });
       return NextResponse.json({
         success: false,
         error: "Generate sudah dimulai di request lain.",
         errorCode: "ALREADY_GENERATING",
       }, { status: 409 });
+    }
+
+    try {
+      await deductGenerateCost(session.userId!, id);
+    } catch (e) {
+      releaseConcurrent(concKey);
+      await db
+        .update(aiGeneration)
+        .set({ status: "extracted", updatedAt: new Date() })
+        .where(eq(aiGeneration.id, id))
+        .catch(() => {});
+      if (e instanceof InsufficientBalanceError) {
+        return NextResponse.json({
+          success: false,
+          error: "Saldo token tidak cukup.",
+          errorCode: "INSUFFICIENT_BALANCE",
+          balance: e.currentBalance,
+          required: e.required,
+        }, { status: 402 });
+      }
+      throw e;
     }
 
     const guruId = session.userId!;

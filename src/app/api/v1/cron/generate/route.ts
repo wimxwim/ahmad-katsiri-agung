@@ -31,18 +31,26 @@ export async function POST(request: NextRequest) {
     return apiError("Unauthorized", 401);
   }
 
+  const LEASE_MINUTES = 5;
+
   const claimed = await db.execute<{ id: string; file_materi_id: string; guru_id: string }>(sql`
     WITH claimed AS (
       SELECT id, file_materi_id, guru_id
       FROM ai_generation
-      WHERE status = 'queued'
+      WHERE (
+        status = 'queued'
+        OR (status = 'generating' AND lease_until IS NOT NULL AND lease_until < NOW())
+      )
         AND materi_status = 'not_generated'
       ORDER BY created_at
       LIMIT ${BATCH_SIZE}
       FOR UPDATE SKIP LOCKED
     )
     UPDATE ai_generation
-    SET status = 'extracting', updated_at = NOW()
+    SET status = 'extracting',
+        updated_at = NOW(),
+        lease_until = NOW() + INTERVAL '${LEASE_MINUTES} minutes',
+        attempt_count = attempt_count + 1
     FROM claimed
     WHERE ai_generation.id = claimed.id
     RETURNING ai_generation.id, ai_generation.file_materi_id, ai_generation.guru_id
@@ -104,7 +112,7 @@ export async function POST(request: NextRequest) {
             console.error(`[cron] extraction failed for ${job.id}:`, errMsg);
             await db
               .update(aiGeneration)
-              .set({ status: "failed", errorMessage: `Ekstraksi gagal: ${errMsg.slice(0, 200)}`, updatedAt: new Date() })
+              .set({ status: "failed", errorMessage: `Ekstraksi gagal: ${errMsg.slice(0, 200)}`, leaseUntil: null, updatedAt: new Date() })
               .where(eq(aiGeneration.id, job.id));
             results.push({ id: job.id, status: "failed", error: "Ekstraksi gagal" });
             continue;
@@ -114,7 +122,7 @@ export async function POST(request: NextRequest) {
         if (!sourceText || sourceText.length < 50) {
           await db
             .update(aiGeneration)
-            .set({ status: "failed", errorMessage: "Teks terlalu pendek", updatedAt: new Date() })
+            .set({ status: "failed", errorMessage: "Teks terlalu pendek", leaseUntil: null, updatedAt: new Date() })
             .where(eq(aiGeneration.id, job.id));
           results.push({ id: job.id, status: "failed", error: "Teks terlalu pendek" });
           continue;
@@ -123,7 +131,7 @@ export async function POST(request: NextRequest) {
 
       await db
         .update(aiGeneration)
-        .set({ status: "generating", updatedAt: new Date() })
+        .set({ status: "generating", leaseUntil: new Date(Date.now() + LEASE_MINUTES * 60_000), updatedAt: new Date() })
         .where(eq(aiGeneration.id, job.id));
 
       await runGenerationFromText(job.id, sourceText, job.guru_id);
@@ -147,6 +155,7 @@ export async function POST(request: NextRequest) {
           .set({
             status: "queued",
             errorMessage: `[CRON] ${msg.slice(0, 300)}`,
+            leaseUntil: null,
             updatedAt: new Date(),
           })
           .where(eq(aiGeneration.id, job.id));
@@ -158,6 +167,7 @@ export async function POST(request: NextRequest) {
           .set({
             status: "failed",
             errorMessage: msg.slice(0, 500),
+            leaseUntil: null,
             updatedAt: new Date(),
           })
           .where(eq(aiGeneration.id, job.id));

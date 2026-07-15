@@ -48,26 +48,50 @@ describe("ai-sanitizer", () => {
 
   describe("parseMateriSafe", () => {
     it("memparse JSON valid", () => {
-      const input = JSON.stringify({ judul: "Bab 1 Akidah", konten: "Isi materi tentang akidah Islam yang cukup panjang" });
+      const input = JSON.stringify({
+        judul: "Bab 1 Akidah",
+        ringkasan: "Ringkasan singkat tentang materi akidah Islam",
+        pendahuluan: "Pendahuluan materi akidah Islam untuk siswa SMP",
+        konten: [{ judul: "Bagian 1", isi: "Isi materi tentang akidah Islam yang cukup panjang" }],
+        poinPenting: ["Poin penting pertama"],
+      });
       const result = parseMateriSafe(input);
       expect(result).not.toBeNull();
       expect(result!.judul).toBe("Bab 1 Akidah");
     });
 
     it("menolak judul terlalu pendek", () => {
-      const input = JSON.stringify({ judul: "AB", konten: "Isi materi tentang akidah Islam yang cukup panjang" });
+      const input = JSON.stringify({
+        judul: "AB",
+        ringkasan: "Ringkasan singkat tentang materi akidah Islam",
+        pendahuluan: "Pendahuluan materi akidah Islam untuk siswa SMP",
+        konten: [{ judul: "Bagian 1", isi: "Isi materi tentang akidah Islam yang cukup panjang" }],
+        poinPenting: ["Poin penting pertama"],
+      });
       const result = parseMateriSafe(input);
       expect(result).toBeNull();
     });
 
     it("menolak konten terlalu pendek", () => {
-      const input = JSON.stringify({ judul: "Bab 1", konten: "pendek" });
+      const input = JSON.stringify({
+        judul: "Bab 1",
+        ringkasan: "Ringkasan singkat",
+        pendahuluan: "Pendahuluan yang terlalu pendek",
+        konten: [{ judul: "A", isi: "pendek" }],
+        poinPenting: ["Poin"],
+      });
       const result = parseMateriSafe(input);
       expect(result).toBeNull();
     });
 
     it("mengekstrak JSON dari markdown fence", () => {
-      const input = '```json\n{"judul": "Bab 1 Akidah", "konten": "Isi materi tentang akidah Islam yang cukup panjang"}\n```';
+      const input = '```json\n' + JSON.stringify({
+        judul: "Bab 1 Akidah",
+        ringkasan: "Ringkasan singkat tentang materi akidah Islam",
+        pendahuluan: "Pendahuluan materi akidah Islam untuk siswa SMP",
+        konten: [{ judul: "Bagian 1", isi: "Isi materi tentang akidah Islam yang cukup panjang" }],
+        poinPenting: ["Poin penting pertama"],
+      }) + '\n```';
       const result = parseMateriSafe(input);
       expect(result).not.toBeNull();
       expect(result!.judul).toBe("Bab 1 Akidah");
