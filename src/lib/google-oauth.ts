@@ -60,7 +60,21 @@ export interface GoogleProfile {
 
 export async function exchangeCodeAndGetProfile(code: string): Promise<GoogleProfile> {
   const client = getOAuthClient();
-  const { tokens } = await client.getToken(code);
+  const redirectUri = buildRedirectUri();
+  let tokens;
+  try {
+    const result = await client.getToken({ code, redirect_uri: redirectUri });
+    tokens = result.tokens;
+  } catch (e: unknown) {
+    const err = e as Error & { response?: { data?: unknown } };
+    console.error("[exchangeCodeAndGetProfile] getToken failed:", {
+      message: err.message,
+      redirectUri,
+      hasResponse: !!err.response,
+      responseData: err.response?.data,
+    });
+    throw e;
+  }
   if (!tokens.id_token) {
     throw new Error("Google tidak mengembalikan id_token");
   }
