@@ -50,7 +50,7 @@ export function SiswaLayoutClient({ children }: { children: React.ReactNode }) {
   const { show, close } = useOnboardingSiswa();
 
   useTabFocus(() => {
-    invalidateCache("beranda:");
+    invalidateCache("beranda:dashboard");
     invalidateCache("materi:");
     invalidateCache("quiz:");
   });

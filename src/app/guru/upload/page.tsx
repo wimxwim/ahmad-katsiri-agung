@@ -38,6 +38,7 @@ export default function GuruUploadPage() {
   const [dragOver, setDragOver] = useState(false);
   const [job, setJob] = useState<JobProgress>({ state: "idle", progress: 0, message: "" });
   const [error, setError] = useState("");
+  const [kursusError, setKursusError] = useState("");
   const [history, setHistory] = useState<FileHistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [historyError, setHistoryError] = useState("");
@@ -68,7 +69,10 @@ export default function GuruUploadPage() {
         setKursus(j.data || []);
         if (j.data?.[0]) setSelectedKursus((prev) => prev || j.data[0].id);
       })
-      .catch((error) => { console.error("[guru/upload] fetch kursus failed:", error); });
+      .catch((error) => {
+        console.error("[guru/upload] fetch kursus failed:", error);
+        setKursusError("Gagal memuat daftar kursus");
+      });
     loadHistory();
   }, []);
 
@@ -151,6 +155,7 @@ export default function GuruUploadPage() {
       }
 
       setJob({ state: "extracting", progress: 70, message: "Mengekstrak teks..." });
+      await new Promise((r) => setTimeout(r, 50));
       setJob({ state: "ready", progress: 100, message: "Upload selesai!" });
       setSuccessFileName(file.name);
       toast("success", "File berhasil diupload! Teks berhasil diekstrak. Buka halaman Draft AI untuk generate materi, kuis, dan soal.");
@@ -181,7 +186,9 @@ export default function GuruUploadPage() {
       <div className="mb-4 grid gap-3 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-semibold text-on-surface mb-1.5">Kursus</label>
-          {kursus.length === 0 ? (
+          {kursusError ? (
+            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">{kursusError}</div>
+          ) : kursus.length === 0 ? (
             <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-800">
               Belum ada kursus.{" "}
               <Link href="/guru/buat" className="font-semibold underline">

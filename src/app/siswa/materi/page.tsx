@@ -100,7 +100,9 @@ function MateriContent() {
           setKursusList(j.kursusList);
         }
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error("[materi] fetch kursus list failed:", error);
+      });
   }, []);
 
   const handleFilterClick = useCallback(

@@ -62,10 +62,7 @@ const SECURITY_HEADERS = {
 };
 
 // ── Path configuration ──
-const BLOCKED_PATHS = [
-  '/keystatic',
-  '/api/keystatic',
-];
+const BLOCKED_PATHS: string[] = [];
 
 const STATIC_ASSET_EXTS = /\.(ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot)$/i;
 

@@ -76,12 +76,6 @@ export async function POST(
       return apiError("Lokasi file tidak didukung untuk regenerate", 400);
     }
 
-    await db
-      .update(aiGeneration)
-      .set({ status: "queued", errorMessage: null, updatedAt: new Date() })
-      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)));
-    await appendEvent(`gen:${session.userId}`, "gen.regenerate_queued", { generationId: id });
-
     const ext = (file.tipeMime.includes("pdf") ? "pdf" : file.tipeMime.includes("word") ? "docx" : "doc");
 
     const concRl = await checkConcurrentLimit(`gen:${session.userId}`, 2);
@@ -115,6 +109,12 @@ export async function POST(
     }
 
     await deductGenerateCost(session.userId!);
+
+    await db
+      .update(aiGeneration)
+      .set({ status: "queued", errorMessage: null, updatedAt: new Date() })
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)));
+    await appendEvent(`gen:${session.userId}`, "gen.queued", { generationId: id });
 
     runGeneration(id, bytes, ext)
       .catch((e) => {

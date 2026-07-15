@@ -12,6 +12,7 @@ import {
   pgEnum,
   index,
   unique,
+  uniqueIndex,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
@@ -559,6 +560,7 @@ export const kelas = pgTable(
   (table) => [
     index("kelas_guru_id_idx").on(table.guruId),
     index("kelas_sekolah_id_idx").on(table.sekolahId),
+    unique("kelas_nama_guru_unique").on(table.nama, table.guruId),
   ],
 );
 
@@ -998,6 +1000,7 @@ export const quizAttempt = pgTable(
     quizIdx: index("quiz_attempt_quiz_idx").on(t.quizPublishedId),
     statusIdx: index("quiz_attempt_status_idx").on(t.status),
     nilaiIdx: index("quiz_attempt_nilai_idx").on(t.nilai),
+    uniqueDone: uniqueIndex("quiz_attempt_siswa_quiz_done_unique").on(t.siswaId, t.quizPublishedId, t.status),
   }),
 );
 

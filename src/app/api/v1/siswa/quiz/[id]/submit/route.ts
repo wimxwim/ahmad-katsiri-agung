@@ -5,6 +5,7 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { quizAttempt, quizPublished, soalPublished, siswaKursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
+import { cacheGet, cacheDel } from "@/lib/cache-layer";
 import { appendEvent } from "@/lib/event-store";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -72,9 +73,20 @@ export async function POST(
     }
 
     const maxDuration = quiz.durasiMenit * 60 + 60;
+    const startKey = `quiz:start:${session.userId}:${id}`;
+    const serverStartAt = await cacheGet<number>(startKey);
+    if (serverStartAt) {
+      const elapsed = Math.floor((Date.now() - serverStartAt) / 1000);
+      if (elapsed > maxDuration) {
+        await cacheDel(startKey);
+        return apiError("Waktu pengerjaan sudah habis", 400);
+      }
+    }
     if (parsed.data.durasiDetik > maxDuration) {
       return apiError("Waktu pengerjaan melebihi batas evaluasi", 400);
     }
+
+    await cacheDel(startKey);
 
     const soals = await db
       .select()
@@ -95,7 +107,7 @@ export async function POST(
       const correctAnswer = s.kunci;
       let isCorrect = false;
       if (s.tipe === "PG") {
-        isCorrect = typeof userAnswer === "string" && userAnswer === correctAnswer;
+        isCorrect = typeof userAnswer === "string" && userAnswer.toUpperCase() === correctAnswer.toUpperCase();
       } else if (s.tipe === "ISIAN") {
         const u = typeof userAnswer === "string" ? userAnswer.trim().toLowerCase() : "";
         const c = correctAnswer.trim().toLowerCase();
@@ -129,12 +141,14 @@ export async function POST(
       jawabanBenar[s.id] = s.kunci;
     }
 
+    const attemptStatus = quiz.modeEvaluasi === "BELAJAR" ? "BELAJAR" : "SELESAI";
+
     const [attempt] = await db
       .insert(quizAttempt)
       .values({
         quizPublishedId: id,
         siswaId: session.userId!,
-        status: "SELESAI",
+        status: attemptStatus,
         nilai,
         jumlahBenar,
         jumlahSalah,

@@ -10,12 +10,6 @@
       "schedule": "0 0 * * *"
     }
   ],
-  "rewrites": [
-    {
-      "source": "/session",
-      "destination": "/api/keystatic/session"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",

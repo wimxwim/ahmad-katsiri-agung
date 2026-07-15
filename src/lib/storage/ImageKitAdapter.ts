@@ -62,6 +62,7 @@ export class ImageKitAdapter implements IStorageAdapter {
     const res = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
       method: "POST",
       body: form,
+      signal: AbortSignal.timeout(30_000),
     });
 
     if (!res.ok) {
@@ -87,6 +88,7 @@ export class ImageKitAdapter implements IStorageAdapter {
       headers: {
         Authorization: `Basic ${Buffer.from(`${this.privateKey}:`).toString("base64")}`,
       },
+      signal: AbortSignal.timeout(15_000),
     });
     if (!res.ok && res.status !== 404) {
       const text = await res.text().catch(() => "");

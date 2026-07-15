@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
           attempts.reduce((sum, a) => sum + (a.nilai ?? 0), 0) / attempts.length,
         )
       : 0;
-    const totalSelesai = attempts.filter((a) => a.status === "SELESAI").length;
+    const totalSelesai = attempts.filter((a) => a.status === "SELESAI" || a.status === "BELAJAR").length;
 
     return NextResponse.json({
       data: {

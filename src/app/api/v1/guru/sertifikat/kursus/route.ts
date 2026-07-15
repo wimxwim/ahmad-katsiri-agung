@@ -4,7 +4,7 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { kursus, sertifikat, siswaKursus, quizAttempt } from "@/lib/db/schema";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, sql, or } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       .from(kursus)
       .leftJoin(sertifikat, eq(sertifikat.kursusId, kursus.id))
       .leftJoin(siswaKursus, eq(siswaKursus.kursusId, kursus.id))
-      .leftJoin(quizAttempt, and(eq(quizAttempt.siswaId, siswaKursus.siswaId), eq(quizAttempt.status, "SELESAI")))
+      .leftJoin(quizAttempt, and(eq(quizAttempt.siswaId, siswaKursus.siswaId), or(eq(quizAttempt.status, "SELESAI"), eq(quizAttempt.status, "BELAJAR"))))
       .where(eq(kursus.guruId, session.userId))
       .groupBy(kursus.id)
       .orderBy(sql`count(distinct ${sertifikat.id}) DESC`);

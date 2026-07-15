@@ -56,6 +56,8 @@ export async function POST(
     if (gen.guruId !== session.userId) return apiError("Akses ditolak", 403);
     if (gen.status === "ready") return NextResponse.json({ success: true, message: "Draft sudah siap", generationId: id });
     if (gen.status === "generating") return NextResponse.json({ success: true, message: "AI sedang generating", generationId: id });
+    if (gen.status === "approved") return apiError("Draft sudah dipublish. Tidak bisa di-generate ulang.", 409);
+    if (gen.status === "rejected") return apiError("Draft sudah ditolak. Silakan upload ulang.", 409);
 
     const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
     const [recentGen] = await db

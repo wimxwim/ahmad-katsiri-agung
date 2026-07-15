@@ -26,27 +26,40 @@ export async function POST(request: NextRequest) {
 
     const { paymentId, action } = PaymentVerifySchema.parse(await request.json());
 
-    const [payment] = await db.select().from(payments).where(eq(payments.id, paymentId)).limit(1);
-    if (!payment) return apiError("Pembayaran tidak ditemukan", 404);
-    if (payment.status !== "pending") return apiError("Pembayaran sudah diverifikasi sebelumnya", 409);
-
     const newStatus = action === "confirm" ? "confirmed" : "rejected";
 
-    await db
-      .update(payments)
-      .set({
-        status: newStatus,
-        verifiedBy: session.userId,
-        verifiedAt: new Date(),
-      })
-      .where(eq(payments.id, paymentId));
+    const result = await db.transaction(async (dbtx) => {
+      const [payment] = await dbtx
+        .select()
+        .from(payments)
+        .where(eq(payments.id, paymentId))
+        .for("update")
+        .limit(1);
+      if (!payment) throw new Error("Pembayaran tidak ditemukan");
+      if (payment.status !== "pending") return { alreadyProcessed: true } as const;
 
-    if (action === "confirm") {
-      await topUpBalance(payment.userId, payment.amount, {
-        paymentMethod: payment.paymentType,
-        proofLink: payment.proofImageUrl ?? undefined,
-        proofFileId: paymentId,
-      });
+      await dbtx
+        .update(payments)
+        .set({
+          status: newStatus,
+          verifiedBy: session.userId,
+          verifiedAt: new Date(),
+        })
+        .where(eq(payments.id, paymentId));
+
+      if (action === "confirm") {
+        await topUpBalance(payment.userId, payment.amount, {
+          paymentMethod: payment.paymentType,
+          proofLink: payment.proofImageUrl ?? undefined,
+          proofFileId: paymentId,
+        });
+      }
+
+      return { alreadyProcessed: false } as const;
+    });
+
+    if (result.alreadyProcessed) {
+      return apiError("Pembayaran sudah diverifikasi sebelumnya", 409);
     }
 
     return NextResponse.json({ success: true, status: newStatus });

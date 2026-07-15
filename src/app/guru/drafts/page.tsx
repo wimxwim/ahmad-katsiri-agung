@@ -53,7 +53,11 @@ export default function GuruDraftsPage() {
         const j = await res.json().catch(() => ({}));
         if (res.status === 402 && j?.locked) {
           setGenerateError("Fitur generate AI terkunci. Silakan top-up minimal Rp10.000 untuk membuka akses.");
-          setTimeout(() => window.location.href = "/guru/topup", 2000);
+          const timer = setTimeout(() => window.location.href = "/guru/topup", 2000);
+          if (typeof window !== "undefined") {
+            const cleanup = () => { clearTimeout(timer); window.removeEventListener("beforeunload", cleanup); };
+            window.addEventListener("beforeunload", cleanup);
+          }
         } else {
           setGenerateError(j?.error?.message || j?.error || "Gagal memulai generate");
         }

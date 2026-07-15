@@ -15,7 +15,7 @@ import {
   teacherReadinessSnapshot,
   aiRequests,
 } from "@/lib/db/schema";
-import { and, eq, sql, gte, inArray } from "drizzle-orm";
+import { and, eq, sql, gte, inArray, or } from "drizzle-orm";
 import { calculateTRI, getTRILabel } from "@/lib/analytics/calculateTRI";
 
 export async function GET(request: NextRequest) {
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       .where(inArray(kursus.guruId, guruIds)).groupBy(kursus.guruId),
     db.select({ guruId: kursus.guruId, attemptCnt: sql<number>`cast(count(${quizAttempt.id}) as integer)` })
       .from(kursus).leftJoin(quizPublished, eq(kursus.id, quizPublished.kursusId))
-      .leftJoin(quizAttempt, and(eq(quizPublished.id, quizAttempt.quizPublishedId), eq(quizAttempt.status, "SELESAI")))
+      .leftJoin(quizAttempt, and(eq(quizPublished.id, quizAttempt.quizPublishedId), or(eq(quizAttempt.status, "SELESAI"), eq(quizAttempt.status, "BELAJAR"))))
       .where(inArray(kursus.guruId, guruIds)).groupBy(kursus.guruId),
     db.select({ guruId: sql<string>`split_part(${eventStore.streamId}, ':', 2)`,
       weekCount: sql<number>`cast(count(distinct date_trunc('week', ${eventStore.createdAt})) as integer)` })

@@ -62,6 +62,13 @@ interface PengumumanItem {
   publishedAt: string;
 }
 
+interface DashboardData {
+  profil: { nama: string } | null;
+  feed: FeedResponse;
+  quiz: { data: QuizItem[]; totalAttempt: number };
+  pengumuman: { data: PengumumanItem[] };
+}
+
 const CACHE_TTL = 60_000;
 
 export default function SiswaBerandaPage() {
@@ -73,57 +80,32 @@ export default function SiswaBerandaPage() {
   const [nama, setNama] = useState("Siswa");
 
   const fetchData = useCallback(async () => {
-    const cachedFeed = getCached<FeedResponse>("beranda:feed");
-    const cachedPengumuman = getCached<PengumumanItem[]>("beranda:pengumuman");
-    const cachedQuiz = getCached<QuizItem[]>("beranda:quiz");
-    const cachedNama = getCached<string>("beranda:nama");
-
-    if (cachedFeed && cachedPengumuman && cachedQuiz) {
-      setFeed(cachedFeed);
-      setPengumuman(cachedPengumuman);
-      setQuizList(cachedQuiz);
-      if (cachedNama) setNama(cachedNama);
+    const cached = getCached<DashboardData>("beranda:dashboard");
+    if (cached) {
+      setFeed(cached.feed);
+      setPengumuman(cached.pengumuman?.data ?? []);
+      setQuizList(cached.quiz?.data ?? []);
+      if (cached.profil?.nama) setNama(cached.profil.nama);
       setLoading(false);
       return;
     }
 
     try {
-      const results = await Promise.allSettled([
-        fetch("/api/v1/account/me", { credentials: "include" }).then((r) =>
-          r.ok ? r.json() : null
-        ),
-        fetch("/api/v1/siswa/feed", { credentials: "include" }).then((r) =>
-          r.ok ? r.json() : null
-        ),
-        fetch("/api/v1/siswa/pengumuman", { credentials: "include" }).then((r) =>
-          r.ok ? r.json() : null
-        ),
-        fetch("/api/v1/siswa/quiz", { credentials: "include" }).then((r) =>
-          r.ok ? r.json() : null
-        ),
-      ]);
-
-      const [meResult, feedResult, pengumResult, quizResult] = results;
-      if (meResult.status === "fulfilled" && meResult.value?.data?.nama) {
-        setNama(meResult.value.data.nama);
-        setCache("beranda:nama", meResult.value.data.nama, CACHE_TTL);
-      }
-      if (feedResult.status === "fulfilled" && feedResult.value) {
-        setFeed(feedResult.value);
-        setCache("beranda:feed", feedResult.value, CACHE_TTL);
-      }
-      if (pengumResult.status === "fulfilled" && pengumResult.value?.data) {
-        setPengumuman(pengumResult.value.data);
-        setCache("beranda:pengumuman", pengumResult.value.data, CACHE_TTL);
-      }
-      if (quizResult.status === "fulfilled" && quizResult.value?.data) {
-        setQuizList(quizResult.value.data);
-        setCache("beranda:quiz", quizResult.value.data, CACHE_TTL);
-      }
-      const allFailed = results.every((r) => r.status === "rejected");
-      if (allFailed) {
+      const res = await fetch("/api/v1/siswa/dashboard", { credentials: "include" });
+      if (!res.ok) {
         setError("Terjadi kesalahan saat memuat data. Coba lagi.");
+        setLoading(false);
+        return;
       }
+      const json = await res.json();
+      const d = json.data as DashboardData;
+
+      setCache("beranda:dashboard", d, CACHE_TTL);
+
+      if (d.profil?.nama) setNama(d.profil.nama);
+      if (d.feed) setFeed(d.feed);
+      if (d.pengumuman?.data) setPengumuman(d.pengumuman.data);
+      if (d.quiz?.data) setQuizList(d.quiz.data);
     } catch {
       setError("Terjadi kesalahan saat memuat data. Coba lagi.");
     } finally {

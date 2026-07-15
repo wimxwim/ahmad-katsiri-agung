@@ -4,8 +4,6 @@ import { SESSION_COOKIE_NAME } from "@/lib/session";
 const PUBLIC_PREFIXES = [
   "/masuk",
   "/daftar",
-  "/keystatic",
-  "/session",
   "/api/v1/auth",
   "/api/health",
   "/api/readyz",
@@ -20,7 +18,6 @@ const PUBLIC_PATHS = new Set([
   "/tentang",
   "/kursus",
   "/quran",
-  "/game",
   "/pembayaran",
   "/kebijakan-privasi",
   "/syarat-layanan",
@@ -34,28 +31,19 @@ const PUBLIC_PATHS = new Set([
   "/sitemap.xml",
 ]);
 
-const GURU_PREFIXES = ["/guru", "/pendidik"];
-const SISWA_PREFIXES = ["/siswa"];
-const OWNER_PREFIXES = ["/owner"];
-const ADMIN_SEKOLAH_PREFIXES = ["/admin-sekolah"];
-const ORANG_TUA_PREFIXES = ["/orang-tua"];
-
 const ROLE_ROUTE_MAP: Record<string, string[]> = {
-  guru: GURU_PREFIXES,
-  murid: SISWA_PREFIXES,
-  owner: OWNER_PREFIXES,
-  admin_sekolah: ADMIN_SEKOLAH_PREFIXES,
-  orang_tua: ORANG_TUA_PREFIXES,
+  guru: ["/guru", "/pendidik"],
+  murid: ["/siswa"],
+  owner: ["/owner"],
+  admin_sekolah: ["/admin-sekolah"],
+  orang_tua: ["/orang-tua"],
 };
 
-export async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const requestHeaders = new Headers(request.headers);
-
-  const response = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
 
   const existingCsrf = request.cookies.get("__Host-psrf")?.value;
   const csrfToken = existingCsrf || crypto.randomUUID();
@@ -67,20 +55,14 @@ export async function proxy(request: NextRequest) {
     maxAge: 86400,
   });
 
-  response.headers.set(
-    "Strict-Transport-Security",
-    "max-age=31536000; includeSubDomains; preload"
-  );
+  response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
-  response.headers.set(
-    "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=()"
-  );
+  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
 
   const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
-  const CSRF_EXEMPT = ["/api/v1/auth", "/api/v1/payment/webhook", "/api/health", "/api/readyz", "/api/csp-report", "/api/keystatic"];
+  const CSRF_EXEMPT = ["/api/v1/auth", "/api/v1/payment/webhook", "/api/health", "/api/readyz", "/api/csp-report"];
   if (!SAFE_METHODS.has(request.method) && !CSRF_EXEMPT.some((p) => pathname.startsWith(p))) {
     const csrfCookie = request.cookies.get("__Host-psrf")?.value;
     const csrfHeader = request.headers.get("x-csrf-token");

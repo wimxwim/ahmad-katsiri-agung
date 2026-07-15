@@ -72,7 +72,7 @@ export async function GET(
           .orderBy(desc(quizAttempt.waktuMulai))
       : [];
 
-    const completedAttempts = attempts.filter((a) => a.status === "SELESAI");
+    const completedAttempts = attempts.filter((a) => a.status === "SELESAI" || a.status === "BELAJAR");
     const nilaiList = completedAttempts.map((a) => a.nilai).filter((n): n is number => n !== null);
     const rataNilai = nilaiList.length > 0
       ? Math.round(nilaiList.reduce((s, n) => s + n, 0) / nilaiList.length)

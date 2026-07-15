@@ -99,6 +99,7 @@ export async function GET(request: NextRequest) {
           .from(quizAttempt)
           .innerJoin(quizPublished, eq(quizAttempt.quizPublishedId, quizPublished.id))
           .where(inArray(quizPublished.kursusId, kursusIds))
+          .limit(5000)
       : Promise.resolve([]),
     kursusIds.length
       ? db
@@ -116,7 +117,7 @@ export async function GET(request: NextRequest) {
     );
     const courseAttempts = allAttempts.filter((a) => courseQuizIds.has(a.quizPublishedId));
     const attemptedSiswa = new Set(courseAttempts.map((a) => a.siswaId));
-    const completedAttempts = courseAttempts.filter((a) => a.status === "SELESAI");
+    const completedAttempts = courseAttempts.filter((a) => a.status === "SELESAI" || a.status === "BELAJAR");
     const nilaiList = completedAttempts.map((a) => a.nilai).filter((n): n is number => n !== null);
     const rataNilai = nilaiList.length > 0
       ? Math.round(nilaiList.reduce((s, n) => s + n, 0) / nilaiList.length)

@@ -22,18 +22,6 @@ export async function POST(request: NextRequest) {
     return apiError("Unauthorized", 401);
   }
 
-  const [pending] = await db
-    .select({ id: aiGeneration.id, count: aiGeneration.id })
-    .from(aiGeneration)
-    .where(
-      and(
-        eq(aiGeneration.status, "queued"),
-        eq(aiGeneration.materiStatus, "not_generated"),
-      ),
-    );
-
-  const total = pending ? 1 : 0;
-
   const queued = await db
     .select({
       id: aiGeneration.id,
@@ -49,6 +37,8 @@ export async function POST(request: NextRequest) {
     )
     .orderBy(asc(aiGeneration.createdAt))
     .limit(50);
+
+  const total = queued.length;
 
   const results: Array<{ id: string; status: string; error?: string }> = [];
 

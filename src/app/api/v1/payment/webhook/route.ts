@@ -107,12 +107,14 @@ export async function POST(request: NextRequest) {
           .where(eq(transaksi.id, transaksiRow.id));
         break;
       case "expire":
+        if (transaksiRow.status === "SUCCESS") break;
         await db
           .update(transaksi)
           .set({ status: "EXPIRED" })
           .where(eq(transaksi.id, transaksiRow.id));
         break;
       case "cancel":
+        if (transaksiRow.status === "SUCCESS") break;
         await db
           .update(transaksi)
           .set({ status: "CANCELLED" })

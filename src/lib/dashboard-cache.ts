@@ -1,6 +1,6 @@
 import "server-only";
-import { cacheLife, cacheTag } from "next/cache";
 import { db } from "@/lib/db";
+import { cacheGet, cacheSet, cacheKey } from "@/lib/cache-layer";
 import {
   kursus,
   siswaKursus,
@@ -34,11 +34,13 @@ export interface DashboardData {
 }
 
 export async function getCachedDashboard(guruId: string): Promise<DashboardData> {
-  "use cache";
-  cacheLife({ expire: 120 });
-  cacheTag(`guru-dashboard-${guruId}`);
+  const k = cacheKey("dashboard", "guru", guruId);
+  const cached = await cacheGet<DashboardData>(k);
+  if (cached) return cached;
 
-  return computeDashboard(guruId);
+  const data = await computeDashboard(guruId);
+  await cacheSet(k, data, 120);
+  return data;
 }
 
 export async function computeDashboard(guruId: string): Promise<DashboardData> {

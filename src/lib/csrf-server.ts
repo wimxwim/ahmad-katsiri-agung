@@ -11,7 +11,6 @@ const EXEMPT_PREFIXES = [
   "/api/health",
   "/api/readyz",
   "/api/csp-report",
-  "/api/keystatic",
 ];
 
 export function validateCsrf(request: NextRequest): NextResponse | null {

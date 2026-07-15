@@ -26,7 +26,8 @@ export async function GET(request: NextRequest) {
       .select()
       .from(quizPublished)
       .where(inArray(quizPublished.kursusId, enrolledIds))
-      .orderBy(asc(quizPublished.publishedAt));
+      .orderBy(asc(quizPublished.publishedAt))
+      .limit(100);
 
     const quizIds = quizList.map((q) => q.id);
     const soalCount = new Map<string, number>();
@@ -56,8 +57,8 @@ export async function GET(request: NextRequest) {
       const prev = bestByQuiz.get(a.quizPublishedId);
       const aNilai = a.nilai ?? 0;
       const prevNilai = prev?.nilai ?? -1;
-      if (aNilai > prevNilai || (a.status === "SELESAI" && !prev?.selesai)) {
-        bestByQuiz.set(a.quizPublishedId, { nilai: a.nilai, selesai: a.status === "SELESAI" });
+      if (aNilai > prevNilai || ((a.status === "SELESAI" || a.status === "BELAJAR") && !prev?.selesai)) {
+        bestByQuiz.set(a.quizPublishedId, { nilai: a.nilai, selesai: a.status === "SELESAI" || a.status === "BELAJAR" });
       }
     }
 

@@ -12,6 +12,8 @@ interface QueueMessage {
 interface Env {
   AI_GENERATION: Queue<QueueMessage>;
   AI_BASE_URL: string;
+  AI_API_KEY: string;
+  AI_MODEL: string;
   SUPABASE_URL: string;
   SUPABASE_SERVICE_ROLE_KEY: string;
   IMAGEKIT_PRIVATE_KEY: string;
@@ -47,10 +49,11 @@ export default {
         const apiKey = env.AI_API_KEY || "";
         const baseUrl = env.AI_BASE_URL || "https://router.bynara.id/v1";
 
+        const aiModel = env.AI_MODEL || "deepseek-v4-flash-bynara";
         const [materiRes, quizRes, soalRes] = await Promise.all([
-          aiChat(baseUrl, apiKey, "mimo-v2.5", MATERI_SYSTEM_PROMPT, truncated, 1500),
-          aiChat(baseUrl, apiKey, "mimo-v2.5", QUIZ_SYSTEM_PROMPT, truncated, 1500),
-          aiChat(baseUrl, apiKey, "mimo-v2.5", SOAL_SYSTEM_PROMPT, truncated, 1500),
+          aiChat(baseUrl, apiKey, aiModel, MATERI_SYSTEM_PROMPT, truncated, 1500),
+          aiChat(baseUrl, apiKey, aiModel, QUIZ_SYSTEM_PROMPT, truncated, 1500),
+          aiChat(baseUrl, apiKey, aiModel, SOAL_SYSTEM_PROMPT, truncated, 1500),
         ]);
 
         const totalTokensIn = materiRes.tokensIn + quizRes.tokensIn + soalRes.tokensIn;
@@ -62,10 +65,10 @@ export default {
           quizStatus: "draft",
           soalStatus: "draft",
           materiJudul: extractJsonField(materiRes.content, "judul") || "Materi",
-          materiKonten: materiRes.content,
-          quizKonten: quizRes.content,
-          soalKonten: soalRes.content,
-          modelName: "mimo-v2.5",
+          materiKonten: sanitizeAiOutput(materiRes.content, "materi"),
+          quizKonten: sanitizeAiOutput(quizRes.content, "quiz"),
+          soalKonten: sanitizeAiOutput(soalRes.content, "soal"),
+          modelName: aiModel,
           tokenInput: totalTokensIn,
           tokenOutput: totalTokensOut,
           errorMessage: null,
@@ -77,7 +80,7 @@ export default {
         const msg2 = err instanceof Error ? err.message : String(err);
         console.error(`[ai-queue] generation ${generationId} failed:`, msg2);
         await updateStatus(env, generationId, "failed", msg2);
-        msg.ack();
+        msg.retry();
       }
     }
   },
@@ -150,6 +153,7 @@ async function aiChat(
       temperature: 0.4,
       max_tokens: maxTokens,
     }),
+    signal: AbortSignal.timeout(120_000),
   });
 
   if (!res.ok) {
@@ -172,6 +176,38 @@ function extractJsonField(content: string, field: string): string {
     return obj[field] || "";
   } catch {
     return "";
+  }
+}
+
+function sanitizeAiOutput(content: string, type: "materi" | "quiz" | "soal"): string {
+  let cleaned = content
+    .replace(/```json\s*/gi, "")
+    .replace(/```\s*/g, "")
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, "")
+    .replace(/\bon\w+\s*=\s*"[^"]*"/gi, "")
+    .replace(/\bon\w+\s*=\s*'[^']*'/gi, "")
+    .trim();
+
+  if (type === "materi") {
+    cleaned = cleaned.replace(/<h[1-6][^>]*>/gi, "<p>").replace(/<\/h[1-6]>/gi, "</p>");
+  }
+
+  try {
+    JSON.parse(cleaned);
+    return cleaned;
+  } catch {
+    const match = cleaned.match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        JSON.parse(match[0]);
+        return match[0];
+      } catch {
+        // fall through
+      }
+    }
+    return cleaned;
   }
 }
 

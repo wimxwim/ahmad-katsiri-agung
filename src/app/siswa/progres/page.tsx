@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState, useCallback } from "react";
 import { BarChart3, CheckCircle2, AlertCircle, BookOpen } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 
@@ -40,7 +40,9 @@ export default function SiswaProgresPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
+    setLoading(true);
+    setError("");
     fetch("/api/v1/siswa/progres", { credentials: "include" })
       .then(async (r) => {
         if (!r.ok) {
@@ -58,6 +60,10 @@ export default function SiswaProgresPage() {
         setLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const groupedCourses: GroupedCourse[] = useMemo(() => {
     if (!data?.attempts.length) return [];
@@ -105,7 +111,7 @@ export default function SiswaProgresPage() {
         <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
         <p className="text-sm text-red-700 mb-4">{error}</p>
         <button
-          onClick={() => { setError(""); setLoading(true); window.location.reload(); }}
+          onClick={() => fetchData()}
           className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
         >
           Coba Lagi

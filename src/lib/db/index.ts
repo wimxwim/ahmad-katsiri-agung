@@ -10,13 +10,13 @@ function createDb(): DrizzleDb {
   // Higher pool max + allowExitOnIdle are safe because Supavisor handles session pooling.
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    max: 20,
+    max: 3,
     allowExitOnIdle: true,
     application_name: "akal-center",
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 15000,
-    statement_timeout: 30000,
-    idle_in_transaction_session_timeout: 60000,
+    idleTimeoutMillis: 15000,
+    connectionTimeoutMillis: 8000,
+    statement_timeout: 8000,
+    idle_in_transaction_session_timeout: 15000,
   });
   pool.on("error", (err) => console.error("DB pool error:", err));
   return drizzle(pool, { schema });

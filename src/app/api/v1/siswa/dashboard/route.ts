@@ -1,0 +1,283 @@
+import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { db } from "@/lib/db";
+import {
+  users,
+  materiPublished,
+  materiRead,
+  siswaKursus,
+  kursus,
+  quizPublished,
+  soalPublished,
+  quizAttempt,
+  pengumuman,
+} from "@/lib/db/schema";
+import { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
+import { withRetry } from "@/lib/retry";
+import { cacheGet, cacheSet, cacheKey } from "@/lib/cache-layer";
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await requireSiswa(request);
+
+    const rl = await checkRateLimit(`siswa-dashboard:${session.userId}`, 20, 60_000);
+    if (!rl.allowed) return apiRateLimit(rl.retryAfter);
+
+    const cacheK = cacheKey("dashboard", session.userId);
+    const cached = await cacheGet<Record<string, unknown>>(cacheK);
+    if (cached) {
+      return NextResponse.json({ data: cached }, {
+        headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60", "X-Cache": "HIT" },
+      });
+    }
+
+    const results = await Promise.allSettled([
+      fetchProfil(session.userId),
+      fetchFeed(session.userId, request),
+      fetchQuiz(session.userId),
+      fetchPengumuman(session.userId),
+    ]);
+
+    const profil    = results[0].status === "fulfilled" ? results[0].value : null;
+    const feed      = results[1].status === "fulfilled" ? results[1].value : { data: [], continueLearning: null, totalKursus: 0, totalMateri: 0, totalSelesai: 0, terdaftar: false };
+    const quiz      = results[2].status === "fulfilled" ? results[2].value : { data: [], totalAttempt: 0 };
+    const pengumumanData = results[3].status === "fulfilled" ? results[3].value : { data: [] };
+
+    const result = { profil, feed, quiz, pengumuman: pengumumanData };
+
+    await cacheSet(cacheK, result, 30);
+
+    return NextResponse.json({ data: result }, {
+      headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60", "X-Cache": "MISS" },
+    });
+  } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
+    console.error("Dashboard siswa error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
+}
+
+async function fetchProfil(userId: string) {
+  return withRetry(async () => {
+    const result = await db
+      .select({
+        id: users.id,
+        nama: users.nama,
+        email: users.email,
+        role: users.role,
+        kelas: users.kelas,
+        noAbsen: users.noAbsen,
+        createdAt: users.createdAt,
+      })
+      .from(users)
+      .where(and(eq(users.id, userId), isNull(users.deletedAt)))
+      .limit(1);
+
+    if (!result.length) return null;
+    const u = result[0];
+    return {
+      id: u.id,
+      nama: u.nama,
+      email: u.email,
+      role: u.role,
+      kelas: u.kelas || undefined,
+      noAbsen: u.noAbsen || undefined,
+      createdAt: u.createdAt.toISOString(),
+    };
+  });
+}
+
+async function fetchFeed(userId: string, request: NextRequest) {
+  return withRetry(async () => {
+    const limit = Math.min(parseInt(request.nextUrl.searchParams.get("limit") || "20", 10), 100);
+    const offset = Math.max(parseInt(request.nextUrl.searchParams.get("offset") || "0", 10), 0);
+
+    const myEnrollments = await db
+      .select({ kursusId: siswaKursus.kursusId })
+      .from(siswaKursus)
+      .where(and(eq(siswaKursus.siswaId, userId), eq(siswaKursus.status, "AKTIF")));
+
+    const enrolledIds = myEnrollments.map((e) => e.kursusId);
+
+    if (enrolledIds.length === 0) {
+      return {
+        data: [],
+        continueLearning: null,
+        totalKursus: 0,
+        totalMateri: 0,
+        totalSelesai: 0,
+        terdaftar: false,
+      };
+    }
+
+    const kursusList = await db
+      .select({ id: kursus.id, judul: kursus.judul, slug: kursus.slug })
+      .from(kursus)
+      .where(inArray(kursus.id, enrolledIds));
+
+    const materiList = await db
+      .select({
+        id: materiPublished.id,
+        judul: materiPublished.judul,
+        ringkasan: materiPublished.ringkasan,
+        kursusId: materiPublished.kursusId,
+        urutan: materiPublished.urutan,
+        publishedAt: materiPublished.publishedAt,
+      })
+      .from(materiPublished)
+      .where(inArray(materiPublished.kursusId, enrolledIds))
+      .orderBy(asc(materiPublished.kursusId), asc(materiPublished.urutan))
+      .limit(limit)
+      .offset(offset);
+
+    const readMap = new Map<string, { readAt: Date; progress: number; selesai: boolean }>();
+    if (materiList.length > 0) {
+      const reads = await db
+        .select({
+          materiPublishedId: materiRead.materiPublishedId,
+          readAt: materiRead.readAt,
+          progressPersen: materiRead.progressPersen,
+          selesai: materiRead.selesai,
+        })
+        .from(materiRead)
+        .where(
+          and(
+            eq(materiRead.siswaId, userId),
+            inArray(materiRead.materiPublishedId, materiList.map((m) => m.id)),
+          ),
+        );
+      for (const r of reads) {
+        readMap.set(r.materiPublishedId, { readAt: r.readAt, progress: r.progressPersen, selesai: r.selesai });
+      }
+    }
+
+    const enriched = materiList.map((m) => {
+      const read = readMap.get(m.id);
+      const k = kursusList.find((x) => x.id === m.kursusId);
+      return {
+        ...m,
+        kursusJudul: k?.judul || null,
+        progress: read?.progress ?? 0,
+        selesai: read?.selesai ?? false,
+        lastReadAt: read?.readAt?.toISOString() ?? null,
+      };
+    });
+
+    enriched.sort((a, b) => {
+      if (a.selesai !== b.selesai) return a.selesai ? 1 : -1;
+      const aRecent = a.lastReadAt ? new Date(a.lastReadAt).getTime() : 0;
+      const bRecent = b.lastReadAt ? new Date(b.lastReadAt).getTime() : 0;
+      if (aRecent !== bRecent) return bRecent - aRecent;
+      return new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime();
+    });
+
+    const totalSelesai = enriched.filter((e) => e.selesai).length;
+    const continueLearning = enriched.find((e) => !e.selesai) || null;
+
+    return {
+      data: enriched,
+      continueLearning,
+      totalKursus: kursusList.length,
+      totalMateri: enriched.length,
+      totalSelesai,
+      terdaftar: true,
+      limit,
+      offset,
+    };
+  });
+}
+
+async function fetchQuiz(userId: string) {
+  return withRetry(async () => {
+    const enrollments = await db
+      .select({ kursusId: siswaKursus.kursusId })
+      .from(siswaKursus)
+      .where(and(eq(siswaKursus.siswaId, userId), eq(siswaKursus.status, "AKTIF")));
+    const enrolledIds = enrollments.map((e) => e.kursusId);
+    if (enrolledIds.length === 0) return { data: [], totalAttempt: 0 };
+
+    const quizList = await db
+      .select()
+      .from(quizPublished)
+      .where(inArray(quizPublished.kursusId, enrolledIds))
+      .orderBy(asc(quizPublished.publishedAt))
+      .limit(100);
+
+    const quizIds = quizList.map((q) => q.id);
+    const soalCount = new Map<string, number>();
+    if (quizIds.length > 0) {
+      const counts = await db
+        .select({ quizPublishedId: soalPublished.quizPublishedId, count: sql<number>`count(*)::int` })
+        .from(soalPublished)
+        .where(inArray(soalPublished.quizPublishedId, quizIds))
+        .groupBy(soalPublished.quizPublishedId);
+      for (const c of counts) {
+        if (!c.quizPublishedId) continue;
+        soalCount.set(c.quizPublishedId, c.count);
+      }
+    }
+
+    const attempts = await db
+      .select()
+      .from(quizAttempt)
+      .where(and(eq(quizAttempt.siswaId, userId), inArray(quizAttempt.quizPublishedId, quizIds)));
+
+    const bestByQuiz = new Map<string, { nilai: number | null; selesai: boolean }>();
+    for (const a of attempts) {
+      const prev = bestByQuiz.get(a.quizPublishedId);
+      const aNilai = a.nilai ?? 0;
+      const prevNilai = prev?.nilai ?? -1;
+      if (aNilai > prevNilai || ((a.status === "SELESAI" || a.status === "BELAJAR") && !prev?.selesai)) {
+        bestByQuiz.set(a.quizPublishedId, { nilai: a.nilai, selesai: a.status === "SELESAI" || a.status === "BELAJAR" });
+      }
+    }
+
+    const data = quizList.map((q) => {
+      const totalSoal = soalCount.get(q.id) || 0;
+      const best = bestByQuiz.get(q.id);
+      return {
+        ...q,
+        totalSoal,
+        sudahDikerjakan: !!best?.selesai,
+        nilaiTerbaik: q.modeEvaluasi === "CBT" ? null : best?.nilai ?? null,
+        tampilkanNilai: q.modeEvaluasi !== "CBT",
+      };
+    });
+
+    return { data, totalAttempt: attempts.length };
+  });
+}
+
+async function fetchPengumuman(userId: string) {
+  return withRetry(async () => {
+    const enrollments = await db
+      .select({ kursusId: siswaKursus.kursusId })
+      .from(siswaKursus)
+      .where(eq(siswaKursus.siswaId, userId));
+    const enrolledIds = enrollments.map((e) => e.kursusId);
+
+    if (enrolledIds.length === 0) return { data: [] };
+
+    const rows = await db
+      .select({
+        id: pengumuman.id,
+        judul: pengumuman.judul,
+        konten: pengumuman.konten,
+        target: pengumuman.target,
+        kursusId: pengumuman.kursusId,
+        guruId: pengumuman.guruId,
+        publishedAt: pengumuman.publishedAt,
+        isPinned: pengumuman.isPinned,
+        guruNama: users.nama,
+      })
+      .from(pengumuman)
+      .leftJoin(users, eq(pengumuman.guruId, users.id))
+      .where(or(eq(pengumuman.target, "SEMUA"), inArray(pengumuman.kursusId, enrolledIds)))
+      .orderBy(desc(pengumuman.isPinned), desc(pengumuman.publishedAt))
+      .limit(20);
+
+    return { data: rows };
+  });
+}

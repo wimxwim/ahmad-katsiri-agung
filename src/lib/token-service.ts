@@ -110,6 +110,7 @@ export async function deductBalance(
   amount: number,
   metadata?: { notes?: string },
 ): Promise<TokenBalance> {
+  if (amount <= 0) throw new Error("Jumlah harus lebih dari 0");
   const before = await getBalance(userId);
 
   const after = await db.transaction(async (tx) => {
@@ -170,36 +171,44 @@ export async function refundBalance(
   amount: number,
   metadata?: { notes?: string },
 ): Promise<TokenBalance> {
-  const before = await getBalance(userId);
+  return db.transaction(async (dbtx) => {
+    const [before] = await dbtx
+      .select({ balance: tokenBalances.balance })
+      .from(tokenBalances)
+      .where(eq(tokenBalances.userId, userId));
 
-  await db
-    .update(tokenBalances)
-    .set({
-      balance: sql`${tokenBalances.balance} + ${amount}`,
-      updatedAt: new Date(),
-    })
-    .where(eq(tokenBalances.userId, userId));
+    await dbtx
+      .update(tokenBalances)
+      .set({
+        balance: sql`${tokenBalances.balance} + ${amount}`,
+        updatedAt: new Date(),
+      })
+      .where(eq(tokenBalances.userId, userId));
 
-  const after = await getBalance(userId);
+    const [after] = await dbtx
+      .select({ balance: tokenBalances.balance })
+      .from(tokenBalances)
+      .where(eq(tokenBalances.userId, userId));
 
-  await db.insert(tokenTransactions).values({
-    userId,
-    type: "REFUND",
-    status: "COMPLETED",
-    amount,
-    balanceBefore: before.balance,
-    balanceAfter: after.balance,
-    notes: metadata?.notes ?? null,
+    await dbtx.insert(tokenTransactions).values({
+      userId,
+      type: "REFUND",
+      status: "COMPLETED",
+      amount,
+      balanceBefore: before?.balance ?? 0,
+      balanceAfter: after?.balance ?? 0,
+      notes: metadata?.notes ?? null,
+    });
+
+    await appendEvent(`token:${userId}`, "token.refunded", {
+      amount,
+      balanceBefore: before?.balance ?? 0,
+      balanceAfter: after?.balance ?? 0,
+      notes: metadata?.notes ?? null,
+    });
+
+    return after as TokenBalance;
   });
-
-  await appendEvent(`token:${userId}`, "token.refunded", {
-    amount,
-    balanceBefore: before.balance,
-    balanceAfter: after.balance,
-    notes: metadata?.notes ?? null,
-  });
-
-  return after;
 }
 
 export async function topUpBalance(
@@ -288,13 +297,39 @@ export async function grantInitialBalance(
   amount: number,
   reason: string,
 ): Promise<TokenBalance> {
-  const before = await ensureBalanceRow(userId);
+  return db.transaction(async (dbtx) => {
+    const [before] = await dbtx
+      .select({ balance: tokenBalances.balance, totalTopup: tokenBalances.totalTopup })
+      .from(tokenBalances)
+      .where(eq(tokenBalances.userId, userId));
 
-  if (before.totalTopup > 0 || before.balance > 0) {
-    return before;
-  }
+    if (!before) {
+      await dbtx.insert(tokenBalances).values({
+        userId,
+        balance: 0,
+        totalTopup: 0,
+        totalSpent: 0,
+        isUnlocked: false,
+      });
+      return grantInTx(dbtx, userId, amount, reason, 0);
+    }
 
-  const [result] = await db
+    if (before.totalTopup > 0 || before.balance > 0) {
+      return { userId, balance: before.balance, totalTopup: before.totalTopup, totalSpent: 0, isUnlocked: false, unlockedAt: null } as TokenBalance;
+    }
+
+    return grantInTx(dbtx, userId, amount, reason, before.balance);
+  });
+}
+
+async function grantInTx(
+  dbtx: Parameters<Parameters<typeof db.transaction>[0]>[0],
+  userId: string,
+  amount: number,
+  reason: string,
+  beforeBalance: number,
+): Promise<TokenBalance> {
+  const [result] = await dbtx
     .update(tokenBalances)
     .set({
       balance: sql`${tokenBalances.balance} + ${amount}`,
@@ -322,19 +357,19 @@ export async function grantInitialBalance(
     unlockedAt: result.unlockedAt,
   };
 
-  await db.insert(tokenTransactions).values({
+  await dbtx.insert(tokenTransactions).values({
     userId,
     type: "GRANT",
     status: "COMPLETED",
     amount,
-    balanceBefore: before.balance,
+    balanceBefore: beforeBalance,
     balanceAfter: after.balance,
     notes: reason,
   });
 
   await appendEvent(`token:${userId}`, "token.granted", {
     amount,
-    balanceBefore: before.balance,
+    balanceBefore: beforeBalance,
     balanceAfter: after.balance,
     reason,
   });

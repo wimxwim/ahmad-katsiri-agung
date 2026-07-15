@@ -56,7 +56,7 @@ export async function GET(
 
     const siswaProgres = siswaList.map((s) => {
       const attempts = allAttempts.filter((a) => a.siswaId === s.id);
-      const completed = attempts.filter((a) => a.status === "SELESAI");
+      const completed = attempts.filter((a) => a.status === "SELESAI" || a.status === "BELAJAR");
       const nilaiList = completed.map((a) => a.nilai).filter((n): n is number => n !== null);
       const rataNilai = nilaiList.length > 0
         ? Math.round(nilaiList.reduce((sum, n) => sum + n, 0) / nilaiList.length)

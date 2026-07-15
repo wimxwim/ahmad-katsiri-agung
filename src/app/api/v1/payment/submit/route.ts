@@ -13,7 +13,7 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const SubmitSchema = z.object({
   paket: z.string().min(1).default("premium"),
-  jumlah: z.coerce.number().int().positive().default(50000),
+  jumlah: z.coerce.number().int().positive(),
 });
 
 export async function POST(request: NextRequest) {

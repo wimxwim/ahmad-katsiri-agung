@@ -13,15 +13,6 @@ const nextConfig: NextConfig = {
   env: {
     BUILD_TIMESTAMP: new Date().toISOString(),
   },
-  async redirects() {
-    return [
-      {
-        source: "/session",
-        destination: "/api/keystatic/session",
-        permanent: false,
-      },
-    ];
-  },
   async headers() {
     return [
       {

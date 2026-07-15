@@ -58,7 +58,16 @@ export default function KursusListPage() {
   }
 
   async function copyInviteLink(kursusId: string, link: string) {
-    await navigator.clipboard.writeText(link);
+    try {
+      await navigator.clipboard.writeText(link);
+    } catch {
+      const el = document.createElement("textarea");
+      el.value = link;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+    }
     setCopied(kursusId);
     setTimeout(() => setCopied(null), 2000);
   }

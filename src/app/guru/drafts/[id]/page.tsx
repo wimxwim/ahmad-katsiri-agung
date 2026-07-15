@@ -76,6 +76,8 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
   const [draft, setDraft] = useState<DraftDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const busyRef = useRef(false);
+  useEffect(() => { busyRef.current = busy !== null; }, [busy]);
   const loadRef = useRef<() => Promise<void>>(async () => {});
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -113,15 +115,14 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
+useEffect(() => {
     if (!draft) return;
     const interval = setInterval(() => {
-      if (["queued", "extracting", "generating"].includes(draft.status)) {
+      if (["queued", "extracting", "generating"].includes(draft.status) && !busyRef.current) {
         loadRef.current();
       }
     }, 4000);
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft]);
 
   async function act(path: string, label: string, body?: Record<string, unknown>) {

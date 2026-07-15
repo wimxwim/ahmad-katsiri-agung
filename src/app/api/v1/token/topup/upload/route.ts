@@ -8,7 +8,7 @@ import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { sendTopupNotification } from "@/lib/telegram-notif";
 import { db } from "@/lib/db";
 import { users, tokenTransactions } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -97,6 +97,20 @@ export async function POST(request: NextRequest) {
     });
 
     await ensureBalanceRow(session.userId);
+
+    const [existingPending] = await db
+      .select({ id: tokenTransactions.id })
+      .from(tokenTransactions)
+      .where(
+        and(
+          eq(tokenTransactions.userId, session.userId),
+          eq(tokenTransactions.status, "PENDING"),
+        ),
+      )
+      .limit(1);
+    if (existingPending) {
+      return apiError("Anda sudah memiliki top-up yang menunggu verifikasi. Harap tunggu.", 429);
+    }
 
     const [transaction] = await db
       .insert(tokenTransactions)

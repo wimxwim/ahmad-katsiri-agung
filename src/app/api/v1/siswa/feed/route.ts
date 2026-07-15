@@ -3,7 +3,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { materiPublished, materiRead, siswaKursus, kursus } from "@/lib/db/schema";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 
 export async function GET(request: NextRequest) {
@@ -105,11 +105,19 @@ export async function GET(request: NextRequest) {
     const totalSelesai = enriched.filter((e) => e.selesai).length;
     const continueLearning = enriched.find((e) => !e.selesai) || null;
 
+    const [countResult] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(materiPublished)
+      .where(inArray(materiPublished.kursusId, enrolledIds));
+
+    const totalMateri = countResult?.count ?? 0;
+
     return NextResponse.json({
       data: enriched,
+      kursusList,
       continueLearning,
       totalKursus: kursusList.length,
-      totalMateri: enriched.length,
+      totalMateri,
       totalSelesai,
       terdaftar: true,
       limit,

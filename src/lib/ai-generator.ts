@@ -430,43 +430,50 @@ export async function runGenerationFromText(
     .limit(1);
   if (!gen) throw new Error("Generation record tidak ditemukan");
 
+  await db
+    .update(aiGeneration)
+    .set({ status: "generating", updatedAt: new Date() })
+    .where(eq(aiGeneration.id, generationId));
+
   const truncatedSource = sanitizeUserText(sourceText.slice(0, 12_000));
 
   let aiResults: [ChatResult, ChatResult, ChatResult];
   try {
-    const materiRes = await withTimeout(
-      chatWithFallback(
-        [
-          { role: "system", content: MATERI_SYSTEM },
-          { role: "user", content: `Materi:\n\n${truncatedSource}` },
-        ],
-        { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
+    const [materiRes, quizRes, soalRes] = await Promise.all([
+      withTimeout(
+        chatWithFallback(
+          [
+            { role: "system", content: MATERI_SYSTEM },
+            { role: "user", content: `Materi:\n\n${truncatedSource}` },
+          ],
+          { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
+        ),
+        AI_TIMEOUT_MS,
+        "ai-materi",
       ),
-      AI_TIMEOUT_MS,
-      "ai-materi",
-    );
-    const quizRes = await withTimeout(
-      chatWithFallback(
-        [
-          { role: "system", content: buildQuizSystemPrompt(quizCount) },
-          { role: "user", content: `Materi:\n\n${truncatedSource}` },
-        ],
-        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60) },
+      withTimeout(
+        chatWithFallback(
+          [
+            { role: "system", content: buildQuizSystemPrompt(quizCount) },
+            { role: "user", content: `Materi:\n\n${truncatedSource}` },
+          ],
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60) },
+        ),
+        AI_TIMEOUT_MS,
+        "ai-quiz",
       ),
-      AI_TIMEOUT_MS,
-      "ai-quiz",
-    );
-    const soalRes = await withTimeout(
-      chatWithFallback(
-        [
-          { role: "system", content: buildSoalSystemPrompt(soalCount) },
-          { role: "user", content: `Materi:\n\n${truncatedSource}` },
-        ],
-        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, soalCount * 50) },
+      withTimeout(
+        chatWithFallback(
+          [
+            { role: "system", content: buildSoalSystemPrompt(soalCount) },
+            { role: "user", content: `Materi:\n\n${truncatedSource}` },
+          ],
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, soalCount * 50) },
+        ),
+        AI_TIMEOUT_MS,
+        "ai-soal",
       ),
-      AI_TIMEOUT_MS,
-      "ai-soal",
-    );
+    ]);
     aiResults = [materiRes, quizRes, soalRes];
   } catch (error) {
     console.error("[ai-generator] upstream AI failed:", error);

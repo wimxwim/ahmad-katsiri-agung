@@ -61,7 +61,7 @@ export async function GET(
         .select({ count: sql<number>`count(distinct ${siswaKursus.siswaId})::int` })
         .from(siswaKursus)
         .innerJoin(sql`quiz_attempt qa`, sql`qa.siswa_id = ${siswaKursus.siswaId}`)
-        .where(and(eq(siswaKursus.kursusId, id), eq(siswaKursus.status, "AKTIF"), sql`qa.status = 'SELESAI'`));
+        .where(and(eq(siswaKursus.kursusId, id), eq(siswaKursus.status, "AKTIF"), sql`qa.status IN ('SELESAI', 'BELAJAR')`));
       quizSelesaiCount = count?.count ?? 0;
     } catch (e) {
       console.error("quizSelesaiCount query failed:", e);

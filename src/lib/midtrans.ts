@@ -71,6 +71,7 @@ export async function createSnapTransaction(
       Authorization: `Basic ${auth}`,
     },
     body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(15_000),
   });
 
   const data = await response.json();
