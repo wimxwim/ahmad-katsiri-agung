@@ -128,28 +128,29 @@ export function DashboardLayoutClient({
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-20 bg-surface/80 backdrop-blur-md border-b border-border-precision flex items-center gap-3 px-4 py-3">
+        <header className="sticky top-0 z-20 bg-surface/80 backdrop-blur-md border-b border-border-precision flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden flex items-center gap-1.5 p-2 -ml-2 text-on-surface-variant hover:text-on-surface cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
+            className="lg:hidden flex items-center gap-1 p-1.5 -ml-1 text-on-surface-variant hover:text-on-surface cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
             aria-label="Buka menu"
           >
-            <Menu className="w-5 h-5" />
-            <span className="text-xs font-semibold">Menu</span>
+            <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
-          <div className="flex-1" />
+          <div className="flex-1 flex items-center justify-center lg:justify-start">
+            <span className="font-heading font-bold text-xs sm:text-sm text-on-surface/60 lg:hidden truncate">AKAL Center</span>
+          </div>
           <div className="flex items-center gap-2 text-sm text-on-surface-variant">
             <Link
               href="/profil"
               className="flex items-center gap-2 hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
               aria-label="Profil"
             >
-              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-xs font-bold text-primary font-heading">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-[10px] sm:text-xs font-bold text-primary font-heading">
                   {nama?.charAt(0)?.toUpperCase() || "S"}
                 </span>
               </div>
-              <span className="hidden sm:inline">{nama}</span>
+              <span className="hidden sm:inline text-xs sm:text-sm">{nama}</span>
             </Link>
           </div>
         </header>
