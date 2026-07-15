@@ -7,6 +7,7 @@ import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
+import { invalidateGuruCache } from "@/lib/dashboard-cache";
 
 export async function POST(
   request: NextRequest,
@@ -39,6 +40,7 @@ export async function POST(
       .set({ status: "approved", updatedAt: new Date() })
       .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)));
     await appendEvent(`gen:${session.userId}`, "gen.approved", { generationId: id });
+    invalidateGuruCache(session.userId).catch(() => {});
 
     return NextResponse.json({ success: true, status: "approved" });
   } catch (e) {

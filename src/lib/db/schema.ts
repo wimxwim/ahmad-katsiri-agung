@@ -831,6 +831,8 @@ export const aiGeneration = pgTable("ai_generation", {
   tokenOutput: integer("token_output"),
   modelName: varchar("model_name", { length: 100 }),
   errorMessage: text("error_message"),
+  attemptCount: integer("attempt_count").notNull().default(0),
+  leaseUntil: timestamp("lease_until", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
@@ -1131,6 +1133,7 @@ export const tokenTransactions = pgTable(
     proofFileId: varchar("proof_file_id", { length: 255 }),
     proofLink: text("proof_link"),
     notes: text("notes"),
+    referenceId: varchar("reference_id", { length: 255 }),
     chainHash: varchar("chain_hash", { length: 64 }),
     prevHash: varchar("prev_hash", { length: 64 }),
     nonce: varchar("nonce", { length: 32 }),
@@ -1146,6 +1149,7 @@ export const tokenTransactions = pgTable(
     index("token_transactions_user_id_idx").on(t.userId),
     index("token_transactions_type_idx").on(t.type),
     index("token_transactions_created_at_idx").on(t.createdAt),
+    index("token_transactions_reference_idx").on(t.userId, t.type, t.referenceId),
   ],
 );
 

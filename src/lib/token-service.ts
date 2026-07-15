@@ -108,9 +108,29 @@ export async function checkGenerateBalance(userId: string): Promise<boolean> {
 export async function deductBalance(
   userId: string,
   amount: number,
-  metadata?: { notes?: string },
+  metadata?: { notes?: string; referenceId?: string },
 ): Promise<TokenBalance> {
   if (amount <= 0) throw new Error("Jumlah harus lebih dari 0");
+
+  if (metadata?.referenceId) {
+    const [existing] = await db
+      .select({ balanceAfter: tokenTransactions.balanceAfter })
+      .from(tokenTransactions)
+      .where(
+        and(
+          eq(tokenTransactions.userId, userId),
+          eq(tokenTransactions.type, "DEDUCT"),
+          eq(tokenTransactions.referenceId, metadata.referenceId),
+        ),
+      )
+      .limit(1);
+
+    if (existing) {
+      const current = await getBalance(userId);
+      return current;
+    }
+  }
+
   const before = await getBalance(userId);
 
   const after = await db.transaction(async (tx) => {
@@ -147,6 +167,7 @@ export async function deductBalance(
       balanceBefore: before.balance,
       balanceAfter: afterTx.balance,
       notes: metadata?.notes ?? null,
+      referenceId: metadata?.referenceId ?? null,
     });
 
     return afterTx;
@@ -157,13 +178,14 @@ export async function deductBalance(
     balanceBefore: before.balance,
     balanceAfter: after.balance,
     notes: metadata?.notes ?? null,
+    referenceId: metadata?.referenceId ?? null,
   });
 
   return after;
 }
 
-export async function deductGenerateCost(userId: string): Promise<TokenBalance> {
-  return deductBalance(userId, GENERATE_COST, { notes: "AI generation cost" });
+export async function deductGenerateCost(userId: string, referenceId?: string): Promise<TokenBalance> {
+  return deductBalance(userId, GENERATE_COST, { notes: "AI generation cost", referenceId });
 }
 
 export async function refundBalance(

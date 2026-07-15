@@ -8,6 +8,7 @@ import { aiGeneration, fileMateri, eventStore } from "@/lib/db/schema";
 import { eq, and, gte, sql } from "drizzle-orm";
 import { runGenerationFromText } from "@/lib/ai-generator";
 import { extractText } from "@/lib/text-extractor";
+import { invalidateGuruCache } from "@/lib/dashboard-cache";
 import {
   checkGenerateBalance,
   deductGenerateCost,
@@ -226,7 +227,7 @@ export async function POST(
     });
 
     try {
-      await deductGenerateCost(session.userId!);
+      await deductGenerateCost(session.userId!, id);
     } catch (e) {
       releaseConcurrent(concKey);
       if (e instanceof InsufficientBalanceError) {
@@ -279,6 +280,7 @@ function fireAndForgetGeneration(
   Promise.resolve().then(async () => {
     try {
       await runGenerationFromText(generationId, sourceText, guruId, soalCount, quizCount);
+      invalidateGuruCache(guruId).catch(() => {});
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
       console.error("Background generation failed:", errMsg);
