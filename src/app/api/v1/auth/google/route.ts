@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       secure: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 600,
+      maxAge: 900,
     });
     if (portal) {
       response.cookies.set("akal_google_portal", portal, {
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
         secure: true,
         sameSite: "lax",
         path: "/",
-        maxAge: 600,
+        maxAge: 900,
       });
     }
     if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) {
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
         secure: true,
         sameSite: "lax",
         path: "/",
-        maxAge: 600,
+        maxAge: 900,
       });
     }
 
