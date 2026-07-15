@@ -124,3 +124,16 @@ Read `prd/TODO-FINAL-v2.md` for the full 80-task plan. Current priority order:
 3. **Fase 2 (Upload):** kategori column, auto-detect from filename
 4. **Fase 3 (Token):** token_balances table, top-up API, Telegram notif, deduction at generate
 5. **Fase 4 (Sharing):** materi_sharing, krabat_connections, PRIVAT/PUBLIK/KRABAT visibility
+## ⚠️ LESSON LEARNED — JANGAN Kill/Restart Chrome
+
+**Kejadian (15 Jul 2026):** Chrome di-kill dan restart dengan `--remote-debugging-port=9222`
+untuk keperluan browser-act. Akibat: **semua Chrome profile hilang, semua akun logout**
+(GitHub, Vercel, Cloudflare, Supabase, Google, dll). Pemilik kehilangan semua sesi login.
+
+**ATURAN BARU:**
+- **JANGAN PERNAH kill Chrome** untuk alasan apapun
+- **JANGAN PERNAH restart Chrome** dengan flag `--remote-debugging-port`
+- Jika browser-act chrome-direct tidak bisa connect, **hentikan**, jangan dipaksa
+- Gunakan browser-act **chrome_local** (managed browser) atau minta user login manual
+- **Tidak ada pengecualian.** Kehilangan Chrome profile = bencana.
+

@@ -152,15 +152,15 @@ export default {
     }
 
     // Rate limiting for API endpoints (worker-level; defense-in-depth)
-    const RATE_LIMIT_EXEMPT = ['/api/sesi', '/api/csp-report', '/api/health', '/api/readyz'];
+    const RATE_LIMIT_EXEMPT = ['/api/sesi', '/api/csp-report', '/api/health', '/api/readyz', '/api/v1/enroll', '/api/v1/siswa'];
     const isRateLimitExempt = RATE_LIMIT_EXEMPT.some((p) => url.pathname.startsWith(p));
     if (url.pathname.startsWith('/api/') && !isRateLimitExempt) {
       cleanupStore();
       const ip = request.headers.get('cf-connecting-ip')
         || request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
         || 'unknown';
-      const maxReq = request.method === 'POST' ? 10 : 30;
-      const windowMs = request.method === 'POST' ? 30_000 : 60_000;
+      const maxReq = request.method === 'POST' ? 30 : 150;
+      const windowMs = 30_000;
       const key = `${request.method}:${url.pathname}:${ip}`;
       if (!checkRateLimit(key, maxReq, windowMs)) {
         return new Response(JSON.stringify({ error: 'Terlalu banyak permintaan' }), {
