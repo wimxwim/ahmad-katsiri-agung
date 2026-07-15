@@ -16,7 +16,7 @@ import {
   Building2,
   BarChart3,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { handleLogout } from "@/lib/logout";
 
 const SIDEBAR_ITEMS = [
@@ -30,7 +30,27 @@ export function AdminSekolahLayoutClient({ children }: { children: React.ReactNo
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [nama, setNama] = useState("Admin");
+  const [_nama, setNama] = useState("Admin");
+
+  const pageTitle = useMemo(() => {
+    const active = SIDEBAR_ITEMS.find(
+      (item) =>
+        pathname === item.href ||
+        (item.href !== "/admin-sekolah" && pathname.startsWith(item.href)),
+    );
+    if (active) return active.label;
+    const segments = pathname.split("/").filter(Boolean);
+    if (segments.length > 2) {
+      const parentPath = "/" + segments.slice(0, 2).join("/");
+      const parent = SIDEBAR_ITEMS.find(
+        (item) =>
+          parentPath === item.href ||
+          (item.href !== "/admin-sekolah" && parentPath.startsWith(item.href)),
+      );
+      if (parent) return parent.label;
+    }
+    return "Menu";
+  }, [pathname]);
 
   useEffect(() => {
     let mounted = true;
@@ -127,42 +147,40 @@ export function AdminSekolahLayoutClient({ children }: { children: React.ReactNo
         />
       )}
 
-      <button
-        onClick={() => setSidebarOpen((prev) => !prev)}
-        className="fixed top-0 left-0 z-50 lg:hidden flex items-center justify-center w-11 h-11 pt-[env(safe-area-inset-top,0px)] pl-3 text-on-surface-variant hover:text-on-surface cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden transition-colors duration-200"
-        aria-label={sidebarOpen ? "Tutup menu" : "Buka menu"}
-      >
-        {sidebarOpen ? (
-          <X className="w-5 h-5" strokeWidth={1.5} />
-        ) : (
-          <Menu className="w-5 h-5" strokeWidth={1.5} />
-        )}
-      </button>
-
       <div className="flex-1 flex flex-col min-w-0">
-        <header
-          className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-border-precision flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3"
-          style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0.5rem)" }}
-        >
-          <Link
-            href="/admin-sekolah"
-            onClick={() => setSidebarOpen(false)}
-            className="flex items-center gap-1.5 min-w-0 ml-11 sm:ml-0 hover:text-primary transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden rounded-lg"
-            aria-label="Beranda"
+        <header className="sticky top-0 z-20">
+          <div
+            className="lg:hidden bg-primary text-white text-center leading-tight"
+            style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0.25rem)", paddingBottom: "0.25rem" }}
           >
-            <span className="font-heading font-bold text-sm text-on-surface truncate">AKAL Center</span>
-          </Link>
+            <span className="text-[10px] font-medium tracking-wide">AKAL Center</span>
+          </div>
 
-          <Link
-            href="/admin-sekolah/profil"
-            className="flex items-center gap-2 shrink-0 hover:text-primary transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden rounded-lg"
-            aria-label="Profil"
-          >
-            <span className="hidden sm:inline text-sm text-on-surface truncate max-w-[120px]">{nama}</span>
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <Building2 className="w-4 h-4 text-primary" />
+          <div className="flex items-center justify-between px-3 py-2 bg-white/70 backdrop-blur-xl border-b border-border-precision">
+            <button
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              className="lg:hidden flex items-center justify-center w-11 h-11 -ml-1 text-on-surface-variant hover:text-on-surface cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden rounded-lg transition-colors duration-200"
+              aria-label={sidebarOpen ? "Tutup menu" : "Buka menu"}
+            >
+              <Menu className="w-5 h-5" strokeWidth={1.5} />
+            </button>
+
+            <div className="flex-1 min-w-0 text-center px-2">
+              <span className="text-sm font-medium text-on-surface truncate block">
+                {pageTitle}
+              </span>
             </div>
-          </Link>
+
+            <Link
+              href="/admin-sekolah/profil"
+              className="flex items-center justify-center w-11 h-11 lg:w-auto lg:h-auto shrink-0 hover:text-primary transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden rounded-lg"
+              aria-label="Profil"
+            >
+              <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <Building2 className="w-4 h-4 text-primary" />
+              </div>
+            </Link>
+          </div>
         </header>
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
