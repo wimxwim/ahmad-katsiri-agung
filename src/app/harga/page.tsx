@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { WA_NUMBER } from "@/lib/constants";
-import { Sparkles, GraduationCap, Check, HelpCircle, MessageCircle, Shield } from "lucide-react";
+import { Sparkles, GraduationCap, Check, HelpCircle, Shield } from "lucide-react";
+import { WaIcon } from "@/components/ui/WaIcon";
 
 const gratisFitur = [
   "1 guru",
@@ -154,7 +155,7 @@ export default function HargaPage() {
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full bg-tertiary text-on-tertiary px-6 py-3.5 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300"
           >
-            <MessageCircle className="w-5 h-5" aria-hidden="true" />
+            <WaIcon className="w-5 h-5 text-[#25D366]" />
             Hubungi via WhatsApp
           </Link>
         </div>
@@ -238,7 +239,7 @@ export default function HargaPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 border border-border-precision text-on-surface px-8 py-4 rounded-full font-semibold hover:bg-glass active:scale-[0.98] transition-all duration-300"
           >
-            <MessageCircle className="w-5 h-5" aria-hidden="true" />
+            <WaIcon className="w-5 h-5 text-[#25D366]" />
             Konsultasi via WhatsApp
           </Link>
         </div>

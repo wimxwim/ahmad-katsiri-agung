@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { SkeletonDashboardSiswa } from "@/components/ui/SkeletonBlocks";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { WaIcon } from "@/components/ui/WaIcon";
 
 interface FeedItem {
   id: string;
@@ -185,7 +186,8 @@ export default function SiswaBerandaPage() {
           </Link>
           <p className="text-xs text-on-surface-variant/50 mt-6">
             Butuh bantuan?{" "}
-            <a href="https://wa.me/6285158795502" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+            <a href="https://wa.me/6285158795502" target="_blank" rel="noopener noreferrer" className="text-primary underline inline-flex items-center gap-1">
+              <WaIcon className="w-4 h-4 text-[#25D366]" />
               Chat WhatsApp
             </a>
           </p>

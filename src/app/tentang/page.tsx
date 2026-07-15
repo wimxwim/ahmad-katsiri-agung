@@ -3,8 +3,9 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 import Image from "next/image";
-import { BookHeart, ArrowRight, Sparkles, GraduationCap, Users, FileText, Target, MessageCircle } from "lucide-react";
+import { BookHeart, ArrowRight, Sparkles, GraduationCap, Users, FileText, Target } from "lucide-react";
 import { useCmsData } from "@/components/providers/CmsProvider";
+import { WaIcon } from "@/components/ui/WaIcon";
 import { EASE_CURVE, WA_NUMBER } from "@/lib/constants";
 
 export default function TentangPage() {
@@ -176,7 +177,7 @@ export default function TentangPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 mt-3 text-sm font-semibold text-primary hover:underline"
                 >
-                  <MessageCircle className="w-4 h-4" aria-hidden="true" />
+                  <WaIcon className="w-4 h-4 text-[#25D366]" />
                   Hubungi via WhatsApp
                 </a>
               </div>

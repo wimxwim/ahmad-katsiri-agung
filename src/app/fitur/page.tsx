@@ -23,6 +23,7 @@ import {
   PenTool,
 } from "lucide-react";
 import { EASE_CURVE, WA_NUMBER } from "@/lib/constants";
+import { WaIcon } from "@/components/ui/WaIcon";
 
 const guruFeatures = [
   {
@@ -408,7 +409,7 @@ export default function FiturPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-white/20"
                 >
-                  <GraduationCap className="h-4 w-4" />
+                  <WaIcon className="h-4 w-4 text-[#25D366]" />
                   Diskusi via WhatsApp
                 </a>
               </div>

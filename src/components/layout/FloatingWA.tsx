@@ -17,13 +17,13 @@ export function FloatingWA({ waNumber }: { waNumber?: string }) {
       href={`https://wa.me/${num}`}
       target="_blank"
       rel="noopener noreferrer"
-      className={`fixed right-3 md:right-6 z-40 w-11 h-11 md:w-14 md:h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg shadow-green-500/25 hover:shadow-xl hover:shadow-green-500/40 hover:scale-105 active:scale-95 transition-all duration-200 ${isDashboard ? "bottom-28" : "bottom-24 md:bottom-6"}`}
+      className={`fixed right-3 md:right-6 z-40 w-11 h-11 md:w-14 md:h-14 bg-white rounded-full flex items-center justify-center shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/30 hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-[#25D366] ${isDashboard ? "bottom-28" : "bottom-24 md:bottom-6"}`}
       style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
       aria-label="Hubungi via WhatsApp"
     >
       <svg
         viewBox="0 0 24 24"
-        fill="white"
+        fill="#25D366"
         className="w-5 h-5 md:w-7 md:h-7"
         aria-hidden="true"
       >
