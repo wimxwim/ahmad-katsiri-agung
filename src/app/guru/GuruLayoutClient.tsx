@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { DashboardLayoutClient } from "@/components/dashboard/DashboardLayoutClient";
 import type { SidebarItem } from "@/components/dashboard/DashboardLayoutClient";
+import type { BottomNavTab } from "@/components/layout/BottomNavBar";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
@@ -34,18 +35,28 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/guru/buat", label: "Buat Kursus", icon: PlusCircle, primary: true },
 ];
 
+const BOTTOM_TABS: BottomNavTab[] = [
+  { href: "/guru/beranda", label: "Beranda", icon: LayoutDashboard },
+  { href: "/guru/kursus", label: "Kursus", icon: BookOpen },
+  { href: "/guru/buat", label: "Buat", icon: PlusCircle, primary: true },
+  { href: "/guru/drafts", label: "Draft AI", icon: Sparkles },
+  { href: "/guru/siswa", label: "Siswa", icon: Users },
+];
+
 export function GuruLayoutClient({ children }: { children: React.ReactNode }) {
   return (
     <>
       <OnboardingTour />
       <DashboardLayoutClient
-      sidebarItems={SIDEBAR_ITEMS}
-      subtitle="Ruang Guru"
-      defaultNama="Guru"
-      homeHref="/guru/beranda"
-    >
-      {children}
-    </DashboardLayoutClient>
+        sidebarItems={SIDEBAR_ITEMS}
+        subtitle="Ruang Guru"
+        defaultNama="Guru"
+        homeHref="/guru/beranda"
+        profileHref="/guru/profil"
+        bottomTabs={BOTTOM_TABS}
+      >
+        {children}
+      </DashboardLayoutClient>
     </>
   );
 }

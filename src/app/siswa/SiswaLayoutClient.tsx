@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { DashboardLayoutClient } from "@/components/dashboard/DashboardLayoutClient";
 import type { SidebarItem } from "@/components/dashboard/DashboardLayoutClient";
+import type { BottomNavTab } from "@/components/layout/BottomNavBar";
 import { ToastProvider } from "@/components/ui/Toast";
 import { FloatingActionMenu } from "@/components/layout/FloatingActionMenu";
 import { OnboardingSiswa, useOnboardingSiswa } from "@/components/siswa/OnboardingSiswa";
@@ -26,6 +27,14 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/siswa/quiz", label: "Kuis", icon: Sparkles },
   { href: "/siswa/progres", label: "Progres", icon: BarChart3 },
   { href: "/siswa/pengumuman", label: "Pengumuman", icon: Megaphone },
+];
+
+const BOTTOM_TABS: BottomNavTab[] = [
+  { href: "/siswa/beranda", label: "Beranda", icon: LayoutDashboard },
+  { href: "/siswa/materi", label: "Materi", icon: BookOpen },
+  { href: "/siswa/quiz", label: "Kuis", icon: Sparkles },
+  { href: "/siswa/progres", label: "Progres", icon: BarChart3 },
+  { href: "/siswa/kursus", label: "Menu", icon: Library },
 ];
 
 function KatalogKursusBar() {
@@ -61,6 +70,8 @@ export function SiswaLayoutClient({ children }: { children: React.ReactNode }) {
       subtitle="Ruang Siswa"
       defaultNama="Siswa"
       homeHref="/siswa/beranda"
+      profileHref="/siswa/profil"
+      bottomTabs={BOTTOM_TABS}
     >
       <KatalogKursusBar />
       <ToastProvider>{children}</ToastProvider>
