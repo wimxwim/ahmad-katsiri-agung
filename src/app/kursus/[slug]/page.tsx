@@ -185,7 +185,7 @@ export default function KursusDetailPage() {
                   <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
                     <GraduationCap className="w-7 h-7 text-primary" />
                   </div>
-                  <p className="font-heading font-bold text-2xl text-on-surface">{kursus.harga === 0 ? "GRATIS" : `Rp${kursus.harga.toLocaleString("id-ID")}`}</p>
+                  <p className="font-heading font-bold text-2xl text-on-surface">{(kursus.harga ?? 0) === 0 ? "GRATIS" : `Rp${(kursus.harga ?? 0).toLocaleString("id-ID")}`}</p>
                   <p className="text-xs text-on-surface-variant mt-1">
                     {kursus.harga === 0 ? "Akses penuh tanpa biaya" : "Pembayaran sekali untuk akses penuh"}
                   </p>

@@ -1,16 +1,7 @@
-const CACHE_NAME = "akal-center-v2";
-const STATIC_ASSETS = [
-  "/",
-  "/masuk",
-  "/daftar",
-  "/kursus",
-  "/offline",
-];
+const CACHE_NAME = "akal-center-v3";
+const STATIC_EXTS = /\.(ico|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot|css|js)$/i;
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
-  );
   self.skipWaiting();
 });
 
@@ -25,11 +16,16 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
-  if (event.request.url.includes("/api/")) {
+  const url = new URL(event.request.url);
+  if (url.pathname.startsWith("/api/")) {
     event.respondWith(networkFirst(event.request));
     return;
   }
-  event.respondWith(cacheFirst(event.request));
+  if (STATIC_EXTS.test(url.pathname) || url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/pdf/")) {
+    event.respondWith(cacheFirst(event.request));
+    return;
+  }
+  event.respondWith(networkFirst(event.request));
 });
 
 async function cacheFirst(request) {
@@ -43,15 +39,17 @@ async function cacheFirst(request) {
     }
     return response;
   } catch {
-    return caches.match("/offline");
+    return new Response("Offline", { status: 503 });
   }
 }
 
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
-    const cache = await caches.open(CACHE_NAME);
-    cache.put(request, response.clone());
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
     return response;
   } catch {
     const cached = await caches.match(request);
