@@ -57,27 +57,14 @@ export function FloatingActionMenu() {
 
   return (
     <div ref={ref} className="fixed left-4 bottom-24 z-50 flex flex-col items-start gap-2">
-      <motion.button
-        onClick={() => setOpen(!open)}
-        whileTap={{ scale: 0.92 }}
-        className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg border transition-all duration-300 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden ${
-          open
-            ? "bg-on-surface text-white border-on-surface rotate-45 shadow-on-surface/25"
-            : "bg-primary text-white border-primary shadow-primary/25 hover:shadow-primary/40 hover:brightness-110"
-        }`}
-        aria-label={open ? "Tutup menu navigasi" : "Buka menu navigasi"}
-      >
-        <Plus className="w-6 h-6" strokeWidth={2.5} />
-      </motion.button>
-
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: -20 }}
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: -20 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
             transition={{ duration: 0.3, ease: EASE_CURVE }}
-            className="flex flex-col gap-2"
+            className="flex flex-col gap-2 mb-2"
           >
             {FAB_ITEMS.map((item, i) => {
               const active = item.href === "#logout" ? false : (pathname === item.href || (item.href !== "/siswa/beranda" && pathname.startsWith(item.href)));
@@ -126,6 +113,19 @@ exit={{ opacity: 0, x: -20 }}
           </motion.div>
         )}
       </AnimatePresence>
+
+      <motion.button
+        onClick={() => setOpen(!open)}
+        whileTap={{ scale: 0.92 }}
+        className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg border transition-all duration-300 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden ${
+          open
+            ? "bg-on-surface text-white border-on-surface rotate-45 shadow-on-surface/25"
+            : "bg-primary text-white border-primary shadow-primary/25 hover:shadow-primary/40 hover:brightness-110"
+        }`}
+        aria-label={open ? "Tutup menu navigasi" : "Buka menu navigasi"}
+      >
+        <Plus className="w-6 h-6" strokeWidth={2.5} />
+      </motion.button>
     </div>
   );
 }
