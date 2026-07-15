@@ -107,6 +107,7 @@ export const viewport: Viewport = {
   themeColor: "#005231",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 // Keystatic FROZEN per D-011 (9 Juli 2026) — CMS reader dihapus total, selalu return {}.

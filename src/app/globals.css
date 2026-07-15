@@ -101,11 +101,24 @@
   --duration-300: 300ms;
   --duration-500: 500ms;
 
+  /*
+   * Z-Index Ladder (standardized Jul 2026)
+   * z-0:    background decorations, decorative elements
+   * z-10:   page content, dropdowns, tooltips
+   * z-20:   sticky dashboard header
+   * z-30:   sidebar overlay backdrop
+   * z-40:   sidebar, BottomTabBar, FloatingWA
+   * z-50:   fixed hamburger/menu button, public Navbar, FloatingActionMenu,
+   *         onboarding modals, skip-to-content link
+   * z-[100]: Toast notifications (highest, must override everything)
+   */
   --z-base: 0;
   --z-dropdown: 10;
   --z-sticky: 20;
-  --z-modal: 30;
-  --z-toast: 40;
+  --z-overlay: 30;
+  --z-sidebar: 40;
+  --z-fixed-button: 50;
+  --z-toast: 100;
 
   --button-height-sm: 32px;
   --button-height-md: 40px;

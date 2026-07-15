@@ -127,39 +127,43 @@ export function DashboardLayoutClient({
         />
       )}
 
-      {sidebarOpen && (
-        <button
-          onClick={() => setSidebarOpen(false)}
-          className="fixed top-0 left-0 z-50 lg:hidden flex items-center justify-center w-11 h-11 m-3 bg-white/90 backdrop-blur-xl rounded-xl shadow-lg border border-border-precision text-on-surface hover:text-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden active:scale-95 transition-all duration-200"
-          aria-label="Tutup menu"
-        >
+      <button
+        onClick={() => setSidebarOpen((prev) => !prev)}
+        className="fixed top-0 left-0 z-50 lg:hidden flex items-center justify-center w-11 h-11 pt-[env(safe-area-inset-top,0px)] pl-3 text-on-surface-variant hover:text-on-surface cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden transition-colors duration-200"
+        aria-label={sidebarOpen ? "Tutup menu" : "Buka menu"}
+      >
+        {sidebarOpen ? (
           <X className="w-5 h-5" strokeWidth={1.5} />
-        </button>
-      )}
+        ) : (
+          <Menu className="w-5 h-5" strokeWidth={1.5} />
+        )}
+      </button>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-border-precision flex items-center justify-between px-3 py-1.5 sm:px-4 sm:py-3">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden flex items-center justify-center w-11 h-11 -ml-1 text-on-surface-variant hover:text-on-surface cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden rounded-xl active:bg-surface transition-colors"
-            aria-label="Buka menu"
+        <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-border-precision flex items-center justify-between px-3 py-2 sm:px-4 sm:py-3"
+          style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 0.5rem)" }}
+        >
+          <Link
+            href={homeHref}
+            onClick={() => setSidebarOpen(false)}
+            className="flex items-center gap-1.5 min-w-0 ml-11 sm:ml-0 hover:text-primary transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden rounded-lg"
+            aria-label="Beranda"
           >
-            <Menu className="w-5 h-5" strokeWidth={1.5} />
-          </button>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/profil"
-              className="flex items-center justify-center w-11 h-11 sm:w-auto sm:h-auto hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden rounded-xl sm:rounded-none active:bg-surface sm:active:bg-transparent"
-              aria-label="Profil"
-            >
-              <div className="w-7 h-7 sm:w-7 sm:h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-xs font-bold text-primary font-heading">
-                  {nama?.charAt(0)?.toUpperCase() || "S"}
-                </span>
-              </div>
-              <span className="hidden sm:inline text-sm ml-2">{nama}</span>
-            </Link>
-          </div>
+            <span className="font-heading font-bold text-sm text-on-surface truncate">AKAL Center</span>
+          </Link>
+
+          <Link
+            href="/profil"
+            className="flex items-center gap-2 shrink-0 hover:text-primary transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden rounded-lg"
+            aria-label="Profil"
+          >
+            <span className="hidden sm:inline text-sm text-on-surface truncate max-w-[120px]">{nama}</span>
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+              <span className="text-xs font-bold text-primary font-heading">
+                {nama?.charAt(0)?.toUpperCase() || "S"}
+              </span>
+            </div>
+          </Link>
         </header>
 
         <main className="flex-1 p-3 sm:p-5 lg:p-8">
