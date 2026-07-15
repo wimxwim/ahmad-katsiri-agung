@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   LayoutDashboard,
   BookOpen,
@@ -7,6 +8,8 @@ import {
   Sparkles,
   Megaphone,
   Library,
+  Search,
+  ArrowRight,
 } from "lucide-react";
 import { DashboardLayoutClient } from "@/components/dashboard/DashboardLayoutClient";
 import type { SidebarItem } from "@/components/dashboard/DashboardLayoutClient";
@@ -25,6 +28,24 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/siswa/pengumuman", label: "Pengumuman", icon: Megaphone },
 ];
 
+function KatalogKursusBar() {
+  return (
+    <Link
+      href="/kursus"
+      className="flex items-center gap-3 bg-gradient-to-r from-primary to-primary/90 text-white px-4 py-3 rounded-2xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:brightness-110 active:scale-[0.99] transition-all duration-200 mb-4"
+    >
+      <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+        <Search className="w-5 h-5" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-heading font-bold text-sm">Katalog Kursus</p>
+        <p className="text-xs text-white/70">Cari dan daftar kursus gratis</p>
+      </div>
+      <ArrowRight className="w-5 h-5 shrink-0" />
+    </Link>
+  );
+}
+
 export function SiswaLayoutClient({ children }: { children: React.ReactNode }) {
   const { show, close } = useOnboardingSiswa();
 
@@ -41,6 +62,7 @@ export function SiswaLayoutClient({ children }: { children: React.ReactNode }) {
       defaultNama="Siswa"
       homeHref="/siswa/beranda"
     >
+      <KatalogKursusBar />
       <ToastProvider>{children}</ToastProvider>
       <FloatingActionMenu />
       {show && <OnboardingSiswa onClose={close} />}
