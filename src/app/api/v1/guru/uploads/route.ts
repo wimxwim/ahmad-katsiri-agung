@@ -10,7 +10,7 @@ import { validateCsrf } from "@/lib/csrf-server";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { fileMateri, kursus, users, aiGeneration } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, desc, lt } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { extractText } from "@/lib/text-extractor";
 import { incrementUploadCount, getSubscriptionStatus } from "@/lib/token-service";
@@ -308,7 +308,16 @@ export async function GET(request: NextRequest) {
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const url = new URL(request.url);
+    const cursor = url.searchParams.get("cursor");
     const limit = Math.min(50, Math.max(5, parseInt(url.searchParams.get("limit") || "20", 10)));
+
+    const whereConditions = [eq(fileMateri.guruId, session.userId!)];
+    if (cursor) {
+      const cursorDate = new Date(cursor);
+      if (!isNaN(cursorDate.getTime())) {
+        whereConditions.push(lt(fileMateri.createdAt, cursorDate));
+      }
+    }
 
     const data = await db
       .select({
@@ -327,16 +336,23 @@ export async function GET(request: NextRequest) {
         updatedAt: fileMateri.updatedAt,
       })
       .from(fileMateri)
-      .where(eq(fileMateri.guruId, session.userId!))
-      .orderBy(fileMateri.createdAt)
-      .limit(limit);
+      .where(and(...whereConditions))
+      .orderBy(desc(fileMateri.createdAt), desc(fileMateri.id))
+      .limit(limit + 1);
 
-    const sanitized = data.map((f) => ({
+    const hasMore = data.length > limit;
+    const items = hasMore ? data.slice(0, limit) : data;
+
+    const sanitized = items.map((f) => ({
       ...f,
       linkAkses: `/api/v1/storage/${f.id}`,
     }));
 
-    return NextResponse.json({ data: sanitized });
+    const nextCursor = hasMore && items.length > 0
+      ? items[items.length - 1].createdAt.toISOString()
+      : null;
+
+    return NextResponse.json({ data: sanitized, nextCursor });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Upload list error:", e);

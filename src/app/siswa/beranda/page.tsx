@@ -62,7 +62,7 @@ interface PengumumanItem {
 }
 
 interface DashboardData {
-  profil: { nama: string } | null;
+  profil: { id: string; nama: string } | null;
   feed: FeedResponse;
   quiz: { data: QuizItem[]; totalAttempt: number };
   pengumuman: { data: PengumumanItem[] };
@@ -77,17 +77,21 @@ export default function SiswaBerandaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [nama, setNama] = useState("Siswa");
+  const [userId, setUserId] = useState<string | null>(null);
   const retryCount = useRef(0);
 
   const fetchData = useCallback(async () => {
-    const cached = getCached<DashboardData>(`beranda:dashboard:${nama || "anon"}`);
-    if (cached) {
-      setFeed(cached.feed);
-      setPengumuman(cached.pengumuman?.data ?? []);
-      setQuizList(cached.quiz?.data ?? []);
-      if (cached.profil?.nama) setNama(cached.profil.nama);
-      setLoading(false);
-      return;
+    const cacheKey = userId ? `beranda:dashboard:${userId}` : null;
+    if (cacheKey) {
+      const cached = getCached<DashboardData>(cacheKey);
+      if (cached) {
+        setFeed(cached.feed);
+        setPengumuman(cached.pengumuman?.data ?? []);
+        setQuizList(cached.quiz?.data ?? []);
+        if (cached.profil?.nama) setNama(cached.profil.nama);
+        setLoading(false);
+        return;
+      }
     }
 
     try {
@@ -105,7 +109,8 @@ export default function SiswaBerandaPage() {
       const json = await res.json();
       const d = json.data as DashboardData;
 
-      setCache(`beranda:dashboard:${d.profil?.nama || nama}`, d, CACHE_TTL);
+      setCache(`beranda:dashboard:${d.profil?.id || userId || "anon"}`, d, CACHE_TTL);
+      if (d.profil?.id) setUserId(d.profil.id);
 
       if (d.profil?.nama) setNama(d.profil.nama);
       if (d.feed) setFeed(d.feed);

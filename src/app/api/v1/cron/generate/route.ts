@@ -149,24 +149,32 @@ export async function POST(request: NextRequest) {
 
       const retryable = isRetryable(msg);
 
-      if (retryable) {
+      const [current] = await db
+        .select({ attemptCount: sql<number>`attempt_count` })
+        .from(aiGeneration)
+        .where(eq(aiGeneration.id, job.id))
+        .limit(1);
+
+      const attemptCount = current?.attemptCount ?? 0;
+
+      if (retryable && attemptCount < 3) {
         await db
           .update(aiGeneration)
           .set({
             status: "queued",
-            errorMessage: `[CRON] ${msg.slice(0, 300)}`,
+            errorMessage: `[CRON] Attempt ${attemptCount}/3: ${msg.slice(0, 250)}`,
             leaseUntil: null,
             updatedAt: new Date(),
           })
           .where(eq(aiGeneration.id, job.id));
 
-        results.push({ id: job.id, status: "queued", error: "Retryable — akan dicoba lagi" });
+        results.push({ id: job.id, status: "queued", error: `Retry ${attemptCount}/3` });
       } else {
         await db
           .update(aiGeneration)
           .set({
             status: "failed",
-            errorMessage: msg.slice(0, 500),
+            errorMessage: retryable ? `Gagal setelah ${attemptCount} attempts: ${msg.slice(0, 300)}` : msg.slice(0, 500),
             leaseUntil: null,
             updatedAt: new Date(),
           })

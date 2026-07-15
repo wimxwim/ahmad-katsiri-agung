@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { tokenBalances, tokenTransactions, users } from "@/lib/db/schema";
-import { eq, sql, and, gte, desc } from "drizzle-orm";
+import { eq, sql, and, desc } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
 import { GENERATE_COST, INITIAL_TOKEN_BALANCE, FREE_TIER_UPLOAD_LIMIT } from "@/lib/token-constants";
 
@@ -112,25 +112,43 @@ export async function deductBalance(
 ): Promise<TokenBalance> {
   if (amount <= 0) throw new Error("Jumlah harus lebih dari 0");
 
-  const before = await getBalance(userId);
-
   const after = await db.transaction(async (tx) => {
-    const [result] = await tx
-      .update(tokenBalances)
-      .set({
-        balance: sql`${tokenBalances.balance} - ${amount}`,
-        totalSpent: sql`${tokenBalances.totalSpent} + ${amount}`,
-        updatedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(tokenBalances.userId, userId),
-          gte(tokenBalances.balance, amount),
-        ),
-      )
-      .returning({ balance: tokenBalances.balance });
+    const [bal] = await tx
+      .select({ balance: tokenBalances.balance, totalTopup: tokenBalances.totalTopup, totalSpent: tokenBalances.totalSpent, lastTopupAt: tokenBalances.lastTopupAt, isUnlocked: tokenBalances.isUnlocked, unlockedAt: tokenBalances.unlockedAt })
+      .from(tokenBalances)
+      .where(eq(tokenBalances.userId, userId))
+      .for("update")
+      .limit(1);
 
-    if (!result) {
+    const before: TokenBalance = {
+      userId,
+      balance: bal?.balance ?? 0,
+      totalTopup: bal?.totalTopup ?? 0,
+      totalSpent: bal?.totalSpent ?? 0,
+      lastTopupAt: bal?.lastTopupAt ?? null,
+      isUnlocked: bal?.isUnlocked ?? false,
+      unlockedAt: bal?.unlockedAt ?? null,
+    };
+
+    if (metadata?.referenceId) {
+      const [existing] = await tx
+        .select({ id: tokenTransactions.id })
+        .from(tokenTransactions)
+        .where(
+          and(
+            eq(tokenTransactions.userId, userId),
+            eq(tokenTransactions.type, "DEDUCT"),
+            eq(tokenTransactions.referenceId, metadata.referenceId),
+          ),
+        )
+        .limit(1);
+
+      if (existing) {
+        return before;
+      }
+    }
+
+    if (before.balance < amount) {
       throw new InsufficientBalanceError(
         `Saldo tidak cukup. Butuh Rp${amount}, saldo sekarang Rp${before.balance}.`,
         before.balance,
@@ -138,40 +156,39 @@ export async function deductBalance(
       );
     }
 
-    const afterTx = { ...before, balance: result.balance, totalSpent: before.totalSpent + amount };
+    const [result] = await tx
+      .update(tokenBalances)
+      .set({
+        balance: sql`${tokenBalances.balance} - ${amount}`,
+        totalSpent: sql`${tokenBalances.totalSpent} + ${amount}`,
+        updatedAt: new Date(),
+      })
+      .where(eq(tokenBalances.userId, userId))
+      .returning({ balance: tokenBalances.balance });
 
-    if (metadata?.referenceId) {
-      await tx
-        .insert(tokenTransactions)
-        .values({
-          userId,
-          type: "DEDUCT",
-          status: "COMPLETED",
-          amount,
-          balanceBefore: before.balance,
-          balanceAfter: afterTx.balance,
-          notes: metadata?.notes ?? null,
-          referenceId: metadata.referenceId,
-        })
-        .onConflictDoNothing();
-    } else {
-      await tx.insert(tokenTransactions).values({
-        userId,
-        type: "DEDUCT",
-        status: "COMPLETED",
-        amount,
-        balanceBefore: before.balance,
-        balanceAfter: afterTx.balance,
-        notes: metadata?.notes ?? null,
-      });
-    }
+    const afterTx: TokenBalance = {
+      ...before,
+      balance: result?.balance ?? before.balance - amount,
+      totalSpent: before.totalSpent + amount,
+    };
+
+    await tx.insert(tokenTransactions).values({
+      userId,
+      type: "DEDUCT",
+      status: "COMPLETED",
+      amount,
+      balanceBefore: before.balance,
+      balanceAfter: afterTx.balance,
+      notes: metadata?.notes ?? null,
+      referenceId: metadata?.referenceId ?? null,
+    });
 
     return afterTx;
   });
 
   await appendEvent(`token:${userId}`, "token.deducted", {
     amount,
-    balanceBefore: before.balance,
+    balanceBefore: after.balance + amount,
     balanceAfter: after.balance,
     notes: metadata?.notes ?? null,
     referenceId: metadata?.referenceId ?? null,
@@ -190,6 +207,13 @@ export async function refundBalance(
   metadata?: { notes?: string; referenceId?: string },
 ): Promise<TokenBalance> {
   return db.transaction(async (dbtx) => {
+    const [bal] = await dbtx
+      .select({ balance: tokenBalances.balance, totalTopup: tokenBalances.totalTopup, totalSpent: tokenBalances.totalSpent, lastTopupAt: tokenBalances.lastTopupAt, isUnlocked: tokenBalances.isUnlocked, unlockedAt: tokenBalances.unlockedAt })
+      .from(tokenBalances)
+      .where(eq(tokenBalances.userId, userId))
+      .for("update")
+      .limit(1);
+
     if (metadata?.referenceId) {
       const [existing] = await dbtx
         .select({ id: tokenTransactions.id })
@@ -204,18 +228,19 @@ export async function refundBalance(
         .limit(1);
 
       if (existing) {
-        const [bal] = await dbtx
-          .select({ balance: tokenBalances.balance })
-          .from(tokenBalances)
-          .where(eq(tokenBalances.userId, userId));
-        return { userId, balance: bal?.balance ?? 0, totalTopup: 0, totalSpent: 0, lastTopupAt: null, isUnlocked: false, unlockedAt: null };
+        return {
+          userId,
+          balance: bal?.balance ?? 0,
+          totalTopup: bal?.totalTopup ?? 0,
+          totalSpent: bal?.totalSpent ?? 0,
+          lastTopupAt: bal?.lastTopupAt ?? null,
+          isUnlocked: bal?.isUnlocked ?? false,
+          unlockedAt: bal?.unlockedAt ?? null,
+        };
       }
     }
 
-    const [before] = await dbtx
-      .select({ balance: tokenBalances.balance })
-      .from(tokenBalances)
-      .where(eq(tokenBalances.userId, userId));
+    const balanceBefore = bal?.balance ?? 0;
 
     await dbtx
       .update(tokenBalances)
@@ -226,7 +251,7 @@ export async function refundBalance(
       .where(eq(tokenBalances.userId, userId));
 
     const [after] = await dbtx
-      .select({ balance: tokenBalances.balance })
+      .select({ balance: tokenBalances.balance, totalTopup: tokenBalances.totalTopup, totalSpent: tokenBalances.totalSpent, lastTopupAt: tokenBalances.lastTopupAt, isUnlocked: tokenBalances.isUnlocked, unlockedAt: tokenBalances.unlockedAt })
       .from(tokenBalances)
       .where(eq(tokenBalances.userId, userId));
 
@@ -235,7 +260,7 @@ export async function refundBalance(
       type: "REFUND",
       status: "COMPLETED",
       amount,
-      balanceBefore: before?.balance ?? 0,
+      balanceBefore,
       balanceAfter: after?.balance ?? 0,
       notes: metadata?.notes ?? null,
       referenceId: metadata?.referenceId ?? null,
@@ -243,13 +268,21 @@ export async function refundBalance(
 
     await appendEvent(`token:${userId}`, "token.refunded", {
       amount,
-      balanceBefore: before?.balance ?? 0,
+      balanceBefore,
       balanceAfter: after?.balance ?? 0,
       notes: metadata?.notes ?? null,
       referenceId: metadata?.referenceId ?? null,
     }).catch(() => {});
 
-    return after as TokenBalance;
+    return {
+      userId,
+      balance: after?.balance ?? 0,
+      totalTopup: after?.totalTopup ?? 0,
+      totalSpent: after?.totalSpent ?? 0,
+      lastTopupAt: after?.lastTopupAt ?? null,
+      isUnlocked: after?.isUnlocked ?? false,
+      unlockedAt: after?.unlockedAt ?? null,
+    };
   });
 }
 
