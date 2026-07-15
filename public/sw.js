@@ -1,4 +1,4 @@
-const CACHE_NAME = "akal-center-v1";
+const CACHE_NAME = "akal-center-v2";
 const STATIC_ASSETS = [
   "/",
   "/masuk",
