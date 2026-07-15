@@ -127,6 +127,16 @@ export function DashboardLayoutClient({
         />
       )}
 
+      {sidebarOpen && (
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="fixed top-0 left-0 z-50 lg:hidden flex items-center justify-center w-11 h-11 m-3 bg-white/90 backdrop-blur-xl rounded-xl shadow-lg border border-border-precision text-on-surface hover:text-primary cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden active:scale-95 transition-all duration-200"
+          aria-label="Tutup menu"
+        >
+          <X className="w-5 h-5" strokeWidth={1.5} />
+        </button>
+      )}
+
       <div className="flex-1 flex flex-col min-w-0">
         <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-border-precision flex items-center justify-between px-3 py-1.5 sm:px-4 sm:py-3">
           <button
