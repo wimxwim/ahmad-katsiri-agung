@@ -169,6 +169,7 @@ export const siswaKursus = pgTable(
     unique("siswa_kursus_unique").on(table.siswaId, table.kursusId),
     index("siswa_kursus_kursus_id_idx").on(table.kursusId),
     index("siswa_kursus_status_idx").on(table.status),
+    index("siswa_kursus_invite_token_idx").on(table.inviteTokenId),
   ]
 );
 
@@ -996,6 +997,7 @@ export const quizAttempt = pgTable(
     siswaIdx: index("quiz_attempt_siswa_idx").on(t.siswaId, t.waktuMulai),
     quizIdx: index("quiz_attempt_quiz_idx").on(t.quizPublishedId),
     statusIdx: index("quiz_attempt_status_idx").on(t.status),
+    nilaiIdx: index("quiz_attempt_nilai_idx").on(t.nilai),
   }),
 );
 

@@ -245,7 +245,20 @@ export async function runGeneration(
       .where(eq(aiGeneration.id, generationId));
     await appendEvent(`gen:${gen.guruId}`, "gen.generating", { generationId });
 
-    const truncatedSource = sanitizeUserText(sourceText.slice(0, 12_000));
+    const MAX_SOURCE_LENGTH = 12_000;
+    let truncatedSource: string;
+    if (sourceText.length > MAX_SOURCE_LENGTH) {
+      await appendEvent(`gen:${gen.guruId}`, "gen.truncation_warning", {
+        generationId,
+        originalLength: sourceText.length,
+        maxLength: MAX_SOURCE_LENGTH,
+        truncated: sourceText.length - MAX_SOURCE_LENGTH,
+      });
+      console.warn(`[AI Generator] Source text truncated from ${sourceText.length} to ${MAX_SOURCE_LENGTH} chars for generation ${generationId}`);
+      truncatedSource = sanitizeUserText(sourceText.slice(0, MAX_SOURCE_LENGTH));
+    } else {
+      truncatedSource = sanitizeUserText(sourceText);
+    }
 
     let aiResults: [ChatResult, ChatResult, ChatResult];
     try {
