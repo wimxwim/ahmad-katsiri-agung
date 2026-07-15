@@ -126,7 +126,7 @@ export function OrangTuaLayoutClient({ children }: { children: React.ReactNode }
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-20 bg-surface/80 backdrop-blur-md border-b border-border-precision flex items-center gap-3 px-4 py-3">
+        <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-border-precision flex items-center gap-3 px-4 py-3">
           <button
             onClick={() => setSidebarOpen(true)}
             className="lg:hidden p-2 -ml-2 text-on-surface-variant hover:text-on-surface"
