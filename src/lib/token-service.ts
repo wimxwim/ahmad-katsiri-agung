@@ -112,25 +112,6 @@ export async function deductBalance(
 ): Promise<TokenBalance> {
   if (amount <= 0) throw new Error("Jumlah harus lebih dari 0");
 
-  if (metadata?.referenceId) {
-    const [existing] = await db
-      .select({ balanceAfter: tokenTransactions.balanceAfter })
-      .from(tokenTransactions)
-      .where(
-        and(
-          eq(tokenTransactions.userId, userId),
-          eq(tokenTransactions.type, "DEDUCT"),
-          eq(tokenTransactions.referenceId, metadata.referenceId),
-        ),
-      )
-      .limit(1);
-
-    if (existing) {
-      const current = await getBalance(userId);
-      return current;
-    }
-  }
-
   const before = await getBalance(userId);
 
   const after = await db.transaction(async (tx) => {
@@ -159,16 +140,31 @@ export async function deductBalance(
 
     const afterTx = { ...before, balance: result.balance, totalSpent: before.totalSpent + amount };
 
-    await tx.insert(tokenTransactions).values({
-      userId,
-      type: "DEDUCT",
-      status: "COMPLETED",
-      amount,
-      balanceBefore: before.balance,
-      balanceAfter: afterTx.balance,
-      notes: metadata?.notes ?? null,
-      referenceId: metadata?.referenceId ?? null,
-    });
+    if (metadata?.referenceId) {
+      await tx
+        .insert(tokenTransactions)
+        .values({
+          userId,
+          type: "DEDUCT",
+          status: "COMPLETED",
+          amount,
+          balanceBefore: before.balance,
+          balanceAfter: afterTx.balance,
+          notes: metadata?.notes ?? null,
+          referenceId: metadata.referenceId,
+        })
+        .onConflictDoNothing();
+    } else {
+      await tx.insert(tokenTransactions).values({
+        userId,
+        type: "DEDUCT",
+        status: "COMPLETED",
+        amount,
+        balanceBefore: before.balance,
+        balanceAfter: afterTx.balance,
+        notes: metadata?.notes ?? null,
+      });
+    }
 
     return afterTx;
   });
@@ -179,7 +175,7 @@ export async function deductBalance(
     balanceAfter: after.balance,
     notes: metadata?.notes ?? null,
     referenceId: metadata?.referenceId ?? null,
-  });
+  }).catch(() => {});
 
   return after;
 }
@@ -191,9 +187,31 @@ export async function deductGenerateCost(userId: string, referenceId?: string): 
 export async function refundBalance(
   userId: string,
   amount: number,
-  metadata?: { notes?: string },
+  metadata?: { notes?: string; referenceId?: string },
 ): Promise<TokenBalance> {
   return db.transaction(async (dbtx) => {
+    if (metadata?.referenceId) {
+      const [existing] = await dbtx
+        .select({ id: tokenTransactions.id })
+        .from(tokenTransactions)
+        .where(
+          and(
+            eq(tokenTransactions.userId, userId),
+            eq(tokenTransactions.type, "REFUND"),
+            eq(tokenTransactions.referenceId, metadata.referenceId),
+          ),
+        )
+        .limit(1);
+
+      if (existing) {
+        const [bal] = await dbtx
+          .select({ balance: tokenBalances.balance })
+          .from(tokenBalances)
+          .where(eq(tokenBalances.userId, userId));
+        return { userId, balance: bal?.balance ?? 0, totalTopup: 0, totalSpent: 0, lastTopupAt: null, isUnlocked: false, unlockedAt: null };
+      }
+    }
+
     const [before] = await dbtx
       .select({ balance: tokenBalances.balance })
       .from(tokenBalances)
@@ -220,6 +238,7 @@ export async function refundBalance(
       balanceBefore: before?.balance ?? 0,
       balanceAfter: after?.balance ?? 0,
       notes: metadata?.notes ?? null,
+      referenceId: metadata?.referenceId ?? null,
     });
 
     await appendEvent(`token:${userId}`, "token.refunded", {
@@ -227,7 +246,8 @@ export async function refundBalance(
       balanceBefore: before?.balance ?? 0,
       balanceAfter: after?.balance ?? 0,
       notes: metadata?.notes ?? null,
-    });
+      referenceId: metadata?.referenceId ?? null,
+    }).catch(() => {});
 
     return after as TokenBalance;
   });

@@ -68,7 +68,7 @@ interface DashboardData {
   pengumuman: { data: PengumumanItem[] };
 }
 
-const CACHE_TTL = 60_000;
+const CACHE_TTL = 30_000;
 
 export default function SiswaBerandaPage() {
   const [feed, setFeed] = useState<FeedResponse | null>(null);
@@ -80,7 +80,7 @@ export default function SiswaBerandaPage() {
   const retryCount = useRef(0);
 
   const fetchData = useCallback(async () => {
-    const cached = getCached<DashboardData>("beranda:dashboard");
+    const cached = getCached<DashboardData>(`beranda:dashboard:${nama || "anon"}`);
     if (cached) {
       setFeed(cached.feed);
       setPengumuman(cached.pengumuman?.data ?? []);
@@ -105,7 +105,7 @@ export default function SiswaBerandaPage() {
       const json = await res.json();
       const d = json.data as DashboardData;
 
-      setCache("beranda:dashboard", d, CACHE_TTL);
+      setCache(`beranda:dashboard:${d.profil?.nama || nama}`, d, CACHE_TTL);
 
       if (d.profil?.nama) setNama(d.profil.nama);
       if (d.feed) setFeed(d.feed);

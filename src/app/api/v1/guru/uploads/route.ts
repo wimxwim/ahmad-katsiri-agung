@@ -205,7 +205,7 @@ export async function POST(request: NextRequest) {
       at: new Date().toISOString(),
     }).catch(() => {});
 
-    queueExtraction(job.fileId, job.generationId, bytes, detected, session.userId!);
+    queueExtraction(job.fileId, job.generationId, uploadResult.link, detected, session.userId!);
 
     return NextResponse.json({
       success: true,
@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
 function queueExtraction(
   fileId: string,
   generationId: string,
-  bytes: Buffer,
+  fileUrl: string,
   ext: string,
   guruId: string,
 ): void {
@@ -252,7 +252,12 @@ function queueExtraction(
         .set({ status: "extracting", updatedAt: new Date() })
         .where(eq(fileMateri.id, fileId));
 
-      const text = await extractText(bytes, ext);
+      const fileRes = await fetch(fileUrl, { signal: AbortSignal.timeout(30_000) });
+      if (!fileRes.ok) {
+        throw new Error(`Gagal mengunduh file: ${fileRes.status}`);
+      }
+      const fileBytes = Buffer.from(await fileRes.arrayBuffer());
+      const text = await extractText(fileBytes, ext);
 
       if (text && text.length >= 50) {
         await db

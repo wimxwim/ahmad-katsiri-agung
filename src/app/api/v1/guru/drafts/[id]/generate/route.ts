@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -242,15 +242,68 @@ export async function POST(
       throw e;
     }
 
-    await db
+    const [claimed] = await db
       .update(aiGeneration)
       .set({ status: "generating", updatedAt: new Date() })
-      .where(eq(aiGeneration.id, id));
+      .where(
+        and(
+          eq(aiGeneration.id, id),
+          eq(aiGeneration.guruId, session.userId!),
+          sql`${aiGeneration.status} IN ('queued', 'extracted', 'failed')`,
+        ),
+      )
+      .returning({ id: aiGeneration.id });
+
+    if (!claimed) {
+      releaseConcurrent(concKey);
+      await refundBalance(session.userId!, getGenerateCost(), { notes: "Generate sudah berjalan di request lain", referenceId: `refund:${id}` });
+      return NextResponse.json({
+        success: false,
+        error: "Generate sudah dimulai di request lain.",
+        errorCode: "ALREADY_GENERATING",
+      }, { status: 409 });
+    }
 
     const guruId = session.userId!;
     const finalText = sourceText;
 
-    fireAndForgetGeneration(id, finalText, guruId, soalCount, quizCount, concKey);
+    after(async () => {
+      try {
+        await runGenerationFromText(id, finalText, guruId, soalCount, quizCount);
+        invalidateGuruCache(guruId).catch(() => {});
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        console.error("Background generation failed:", errMsg);
+
+        const isTimeout = errMsg.includes("timeout") || errMsg.includes("Timeout");
+        const refundNote = isTimeout
+          ? "Generate timeout. Token dikembalikan otomatis."
+          : "Generate gagal. Token dikembalikan otomatis.";
+
+        try {
+          await refundBalance(guruId, getGenerateCost(), { notes: refundNote, referenceId: `refund:${id}` });
+        } catch {
+          console.error("Refund failed for generation:", id);
+        }
+
+        await db
+          .update(aiGeneration)
+          .set({
+            status: "failed",
+            errorMessage: errMsg.slice(0, 500),
+            updatedAt: new Date(),
+          })
+          .where(eq(aiGeneration.id, id));
+
+        await appendEvent(`gen:${guruId}`, "gen.failed", {
+          generationId: id,
+          error: errMsg.slice(0, 200),
+          refunded: true,
+        }).catch(() => {});
+      } finally {
+        if (concKey) releaseConcurrent(concKey);
+      }
+    });
 
     return NextResponse.json({
       success: true,
@@ -267,51 +320,4 @@ export async function POST(
     console.error("Generate trigger error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }
-}
-
-function fireAndForgetGeneration(
-  generationId: string,
-  sourceText: string,
-  guruId: string,
-  soalCount: number,
-  quizCount: number,
-  concKey: string,
-): void {
-  Promise.resolve().then(async () => {
-    try {
-      await runGenerationFromText(generationId, sourceText, guruId, soalCount, quizCount);
-      invalidateGuruCache(guruId).catch(() => {});
-    } catch (err) {
-      const errMsg = err instanceof Error ? err.message : String(err);
-      console.error("Background generation failed:", errMsg);
-
-      const isTimeout = errMsg.includes("timeout") || errMsg.includes("Timeout");
-      const refundNote = isTimeout
-        ? "Generate timeout. Token dikembalikan otomatis."
-        : "Generate gagal. Token dikembalikan otomatis.";
-
-      try {
-        await refundBalance(guruId, getGenerateCost(), { notes: refundNote });
-      } catch {
-        console.error("Refund failed for generation:", generationId);
-      }
-
-      await db
-        .update(aiGeneration)
-        .set({
-          status: "failed",
-          errorMessage: errMsg.slice(0, 500),
-          updatedAt: new Date(),
-        })
-        .where(eq(aiGeneration.id, generationId));
-
-      await appendEvent(`gen:${guruId}`, "gen.failed", {
-        generationId,
-        error: errMsg.slice(0, 200),
-        refunded: true,
-      });
-    } finally {
-      releaseConcurrent(concKey);
-    }
-  });
 }

@@ -5,9 +5,10 @@
 ALTER TABLE token_transactions
   ADD COLUMN IF NOT EXISTS reference_id VARCHAR(255);
 
-CREATE INDEX IF NOT EXISTS token_transactions_reference_idx
+-- UNIQUE constraint: satu generationId hanya boleh satu DEDUCT/REFUND
+CREATE UNIQUE INDEX IF NOT EXISTS token_transactions_deduct_ref_unique
   ON token_transactions (user_id, type, reference_id)
-  WHERE reference_id IS NOT NULL;
+  WHERE reference_id IS NOT NULL AND type IN ('DEDUCT', 'REFUND');
 
 -- AI generation: attempt_count + lease_until untuk durable queue
 ALTER TABLE ai_generation
