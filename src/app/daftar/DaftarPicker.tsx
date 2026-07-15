@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, GraduationCap, ShieldCheck, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 import { GoogleIcon } from "@/app/masuk/_components/GoogleIcon";
@@ -17,6 +17,7 @@ export function DaftarPicker() {
   const [mode, setMode] = useState<Mode>("pilih");
   const [loading, setLoading] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
+  const redirectingRef = useRef(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -27,6 +28,8 @@ export function DaftarPicker() {
   }, [searchParams, initialPortal]);
 
   function startGoogleRegister() {
+    if (redirectingRef.current) return;
+    redirectingRef.current = true;
     setRedirecting(true);
     const url = new URL("/api/v1/auth/google", window.location.origin);
     url.searchParams.set("portal", isGuru ? "guru" : "siswa");

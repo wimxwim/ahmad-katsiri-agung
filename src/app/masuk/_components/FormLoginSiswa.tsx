@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { PasswordInput } from "./PasswordInput";
 import { ErrorAlert } from "./ErrorAlert";
 import { GoogleIcon } from "./GoogleIcon";
@@ -27,8 +27,11 @@ export function FormLoginSiswa({
   noPassword,
 }: Props) {
   const [redirecting, setRedirecting] = useState(false);
+  const redirectingRef = useRef(false);
 
   function handleGoogle() {
+    if (redirectingRef.current) return;
+    redirectingRef.current = true;
     setRedirecting(true);
     startGoogleLogin("siswa", redirectTo);
   }
