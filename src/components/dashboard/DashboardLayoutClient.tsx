@@ -128,29 +128,26 @@ export function DashboardLayoutClient({
       )}
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-20 bg-surface/80 backdrop-blur-md border-b border-border-precision flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-3">
+        <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-xl border-b border-border-precision flex items-center justify-between px-3 py-1.5 sm:px-4 sm:py-3">
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden flex items-center gap-1 p-1.5 -ml-1 text-on-surface-variant hover:text-on-surface cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
+            className="lg:hidden flex items-center justify-center w-11 h-11 -ml-1 text-on-surface-variant hover:text-on-surface cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden rounded-xl active:bg-surface transition-colors"
             aria-label="Buka menu"
           >
-            <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Menu className="w-5 h-5" strokeWidth={1.5} />
           </button>
-          <div className="flex-1 flex items-center justify-center lg:justify-start">
-            <span className="font-heading font-bold text-xs sm:text-sm text-on-surface/60 lg:hidden truncate">AKAL Center</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-on-surface-variant">
+          <div className="flex items-center gap-2">
             <Link
               href="/profil"
-              className="flex items-center gap-2 hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
+              className="flex items-center justify-center w-11 h-11 sm:w-auto sm:h-auto hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden rounded-xl sm:rounded-none active:bg-surface sm:active:bg-transparent"
               aria-label="Profil"
             >
-              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-[10px] sm:text-xs font-bold text-primary font-heading">
+              <div className="w-7 h-7 sm:w-7 sm:h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-xs font-bold text-primary font-heading">
                   {nama?.charAt(0)?.toUpperCase() || "S"}
                 </span>
               </div>
-              <span className="hidden sm:inline text-xs sm:text-sm">{nama}</span>
+              <span className="hidden sm:inline text-sm ml-2">{nama}</span>
             </Link>
           </div>
         </header>
