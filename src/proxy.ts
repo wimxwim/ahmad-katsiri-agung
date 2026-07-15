@@ -29,6 +29,11 @@ const PUBLIC_PATHS = new Set([
   "/icon.svg",
   "/opengraph-image.png",
   "/sitemap.xml",
+  "/sw.js",
+  "/manifest.json",
+  "/offline",
+  "/robots.txt",
+  "/apple-icon.png",
 ]);
 
 const ROLE_ROUTE_MAP: Record<string, string[]> = {
