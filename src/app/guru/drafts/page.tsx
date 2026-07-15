@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from "react";
 import Link from "next/link";
-import { Sparkles, FileText, CheckCircle2, XCircle, RefreshCw, Clock, AlertCircle, Loader2, Search, Filter, Zap } from "lucide-react";
+import { Sparkles, FileText, CheckCircle2, XCircle, RefreshCw, Clock, AlertCircle, Loader2, Search, Filter, Zap, Wallet } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 import { csrfHeaders } from "@/lib/csrf";
@@ -39,6 +39,14 @@ export default function GuruDraftsPage() {
   const [kategoriFilter, setKategoriFilter] = useState("");
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
   const [generateError, setGenerateError] = useState("");
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/v1/token/balance", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => { if (d?.balance != null) setTokenBalance(d.balance); })
+      .catch(() => {});
+  }, []);
 
   async function handleGenerate(draftId: string) {
     setGenerateError("");
@@ -136,10 +144,26 @@ export default function GuruDraftsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="font-heading font-bold text-2xl text-on-surface">Draft AI</h1>
-        <p className="text-sm text-on-surface-variant mt-1">
-          Hasil AI yang menunggu review dan approval Anda. Tidak ada yang auto-publish ke siswa.
-        </p>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="font-heading font-bold text-2xl text-on-surface">Draft AI</h1>
+            <p className="text-sm text-on-surface-variant mt-1">
+              Hasil AI yang menunggu review dan approval Anda. Tidak ada yang auto-publish ke siswa.
+            </p>
+          </div>
+          {tokenBalance != null && (
+            <Link
+              href="/guru/topup"
+              className="inline-flex items-center gap-2 bg-white border border-border-precision rounded-xl px-4 py-2.5 shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-200"
+            >
+              <Wallet className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-on-surface">
+                Rp{tokenBalance.toLocaleString("id-ID")}
+              </span>
+              <span className="text-xs text-on-surface-variant/50">saldo</span>
+            </Link>
+          )}
+        </div>
       </div>
 
       {loading ? (

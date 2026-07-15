@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
       return apiError("Sedang ada generate sertifikat berjalan. Tunggu selesai.", 429);
     }
 
+    try {
     const eligible = await db
       .select({
         siswaId: siswaKursus.siswaId,
@@ -88,12 +89,13 @@ export async function POST(request: NextRequest) {
 
     generated = toInsert.length;
 
-    releaseConcurrent(`sertifikat-gen:${session.userId}`);
-
     return NextResponse.json({
       success: true,
       data: { generated, totalEligible: eligible.length },
     });
+    } finally {
+      releaseConcurrent(`sertifikat-gen:${session.userId}`);
+    }
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Sertifikat generate error:", e);
