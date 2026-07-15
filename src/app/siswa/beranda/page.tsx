@@ -79,6 +79,7 @@ export default function SiswaBerandaPage() {
   const [nama, setNama] = useState("Siswa");
   const [userId, setUserId] = useState<string | null>(null);
   const retryCount = useRef(0);
+  const fetchDataRef = useRef<() => Promise<void>>(async () => {});
 
   const fetchData = useCallback(async () => {
     const cacheKey = userId ? `beranda:dashboard:${userId}` : null;
@@ -100,7 +101,7 @@ export default function SiswaBerandaPage() {
         if (retryCount.current < 2 && (res.status === 401 || res.status >= 500)) {
           retryCount.current++;
           await new Promise((r) => setTimeout(r, 400 * retryCount.current));
-          return fetchData();
+          return fetchDataRef.current();
         }
         setError("Terjadi kesalahan saat memuat data. Coba lagi.");
         setLoading(false);
@@ -120,13 +121,17 @@ export default function SiswaBerandaPage() {
       if (retryCount.current < 2) {
         retryCount.current++;
         await new Promise((r) => setTimeout(r, 400 * retryCount.current));
-        return fetchData();
+        return fetchDataRef.current();
       }
       setError("Terjadi kesalahan saat memuat data. Coba lagi.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [userId]);
+
+  useEffect(() => {
+    fetchDataRef.current = fetchData;
+  });
 
   useEffect(() => {
     fetchData();
