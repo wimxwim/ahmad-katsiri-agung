@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -78,6 +78,7 @@ export default function SiswaBerandaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [nama, setNama] = useState("Siswa");
+  const retryCount = useRef(0);
 
   const fetchData = useCallback(async () => {
     const cached = getCached<DashboardData>("beranda:dashboard");
@@ -93,6 +94,11 @@ export default function SiswaBerandaPage() {
     try {
       const res = await fetch("/api/v1/siswa/dashboard", { credentials: "include" });
       if (!res.ok) {
+        if (retryCount.current < 2 && (res.status === 401 || res.status >= 500)) {
+          retryCount.current++;
+          await new Promise((r) => setTimeout(r, 400 * retryCount.current));
+          return fetchData();
+        }
         setError("Terjadi kesalahan saat memuat data. Coba lagi.");
         setLoading(false);
         return;
@@ -107,6 +113,11 @@ export default function SiswaBerandaPage() {
       if (d.pengumuman?.data) setPengumuman(d.pengumuman.data);
       if (d.quiz?.data) setQuizList(d.quiz.data);
     } catch {
+      if (retryCount.current < 2) {
+        retryCount.current++;
+        await new Promise((r) => setTimeout(r, 400 * retryCount.current));
+        return fetchData();
+      }
       setError("Terjadi kesalahan saat memuat data. Coba lagi.");
     } finally {
       setLoading(false);

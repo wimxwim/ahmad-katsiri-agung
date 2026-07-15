@@ -518,6 +518,7 @@ export default function GuruBerandaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const aliveRef = useRef(true);
+  const retryCount = useRef(0);
 
   async function fetchData() {
     const [dashResult, onboardResult] = await Promise.all([
@@ -526,6 +527,11 @@ export default function GuruBerandaPage() {
     ]);
     if (!aliveRef.current) return;
     if (!dashResult.ok) {
+      if (retryCount.current < 2 && (dashResult.status === 401 || dashResult.status >= 500)) {
+        retryCount.current++;
+        await new Promise((r) => setTimeout(r, 400 * retryCount.current));
+        return fetchData();
+      }
       setError(dashResult.error);
     } else {
       setData(dashResult.data ?? null);
