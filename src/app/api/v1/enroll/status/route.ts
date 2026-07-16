@@ -14,6 +14,34 @@ export async function GET(request: NextRequest) {
     const rl = await checkRateLimit(`enroll-status:${ip}`, 20, 15000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
+    const { searchParams } = new URL(request.url);
+    const kursusId = searchParams.get("kursusId");
+
+    if (kursusId) {
+      const [enrollment] = await db
+        .select({
+          kursusId: siswaKursus.kursusId,
+          status: siswaKursus.status,
+          tanggalDaftar: siswaKursus.tanggalDaftar,
+        })
+        .from(siswaKursus)
+        .where(
+          and(
+            eq(siswaKursus.siswaId, session.userId!),
+            eq(siswaKursus.kursusId, kursusId),
+          ),
+        )
+        .limit(1);
+
+      return NextResponse.json({
+        data: {
+          enrolled: Boolean(enrollment),
+          kursusId,
+          status: enrollment?.status ?? null,
+        },
+      });
+    }
+
     const enrollments = await db
       .select({
         kursusId: siswaKursus.kursusId,

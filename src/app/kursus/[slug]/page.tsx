@@ -62,7 +62,7 @@ export default function KursusDetailPage() {
       })
       .then((r) => r?.json())
       .then((j) => {
-        if (j?.data?.length > 0) setEnrolled(true);
+        if (j?.data?.enrolled === true) setEnrolled(true);
       })
       .catch(() => {});
   }, [kursus]);

@@ -36,7 +36,7 @@ export function Navbar() {
     pathname.startsWith("/admin-sekolah") ||
     pathname.startsWith("/profil");
 
-  const hasOwnHeader = pathname.startsWith("/siswa") || pathname.startsWith("/orang-tua");
+  const hasOwnHeader = pathname.startsWith("/siswa") || pathname.startsWith("/orang-tua") || pathname.startsWith("/guru");
   if (hasOwnHeader) return null;
 
   if (isAuthPage) return null;

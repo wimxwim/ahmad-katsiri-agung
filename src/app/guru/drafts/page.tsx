@@ -21,10 +21,10 @@ interface DraftItem {
 
 const STATUS_META: Record<string, { label: string; color: string; icon: typeof Sparkles }> = {
   queued: { label: "Antrian", color: "bg-blue-50 text-blue-700", icon: Clock },
-  extracting: { label: "Ekstraksi...", color: "bg-amber-50 text-amber-700", icon: RefreshCw },
-  extracted: { label: "Terekstrak", color: "bg-amber-50 text-amber-700", icon: FileText },
-  generating: { label: "AI bekerja...", color: "bg-amber-50 text-amber-700", icon: Sparkles },
-  ready: { label: "Draft siap direview", color: "bg-emerald-50 text-emerald-700", icon: Sparkles },
+  extracting: { label: "Membaca dokumen...", color: "bg-amber-50 text-amber-700", icon: RefreshCw },
+  extracted: { label: "Dokumen sudah dibaca", color: "bg-amber-50 text-amber-700", icon: FileText },
+  generating: { label: "Sedang menyiapkan...", color: "bg-amber-50 text-amber-700", icon: Sparkles },
+  ready: { label: "Siap diperiksa", color: "bg-emerald-50 text-emerald-700", icon: Sparkles },
   approved: { label: "Disetujui", color: "bg-emerald-50 text-emerald-800", icon: CheckCircle2 },
   rejected: { label: "Ditolak", color: "bg-red-50 text-red-700", icon: XCircle },
   failed: { label: "Gagal", color: "bg-red-50 text-red-700", icon: AlertCircle },
@@ -146,9 +146,9 @@ export default function GuruDraftsPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="font-heading font-bold text-2xl text-on-surface">Draft AI</h1>
+            <h1 className="font-heading font-bold text-2xl text-on-surface">Hasil AI untuk Ditinjau</h1>
             <p className="text-sm text-on-surface-variant mt-1">
-              Hasil AI yang menunggu review dan approval Anda. Tidak ada yang auto-publish ke siswa.
+              Hasil AI yang menunggu tinjauan Anda. Tidak ada yang otomatis tampil ke siswa sebelum Anda setujui.
             </p>
           </div>
           {tokenBalance != null && (
@@ -255,13 +255,18 @@ export default function GuruDraftsPage() {
             return (
               <div
                 key={d.id}
-                className="bg-glass border border-border-precision rounded-2xl p-5 flex items-center gap-4"
+                className="bg-glass border border-border-precision rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4"
               >
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                  {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Icon className="w-5 h-5" />}
+                <div className="flex items-center gap-3 sm:gap-0">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Icon className="w-5 h-5" />}
+                  </div>
+                  <span className={`sm:hidden px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap ${meta.color}`}>
+                    {meta.label}
+                  </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-on-surface truncate">
+                  <p className="font-semibold text-on-surface break-words whitespace-normal">
                     {d.materiJudul || d.sourceFileName}
                   </p>
                   <p className="text-xs text-on-surface-variant flex items-center gap-2 mt-1 flex-wrap">
@@ -281,36 +286,38 @@ export default function GuruDraftsPage() {
                     )}
                   </p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${meta.color}`}>
+                <span className={`hidden sm:inline-block px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ${meta.color}`}>
                   {meta.label}
                 </span>
-                {d.status === "ready" && (
-                  <Link
-                    href={`/guru/drafts/${d.id}`}
-                    className="text-xs font-semibold text-primary hover:underline whitespace-nowrap"
-                  >
-                    Review →
-                  </Link>
-                )}
-                {(d.status === "extracted" || d.status === "failed") && (
-                  <button
-                    onClick={() => handleGenerate(d.id)}
-                    disabled={generatingIds.has(d.id)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-primary text-on-primary hover:brightness-110 active:scale-[0.98] transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                  >
-                    {generatingIds.has(d.id) ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        Generate...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="w-3.5 h-3.5" />
-                        Generate AI
-                      </>
-                    )}
-                  </button>
-                )}
+                <div className="flex items-center gap-2 sm:gap-0">
+                  {d.status === "ready" && (
+                    <Link
+                      href={`/guru/drafts/${d.id}`}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 active:scale-[0.98] transition-all whitespace-nowrap"
+                    >
+                      Tinjau
+                    </Link>
+                  )}
+                  {(d.status === "extracted" || d.status === "failed") && (
+                    <button
+                      onClick={() => handleGenerate(d.id)}
+                      disabled={generatingIds.has(d.id)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-primary text-on-primary hover:brightness-110 active:scale-[0.98] transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    >
+                      {generatingIds.has(d.id) ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Proses...
+                        </>
+                      ) : (
+                        <>
+                          <Zap className="w-3.5 h-3.5" />
+                          Buat AI
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}

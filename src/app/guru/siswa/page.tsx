@@ -130,53 +130,93 @@ export default function SiswaListPage() {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-border-precision overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border-precision bg-surface/50">
-                <th className="text-left px-4 py-3 font-medium text-on-surface-variant">No</th>
-                <th className="text-left px-4 py-3 font-medium text-on-surface-variant">Nama</th>
-                <th className="text-left px-4 py-3 font-medium text-on-surface-variant">Kursus</th>
-                <th className="text-left px-4 py-3 font-medium text-on-surface-variant">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((s, i) => (
-                <tr key={s.siswaId} className="border-b border-border-precision/50 last:border-0 hover:bg-surface/50 transition-colors">
-                  <td className="px-4 py-3 text-on-surface-variant">{i + 1}</td>
-                  <td className="px-4 py-3 font-medium text-on-surface">
-                    <Link href={`/guru/siswa/${s.siswaId}`} className="hover:text-primary hover:underline transition-colors">
-                      {s.nama}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-on-surface-variant">
-                    <div className="flex flex-wrap gap-1">
-                      {s.kursus.map((k, j) => (
-                        <span key={j} className="inline-block px-2 py-0.5 text-xs rounded-full bg-primary/5 text-primary">
-                          {k}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex px-2 py-0.5 text-xs rounded-full font-medium ${
-                      s.status === "AKTIF" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
-                    }`}>
-                      {s.status}
-                    </span>
-                    {s.riskStatus && s.riskStatus !== "aman" && (
-                      <span className={`ml-1.5 inline-flex px-2 py-0.5 text-xs rounded-full font-medium ${
-                        s.riskStatus === "kritis" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"
-                      }`}>
-                        {s.riskStatus === "kritis" ? "KRITIS" : "BERISIKO"}
-                      </span>
-                    )}
-                  </td>
+        <>
+          <div className="hidden sm:block bg-white rounded-2xl border border-border-precision overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border-precision bg-surface/50">
+                  <th className="text-left px-4 py-3 font-medium text-on-surface-variant">No</th>
+                  <th className="text-left px-4 py-3 font-medium text-on-surface-variant">Nama</th>
+                  <th className="text-left px-4 py-3 font-medium text-on-surface-variant">Kursus</th>
+                  <th className="text-left px-4 py-3 font-medium text-on-surface-variant">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.map((s, i) => (
+                  <tr key={s.siswaId} className="border-b border-border-precision/50 last:border-0 hover:bg-surface/50 transition-colors">
+                    <td className="px-4 py-3 text-on-surface-variant">{i + 1}</td>
+                    <td className="px-4 py-3 font-medium text-on-surface">
+                      <Link href={`/guru/siswa/${s.siswaId}`} className="hover:text-primary hover:underline transition-colors">
+                        {s.nama}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-on-surface-variant">
+                      <div className="flex flex-wrap gap-1">
+                        {s.kursus.map((k, j) => (
+                          <span key={j} className="inline-block px-2 py-0.5 text-xs rounded-full bg-primary/5 text-primary">
+                            {k}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex px-2 py-0.5 text-xs rounded-full font-medium ${
+                        s.status === "AKTIF" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                      }`}>
+                        {s.status}
+                      </span>
+                      {s.riskStatus && s.riskStatus !== "aman" && (
+                        <span className={`ml-1.5 inline-flex px-2 py-0.5 text-xs rounded-full font-medium ${
+                          s.riskStatus === "kritis" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"
+                        }`}>
+                          {s.riskStatus === "kritis" ? "KRITIS" : "BERISIKO"}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="sm:hidden space-y-3">
+            {filtered.map((s) => (
+              <Link
+                key={s.siswaId}
+                href={`/guru/siswa/${s.siswaId}`}
+                className="block bg-glass border border-border-precision rounded-2xl p-4 active:scale-[0.99] transition-all"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-on-surface">{s.nama}</span>
+                  <span className={`inline-flex px-2 py-0.5 text-xs rounded-full font-medium ${
+                    s.status === "AKTIF" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                  }`}>
+                    {s.status}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {s.kursus.map((k, j) => (
+                    <span key={j} className="inline-block px-2 py-0.5 text-xs rounded-full bg-primary/5 text-primary break-words">
+                      {k}
+                    </span>
+                  ))}
+                </div>
+                {s.riskStatus && s.riskStatus !== "aman" && (
+                  <span className={`inline-flex px-2 py-0.5 text-xs rounded-full font-medium ${
+                    s.riskStatus === "kritis" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"
+                  }`}>
+                    Risiko: {s.riskStatus === "kritis" ? "Kritis" : "Berisiko"}
+                  </span>
+                )}
+                {(!s.riskStatus || s.riskStatus === "aman") && (
+                  <span className="inline-flex px-2 py-0.5 text-xs rounded-full font-medium bg-emerald-50 text-emerald-700">
+                    Risiko: Aman
+                  </span>
+                )}
+              </Link>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

@@ -108,7 +108,9 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
     }
   }
 
-  loadRef.current = load;
+  useEffect(() => {
+    loadRef.current = load;
+  });
 
   useEffect(() => {
     load();
@@ -235,16 +237,25 @@ useEffect(() => {
           </h1>
           <p className="text-sm text-on-surface-variant mt-1">
             Sumber: <code className="bg-surface px-1.5 py-0.5 rounded text-xs">{draft.sourceFileName}</code>
-            {draft.modelName && <span> · Model: <b>{draft.modelName}</b></span>}
-            {draft.tokenInput != null && draft.tokenOutput != null && (
-              <span> · {draft.tokenInput + draft.tokenOutput} token</span>
-            )}
             {(draft.materiStatus === "draft" || draft.quizStatus === "draft" || draft.soalStatus === "draft") && (
               <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
-                AI-Generated · Perlu Review
+                Perlu Ditinjau
               </span>
             )}
           </p>
+          {draft.modelName && (
+            <details className="mt-2">
+              <summary className="text-xs text-on-surface-variant/60 cursor-pointer hover:text-on-surface-variant">
+                Detail teknis
+              </summary>
+              <p className="text-xs text-on-surface-variant/60 mt-1">
+                Model: {draft.modelName}
+                {draft.tokenInput != null && draft.tokenOutput != null && (
+                  <span> · {draft.tokenInput + draft.tokenOutput} token</span>
+                )}
+              </p>
+            </details>
+          )}
         </div>
       </div>
 
@@ -346,26 +357,34 @@ useEffect(() => {
         </div>
       ) : (
         <>
-          <div className="flex items-center gap-1 mb-4 bg-glass p-1 rounded-2xl border border-border-precision w-fit">
+          <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:gap-1 sm:bg-glass sm:p-1 sm:rounded-2xl sm:border sm:border-border-precision sm:w-fit">
             {(["materi", "quiz", "soal"] as const).map((t) => {
               const statusKey = t === "materi" ? "materiStatus" : t === "quiz" ? "quizStatus" : "soalStatus";
               const status = draft[statusKey] as string;
               const m = STATUS_META[status] || STATUS_META.not_generated;
+              const label = t === "materi" ? "Materi" : t === "quiz" ? "Kuis" : "Soal";
+              const desc = t === "materi" ? "Konten pembelajaran" : t === "quiz" ? "Latihan interaktif" : "Evaluasi siswa";
               return (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors active:scale-[0.98] ${
+                  className={`flex flex-col items-start text-left p-3 sm:p-0 sm:flex-row sm:items-center sm:gap-2 sm:px-4 sm:py-2 rounded-xl sm:rounded-xl text-sm font-medium transition-colors active:scale-[0.98] min-h-[44px] sm:min-h-0 ${
                     tab === t
-                      ? "bg-white text-on-surface shadow-glass"
-                      : "text-on-surface-variant hover:text-on-surface"
+                      ? "bg-white text-on-surface shadow-glass sm:shadow-glass border border-border-precision sm:border-none"
+                      : "bg-glass sm:bg-transparent text-on-surface-variant hover:text-on-surface border border-border-precision sm:border-none"
                   }`}
                 >
-                  {t === "materi" ? <BookOpen className="w-4 h-4" /> : <ClipboardList className="w-4 h-4" />}
-                  {t === "materi" ? "Materi" : t === "quiz" ? "Kuis" : "Soal"}
-                  <span className={`text-xs font-bold tracking-wider px-1.5 py-0.5 rounded-full ${m.color}`}>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    {t === "materi" ? <BookOpen className="w-4 h-4 shrink-0" /> : <ClipboardList className="w-4 h-4 shrink-0" />}
+                    <span className="font-semibold">{label}</span>
+                    <span className={`sm:hidden ml-auto text-xs font-bold tracking-wider px-1.5 py-0.5 rounded-full ${m.color}`}>
+                      {m.label}
+                    </span>
+                  </div>
+                  <span className={`hidden sm:inline-block text-xs font-bold tracking-wider px-1.5 py-0.5 rounded-full ${m.color}`}>
                     {m.label}
                   </span>
+                  <span className="text-[10px] text-on-surface-variant/60 sm:hidden">{desc}</span>
                 </button>
               );
             })}
