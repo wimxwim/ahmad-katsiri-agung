@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -78,8 +78,6 @@ export default function SiswaBerandaPage() {
   const [error, setError] = useState("");
   const [nama, setNama] = useState("Siswa");
   const [userId, setUserId] = useState<string | null>(null);
-  const retryCount = useRef(0);
-  const fetchDataRef = useRef<() => Promise<void>>(async () => {});
 
   const fetchData = useCallback(async () => {
     const cacheKey = userId ? `beranda:dashboard:${userId}` : null;
@@ -95,43 +93,40 @@ export default function SiswaBerandaPage() {
       }
     }
 
-    try {
-      const res = await fetch("/api/v1/siswa/dashboard", { credentials: "include" });
-      if (!res.ok) {
-        if (retryCount.current < 2 && (res.status === 401 || res.status >= 500)) {
-          retryCount.current++;
-          await new Promise((r) => setTimeout(r, 400 * retryCount.current));
-          return fetchDataRef.current();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const res = await fetch("/api/v1/siswa/dashboard", { credentials: "include" });
+        if (!res.ok) {
+          if (attempt < 2 && (res.status === 401 || res.status >= 500)) {
+            await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+            continue;
+          }
+          setError("Terjadi kesalahan saat memuat data. Coba lagi.");
+          setLoading(false);
+          return;
         }
-        setError("Terjadi kesalahan saat memuat data. Coba lagi.");
+        const json = await res.json();
+        const d = json.data as DashboardData;
+
+        setCache(`beranda:dashboard:${d.profil?.id || userId || "anon"}`, d, CACHE_TTL);
+        if (d.profil?.id) setUserId(d.profil.id);
+
+        if (d.profil?.nama) setNama(d.profil.nama);
+        if (d.feed) setFeed(d.feed);
+        if (d.pengumuman?.data) setPengumuman(d.pengumuman.data);
+        if (d.quiz?.data) setQuizList(d.quiz.data);
         setLoading(false);
         return;
+      } catch {
+        if (attempt < 2) {
+          await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+        }
       }
-      const json = await res.json();
-      const d = json.data as DashboardData;
-
-      setCache(`beranda:dashboard:${d.profil?.id || userId || "anon"}`, d, CACHE_TTL);
-      if (d.profil?.id) setUserId(d.profil.id);
-
-      if (d.profil?.nama) setNama(d.profil.nama);
-      if (d.feed) setFeed(d.feed);
-      if (d.pengumuman?.data) setPengumuman(d.pengumuman.data);
-      if (d.quiz?.data) setQuizList(d.quiz.data);
-    } catch {
-      if (retryCount.current < 2) {
-        retryCount.current++;
-        await new Promise((r) => setTimeout(r, 400 * retryCount.current));
-        return fetchDataRef.current();
-      }
-      setError("Terjadi kesalahan saat memuat data. Coba lagi.");
-    } finally {
-      setLoading(false);
     }
-  }, [userId]);
 
-  useEffect(() => {
-    fetchDataRef.current = fetchData;
-  });
+    setError("Terjadi kesalahan saat memuat data. Coba lagi.");
+    setLoading(false);
+  }, [userId]);
 
   useEffect(() => {
     fetchData();

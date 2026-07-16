@@ -42,7 +42,7 @@ export function BottomTabBar() {
 
   if (pathname.startsWith("/masuk")) return null;
 
-  const DASHBOARD_PREFIXES = ["/guru", "/owner", "/admin-sekolah", "/orang-tua"];
+  const DASHBOARD_PREFIXES = ["/guru", "/siswa", "/owner", "/admin-sekolah", "/orang-tua"];
   if (DASHBOARD_PREFIXES.some((p) => pathname.startsWith(p))) return null;
 
   const isSiswa = pathname.startsWith("/siswa");
