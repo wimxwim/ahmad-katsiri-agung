@@ -169,14 +169,16 @@ akal-center/
 
 Untuk pemahaman mendalam tentang arsitektur dan rencana pengembangan, baca:
 
-1. [Ringkasan Eksekutif](prd/01-ringkasan-eksekutif.md)
-2. [Audit Kondisi Saat Ini](prd/02-audit-kondisi-saat-ini.md)
-3. [Arsitektur Target](prd/03-arsitektur-target.md)
-4. [Matriks Fitur Per Role](prd/04-matriks-fitur-per-role.md)
-5. [Spesifikasi Mesin Analitik](prd/05-spesifikasi-mesin-analitik.md)
-6. [Model Data](prd/06-model-data.md)
-7. [Rencana Migrasi](prd/07-rencana-migrasi.md)
-8. [Riset 2026 & Rekomendasi](prd/08-riset-2026-rekomendasi.md)
+- [TODO-FINAL-v2.md](prd/TODO-FINAL-v2.md) — Rencana 80 task final v2
+- [TODO-MIGRASI-v2.md](prd/TODO-MIGRASI-v2.md) — Rencana migrasi
+- [TODO-AUDIT-JULI-2026.md](prd/TODO-AUDIT-JULI-2026.md) — Audit Juli 2026
+- [QA-CHECKLIST-303.md](prd/QA-CHECKLIST-303.md) — QA checklist 303 item
+- [PRD-UNIFIED-LAUNCH-v2.md](prd/PRD-UNIFIED-LAUNCH-v2.md) — Unified launch plan
+- [PHASED_ACTIVATION.md](prd/PHASED_ACTIVATION.md) — Phased activation
+- [AUDIT-REGRESSION-18-JULI-2026.md](prd/AUDIT-REGRESSION-18-JULI-2026.md) — Audit regression
+- [PROMPT-FASE-4.md](prd/PROMPT-FASE-4.md) — Prompt fase 4
+- [09-potensi-upgrade-frontend.md](prd/09-potensi-upgrade-frontend.md) — Potensi upgrade frontend
+- [10-riset-frontend-2026.md](prd/10-riset-frontend-2026.md) — Riset frontend 2026
 
 ---
 

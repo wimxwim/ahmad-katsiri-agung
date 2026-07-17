@@ -89,14 +89,9 @@ export function Footer({
               >
                 TikTok: {contact.tiktokHandle}
               </a>
-              <a
-                href={`https://youtube.com/@${contact.youtubeChannel.toLowerCase().replace(/\s+/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-on-surface-variant hover:text-primary transition-colors"
-              >
+              <span className="text-sm text-on-surface-variant">
                 YouTube: {contact.youtubeChannel}
-              </a>
+              </span>
             </Space>
           </div>
         </div>

@@ -13,30 +13,11 @@
 
 ## Daftar Gelombang
 
+> Gelombang 01-17 telah selesai dan file dokumentasinya diarsipkan (tidak lagi tersedia di repo).
+
 | File | Gelombang | Status |
 |------|-----------|--------|
-| [`01-auth-routing.md`](01-auth-routing.md) | 1 — Arsitektur Ulang Auth & Routing | ✅ SELESAI |
-| [`02-landing-page.md`](02-landing-page.md) | 2 — Landing Page Baru Total | ✅ SELESAI |
-| [`03-freeze-keystatic.md`](03-freeze-keystatic.md) | 3 — Freeze Keystatic & Bridge | ✅ SELESAI |
-| [`04-auth-baru.md`](04-auth-baru.md) | 4 — Auth Email/Password + Google | ✅ SELESAI |
-| [`05-workspace-guru.md`](05-workspace-guru.md) | 5 — Workspace Guru Multi-Tenant | ✅ SELESAI |
-| [`05a-role-home.md`](05a-role-home.md) | 5A — Role Home Tambahan | ✅ SELESAI |
-| [`06-storage-imagekit.md`](06-storage-imagekit.md) | 6 — Storage ImageKit | ✅ SELESAI |
-| [`07-ai-generator.md`](07-ai-generator.md) | 7 — AI Generator Dokumen | ✅ SELESAI |
-| [`08-dashboard-siswa.md`](08-dashboard-siswa.md) | 8 — Dashboard Siswa Baru | ✅ SELESAI |
-| [`08a-evaluasi.md`](08a-evaluasi.md) | 8A — Mode Evaluasi | ✅ SELESAI |
-| [`09-legacy-bridge.md`](09-legacy-bridge.md) | 9 — Legacy Bridge | ✅ SELESAI |
-| [`10-hardening.md`](10-hardening.md) | 10 — Hardening Minimum | ✅ SELESAI |
-| [`10a-observability.md`](10a-observability.md) | 10A — Observability | ✅ SELESAI |
-| [`11-frontend-rebuild.md`](11-frontend-rebuild.md) | 11 — Frontend Rebuild | ✅ SELESAI |
-| [`12-auth-ux.md`](12-auth-ux.md) | 12 — Auth UX Completion | ✅ SELESAI |
-| [`13-route-migration.md`](13-route-migration.md) | 13 — Route Migration | ✅ SELESAI |
-| [`14-data-model.md`](14-data-model.md) | 14 — Data Model Completion | ✅ SELESAI |
-| [`15-security-abuse.md`](15-security-abuse.md) | 15 — Security & Abuse Cases | ✅ SELESAI |
-| [`16-guru-polish.md`](16-guru-polish.md) | 16 — Guru Workflow Polishing | ✅ SELESAI |
-| [`17-siswa-polish.md`](17-siswa-polish.md) | 17 — Student Workflow Polishing | ✅ SELESAI |
 | [`18-analytics-remedial.md`](18-analytics-remedial.md) | 18 — Analytics & Remedial UX | ✅ SELESAI |
-| [`19-legacy-governance.md`](19-legacy-governance.md) | 19 — Content Governance | ✅ SKIP |
 | [`20-dokumentasi-agent.md`](20-dokumentasi-agent.md) | 20 — Dokumentasi Agent Bawahan | 🏗️ AKTIF |
 | [`21-acceptance-criteria.md`](21-acceptance-criteria.md) | 21 — Screen-by-Screen Acceptance Criteria | ❌ |
 | [`22-loading-states.md`](22-loading-states.md) | 22 — Loading & State Visibility | ❌ |

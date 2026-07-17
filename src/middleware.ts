@@ -44,6 +44,12 @@ const ROLE_ROUTE_MAP: Record<string, string[]> = {
   orang_tua: ["/orang-tua"],
 };
 
+const ALL_PROTECTED_PREFIXES = [
+  ...Object.values(ROLE_ROUTE_MAP).flat(),
+  "/admin/",
+  "/session/",
+];
+
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -86,19 +92,26 @@ export default async function middleware(request: NextRequest) {
 
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
   if (!sessionCookie?.value) {
-    const loginUrl = new URL("/masuk", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
+    if (ALL_PROTECTED_PREFIXES.some(p => pathname.startsWith(p))) {
+      const loginUrl = new URL("/masuk", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return response;
   }
 
   const { verifySession } = await import("./lib/auth");
   const result = await verifySession(sessionCookie.value);
 
   if (!result.success) {
-    const loginUrl = new URL("/masuk", request.url);
-    const res = NextResponse.redirect(loginUrl);
-    res.cookies.delete(SESSION_COOKIE_NAME);
-    return res;
+    if (ALL_PROTECTED_PREFIXES.some(p => pathname.startsWith(p))) {
+      const loginUrl = new URL("/masuk", request.url);
+      const res = NextResponse.redirect(loginUrl);
+      res.cookies.delete(SESSION_COOKIE_NAME);
+      return res;
+    }
+    response.cookies.delete(SESSION_COOKIE_NAME);
+    return response;
   }
 
   const session = result.data;
