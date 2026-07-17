@@ -1,0 +1,51 @@
+# Dokumentasi
+prd/
+docs/
+*.md
+!README.md
+*.txt
+CATATAN*
+RINGKASAN*
+TODO*
+INCIDENT*
+ARCHITECTURE*
+DESIGN*
+PRD-*
+Ai-website-*
+
+# Development tooling
+.agents/
+.claude/
+.github/
+.opencode/
+skills/
+skills-lock.json
+
+# Deploy terpisah
+workers/
+wrangler.jsonc
+
+# Dev config
+drizzle/
+drizzle.config.ts
+vitest.config.ts
+eslint.config.mjs
+open-next.config.ts
+tsconfig.tsbuildinfo
+
+# Infrastruktur
+infrastructure/
+supabase/
+data/
+aws/
+scripts/
+docker-compose*.yml
+Dockerfile
+.dockerignore
+Makefile
+ecosystem.config.cjs
+
+# Environment (dev only)
+.env.docker
+.env.local
+.vercel

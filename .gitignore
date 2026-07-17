@@ -48,3 +48,62 @@ aws/
 !.dev.vars.example
 
 !.env.example
+
+# Dev tooling
+.agents/
+.claude/
+.github/
+.opencode/
+skills/
+skills-lock.json
+
+# Infrastruktur
+infrastructure/
+aws/
+docker-compose*.yml
+Dockerfile
+.dockerignore
+Makefile
+ecosystem.config.cjs
+drizzle/
+drizzle.config.ts
+vitest.config.ts
+eslint.config.mjs
+open-next.config.ts
+tsconfig.tsbuildinfo
+
+# Cloudflare Workers (separate deploy)
+workers/
+wrangler.jsonc
+
+# Documentation
+docs/
+prd/
+*.md
+!README.md
+!AGENTS.md
+*.txt
+!DATABASE.txt
+CATATAN*
+RINGKASAN*
+TODO*
+INCIDENT*
+ARCHITECTURE*
+DESIGN*
+PRD-*
+Ai-website-*
+
+# Supabase dev
+supabase/
+
+# Data legacy
+data/
+
+# Scripts
+scripts/
+
+# Environment dev only
+.env.docker
+.env.local
+.vercel
+.dev.vars
