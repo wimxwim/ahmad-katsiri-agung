@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
+import { requireNotSuspended } from "@/lib/token-service";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
 import { kelas } from "@/lib/db/schema";
@@ -42,6 +43,7 @@ export async function POST(request: NextRequest) {
     if (csrfError) return csrfError;
 
     const session = await requireGuru(request);
+    await requireNotSuspended(session.userId);
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`kelas-create:${ip}`, 10, 60_000);

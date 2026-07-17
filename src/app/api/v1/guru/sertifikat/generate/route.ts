@@ -4,11 +4,12 @@ import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimit, checkRateLimitPerUser, checkConcurrentLimit, releaseConcurrent, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { sertifikat, siswaKursus, quizAttempt, users, kursus } from "@/lib/db/schema";
+import { sertifikat, siswaKursus, quizAttempt, quizPublished, users, kursus } from "@/lib/db/schema";
 import { eq, and, sql, inArray } from "drizzle-orm";
 import { generateQRHash } from "@/lib/sertifikat/generateQRHash";
 import crypto from "crypto";
 import { validateCsrf } from "@/lib/csrf-server";
+import { KKM } from "@/lib/constants";
 
 const SertifikatGenerateSchema = z.object({
   kursusId: z.string().min(1),
@@ -47,52 +48,77 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-    const eligible = await db
-      .select({
-        siswaId: siswaKursus.siswaId,
-        nama: users.nama,
-        quizCount: sql<number>`count(${quizAttempt.id})`.mapWith(Number),
-        nilaiRata: sql<number>`round(avg(${quizAttempt.nilai}))`.mapWith(Number),
-      })
-      .from(siswaKursus)
-      .innerJoin(users, eq(users.id, siswaKursus.siswaId))
-      .leftJoin(quizAttempt, eq(quizAttempt.siswaId, siswaKursus.siswaId))
-      .where(eq(siswaKursus.kursusId, kursusId))
-      .groupBy(siswaKursus.siswaId, users.nama)
-      .having(sql`count(${quizAttempt.id}) > 0`);
+      const eligible = await db
+        .select({
+          siswaId: siswaKursus.siswaId,
+          nama: users.nama,
+          quizCount: sql<number>`count(${quizAttempt.id})`.mapWith(Number),
+          nilaiRata: sql<number>`round(avg(${quizAttempt.nilai}))`.mapWith(Number),
+        })
+        .from(siswaKursus)
+        .innerJoin(users, eq(users.id, siswaKursus.siswaId))
+        .innerJoin(
+          quizPublished,
+          and(
+            eq(quizPublished.kursusId, kursusId),
+          ),
+        )
+        .leftJoin(
+          quizAttempt,
+          and(
+            eq(quizAttempt.siswaId, siswaKursus.siswaId),
+            eq(quizAttempt.quizPublishedId, quizPublished.id),
+            eq(quizAttempt.status, "SELESAI"),
+          ),
+        )
+        .where(eq(siswaKursus.kursusId, kursusId))
+        .groupBy(siswaKursus.siswaId, users.nama)
+        .having(
+          and(
+            sql`count(${quizAttempt.id}) > 0`,
+            sql`round(avg(${quizAttempt.nilai})) >= ${KKM}`,
+          ),
+        );
 
-    let generated = 0;
+      if (eligible.length === 0) {
+        return NextResponse.json({
+          success: true,
+          message: "Belum ada siswa yang memenuhi syarat sertifikat. Siswa harus menyelesaikan quiz dengan nilai minimal 70.",
+          data: { generated: 0, totalEligible: 0 },
+        });
+      }
 
-    const siswaIds = eligible.map((s) => s.siswaId);
+      const siswaIds = eligible.map((s) => s.siswaId);
 
-    const existingCerts = await db
-      .select({ siswaId: sertifikat.siswaId })
-      .from(sertifikat)
-      .where(and(
-        inArray(sertifikat.siswaId, siswaIds),
-        eq(sertifikat.kursusId, kursusId),
-      ));
+      const existingCerts = await db
+        .select({ siswaId: sertifikat.siswaId })
+        .from(sertifikat)
+        .where(and(
+          inArray(sertifikat.siswaId, siswaIds),
+          eq(sertifikat.kursusId, kursusId),
+        ));
 
-    const existingSet = new Set(existingCerts.map((c) => c.siswaId));
+      const existingSet = new Set(existingCerts.map((c) => c.siswaId));
 
-    const toInsert = eligible
-      .filter((s) => !existingSet.has(s.siswaId))
-      .map((s) => {
-        const nomor = `AKAL-${kursusId.slice(0, 8)}-${s.siswaId.slice(0, 8)}-${crypto.randomInt(1000, 9999)}`;
-        const qrHash = generateQRHash(nomor, s.siswaId);
-        return { siswaId: s.siswaId, kursusId, nomorSertifikat: nomor, qrSecretHash: qrHash };
+      const toInsert = eligible
+        .filter((s) => !existingSet.has(s.siswaId))
+        .map((s) => {
+          const nomor = `AKAL-${kursusId.slice(0, 8)}-${s.siswaId.slice(0, 8)}-${crypto.randomInt(1000, 9999)}`;
+          const qrHash = generateQRHash(nomor, s.siswaId);
+          return { siswaId: s.siswaId, kursusId, nomorSertifikat: nomor, qrSecretHash: qrHash };
+        });
+
+      let generated = 0;
+
+      if (toInsert.length > 0) {
+        await db.insert(sertifikat).values(toInsert);
+        generated = toInsert.length;
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: { generated, totalEligible: eligible.length },
       });
-
-    if (toInsert.length > 0) {
-      await db.insert(sertifikat).values(toInsert);
-    }
-
-    generated = toInsert.length;
-
-    return NextResponse.json({
-      success: true,
-      data: { generated, totalEligible: eligible.length },
-    });
     } finally {
       releaseConcurrent(`sertifikat-gen:${session.userId}`);
     }

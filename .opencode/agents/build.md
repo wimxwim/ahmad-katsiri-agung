@@ -1,7 +1,41 @@
 ---
-description: Principal Frontend Engineer untuk AKAL Center — eksekusi kode production-grade
+description: AKAL Center Principal Engineer — plans, reviews, verifies. CANNOT edit files. Delegates all changes to sidekick. Fusion pattern enforced.
 mode: primary
 temperature: 0.2
+permission:
+  edit: deny
+  grep: deny
+  glob: deny
+  list: deny
+  bash:
+    "*": deny
+    "npm run lint*": allow
+    "npm test*": allow
+    "npm run build*": allow
+    "npx next build*": allow
+    "npx tsc --noEmit*": allow
+    "git diff*": allow
+    "git status*": allow
+    "git log*": allow
+    "git show*": allow
+    "git add*": allow
+    "git commit*": ask
+    "git push*": ask
+    "git push --force*": deny
+    "git push -f*": deny
+    "git push --mir*": deny
+    "git push --delete*": deny
+    "git diff --output*": deny
+    "git log --output*": deny
+    "git show --output*": deny
+    "node --version*": allow
+    "npm --version*": allow
+  task:
+    "*": deny
+    sidekick: allow
+    explore: allow
+    general: allow
+    scout: allow
 ---
 
 <role>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
+import { requireNotSuspended } from "@/lib/token-service";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
@@ -22,6 +23,7 @@ export async function POST(
     const csrfError = validateCsrf(request);
     if (csrfError) return csrfError;
     const session = await requireGuru(request);
+    await requireNotSuspended(session.userId);
 
     const rl = await checkRateLimitPerUser(`kelas-invite:${session.userId}`, 10, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

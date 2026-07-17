@@ -541,6 +541,24 @@ export function getGenerateCost(): number {
   return GENERATE_COST;
 }
 
+export async function isUserSuspended(userId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ suspendedAt: users.suspendedAt })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return row?.suspendedAt != null;
+}
+
+export async function requireNotSuspended(userId: string): Promise<void> {
+  const suspended = await isUserSuspended(userId);
+  if (suspended) {
+    throw new SubscriptionLockedError(
+      "Akun Anda sedang dalam masa penangguhan (suspend). Fitur top-up, upload, generate AI, buat kursus, dan undang siswa dinonaktifkan.",
+    );
+  }
+}
+
 export { INITIAL_TOKEN_BALANCE, FREE_TIER_UPLOAD_LIMIT };
 
 export async function isUserUnlocked(userId: string): Promise<boolean> {

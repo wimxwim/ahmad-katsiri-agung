@@ -3,8 +3,8 @@ import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { kursus, sertifikat, siswaKursus, quizAttempt } from "@/lib/db/schema";
-import { and, eq, sql, or } from "drizzle-orm";
+import { kursus, sertifikat, siswaKursus, quizAttempt, quizPublished } from "@/lib/db/schema";
+import { and, eq, sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +28,20 @@ export async function GET(request: NextRequest) {
       .from(kursus)
       .leftJoin(sertifikat, eq(sertifikat.kursusId, kursus.id))
       .leftJoin(siswaKursus, eq(siswaKursus.kursusId, kursus.id))
-      .leftJoin(quizAttempt, and(eq(quizAttempt.siswaId, siswaKursus.siswaId), or(eq(quizAttempt.status, "SELESAI"), eq(quizAttempt.status, "BELAJAR"))))
+      .leftJoin(
+        quizPublished,
+        and(
+          eq(quizPublished.kursusId, kursus.id),
+        ),
+      )
+      .leftJoin(
+        quizAttempt,
+        and(
+          eq(quizAttempt.siswaId, siswaKursus.siswaId),
+          eq(quizAttempt.quizPublishedId, quizPublished.id),
+          eq(quizAttempt.status, "SELESAI"),
+        ),
+      )
       .where(eq(kursus.guruId, session.userId))
       .groupBy(kursus.id)
       .orderBy(sql`count(distinct ${sertifikat.id}) DESC`);

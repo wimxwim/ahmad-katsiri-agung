@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { aiGeneration } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
-import { requireSession, GuardError } from "@/lib/route-guard-v2";
+import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 export async function GET(
@@ -11,7 +11,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await requireSession(request);
+    const session = await requireGuru(request);
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`drafts-detail:${ip}`, 30, 60_000);

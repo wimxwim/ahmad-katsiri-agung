@@ -7,11 +7,14 @@ import { FormDaftarSiswa } from "./_components/FormDaftarSiswa";
 import { FormLoginGuru } from "./_components/FormLoginGuru";
 import { ERROR_MESSAGES, type Mode, type TabMurid } from "./_components/shared";
 
+const INVITE_STORAGE_KEY = "akal_pending_invite";
+
 type FormMasukProps = {
   redirectTo?: string;
   initialPortal?: "guru" | "siswa";
   initialTab?: TabMurid;
   errorCode?: string;
+  inviteKode?: string;
 };
 
 export function FormMasuk({
@@ -19,6 +22,7 @@ export function FormMasuk({
   initialPortal,
   initialTab = "masuk",
   errorCode,
+  inviteKode,
 }: FormMasukProps) {
   const [mode, setMode] = useState<Mode>(
     initialPortal === "guru"
@@ -37,6 +41,14 @@ export function FormMasuk({
   useEffect(() => {
     setNoPassword(false);
   }, [mode, tabMurid]);
+
+  useEffect(() => {
+    if (inviteKode && inviteKode.length >= 1) {
+      try {
+        localStorage.setItem(INVITE_STORAGE_KEY, inviteKode);
+      } catch { /* localStorage not available */ }
+    }
+  }, [inviteKode]);
 
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

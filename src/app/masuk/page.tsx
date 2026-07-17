@@ -29,6 +29,7 @@ export default async function MasukPage({
       ? params.redirect
       : undefined;
   const errorCode = typeof params.error === "string" ? params.error : undefined;
+  const inviteKode = typeof params.kode === "string" && params.kode.length >= 1 && params.kode.length <= 6 ? params.kode : undefined;
 
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(SESSION_COOKIE_NAME);
@@ -48,6 +49,7 @@ export default async function MasukPage({
       initialPortal={portal}
       initialTab={tab}
       errorCode={errorCode}
+      inviteKode={inviteKode}
     />
   );
 }

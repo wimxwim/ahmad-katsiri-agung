@@ -40,6 +40,7 @@ async function sendMessage(text: string): Promise<void> {
 
 export async function sendTopupNotification(params: {
   userId: string;
+  transactionId?: string;
   nama: string;
   email: string;
   amount: number;
@@ -53,8 +54,10 @@ export async function sendTopupNotification(params: {
     `👤 <b>Nama:</b> ${escapeHtml(params.nama)}`,
     `📧 <b>Email:</b> ${escapeHtml(params.email)}`,
     `🆔 <b>User ID:</b> <code>${params.userId}</code>`,
+    params.transactionId ? `🧾 <b>Transaction ID:</b> <code>${params.transactionId}</code>` : "",
     `💵 <b>Nominal:</b> Rp${params.amount.toLocaleString("id-ID")}`,
     `🏦 <b>Saldo Sekarang:</b> Rp${params.newBalance.toLocaleString("id-ID")}`,
+    `📌 <b>Status:</b> BERHASIL`,
     params.loginTerakhir ? `🕐 <b>Login Terakhir:</b> ${params.loginTerakhir}` : "",
     `⏰ <b>Waktu:</b> ${new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })}`,
   ].filter(Boolean).join("\n");

@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({ success: true, redirect: "/masuk" });
     response.cookies.set(SESSION_COOKIE_NAME, "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
-    response.cookies.set(REFRESH_COOKIE_NAME, "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
+    response.cookies.set(REFRESH_COOKIE_NAME, "", { httpOnly: true, secure: true, sameSite: "lax", path: "/api/v1/auth/refresh", maxAge: 0 });
     response.cookies.set("akal_google_state", "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
     response.cookies.set("akal_google_portal", "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });
     response.cookies.set("akal_google_return", "", { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 0 });

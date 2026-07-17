@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
 import { getCached, setCache } from "@/lib/data-cache";
+import { csrfHeaders } from "@/lib/csrf";
 import { cn } from "@/lib/utils";
 import {
   BookOpen,
@@ -14,6 +15,7 @@ import {
   Megaphone,
   AlertTriangle,
   RefreshCw,
+  Users,
 } from "lucide-react";
 import { SkeletonDashboardSiswa } from "@/components/ui/SkeletonBlocks";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -70,6 +72,8 @@ interface DashboardData {
 
 const CACHE_TTL = 30_000;
 
+const INVITE_STORAGE_KEY = "akal_pending_invite";
+
 export default function SiswaBerandaPage() {
   const [feed, setFeed] = useState<FeedResponse | null>(null);
   const [pengumuman, setPengumuman] = useState<PengumumanItem[]>([]);
@@ -78,6 +82,33 @@ export default function SiswaBerandaPage() {
   const [error, setError] = useState("");
   const [nama, setNama] = useState("Siswa");
   const [userId, setUserId] = useState<string | null>(null);
+  const [inviteMessage, setInviteMessage] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    async function consumeInvite() {
+      try {
+        const kode = localStorage.getItem(INVITE_STORAGE_KEY);
+        if (!kode) return;
+        localStorage.removeItem(INVITE_STORAGE_KEY);
+        const res = await fetch("/api/v1/invite/kelas/consume", {
+          method: "POST",
+          headers: csrfHeaders(),
+          credentials: "include",
+          body: JSON.stringify({ kode }),
+        });
+        const json = await res.json();
+        if (cancelled) return;
+        if (json.success && json.data?.nama) {
+          setInviteMessage(`Berhasil masuk ke kelas ${json.data.nama}!`);
+        } else if (json.alreadyJoined) {
+          setInviteMessage(`Kamu sudah tergabung di kelas ${json.data?.nama ?? ""}.`);
+        }
+      } catch { /* non-critical */ }
+    }
+    consumeInvite();
+    return () => { cancelled = true; };
+  }, []);
 
   const fetchData = useCallback(async () => {
     const cacheKey = userId ? `beranda:dashboard:${userId}` : null;
@@ -219,6 +250,23 @@ export default function SiswaBerandaPage() {
 
   return (
     <div className="space-y-5">
+      {inviteMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: EASE_CURVE }}
+          className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl p-4"
+        >
+          <Users className="w-5 h-5 shrink-0" />
+          <p className="text-sm font-semibold">{inviteMessage}</p>
+          <button
+            onClick={() => setInviteMessage("")}
+            className="ml-auto text-emerald-500 hover:text-emerald-700 text-lg leading-none"
+          >
+            &times;
+          </button>
+        </motion.div>
+      )}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

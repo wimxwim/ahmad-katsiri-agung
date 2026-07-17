@@ -1,13 +1,14 @@
 import { NextRequest } from "next/server";
+import { createHash } from "crypto";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiSuccess, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
-import { ensureBalanceRow } from "@/lib/token-service";
+import { topUpBalance, requireNotSuspended } from "@/lib/token-service";
 import { MIN_TOPUP, MAX_TOPUP, MAX_TOPUP_PER_DAY } from "@/lib/token-constants";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { sendTopupNotification } from "@/lib/telegram-notif";
 import { db } from "@/lib/db";
-import { users, tokenTransactions } from "@/lib/db/schema";
+import { tokenTransactions, users } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
 
@@ -38,7 +39,15 @@ function detectExtension(buf: Buffer): string | null {
   return null;
 }
 
+function buildIdempotencyKey(userId: string, amount: number, fileBuffer: Buffer): string {
+  const fileHash = createHash("sha256").update(fileBuffer).digest("hex").slice(0, 16);
+  return `${userId}:${amount}:${fileHash}`;
+}
+
 export async function POST(request: NextRequest) {
+  let imageKitFileId: string | null = null;
+  let adapter: Awaited<ReturnType<typeof getStorageAdapter>> | null = null;
+
   try {
     const csrfError = validateCsrf(request);
     if (csrfError) return csrfError;
@@ -47,6 +56,8 @@ export async function POST(request: NextRequest) {
 
     const rl = await checkRateLimitPerUser(`topup:${session.userId}`, MAX_TOPUP_PER_DAY, 86400);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
+
+    await requireNotSuspended(session.userId);
 
     const fd = await request.formData();
     const file = fd.get("file");
@@ -87,7 +98,25 @@ export async function POST(request: NextRequest) {
       return apiError("VALIDATION_ERROR", `Ekstensi .${extFromName} tidak cocok dengan isi file (.${detected})`, undefined, 415);
     }
 
-    const adapter = await getStorageAdapter(session.userId);
+    const idempotencyKey = buildIdempotencyKey(session.userId, amount, bytes);
+
+    const [existingDuplicate] = await db
+      .select({ id: tokenTransactions.id })
+      .from(tokenTransactions)
+      .where(
+        and(
+          eq(tokenTransactions.userId, session.userId),
+          eq(tokenTransactions.type, "TOPUP"),
+          eq(tokenTransactions.referenceId, idempotencyKey),
+        ),
+      )
+      .limit(1);
+
+    if (existingDuplicate) {
+      return apiError("DUPLICATE_PROOF", "Bukti ini sudah pernah diproses. Tidak dapat digunakan lagi.", undefined, 409);
+    }
+
+    adapter = await getStorageAdapter(session.userId);
     const folder = `/akal/bukti/guru-${session.userId}`;
 
     const uploadResult = await adapter.upload(bytes, {
@@ -96,63 +125,56 @@ export async function POST(request: NextRequest) {
       folder,
     });
 
-    await ensureBalanceRow(session.userId);
+    imageKitFileId = uploadResult.fileId;
 
-    const [existingPending] = await db
-      .select({ id: tokenTransactions.id })
-      .from(tokenTransactions)
-      .where(
-        and(
-          eq(tokenTransactions.userId, session.userId),
-          eq(tokenTransactions.status, "PENDING"),
-        ),
-      )
-      .limit(1);
-    if (existingPending) {
-      return apiError("Anda sudah memiliki top-up yang menunggu verifikasi. Harap tunggu.", 429);
-    }
+    const { balance, transaction } = await topUpBalance(session.userId, amount, {
+      paymentMethod: "QRIS_GOPAY",
+      proofFileId: uploadResult.fileId,
+      proofLink: uploadResult.link,
+      notes: `Top-up Rp${amount.toLocaleString("id-ID")} via QRIS GoPay`,
+    });
 
-    const [transaction] = await db
-      .insert(tokenTransactions)
-      .values({
-        userId: session.userId,
-        type: "TOPUP",
-        status: "PENDING",
-        amount,
-        balanceBefore: 0,
-        balanceAfter: 0,
-        paymentMethod: "QRIS_GOPAY",
-        proofFileId: uploadResult.fileId,
-        proofLink: uploadResult.link,
-        notes: `Top-up Rp${amount.toLocaleString("id-ID")} via QRIS GoPay — menunggu verifikasi admin`,
-      })
-      .returning();
+    await db
+      .update(tokenTransactions)
+      .set({ referenceId: idempotencyKey })
+      .where(eq(tokenTransactions.id, transaction.id))
+      .catch(() => {});
 
     const guru = await db.query.users.findFirst({
       where: eq(users.id, session.userId),
       columns: { nama: true, email: true, lastActiveAt: true },
     });
 
-    await sendTopupNotification({
+    sendTopupNotification({
       userId: session.userId,
+      transactionId: transaction.id,
       nama: guru?.nama ?? "Guru",
       email: guru?.email ?? session.email ?? "",
       amount,
       proofUrl: uploadResult.link,
-      newBalance: 0,
+      newBalance: balance.balance,
       loginTerakhir: guru?.lastActiveAt
         ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
         : undefined,
-    }).catch((e) => console.error("Telegram notif gagal:", e));
+    }).catch((e) => console.error("[topup] Telegram notif gagal:", e));
 
     return apiSuccess({
       transactionId: transaction.id,
       proofUrl: uploadResult.link,
-      message: "Bukti pembayaran berhasil diupload. Saldo akan ditambahkan setelah verifikasi oleh admin.",
+      balance: balance.balance,
+      isUnlocked: balance.isUnlocked,
+      message: "Top-up berhasil! Saldo kamu sudah bertambah.",
     });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
-    console.error("Topup upload error:", e);
-    return apiError("INTERNAL_ERROR", "Gagal memproses bukti pembayaran", undefined, 500);
+
+    if (imageKitFileId && adapter) {
+      adapter.delete(imageKitFileId).catch((delErr) =>
+        console.error("[topup] Gagal membersihkan file ImageKit:", delErr),
+      );
+    }
+
+    console.error("[topup] Upload error:", e);
+    return apiError("INTERNAL_ERROR", "Gagal memproses bukti pembayaran. Pastikan file jelas, berformat JPG, PNG, WebP, atau PDF, dan ukurannya maksimal 5 MB.", undefined, 500);
   }
 }

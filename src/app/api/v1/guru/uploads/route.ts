@@ -13,7 +13,7 @@ import { fileMateri, kursus, users, aiGeneration } from "@/lib/db/schema";
 import { and, eq, desc, lt } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { extractText } from "@/lib/text-extractor";
-import { incrementUploadCount, getSubscriptionStatus } from "@/lib/token-service";
+import { incrementUploadCount, getSubscriptionStatus, requireNotSuspended } from "@/lib/token-service";
 import { MIN_TOPUP } from "@/lib/token-constants";
 import crypto from "crypto";
 
@@ -61,6 +61,8 @@ export async function POST(request: NextRequest) {
     if (csrfError) return csrfError;
 
     const session = await requireGuru(request);
+
+    await requireNotSuspended(session.userId!);
 
     const ip = ipFromRequest(request);
     const ipRl = await checkRateLimit(`upload-doc-ip:${ip}`, 10, 60_000);

@@ -18,6 +18,7 @@ import {
   InsufficientBalanceError,
   requireUnlocked,
   SubscriptionLockedError,
+  requireNotSuspended,
 } from "@/lib/token-service";
 import { GENERATE_COST } from "@/lib/token-constants";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
@@ -44,6 +45,7 @@ export async function POST(
     if (csrfError) return csrfError;
 
     const session = await requireGuru(request);
+    await requireNotSuspended(session.userId);
     const { id } = await params;
 
     try {

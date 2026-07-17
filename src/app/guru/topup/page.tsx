@@ -115,7 +115,7 @@ export default function GuruTopupPage() {
     fd.append("file", file);
     fd.append("amount", String(effectiveAmount));
 
-    const result = await apiFetch<{ balance: number; transactionId: string; proofUrl: string }>(
+    const result = await apiFetch<{ balance: number; transactionId: string; proofUrl: string; isUnlocked: boolean }>(
       "/api/v1/token/topup/upload",
       { method: "POST", body: fd },
     );
@@ -131,10 +131,14 @@ export default function GuruTopupPage() {
     setUploaded(true);
     setUploading(false);
     setNewBalance(result.data?.balance ?? null);
-    setSuccessMsg(`Saldo berhasil bertambah Rp${effectiveAmount.toLocaleString("id-ID")}!`);
+    setSuccessMsg(`Top-up berhasil. Saldo Anda sudah bertambah Rp${effectiveAmount.toLocaleString("id-ID")}. Akses Generate AI sudah aktif.`);
 
     if (balance && result.data?.balance) {
-      setBalance({ ...balance, balance: result.data.balance });
+      setBalance({
+        ...balance,
+        balance: result.data.balance,
+        isUnlocked: result.data.isUnlocked ?? balance.isUnlocked,
+      });
     }
   };
 
@@ -373,7 +377,7 @@ export default function GuruTopupPage() {
               <>
                 <div className="relative rounded-2xl overflow-hidden bg-white border border-border-precision mb-4">
                   <img
-                    src={plans?.qrisImageUrl ?? "/api/v1/qris"}
+                    src={plans?.qrisImageUrl ?? "/qris-gopay.webp"}
                     alt="QRIS GoPay"
                     className="w-full max-w-[280px] mx-auto p-4"
                   />
@@ -441,7 +445,7 @@ export default function GuruTopupPage() {
                 </motion.button>
 
                 <p className="text-[10px] text-on-surface-variant/60 text-center mt-3">
-                  JPG/PNG/WebP/PDF, maks 5MB. Saldo otomatis bertambah setelah upload.
+                  JPG, PNG, WebP, PDF, maks 5 MB. Setelah bukti berhasil disimpan, saldo akan langsung bertambah. Data top-up dan link bukti akan dikirim ke admin melalui Telegram.
                 </p>
               </>
             )}
