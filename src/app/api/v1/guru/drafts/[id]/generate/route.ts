@@ -20,7 +20,7 @@ import {
   SubscriptionLockedError,
   requireNotSuspended,
 } from "@/lib/token-service";
-import { GENERATE_COST } from "@/lib/token-constants";
+import { GENERATE_COST, DAILY_GENERATE_LIMIT } from "@/lib/token-constants";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import {
   checkRateLimit,
@@ -133,6 +133,27 @@ export async function POST(
         { success: false, error: "Terlalu banyak job aktif. Tunggu sebentar." },
         { status: 429 },
       );
+    }
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const [dailyCount] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(aiGeneration)
+      .where(and(
+        eq(aiGeneration.guruId, session.userId),
+        sql`${aiGeneration.createdAt} >= ${todayStart}`,
+        sql`${aiGeneration.status} IN ('generating', 'ready', 'approved')`,
+      ));
+    if ((dailyCount?.count ?? 0) >= DAILY_GENERATE_LIMIT) {
+      releaseConcurrent(concKey);
+      return NextResponse.json({
+        success: false,
+        error: `Batas generate harian tercapai (${DAILY_GENERATE_LIMIT}x/hari). Coba lagi besok atau upgrade paket.`,
+        errorCode: "DAILY_LIMIT_REACHED",
+        dailyLimit: DAILY_GENERATE_LIMIT,
+        currentCount: dailyCount?.count ?? 0,
+      }, { status: 429 });
     }
 
     try {

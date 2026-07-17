@@ -1093,6 +1093,8 @@ export const tokenBalances = pgTable("token_balances", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
   isUnlocked: boolean("is_unlocked").notNull().default(false),
   unlockedAt: timestamp("unlocked_at", { withTimezone: true }),
+  tier: varchar("tier", { length: 20 }).notNull().default("free"),
+  resetAt: timestamp("reset_at", { withTimezone: true }),
 });
 
 export const tokenBalancesRelations = relations(tokenBalances, ({ one }) => ({
