@@ -221,7 +221,13 @@ export async function POST(
         }
       } catch (extractErr) {
         releaseConcurrent(concKey);
-        console.error("On-demand extraction failed:", extractErr);
+        const errMsg = extractErr instanceof Error ? extractErr.message : String(extractErr);
+        console.error("On-demand extraction failed:", errMsg);
+        await db
+          .update(aiGeneration)
+          .set({ status: "failed", errorMessage: `Ekstraksi gagal: ${errMsg.slice(0, 400)}`, updatedAt: new Date() })
+          .where(eq(aiGeneration.id, id))
+          .catch(() => {});
         return NextResponse.json({
           success: false,
           error: "Gagal mengekstrak dokumen. Coba upload ulang.",

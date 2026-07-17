@@ -4,7 +4,7 @@ export const FREE_TIER = {
   FREE_GENERATIONS: Math.floor(10000 / 85),
   UPLOAD_LIMIT: 15,
   MAX_FILE_SIZE: 10 * 1024 * 1024,
-  DAILY_GENERATE_LIMIT: 20,
+  DAILY_GENERATE_LIMIT: 5,
 } as const;
 
 export function getFreeTierSummary() {

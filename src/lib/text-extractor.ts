@@ -15,8 +15,8 @@ const MAX_TEXT_LENGTH = 200_000;
 const MAX_DOCX_UNCOMPRESSED = 100 * 1024 * 1024;
 const ZIP_BOMB_RATIO = 100;
 const MAX_DOCX_FILES = 500;
-const MAX_EXTRACT_TIME_MS = 30_000;
-const MAX_PDF_PAGES = 200;
+const MAX_EXTRACT_TIME_MS = 60_000;
+const MAX_PDF_PAGES = 50;
 
 function truncate(text: string): string {
   if (text.length <= MAX_TEXT_LENGTH) return text;
