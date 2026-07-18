@@ -15,7 +15,9 @@ export async function GET(request: NextRequest) {
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const data = await getCachedDashboard(guruId);
-    return NextResponse.json({ data });
+    const response = NextResponse.json({ data });
+    response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");
+    return response;
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Dashboard guru error:", e);

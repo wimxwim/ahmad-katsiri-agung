@@ -23,7 +23,9 @@ export async function GET(request: NextRequest) {
     const enrolledIds = enrollments.map((e) => e.kursusId);
 
     const result = await fetchQuizList(enrolledIds, session.userId!);
-    return NextResponse.json(result);
+    const response = NextResponse.json(result);
+    response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");
+    return response;
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Siswa quiz list error:", e);

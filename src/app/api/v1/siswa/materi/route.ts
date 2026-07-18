@@ -64,7 +64,9 @@ export async function GET(request: NextRequest) {
       progressPersen: readMap.get(m.id)?.progressPersen ?? 0,
     }));
 
-    return NextResponse.json({ data });
+    const response = NextResponse.json({ data });
+    response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");
+    return response;
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Siswa materi list error:", e);

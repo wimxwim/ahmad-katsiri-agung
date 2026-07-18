@@ -13,7 +13,6 @@ import {
 import { and, asc, desc, eq, inArray, isNull, or } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { withRetry } from "@/lib/retry";
-import { cacheGet, cacheSet, cacheKey } from "@/lib/cache-layer";
 import { fetchQuizList } from "@/lib/quiz-helpers";
 
 export const runtime = "nodejs";
@@ -29,14 +28,6 @@ export async function GET(request: NextRequest) {
 
     const rl = await checkRateLimit(`siswa-dashboard:${session.userId}`, 20, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
-
-    const cacheK = cacheKey("dashboard", session.userId);
-    const cached = await cacheGet<Record<string, unknown>>(cacheK);
-    if (cached) {
-      return NextResponse.json({ data: cached }, {
-        headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60", "X-Cache": "HIT" },
-      });
-    }
 
     const scope = await loadStudentScope(session.userId);
 
@@ -54,10 +45,8 @@ export async function GET(request: NextRequest) {
 
     const result = { profil, feed, quiz, pengumuman: pengumumanData };
 
-    await cacheSet(cacheK, result, 30);
-
     return NextResponse.json({ data: result }, {
-      headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60", "X-Cache": "MISS" },
+      headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60" },
     });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);

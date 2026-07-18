@@ -94,6 +94,11 @@ export default function SiswaPengumumanPage() {
                     PINNED
                   </span>
                 )}
+                {p.target !== "SEMUA" && p.target && (
+                  <span className="text-xs font-bold tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                    KURSUS
+                  </span>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-on-surface">{p.judul}</p>
                   <p className="text-sm text-on-surface-variant mt-2 whitespace-pre-wrap leading-relaxed">

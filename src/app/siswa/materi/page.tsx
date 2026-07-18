@@ -49,9 +49,7 @@ function MateriContent() {
   const kursusId = searchParams.get("kursusId");
   const welcome = searchParams.get("welcome");
 
-  useEffect(() => {
-    if (welcome === "1") setShowWelcome(true);
-
+  const fetchData = useCallback(async () => {
     const cacheKey = `materi:${kursusId || 'all'}`;
     const cached = getCached<MateriItem[]>(cacheKey);
     if (cached) {
@@ -66,24 +64,26 @@ function MateriContent() {
     setLoading(true);
     setError("");
 
-    fetch(url.toString(), { credentials: "include" })
-      .then(async (r) => {
-        if (!r.ok) {
-          const j = await r.json().catch(() => ({}));
-          throw new Error(j.error || "Gagal memuat");
-        }
-        return r.json();
-      })
-      .then((j) => {
-        setCache(cacheKey, j.data || [], 60_000);
-        setData(j.data || []);
-        setLoading(false);
-      })
-      .catch((e) => {
-        setError(e instanceof Error ? e.message : "Gagal memuat");
-        setLoading(false);
-      });
-  }, [kursusId, welcome]);
+    try {
+      const r = await fetch(url.toString(), { credentials: "include" });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j.error || "Gagal memuat");
+      }
+      const j = await r.json();
+      setCache(cacheKey, j.data || [], 60_000);
+      setData(j.data || []);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal memuat");
+    } finally {
+      setLoading(false);
+    }
+  }, [kursusId]);
+
+  useEffect(() => {
+    if (welcome === "1") setShowWelcome(true);
+    fetchData();
+  }, [kursusId, welcome, fetchData]);
 
   useEffect(() => {
     const cached = getCached<KursusOption[]>("materi:kursusList");
@@ -118,35 +118,8 @@ function MateriContent() {
   );
 
   const handleRetry = useCallback(() => {
-    setLoading(true);
-    setError("");
-    const cacheKey = `materi:${kursusId || 'all'}`;
-    const cached = getCached<MateriItem[]>(cacheKey);
-    if (cached) {
-      setData(cached);
-      setLoading(false);
-      return;
-    }
-    const url = new URL("/api/v1/siswa/materi", window.location.origin);
-    if (kursusId) url.searchParams.set("kursusId", kursusId);
-    fetch(url.toString(), { credentials: "include" })
-      .then(async (r) => {
-        if (!r.ok) {
-          const j = await r.json().catch(() => ({}));
-          throw new Error(j.error || "Gagal memuat");
-        }
-        return r.json();
-      })
-      .then((j) => {
-        setCache(cacheKey, j.data || [], 60_000);
-        setData(j.data || []);
-        setLoading(false);
-      })
-      .catch((e) => {
-        setError(e instanceof Error ? e.message : "Gagal memuat");
-        setLoading(false);
-      });
-  }, [kursusId]);
+    fetchData();
+  }, [fetchData]);
 
   const uniqueKursusIds = useMemo(
     () => [...new Set(data.map((m) => m.kursusId))],
@@ -212,7 +185,12 @@ function MateriContent() {
             </p>
           </div>
           <button
-            onClick={() => setShowWelcome(false)}
+            onClick={() => {
+              setShowWelcome(false);
+              const url = new URL(window.location.href);
+              url.searchParams.delete("welcome");
+              router.replace(url.toString(), { scroll: false });
+            }}
             className="shrink-0 text-emerald-500 hover:text-emerald-700 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
             aria-label="Tutup banner"
           >

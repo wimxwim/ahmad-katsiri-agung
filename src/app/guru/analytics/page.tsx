@@ -110,7 +110,7 @@ export default function GuruAnalyticsPage() {
     );
   }
 
-  const noData = !data || data.totalKursus === 0;
+  const noData = !data || (data.totalKursus === 0 && data.totalSiswa === 0 && data.totalAttempt === 0);
 
   return (
     <div>
@@ -203,7 +203,7 @@ export default function GuruAnalyticsPage() {
             </div>
           )}
 
-          {data.rataNilaiKeseluruhan > 0 && (
+          {data.rataNilaiKeseluruhan > 0 ? (
             <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass mb-6">
               <div className="flex items-center gap-2 mb-4">
                 <Lightbulb className="w-5 h-5 text-tertiary" />
@@ -283,6 +283,16 @@ export default function GuruAnalyticsPage() {
                     : null;
                 })()}
               </div>
+            </div>
+          ) : (
+            <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass mb-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Lightbulb className="w-5 h-5 text-tertiary" />
+                <h2 className="font-heading font-semibold text-on-surface">Ringkasan untuk Bapak/Ibu Guru</h2>
+              </div>
+              <p className="text-sm text-on-surface-variant">
+                Belum ada data quiz yang cukup untuk menampilkan ringkasan insight. Ajak siswa untuk mulai mengerjakan quiz agar data analytics dapat ditampilkan.
+              </p>
             </div>
           )}
 
