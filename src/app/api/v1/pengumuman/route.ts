@@ -11,6 +11,8 @@ import { desc, eq, or, and, gte, sql } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 
+export const runtime = "nodejs";
+
 const CreateSchema = z.object({
   judul: z.string().min(1).max(255),
   konten: z.string().min(1),

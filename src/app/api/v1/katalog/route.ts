@@ -6,6 +6,7 @@ import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {

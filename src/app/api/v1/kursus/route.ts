@@ -12,6 +12,8 @@ import { desc, eq } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 
+export const runtime = "nodejs";
+
 const KursusSchema = z.object({
   judul: z.string().min(1).max(200),
   deskripsi: z.string().max(500).optional().default(""),

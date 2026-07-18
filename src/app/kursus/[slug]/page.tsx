@@ -91,7 +91,8 @@ export default function KursusDetailPage() {
       }
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(j.error || j.message || "Gagal mendaftar");
+        const errMsg = typeof j.error === "object" && j.error !== null && "message" in j.error ? String(j.error.message) : j.error;
+        setError(errMsg || j.message || "Gagal mendaftar");
         return;
       }
       setEnrolled(true);
