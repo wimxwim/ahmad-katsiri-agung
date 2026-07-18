@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     if (proofFile.size === 0) {
       return apiError("File bukti kosong", 400);
     }
-    if (proofFile.type && !ALLOWED_IMAGE_MIME.has(proofFile.type)) {
+    if (!proofFile.type || !ALLOWED_IMAGE_MIME.has(proofFile.type)) {
       return apiError("Bukti harus berupa gambar (JPG/PNG/WebP)", 415);
     }
 

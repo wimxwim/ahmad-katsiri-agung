@@ -129,7 +129,8 @@ export function FormMasuk({
       });
       const result = await res.json();
       if (result.error) {
-        setError(result.error);
+        const errMsg = typeof result.error === "string" ? result.error : (result.error.message || result.error.code || "Terjadi kesalahan");
+        setError(errMsg);
       } else if (result.success && result.redirect) {
         window.location.href = result.redirect;
       } else {

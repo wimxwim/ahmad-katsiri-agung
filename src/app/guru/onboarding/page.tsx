@@ -23,7 +23,7 @@ const STEPS = [
   {
     id: "kelas",
     title: "Buat kelas dan undang siswa",
-    desc: "Tambahkan siswa ke kelas, atau import dari CSV untuk批量.",
+    desc: "Tambahkan siswa ke kelas, atau import dari CSV untuk banyak siswa sekaligus.",
     icon: Users,
     href: "/guru/kelas",
   },
@@ -171,7 +171,7 @@ export default function OnboardingPage() {
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
-              href="/profil"
+              href="/guru/profil"
               className="inline-flex items-center gap-2 bg-white text-primary border border-primary/20 px-4 py-2 rounded-full text-sm font-semibold hover:bg-primary/5 transition-colors"
             >
               Atur Profil

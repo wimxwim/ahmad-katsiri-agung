@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       if (!ALLOWED_EXT.has(extFromName)) {
         return apiError("VALIDATION_ERROR", `Tipe file .${extFromName} tidak diizinkan`, undefined, 415);
       }
-      if (file.type && !ALLOWED_MIME.has(file.type)) {
+      if (!file.type || !ALLOWED_MIME.has(file.type)) {
         return apiError("VALIDATION_ERROR", `MIME type ${file.type} tidak diizinkan`, undefined, 415);
       }
 

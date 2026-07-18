@@ -294,6 +294,7 @@ export async function topUpBalance(
     proofFileId?: string;
     proofLink?: string;
     notes?: string;
+    referenceId?: string;
   },
 ): Promise<{ balance: TokenBalance; transaction: TokenTransaction; isFirstTopUp: boolean; bonusMessage: string | null }> {
   const before = await ensureBalanceRow(userId);
@@ -348,6 +349,7 @@ export async function topUpBalance(
         paymentMethod: metadata?.paymentMethod ?? "QRIS_GOPAY",
         proofFileId: metadata?.proofFileId ?? null,
         proofLink: metadata?.proofLink ?? null,
+        referenceId: metadata?.referenceId ?? null,
         notes: wasJustUnlockedTx ? "Top-up pertama — fitur generate di-unlock!" : (metadata?.notes ?? null),
       })
       .returning();

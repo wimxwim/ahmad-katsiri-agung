@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     if (!ALLOWED_EXT.has(extFromName)) {
       return apiError(`Ekstensi .${extFromName} tidak diizinkan. Gunakan PDF/DOCX.`, 415);
     }
-    if (file.type && !ALLOWED_MIME.has(file.type)) {
+    if (!file.type || !ALLOWED_MIME.has(file.type)) {
       return apiError(`MIME type ${file.type} tidak diizinkan`, 415);
     }
 

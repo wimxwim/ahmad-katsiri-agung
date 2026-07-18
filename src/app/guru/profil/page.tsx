@@ -118,6 +118,40 @@ export default function GuruProfilPage() {
     );
   }
 
+  if (!loading && !balance && !session) {
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE_CURVE }}
+        >
+          <span className="inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-primary mb-1">
+            Profil
+          </span>
+          <h1 className="font-heading font-bold text-2xl text-on-surface">Profil Guru</h1>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-glass border border-red-200 rounded-card p-8 text-center shadow-glass"
+        >
+          <div className="w-14 h-14 rounded-2xl bg-red-50 text-red-600 grid place-items-center mx-auto mb-4">
+            <AlertCircle className="w-7 h-7" />
+          </div>
+          <p className="text-red-600 font-semibold mb-2">Gagal memuat profil</p>
+          <p className="text-sm text-on-surface-variant mb-4">Terjadi kesalahan saat mengambil data. Silakan coba lagi.</p>
+          <button
+            onClick={() => { setLoading(true); fetchData(); }}
+            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
+          >
+            Coba lagi
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <motion.div

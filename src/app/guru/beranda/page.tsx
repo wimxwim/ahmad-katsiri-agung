@@ -276,6 +276,7 @@ export default function GuruBerandaPage() {
           onClick={() => {
             setLoading(true);
             setError("");
+            retryCount.current = 0;
             fetchData();
           }}
           className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"

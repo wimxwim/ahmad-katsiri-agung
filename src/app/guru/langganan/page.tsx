@@ -95,6 +95,39 @@ export default function GuruLanggananPage() {
     );
   }
 
+  if (!loading && !balance) {
+    return (
+      <div className="space-y-8 max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE_CURVE }}
+        >
+          <span className="inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-primary mb-1">
+            Langganan
+          </span>
+          <h1 className="font-heading font-bold text-2xl text-on-surface">
+            Pilih Paket
+          </h1>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/60 backdrop-blur-2xl border border-red-200 shadow-glass rounded-[32px] p-8 text-center"
+        >
+          <p className="text-red-600 font-semibold mb-2">Gagal memuat data paket</p>
+          <p className="text-sm text-on-surface-variant mb-4">Terjadi kesalahan saat mengambil data langganan. Silakan coba lagi.</p>
+          <button
+            onClick={() => { setLoading(true); fetchBalance(); }}
+            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
+          >
+            Coba lagi
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <motion.div

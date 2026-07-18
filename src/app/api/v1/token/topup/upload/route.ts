@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     if (!ALLOWED_EXT.has(extFromName)) {
       return apiError("VALIDATION_ERROR", `Tipe file .${extFromName} tidak diizinkan. Gunakan JPG/PNG/WebP/PDF.`, undefined, 415);
     }
-    if (file.type && !ALLOWED_MIME.has(file.type)) {
+    if (!file.type || !ALLOWED_MIME.has(file.type)) {
       return apiError("VALIDATION_ERROR", `MIME type ${file.type} tidak diizinkan`, undefined, 415);
     }
 
@@ -132,6 +132,7 @@ export async function POST(request: NextRequest) {
       proofFileId: uploadResult.fileId,
       proofLink: uploadResult.link,
       notes: `Top-up Rp${amount.toLocaleString("id-ID")} via QRIS GoPay`,
+      referenceId: idempotencyKey,
     });
 
     await db
