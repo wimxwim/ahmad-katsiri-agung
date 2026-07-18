@@ -256,12 +256,22 @@ function queueExtraction(
         .set({ status: "extracting", updatedAt: new Date() })
         .where(eq(fileMateri.id, fileId));
 
-      const fileRes = await fetch(fileUrl, { signal: AbortSignal.timeout(30_000) });
+      const fileRes = await fetch(fileUrl, { signal: AbortSignal.timeout(60_000) });
       if (!fileRes.ok) {
         throw new Error(`Gagal mengunduh file: ${fileRes.status}`);
       }
       const fileBytes = Buffer.from(await fileRes.arrayBuffer());
-      const text = await extractText(fileBytes, ext);
+      let text = "";
+      try {
+        text = await extractText(fileBytes, ext);
+      } catch (extractErr) {
+        if (ext === "pdf") {
+          console.warn("First extraction attempt failed, retrying with extended timeout:", extractErr);
+          text = await extractText(fileBytes, ext);
+        } else {
+          throw extractErr;
+        }
+      }
 
       if (text && text.length >= 50) {
         await db

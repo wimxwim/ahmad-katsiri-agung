@@ -203,7 +203,7 @@ export async function POST(
 
       try {
         const fileUrl = file.linkAkses || `https://ik.imagekit.io/v6wbihytb/${file.imagekitFileId}`;
-        const fileRes = await fetch(fileUrl, { signal: AbortSignal.timeout(30_000) });
+        const fileRes = await fetch(fileUrl, { signal: AbortSignal.timeout(60_000) });
         if (!fileRes.ok) {
           throw new Error(`Gagal mengunduh file: ${fileRes.status}`);
         }

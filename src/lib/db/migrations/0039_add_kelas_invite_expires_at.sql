@@ -1,0 +1,1 @@
+ALTER TABLE kelas ADD COLUMN IF NOT EXISTS invite_expires_at TIMESTAMPTZ;

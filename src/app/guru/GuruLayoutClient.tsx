@@ -18,6 +18,7 @@ import { DashboardLayoutClient } from "@/components/dashboard/DashboardLayoutCli
 import type { SidebarItem } from "@/components/dashboard/DashboardLayoutClient";
 import type { BottomNavTab } from "@/components/layout/BottomNavBar";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+import { ToastProvider } from "@/components/ui/Toast";
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/guru/beranda", label: "Ringkasan", icon: LayoutDashboard },
@@ -55,7 +56,7 @@ export function GuruLayoutClient({ children }: { children: React.ReactNode }) {
         profileHref="/guru/profil"
         bottomTabs={BOTTOM_TABS}
       >
-        {children}
+        <ToastProvider>{children}</ToastProvider>
       </DashboardLayoutClient>
     </>
   );
