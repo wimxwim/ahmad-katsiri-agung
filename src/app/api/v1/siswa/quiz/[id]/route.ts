@@ -53,6 +53,7 @@ export async function GET(
         pilihanGanda: soalPublished.pilihanGanda,
         poin: soalPublished.poin,
         urutan: soalPublished.urutan,
+        kunci: soalPublished.kunci,
       })
       .from(soalPublished)
       .where(eq(soalPublished.quizPublishedId, id))
@@ -64,6 +65,7 @@ export async function GET(
       tipe: s.tipe,
       pilihanGanda: s.pilihanGanda,
       poin: s.poin,
+      ...(quiz.modeEvaluasi === "BELAJAR" ? { kunci: s.kunci } : {}),
     }));
 
     return NextResponse.json({ data: { ...quiz, soal: safe } });

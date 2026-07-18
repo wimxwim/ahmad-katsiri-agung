@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     const results = await Promise.allSettled([
       fetchProfil(session.userId),
-      fetchFeed(scope),
+      fetchFeed(scope, session.userId),
       fetchQuiz(scope, session.userId),
       fetchPengumuman(scope),
     ]);
@@ -120,7 +120,7 @@ async function fetchProfil(userId: string) {
   });
 }
 
-async function fetchFeed(scope: StudentScope) {
+async function fetchFeed(scope: StudentScope, userId: string) {
   return withRetry(async () => {
     if (scope.enrolledIds.length === 0) {
       return {
@@ -159,7 +159,7 @@ async function fetchFeed(scope: StudentScope) {
         .from(materiRead)
         .where(
           and(
-            eq(materiRead.siswaId, materiRead.siswaId),
+            eq(materiRead.siswaId, userId),
             inArray(materiRead.materiPublishedId, materiList.map((m) => m.id)),
           ),
         );

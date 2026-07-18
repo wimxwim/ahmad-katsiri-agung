@@ -48,8 +48,8 @@ function SkeletonDashboardGuru() {
 function SkeletonDashboardSiswa() {
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {[1, 2, 3].map((i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[1, 2, 3, 4].map((i) => (
           <SkeletonCard key={i} className="p-5 h-20" />
         ))}
       </div>

@@ -16,6 +16,9 @@ import {
   AlertTriangle,
   RefreshCw,
   Users,
+  Library,
+  BarChart3,
+  Clock,
 } from "lucide-react";
 import { SkeletonDashboardSiswa } from "@/components/ui/SkeletonBlocks";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -74,10 +77,28 @@ const CACHE_TTL = 30_000;
 
 const INVITE_STORAGE_KEY = "akal_pending_invite";
 
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.06 },
+  },
+};
+
+const itemAnim = {
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: EASE_CURVE },
+  },
+};
+
 export default function SiswaBerandaPage() {
   const [feed, setFeed] = useState<FeedResponse | null>(null);
   const [pengumuman, setPengumuman] = useState<PengumumanItem[]>([]);
   const [quizList, setQuizList] = useState<QuizItem[]>([]);
+  const [totalAttempt, setTotalAttempt] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [nama, setNama] = useState("Siswa");
@@ -118,6 +139,7 @@ export default function SiswaBerandaPage() {
         setFeed(cached.feed);
         setPengumuman(cached.pengumuman?.data ?? []);
         setQuizList(cached.quiz?.data ?? []);
+        setTotalAttempt(cached.quiz?.totalAttempt ?? 0);
         if (cached.profil?.nama) setNama(cached.profil.nama);
         setLoading(false);
         return;
@@ -146,6 +168,7 @@ export default function SiswaBerandaPage() {
         if (d.feed) setFeed(d.feed);
         if (d.pengumuman?.data) setPengumuman(d.pengumuman.data);
         if (d.quiz?.data) setQuizList(d.quiz.data);
+        setTotalAttempt(d.quiz?.totalAttempt ?? 0);
         setLoading(false);
         return;
       } catch {
@@ -242,11 +265,20 @@ export default function SiswaBerandaPage() {
     kursus: feed?.totalKursus ?? 0,
     materi: feed?.totalMateri ?? 0,
     selesai: feed?.totalSelesai ?? 0,
+    kuis: totalAttempt,
   };
   const progressPct =
     stats.materi > 0 ? Math.round((stats.selesai / stats.materi) * 100) : 0;
 
   const pendingQuiz = quizList.find((q) => !q.sudahDikerjakan);
+  const completedQuiz = quizList.filter((q) => q.sudahDikerjakan);
+
+  const statCards = [
+    { label: "Kursus", value: stats.kursus, icon: Library, color: "text-primary", bg: "bg-primary/10" },
+    { label: "Materi", value: stats.materi, icon: BookOpen, color: "text-emerald-700", bg: "bg-emerald-50" },
+    { label: "Selesai", value: stats.selesai, icon: CheckCircle2, color: "text-emerald-700", bg: "bg-emerald-50" },
+    { label: "Kuis", value: stats.kuis, icon: BarChart3, color: "text-tertiary", bg: "bg-tertiary/10" },
+  ];
 
   return (
     <div className="space-y-5">
@@ -280,6 +312,30 @@ export default function SiswaBerandaPage() {
         </p>
       </motion.div>
 
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.03 }}
+        className="grid grid-cols-2 sm:grid-cols-4 gap-2.5"
+      >
+        {statCards.map((card) => (
+          <div
+            key={card.label}
+            className="bg-glass border border-border-precision rounded-2xl p-3.5 shadow-glass"
+          >
+            <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center mb-2", card.bg)}>
+              <card.icon className={cn("w-4 h-4", card.color)} />
+            </div>
+            <p className="font-heading font-bold text-lg text-on-surface tabular-nums leading-none">
+              {card.value}
+            </p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mt-1">
+              {card.label}
+            </p>
+          </div>
+        ))}
+      </motion.div>
+
       {feed?.continueLearning && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -299,7 +355,7 @@ export default function SiswaBerandaPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-white/60">
-                  {feed.continueLearning.kursusJudul || "—"}
+                  {feed.continueLearning.kursusJudul || "\u2014"}
                 </p>
                 <p className="font-heading font-bold mt-1 truncate">
                   {feed.continueLearning.judul}
@@ -328,7 +384,7 @@ export default function SiswaBerandaPage() {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.1 }}
+          transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.08 }}
         >
           <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary mb-2 block">
             Perlu Dikerjakan
@@ -357,6 +413,84 @@ export default function SiswaBerandaPage() {
               <ArrowRight className="w-4 h-4 shrink-0 text-on-surface-variant/60" />
             </div>
           </Link>
+        </motion.div>
+      )}
+
+      {completedQuiz.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.1 }}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">
+              Hasil Kuis Terbaru
+            </span>
+            <Link
+              href="/siswa/progres"
+              className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+            >
+              Lihat Semua
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="flex flex-col gap-2"
+          >
+            {completedQuiz.slice(0, 3).map((q) => {
+              const nilai = q.nilaiTerbaik ?? 0;
+              const dapatNilai = q.modeEvaluasi !== "CBT" && q.nilaiTerbaik !== null;
+              const color = !dapatNilai
+                ? "text-on-surface-variant"
+                : nilai >= 80
+                  ? "text-emerald-700"
+                  : nilai >= 60
+                    ? "text-amber-700"
+                    : "text-red-600";
+              const bg = !dapatNilai
+                ? "bg-surface"
+                : nilai >= 80
+                  ? "bg-emerald-50"
+                  : nilai >= 60
+                    ? "bg-amber-50"
+                    : "bg-red-50";
+              return (
+                <motion.div key={q.id} variants={itemAnim}>
+                  <Link
+                    href={`/siswa/cbt/${q.id}`}
+                    className="flex items-center gap-3 bg-glass border border-border-precision rounded-2xl p-3 shadow-glass hover:bg-white/80 hover:border-primary/25 active:scale-[0.99] transition-all duration-200"
+                  >
+                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", bg)}>
+                      <span className={cn("font-heading font-bold text-sm", color)}>
+                        {dapatNilai ? nilai : "\u2014"}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-on-surface truncate">
+                        {q.judul}
+                      </p>
+                      <p className="text-xs text-on-surface-variant mt-0.5 flex items-center gap-2 flex-wrap">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {q.durasiMenit} menit
+                        </span>
+                        <span>{q.totalSoal} soal</span>
+                        {q.modeEvaluasi !== "BELAJAR" && (
+                          <span className="text-tertiary bg-tertiary/10 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                            {q.modeEvaluasi}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-on-surface-variant/30 shrink-0" />
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </motion.div>
         </motion.div>
       )}
 
@@ -400,9 +534,18 @@ export default function SiswaBerandaPage() {
       </motion.div>
 
       <div>
-        <h2 className="font-heading font-semibold text-on-surface mb-2 text-sm">
-          Materi Terbaru
-        </h2>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-heading font-semibold text-on-surface text-sm">
+            Materi Terbaru
+          </h2>
+          <Link
+            href="/siswa/materi"
+            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+          >
+            Lihat Semua
+            <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
         <div className="flex flex-col gap-2">
           {feed?.data.slice(0, 5).map((m) => (
             <Link
@@ -429,7 +572,7 @@ export default function SiswaBerandaPage() {
                   {m.judul}
                 </h3>
                 <p className="text-xs text-on-surface-variant mt-0.5">
-                  {m.kursusJudul || "—"}
+                  {m.kursusJudul || "\u2014"}
                 </p>
                 {m.progress > 0 && !m.selesai && (
                   <div className="flex items-center gap-2 mt-1">

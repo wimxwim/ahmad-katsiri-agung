@@ -12,6 +12,7 @@ interface SoalItem {
   tipe: "PG" | "ISIAN" | "ESSAY";
   pilihanGanda: Record<string, string> | null;
   poin: number;
+  kunci?: string;
 }
 
 interface QuizDetail {
@@ -34,7 +35,7 @@ function mapToEngine(quiz: QuizDetail) {
       pertanyaan: s.pertanyaan,
       tipe: s.tipe,
       opsi: s.pilihanGanda || {},
-      kunci: "", // tidak ditampilkan ke client
+      kunci: s.kunci || "",
     })),
   };
 }
