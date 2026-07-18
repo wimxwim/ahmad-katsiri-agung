@@ -13,11 +13,9 @@ const NAV_ITEMS_FALLBACK = [
   { href: "/", label: "Beranda" },
   { href: "/kursus", label: "Kursus" },
   { href: "/fitur", label: "Fitur" },
-  { href: "/harga", label: "Harga" },
   { href: "/tentang", label: "Tentang" },
   { href: "/quran", label: "Quran" },
   { href: "/panduan-ai", label: "Panduan AI" },
-  { href: "/pembayaran", label: "Pembayaran" },
 ];
 
 function isActive(pathname: string, href: string) {
