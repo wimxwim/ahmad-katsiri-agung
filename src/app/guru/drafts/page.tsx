@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Sparkles, FileText, CheckCircle2, XCircle, RefreshCw, Clock, AlertCircle, Loader2, Search, Filter, Zap, Wallet } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -31,6 +32,7 @@ const STATUS_META: Record<string, { label: string; color: string; icon: typeof S
 };
 
 export default function GuruDraftsPage() {
+  const router = useRouter();
   const [drafts, setDrafts] = useState<DraftItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -61,7 +63,7 @@ export default function GuruDraftsPage() {
         const j = await res.json().catch(() => ({}));
         if (res.status === 402 && j?.locked) {
           setGenerateError("Fitur generate AI terkunci. Silakan top-up minimal Rp10.000 untuk membuka akses.");
-          const timer = setTimeout(() => window.location.href = "/guru/topup", 2000);
+          const timer = setTimeout(() => router.push("/guru/topup"), 2000);
           if (typeof window !== "undefined") {
             const cleanup = () => { clearTimeout(timer); window.removeEventListener("beforeunload", cleanup); };
             window.addEventListener("beforeunload", cleanup);

@@ -287,7 +287,13 @@ export default function GuruBerandaPage() {
     );
   }
 
-  if (!data || data.totalKursus === 0) {
+  const hasAnyActivity = data && (
+    data.totalSiswa > 0 ||
+    data.draftMenunggu > 0 ||
+    data.totalMateriPublished > 0 ||
+    data.totalQuizPublished > 0
+  );
+  if (!data || (data.totalKursus === 0 && !hasAnyActivity)) {
     return <WelcomeEmptyState />;
   }
 
@@ -514,7 +520,7 @@ export default function GuruBerandaPage() {
           <div className="h-2 bg-black/5 rounded-full overflow-hidden mb-3">
             <motion.div
               initial={{ width: 0 }}
-              animate={{ width: `${Math.min((data.draftMenunggu / 5) * 100, 100)}%` }}
+              animate={{ width: `${data.draftMenunggu > 0 ? Math.min((data.draftMenunggu / Math.max(data.draftMenunggu, 5)) * 100, 100) : 0}%` }}
               transition={{ duration: 1, ease: EASE_CURVE }}
               className="h-full bg-gradient-to-r from-primary/60 to-primary rounded-full"
             />

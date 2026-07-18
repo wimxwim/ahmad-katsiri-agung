@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { GradebookTable } from "@/components/dashboard/GradebookTable";
 
 export default function KursusNilaiPage() {
-  const router = useRouter();
   const params = useParams();
   const [siswaData, setSiswaData] = useState<{ siswaId: string; nama: string; skorRataRata: number }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,44 +14,47 @@ export default function KursusNilaiPage() {
   const [kursusNama, setKursusNama] = useState("");
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [kursusRes, nilaiRes] = await Promise.all([
-          fetch(`/api/v1/kursus/${params.id}`, { credentials: "include" }),
-          fetch(`/api/v1/kursus/${params.id}/nilai`, { credentials: "include" }),
-        ]);
-        if (kursusRes.status === 404) {
-          setKursusNama("");
-          return;
-        }
-        const kd = await kursusRes.json();
-        setKursusNama(kd.data?.judul || "");
-
-        const nd = await nilaiRes.json().catch(() => ({ data: [] }));
-        const logEntries = (nd.data || []) as { siswaId: string; nama: string; isBenar: boolean }[];
-        const aggregated = new Map<string, { nama: string; benar: number; total: number }>();
-        for (const entry of logEntries) {
-          const key = entry.siswaId;
-          const existing = aggregated.get(key) || { nama: entry.nama, benar: 0, total: 0 };
-          if (entry.isBenar) existing.benar++;
-          existing.total++;
-          aggregated.set(key, existing);
-        }
-        const list: { siswaId: string; nama: string; skorRataRata: number }[] = [];
-        for (const [siswaId, v] of aggregated) {
-          const pct = v.total > 0 ? Math.round((v.benar / v.total) * 100) : 0;
-          list.push({ siswaId, nama: v.nama, skorRataRata: pct });
-        }
-        list.sort((a, b) => a.nama.localeCompare(b.nama));
-        setSiswaData(list);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal memuat nilai");
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchData();
   }, [params.id]);
+
+  async function fetchData() {
+    setLoading(true);
+    setError("");
+    try {
+      const [kursusRes, nilaiRes] = await Promise.all([
+        fetch(`/api/v1/kursus/${params.id}`, { credentials: "include" }),
+        fetch(`/api/v1/kursus/${params.id}/nilai`, { credentials: "include" }),
+      ]);
+      if (kursusRes.status === 404) {
+        setKursusNama("");
+        return;
+      }
+      const kd = await kursusRes.json();
+      setKursusNama(kd.data?.judul || "");
+
+      const nd = await nilaiRes.json().catch(() => ({ data: [] }));
+      const logEntries = (nd.data || []) as { siswaId: string; nama: string; isBenar: boolean }[];
+      const aggregated = new Map<string, { nama: string; benar: number; total: number }>();
+      for (const entry of logEntries) {
+        const key = entry.siswaId;
+        const existing = aggregated.get(key) || { nama: entry.nama, benar: 0, total: 0 };
+        if (entry.isBenar) existing.benar++;
+        existing.total++;
+        aggregated.set(key, existing);
+      }
+      const list: { siswaId: string; nama: string; skorRataRata: number }[] = [];
+      for (const [siswaId, v] of aggregated) {
+        const pct = v.total > 0 ? Math.round((v.benar / v.total) * 100) : 0;
+        list.push({ siswaId, nama: v.nama, skorRataRata: pct });
+      }
+      list.sort((a, b) => a.nama.localeCompare(b.nama));
+      setSiswaData(list);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memuat nilai");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -69,7 +70,7 @@ export default function KursusNilaiPage() {
     return (
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline">Coba lagi</button>
+        <button onClick={() => { setError(""); setLoading(true); fetchData(); }} className="text-sm text-primary hover:underline">Coba lagi</button>
       </div>
     );
   }
