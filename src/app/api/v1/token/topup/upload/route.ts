@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, after } from "next/server";
 import { createHash } from "crypto";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiSuccess, apiRateLimit } from "@/lib/api-response";
@@ -145,18 +145,24 @@ export async function POST(request: NextRequest) {
       columns: { nama: true, email: true, lastActiveAt: true },
     });
 
-    sendTopupNotification({
-      userId: session.userId,
-      transactionId: transaction.id,
-      nama: guru?.nama ?? "Guru",
-      email: guru?.email ?? session.email ?? "",
-      amount,
-      proofUrl: uploadResult.link,
-      newBalance: balance.balance,
-      loginTerakhir: guru?.lastActiveAt
-        ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
-        : undefined,
-    }).catch((e) => console.error("[topup] Telegram notif gagal:", e));
+    after(async () => {
+      try {
+        await sendTopupNotification({
+          userId: session.userId,
+          transactionId: transaction.id,
+          nama: guru?.nama ?? "Guru",
+          email: guru?.email ?? session.email ?? "",
+          amount,
+          proofUrl: uploadResult.link,
+          newBalance: balance.balance,
+          loginTerakhir: guru?.lastActiveAt
+            ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
+            : undefined,
+        });
+      } catch (e) {
+        console.error("[topup] Telegram notif gagal:", e);
+      }
+    });
 
     return apiSuccess({
       transactionId: transaction.id,
