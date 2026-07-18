@@ -1,6 +1,6 @@
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { aiGeneration, fileMateri } from "@/lib/db/schema";
+import { aiGeneration, fileMateri, materiPublished, quizPublished, soalPublished } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
@@ -54,6 +54,17 @@ export async function DELETE(
     if (!draft) {
       return apiError("Draft tidak ditemukan", 404);
     }
+
+    // Delete dependent published rows first (FK constraints)
+    await db
+      .delete(soalPublished)
+      .where(eq(soalPublished.aiGenerationId, id));
+    await db
+      .delete(quizPublished)
+      .where(eq(quizPublished.aiGenerationId, id));
+    await db
+      .delete(materiPublished)
+      .where(eq(materiPublished.aiGenerationId, id));
 
     await db
       .delete(aiGeneration)
