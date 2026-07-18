@@ -133,6 +133,10 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
 
   const startQuiz = useCallback(() => {
     setShuffledSoal(shuffleArray(quiz.soal));
+    fetch(`/api/v1/siswa/quiz/${quiz.id}/start`, {
+      method: "POST",
+      credentials: "include",
+    }).catch(() => { /* fire-and-forget */ });
     setJawaban({});
     setCurrentIndex(0);
     setSelected(null);
