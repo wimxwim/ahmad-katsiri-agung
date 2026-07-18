@@ -154,11 +154,9 @@ export default function GuruUploadPage() {
         return;
       }
 
-      setJob({ state: "extracting", progress: 70, message: "Mengekstrak teks..." });
-      await new Promise((r) => setTimeout(r, 50));
       setJob({ state: "ready", progress: 100, message: "Upload selesai!" });
       setSuccessFileName(file.name);
-      toast("success", "File berhasil diupload! Teks berhasil diekstrak. Buka halaman Draft AI untuk generate materi, kuis, dan soal.");
+      toast("success", "Dokumen berhasil diupload. Teks sedang diekstrak otomatis — pantau progres di halaman Draft AI.");
       await loadHistory();
     } catch (e) {
       setJob({ state: "failed", progress: 0, message: "Gagal" });

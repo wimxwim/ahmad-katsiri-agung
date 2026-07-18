@@ -248,7 +248,7 @@ function queueExtraction(
     try {
       await db
         .update(aiGeneration)
-        .set({ status: "extracting", updatedAt: new Date() })
+        .set({ status: "extracting", leaseUntil: new Date(Date.now() + 5 * 60 * 1000), updatedAt: new Date() })
         .where(eq(aiGeneration.id, generationId));
 
       await db
@@ -281,7 +281,7 @@ function queueExtraction(
 
         await db
           .update(aiGeneration)
-          .set({ status: "extracted", updatedAt: new Date() })
+          .set({ status: "extracted", leaseUntil: null, updatedAt: new Date() })
           .where(eq(aiGeneration.id, generationId));
 
         await appendEvent(`gen:${guruId}`, "gen.extracted", { generationId, textLength: text.length });

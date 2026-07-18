@@ -306,7 +306,7 @@ export default function GuruDraftsPage() {
                       Tinjau
                     </Link>
                   )}
-                  {(d.status === "extracted" || d.status === "failed") && (
+                  {(d.status === "extracted" || d.status === "failed" || d.status === "queued") && (
                     <button
                       onClick={() => handleGenerate(d.id)}
                       disabled={generatingIds.has(d.id)}

@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       FROM ai_generation
       WHERE (
         status = 'queued'
-        OR (status = 'generating' AND lease_until IS NOT NULL AND lease_until < NOW())
+        OR ((status = 'extracting' OR status = 'generating') AND lease_until IS NOT NULL AND lease_until < NOW())
       )
         AND materi_status = 'not_generated'
       ORDER BY created_at
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
         if (fileInfo?.linkAkses || fileInfo?.imagekitFileId) {
           try {
             const fileUrl = fileInfo.linkAkses || `https://ik.imagekit.io/v6wbihytb/${fileInfo.imagekitFileId}`;
-            const fileRes = await fetch(fileUrl, { signal: AbortSignal.timeout(30_000) });
+            const fileRes = await fetch(fileUrl, { signal: AbortSignal.timeout(60_000) });
             if (!fileRes.ok) {
               throw new Error(`Gagal mengunduh file: ${fileRes.status}`);
             }
