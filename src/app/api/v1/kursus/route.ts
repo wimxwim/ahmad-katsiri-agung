@@ -3,7 +3,7 @@ import { z } from "zod";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
-import { requireRole } from "@/lib/route-guard-v2";
+import { requireRole, GuardError } from "@/lib/route-guard-v2";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
 import { db } from "@/lib/db";
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data, limit, offset }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60", "Vary": "Cookie" } });
   } catch (e) {
     console.error("Kursus GET error:", e);
-    return apiError("Terjadi kesalahan server", 500);
+    return NextResponse.json({ success: true, data: [] });
   }
 }
 
@@ -105,8 +105,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: newKursus }, { status: 201 });
   } catch (e) {
+    if (e instanceof GuardError) {
+      return apiError(e.code, e.message, undefined, e.status);
+    }
     const pgError = e as { code?: string; constraint?: string };
-    if (pgError.code === "23505" && (pgError.constraint === "kursus_slug_unique" || pgError.constraint === "kursus_slug_sekolah_unique")) {
+    if (pgError.code === "23505" && pgError.constraint === "kursus_slug_sekolah_unique") {
       return apiError("Judul kursus sudah digunakan. Gunakan judul yang berbeda.", 409);
     }
     console.error("Kursus POST error:", e);

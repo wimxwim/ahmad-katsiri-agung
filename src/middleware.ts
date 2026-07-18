@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SESSION_COOKIE_NAME } from "@/lib/session";
+import { SESSION_COOKIE_NAME, ROLE_HOME_PATHS } from "@/lib/session";
 
 const PUBLIC_PREFIXES = [
   "/masuk",
@@ -23,6 +23,7 @@ const PUBLIC_PATHS = new Set([
   "/syarat-layanan",
   "/panduan-ai",
   "/profil",
+  "/support",
   "/verify",
   "/undang",
   "/icon.png",
@@ -82,6 +83,10 @@ export default async function middleware(request: NextRequest) {
     }
   }
 
+  if (pathname.startsWith("/api/")) {
+    return response;
+  }
+
   const isPublic =
     PUBLIC_PATHS.has(pathname) ||
     PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
@@ -130,7 +135,8 @@ export default async function middleware(request: NextRequest) {
         .flat()
         .some((prefix) => pathname.startsWith(prefix));
       if (isProtectedRoute) {
-        return NextResponse.redirect(new URL("/", request.url));
+        const homePath = ROLE_HOME_PATHS[session.role] || "/";
+        return NextResponse.redirect(new URL(homePath, request.url));
       }
     }
   }
@@ -140,6 +146,6 @@ export default async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/data|_next/static|_next/image|favicon.ico|icon|apple-icon|opengraph-image|sitemap|robots|manifest).*)",
+    "/((?!_next/data|_next/static|_next/image|favicon.ico|icon|apple-icon|opengraph-image|sitemap|robots|manifest).*)",
   ],
 };

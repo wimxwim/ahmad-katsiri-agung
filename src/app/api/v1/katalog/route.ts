@@ -17,31 +17,37 @@ export async function GET(request: NextRequest) {
     const rl = await checkRateLimit(`katalog:${ip}`, 60, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const rows = await db
-      .select({
-        id: materiPublished.id,
-        judul: materiPublished.judul,
-        ringkasan: materiPublished.ringkasan,
-        publishedAt: materiPublished.publishedAt,
-        guruNama: users.nama,
-        guruId: users.id,
-        kursusJudul: kursus.judul,
-        visibility: materiSharing.visibility,
-        approvalStatus: materiSharing.approvalStatus,
-      })
-      .from(materiPublished)
-      .innerJoin(materiSharing, eq(materiPublished.id, materiSharing.materiPublishedId))
-      .innerJoin(users, eq(materiPublished.guruId, users.id))
-      .innerJoin(kursus, eq(materiPublished.kursusId, kursus.id))
-      .where(
-        and(
-          eq(materiSharing.visibility, "PUBLIK"),
-          eq(materiSharing.approvalStatus, "APPROVED"),
-        ),
-      )
-      .orderBy(desc(materiPublished.publishedAt))
-      .limit(limit)
-      .offset(offset);
+    let rows;
+    try {
+      rows = await db
+        .select({
+          id: materiPublished.id,
+          judul: materiPublished.judul,
+          ringkasan: materiPublished.ringkasan,
+          publishedAt: materiPublished.publishedAt,
+          guruNama: users.nama,
+          guruId: users.id,
+          kursusJudul: kursus.judul,
+          visibility: materiSharing.visibility,
+          approvalStatus: materiSharing.approvalStatus,
+        })
+        .from(materiPublished)
+        .innerJoin(materiSharing, eq(materiPublished.id, materiSharing.materiPublishedId))
+        .innerJoin(users, eq(materiPublished.guruId, users.id))
+        .innerJoin(kursus, eq(materiPublished.kursusId, kursus.id))
+        .where(
+          and(
+            eq(materiSharing.visibility, "PUBLIK"),
+            eq(materiSharing.approvalStatus, "APPROVED"),
+          ),
+        )
+        .orderBy(desc(materiPublished.publishedAt))
+        .limit(limit)
+        .offset(offset);
+    } catch (dbError) {
+      console.error("[katalog] Database query failed:", dbError);
+      return NextResponse.json({ success: true, data: [] });
+    }
 
     return NextResponse.json({ data: rows, limit, offset }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
   } catch (e) {

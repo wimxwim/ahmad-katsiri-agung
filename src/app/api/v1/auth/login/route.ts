@@ -125,7 +125,19 @@ export async function POST(request: NextRequest) {
     const refreshToken = await createRefreshToken(user.id);
 
     const defaultRedirect = ROLE_HOME_PATHS[sessionRole];
-    const redirectTo = (customRedirect && !customRedirect.startsWith("//")) ? customRedirect : defaultRedirect;
+    let redirectTo = (customRedirect && !customRedirect.startsWith("//")) ? customRedirect : defaultRedirect;
+
+    // Validate redirectTo matches the role — prevent cross-role redirect
+    const roleHome = ROLE_HOME_PATHS[sessionRole];
+    if (redirectTo && !redirectTo.startsWith(roleHome)) {
+      const otherRolePrefixes = Object.entries(ROLE_HOME_PATHS)
+        .filter(([role]) => role !== sessionRole)
+        .map(([, path]) => path);
+      if (otherRolePrefixes.some(prefix => redirectTo.startsWith(prefix))) {
+        redirectTo = defaultRedirect;
+      }
+    }
+
     const response = NextResponse.json({
       success: true,
       user: { id: user.id, nama: user.nama, role: user.role, email: user.email },

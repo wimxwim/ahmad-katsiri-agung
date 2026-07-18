@@ -346,7 +346,11 @@ export async function GET(request: NextRequest) {
     const items = hasMore ? data.slice(0, limit) : data;
 
     const sanitized = items.map((f) => ({
-      ...f,
+      id: f.id,
+      namaFile: f.namaFile,
+      sizeBytes: f.ukuranBytes,
+      status: f.status,
+      createdAt: f.createdAt,
       linkAkses: `/api/v1/storage/${f.id}`,
     }));
 
