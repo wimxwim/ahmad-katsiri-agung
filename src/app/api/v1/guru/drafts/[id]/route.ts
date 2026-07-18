@@ -19,7 +19,7 @@ export async function GET(
 
     const { id } = await params;
     const [row] = await db
-      .select({ id: aiGeneration.id, guruId: aiGeneration.guruId, fileMateriId: aiGeneration.fileMateriId, status: aiGeneration.status, materiKonten: aiGeneration.materiKonten, quizSoal: aiGeneration.quizSoal, soalItems: aiGeneration.soalItems, sourceFileName: aiGeneration.sourceFileName, createdAt: aiGeneration.createdAt, updatedAt: aiGeneration.updatedAt, errorMessage: aiGeneration.errorMessage })
+      .select({ id: aiGeneration.id, guruId: aiGeneration.guruId, fileMateriId: aiGeneration.fileMateriId, status: aiGeneration.status, materiStatus: aiGeneration.materiStatus, quizStatus: aiGeneration.quizStatus, soalStatus: aiGeneration.soalStatus, materiKonten: aiGeneration.materiKonten, quizSoal: aiGeneration.quizSoal, soalItems: aiGeneration.soalItems, sourceFileName: aiGeneration.sourceFileName, createdAt: aiGeneration.createdAt, updatedAt: aiGeneration.updatedAt, errorMessage: aiGeneration.errorMessage })
       .from(aiGeneration)
       .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)))
       .limit(1);
