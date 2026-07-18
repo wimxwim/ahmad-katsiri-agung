@@ -93,6 +93,11 @@ export default function KursusNilaiPage() {
     skorRataRata: s.skorRataRata,
   }));
 
+  const siswaQuizMap = new Map<string, Map<string, number>>();
+  for (const s of siswaData) {
+    siswaQuizMap.set(s.nama, new Map([["Kuis", s.skorRataRata]]));
+  }
+
   return (
     <div>
       <Link
@@ -107,7 +112,7 @@ export default function KursusNilaiPage() {
       <p className="text-on-surface-variant text-sm mb-8">{siswaData.length} siswa tercatat</p>
 
       <div className="bg-white rounded-2xl border border-border-precision overflow-hidden">
-        <GradebookTable siswa={gradebookSiswa} quizzes={["Kuis"]} siswaQuizMap={new Map()} />
+        <GradebookTable siswa={gradebookSiswa} quizzes={["Kuis"]} siswaQuizMap={siswaQuizMap} />
       </div>
     </div>
   );

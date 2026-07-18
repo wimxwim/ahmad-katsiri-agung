@@ -73,6 +73,10 @@ export default function GuruDraftsPage() {
         }
       } else {
         await load();
+        fetch("/api/v1/token/balance", { credentials: "include" })
+          .then((r) => r.json())
+          .then((d) => { if (d?.balance != null) setTokenBalance(d.balance); })
+          .catch(() => {});
       }
     } catch {
       setGenerateError("Gagal menghubungi server");

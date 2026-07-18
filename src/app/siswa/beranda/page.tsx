@@ -122,8 +122,10 @@ export default function SiswaBerandaPage() {
         if (cancelled) return;
         if (json.success && json.data?.nama) {
           setInviteMessage(`Berhasil masuk ke kelas ${json.data.nama}!`);
+          fetchData();
         } else if (json.alreadyJoined) {
           setInviteMessage(`Kamu sudah tergabung di kelas ${json.data?.nama ?? ""}.`);
+          fetchData();
         }
       } catch { /* non-critical */ }
     }
