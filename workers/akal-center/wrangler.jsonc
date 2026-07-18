@@ -1,11 +1,12 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "akal-center",
+  "name": "akal-center-proxy",
   "main": "index.ts",
   "compatibility_date": "2026-06-10",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "vars": {
+    "ORIGIN_URL": "https://ahmad-katsiri-agung.vercel.app",
     "WORKER_TIMEOUT_MS": "150000",
     "AI_BASE_URL": "https://router.bynara.id/v1"
   },

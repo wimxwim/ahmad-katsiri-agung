@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, Sparkles, Upload, Users, ArrowRight, X } from "lucide-react";
@@ -34,7 +34,24 @@ export default function OnboardingPage() {
   const auto = searchParams.get("step");
   const [completed, setCompleted] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
+  // Sync server state on mount; fallback to localStorage
+  const syncFromServer = useCallback(async () => {
+    try {
+      const res = await fetch("/api/v1/guru/onboarding", { credentials: "include" });
+      if (res.ok) {
+        const body = await res.json();
+        const steps: string[] = body?.data?.completedSteps ?? body?.completedSteps ?? [];
+        if (Array.isArray(steps) && steps.length > 0) {
+          setCompleted(new Set(steps));
+          try { window.localStorage.setItem("akal_onboarding_done", JSON.stringify(steps)); }
+          catch { /* ignore */ }
+          return;
+        }
+      }
+    } catch {
+      // offline — fall through to localStorage
+    }
+    // Fallback: read from localStorage
     if (typeof window === "undefined") return;
     try {
       const raw = window.localStorage.getItem("akal_onboarding_done");
@@ -46,6 +63,10 @@ export default function OnboardingPage() {
       if (process.env.NODE_ENV !== "production") console.error("[onboarding] read localStorage failed:", error);
     }
   }, []);
+
+  useEffect(() => {
+    syncFromServer();
+  }, [syncFromServer]);
 
   useEffect(() => {
     if (auto && (STEPS.find((s) => s.id === auto))) {
@@ -62,6 +83,13 @@ export default function OnboardingPage() {
       } catch (error) {
         console.error("[onboarding] write localStorage failed:", error);
       }
+      // Sync with server (fire-and-forget)
+      fetch("/api/v1/guru/onboarding", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ step: id }),
+      }).catch(() => { /* offline — localStorage is enough */ });
       return next;
     });
   }

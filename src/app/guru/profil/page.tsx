@@ -18,6 +18,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { apiFetch } from "@/lib/api-helpers";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface BalanceData {
   userId: string;
@@ -37,6 +38,7 @@ interface SessionData {
 const SPRING_CONFIG = { type: "spring" as const, stiffness: 100, damping: 20 };
 
 export default function GuruProfilPage() {
+  const router = useRouter();
   const [balance, setBalance] = useState<BalanceData | null>(null);
   const [session, setSession] = useState<SessionData | null>(null);
   const [donating, setDonating] = useState(false);
@@ -359,16 +361,23 @@ export default function GuruProfilPage() {
         transition={{ ...SPRING_CONFIG, delay: 0.25 }}
         className="bg-glass border border-border-precision rounded-card shadow-glass overflow-hidden"
       >
-        <Link
-          href="/api/v1/auth/logout"
-          className="flex items-center justify-between p-4 hover:bg-red-50/50 transition-colors"
+        <button
+          onClick={async () => {
+            try {
+              await fetch("/api/v1/auth/logout", { method: "POST", credentials: "include" });
+            } catch {
+              // proceed with redirect regardless
+            }
+            router.push("/masuk");
+          }}
+          className="flex items-center justify-between p-4 hover:bg-red-50/50 transition-colors w-full text-left"
         >
           <span className="flex items-center gap-3 text-sm font-semibold text-red-600">
             <LogOut className="w-4 h-4" />
             Keluar
           </span>
           <ChevronRight className="w-4 h-4 text-red-400" />
-        </Link>
+        </button>
       </motion.div>
     </div>
   );

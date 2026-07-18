@@ -8,8 +8,8 @@ const TIMEOUT_MS = Math.max(
   Number.parseInt(process.env.WORKER_TIMEOUT_MS || String(DEFAULT_TIMEOUT_MS), 10) || DEFAULT_TIMEOUT_MS,
 );
 
-function getOrigin(): string {
-  const origin = process.env.ORIGIN_URL;
+function getOrigin(env?: Record<string, unknown>): string {
+  const origin = (process.env.ORIGIN_URL || (env?.ORIGIN_URL as string | undefined))?.replace(/\/+$/, "");
   if (!origin) {
     throw new Error("ORIGIN_URL environment variable wajib diset. Contoh: https://origin.akalcenter.my.id");
   }
@@ -186,16 +186,16 @@ export default {
     const page = isHtmlPage(url.pathname);
 
     // ── Fetch from Vercel origin ──
-    const targetUrl = new URL(getOrigin());
+    const targetUrl = new URL(getOrigin(env));
     if (url.hostname === targetUrl.hostname) {
       return new Response(JSON.stringify({ error: 'Proxy loop detected: ORIGIN_URL tidak boleh sama dengan domain publik' }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    const upstreamUrl = getOrigin() + url.pathname + url.search;
+    const upstreamUrl = getOrigin(env) + url.pathname + url.search;
     const headers = new Headers(request.headers);
-    headers.set('X-From-Worker', 'akal-center');
+    headers.set('X-From-Worker', 'akal-center-proxy');
     headers.set('Host', targetUrl.host);
     headers.set('X-Forwarded-Host', url.host);
     headers.set('X-Forwarded-Proto', url.protocol.slice(0, -1));
@@ -236,7 +236,7 @@ export default {
       const location = response.headers.get('location');
       if (location) {
         const actualOrigin = `${url.protocol}//${url.host}`;
-        const originStr = getOrigin();
+        const originStr = getOrigin(env);
         for (const originVariant of [originStr, encodeURIComponent(originStr)]) {
           if (location.includes(originVariant)) {
             const fixed = location.replaceAll(originVariant, originVariant === originStr ? actualOrigin : encodeURIComponent(actualOrigin));
@@ -254,7 +254,7 @@ export default {
     if (cacheCheck.cacheable && response.status === 200) {
       const cacheKey = new Request(url.toString(), request);
       const cache = caches.default;
-      const cachedResponse = new Response(response.body, response);
+      const cachedResponse = response.clone();
       cachedResponse.headers.set('Cache-Control', `public, max-age=${cacheCheck.ttl}, s-maxage=${cacheCheck.ttl}`);
       cachedResponse.headers.set('X-Cache', 'MISS');
       ctx.waitUntil(cache.put(cacheKey, cachedResponse));
@@ -309,14 +309,14 @@ export default {
       if (!response.headers.has(key)) response.headers.set(key, value);
     }
 
-    response.headers.set('X-Worker', 'akal-center');
+    response.headers.set('X-Worker', 'akal-center-proxy');
 
     return response;
   },
 
   async scheduled(_event: ScheduledEvent, env: Record<string, unknown>, _ctx: ExecutionContext) {
     const cronSecret = (env.CRON_SECRET as string) || (process.env.CRON_SECRET as string);
-    const origin = getOrigin();
+    const origin = getOrigin(env);
 
     // Anti-pause: ping health endpoint setiap 6 jam
     try {

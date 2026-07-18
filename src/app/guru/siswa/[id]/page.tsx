@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, BookOpen, CheckCircle2, AlertCircle, BarChart3, GraduationCap, Search, Lightbulb, Send } from "lucide-react";
 import { MasteryChart } from "@/components/guru/MasteryChart";
@@ -45,6 +45,7 @@ interface DetailResponse {
 export default function GuruSiswaDetailPage() {
   const params = useParams();
   const id = params?.id as string;
+  const router = useRouter();
   const [data, setData] = useState<DetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -200,15 +201,20 @@ export default function GuruSiswaDetailPage() {
               Fokuskan remedial pada topik dengan nilai terendah di riwayat quiz.
             </p>
             <div className="flex gap-2 mt-3">
-              <button className="inline-flex items-center gap-1.5 bg-amber-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110">
+              <button
+                onClick={() => router.push("/guru/drafts")}
+                className="inline-flex items-center gap-1.5 bg-amber-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110"
+              >
                 <Send className="w-3 h-3" /> Kirim Tugas Remedial
               </button>
-              <Link
-                href={`/guru/kursus/${data.kursus[0]?.id}/nilai`}
-                className="inline-flex items-center gap-1.5 bg-white text-amber-700 border border-amber-300 px-4 py-2 rounded-full text-xs font-semibold hover:bg-amber-100"
-              >
-                Lihat Nilai Detail
-              </Link>
+              {data.kursus?.length > 0 && (
+                <Link
+                  href={`/guru/kursus/${data.kursus[0].id}/nilai`}
+                  className="inline-flex items-center gap-1.5 bg-white text-amber-700 border border-amber-300 px-4 py-2 rounded-full text-xs font-semibold hover:bg-amber-100"
+                >
+                  Lihat Nilai Detail
+                </Link>
+              )}
             </div>
           </div>
         </div>
