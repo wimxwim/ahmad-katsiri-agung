@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, Users, TrendingUp, Award, AlertTriangle, Send, ChevronRight, BarChart3, XCircle, RefreshCw, Lightbulb, GraduationCap, FileEdit, ListChecks } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { apiFetch } from "@/lib/api-helpers";
 import { KKM } from "@/lib/constants";
 
 interface KursusBreakdown {
@@ -58,14 +59,13 @@ export default function GuruAnalyticsPage() {
 
   useEffect(() => {
     let alive = true;
-    fetch("/api/v1/guru/analytics", { credentials: "include" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => {
+    apiFetch<AnalyticsResponse>("/api/v1/guru/analytics")
+      .then((result) => {
         if (!alive) return;
-        if (!j?.data) {
-          setError("Gagal memuat data analytics");
+        if (!result.ok || !result.data) {
+          setError(result.error || "Gagal memuat data analytics");
         } else {
-          setData(j.data);
+          setData(result.data);
         }
         setLoading(false);
       })

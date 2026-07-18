@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, Users, Filter, ShieldAlert } from "lucide-react";
+import { apiFetch } from "@/lib/api-helpers";
 
 interface SiswaItem {
   siswaId: string;
@@ -35,11 +36,11 @@ export default function SiswaListPage() {
       const params = new URLSearchParams();
       if (kursusId) params.set("kursusId", kursusId);
       const url = `/api/v1/guru/siswa${params.toString() ? `?${params.toString()}` : ""}`;
-      const res = await fetch(url, { credentials: "include" });
-      if (!res.ok) throw new Error("Gagal memuat data");
-      const json = await res.json();
-      setSiswa(json.data || []);
-      if (json.kursusOptions) setKursusOptions(json.kursusOptions);
+      const result = await apiFetch(url);
+      if (!result.ok) throw new Error(result.error || "Gagal memuat data");
+      const raw = result.raw as { data?: SiswaItem[]; kursusOptions?: KursusOption[] };
+      setSiswa(raw?.data || []);
+      if (raw?.kursusOptions) setKursusOptions(raw.kursusOptions);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal memuat data");
     } finally {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { Sparkles, FileText, CheckCircle2, XCircle, RefreshCw, Clock, AlertCircle, Loader2, Search, Filter, Zap, Wallet } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -128,18 +128,16 @@ export default function GuruDraftsPage() {
     return Array.from(set) as string[];
   }, [drafts]);
 
-  const draftsRef = useRef(drafts);
-  draftsRef.current = drafts;
-
   useEffect(() => {
     load();
-    const interval = setInterval(() => {
-      if (draftsRef.current.some((d) => ["queued", "extracting", "generating"].includes(d.status))) {
-        load();
-      }
-    }, 5000);
-    return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const hasProcessing = drafts.some((d) => ["queued", "extracting", "generating"].includes(d.status));
+    if (!hasProcessing) return;
+    const interval = setInterval(load, 5000);
+    return () => clearInterval(interval);
+  }, [drafts]);
 
   return (
     <div>
