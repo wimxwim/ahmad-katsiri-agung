@@ -12,6 +12,8 @@ const FOOTER_LINKS_FALLBACK = [
   { href: "/fitur", label: "Fitur" },
   { href: "/harga", label: "Harga" },
   { href: "/tentang", label: "Tentang Kami" },
+  { href: "/panduan-ai", label: "Panduan AI" },
+  { href: "/pembayaran", label: "Pembayaran" },
 ];
 
 const CONTACT_FALLBACK = {
@@ -96,7 +98,23 @@ export function Footer({
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-border-precision text-center">
+        <div className="mt-8 pt-6 border-t border-border-precision text-center">
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-on-surface-variant/60">
+            <Link href="/kebijakan-privasi" className="hover:text-primary transition-colors">
+              Kebijakan Privasi
+            </Link>
+            <span className="text-on-surface-variant/30" aria-hidden="true">|</span>
+            <Link href="/syarat-layanan" className="hover:text-primary transition-colors">
+              Syarat Layanan
+            </Link>
+            <span className="text-on-surface-variant/30" aria-hidden="true">|</span>
+            <Link href="/support" className="hover:text-primary transition-colors">
+              Dukungan
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-4 text-center">
           <Typography.Text type="secondary" className="text-xs">
             &copy; {new Date().getFullYear()} AKAL Center. Hak Cipta Dilindungi.
           </Typography.Text>

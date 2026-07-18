@@ -25,6 +25,8 @@ const SHEET_ITEMS_PUBLIC: { href: string; label: string; icon: LucideIcon; desc:
   { href: "/fitur", label: "Fitur", icon: Sparkles, desc: "Lihat semua fitur platform" },
   { href: "/tentang", label: "Tentang", icon: Info, desc: "Tentang AKAL Center" },
   { href: "/kursus", label: "Kursus", icon: BookOpen, desc: "Jelajahi katalog kursus" },
+  { href: "/panduan-ai", label: "Panduan AI", icon: BookOpen, desc: "Cara menggunakan AI dengan bijak" },
+  { href: "/pembayaran", label: "Pembayaran", icon: BarChart3, desc: "Informasi harga dan paket" },
 ];
 
 const SHEET_ITEMS_SISWA: { href: string; label: string; icon: LucideIcon; desc: string }[] = [

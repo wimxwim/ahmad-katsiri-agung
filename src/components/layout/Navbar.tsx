@@ -16,6 +16,8 @@ const NAV_ITEMS_FALLBACK = [
   { href: "/harga", label: "Harga" },
   { href: "/tentang", label: "Tentang" },
   { href: "/quran", label: "Quran" },
+  { href: "/panduan-ai", label: "Panduan AI" },
+  { href: "/pembayaran", label: "Pembayaran" },
 ];
 
 function isActive(pathname: string, href: string) {
