@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, Users, Filter, ShieldAlert } from "lucide-react";
@@ -29,19 +29,25 @@ export default function SiswaListPage() {
   const [filterRisk, setFilterRisk] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const abortRef = useRef<AbortController | null>(null);
 
   async function fetchData(kursusId?: string) {
     try {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
       setLoading(true);
       const params = new URLSearchParams();
       if (kursusId) params.set("kursusId", kursusId);
       const url = `/api/v1/guru/siswa${params.toString() ? `?${params.toString()}` : ""}`;
-      const result = await apiFetch(url);
+      const result = await apiFetch(url, { signal: controller.signal });
+      if (controller.signal.aborted) return;
       if (!result.ok) throw new Error(result.error || "Gagal memuat data");
       const raw = result.raw as { data?: SiswaItem[]; kursusOptions?: KursusOption[] };
       setSiswa(raw?.data || []);
       if (raw?.kursusOptions) setKursusOptions(raw.kursusOptions);
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Gagal memuat data");
     } finally {
       setLoading(false);

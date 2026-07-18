@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -102,7 +102,7 @@ export default function SiswaBerandaPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [nama, setNama] = useState("Siswa");
-  const [userId, setUserId] = useState<string | null>(null);
+  const userIdRef = useRef<string | null>(null);
   const [inviteMessage, setInviteMessage] = useState("");
 
   useEffect(() => {
@@ -134,7 +134,7 @@ export default function SiswaBerandaPage() {
   }, []);
 
   const fetchData = useCallback(async () => {
-    const cacheKey = userId ? `beranda:dashboard:${userId}` : null;
+    const cacheKey = userIdRef.current ? `beranda:dashboard:${userIdRef.current}` : null;
     if (cacheKey) {
       const cached = getCached<DashboardData>(cacheKey);
       if (cached) {
@@ -150,7 +150,7 @@ export default function SiswaBerandaPage() {
 
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const res = await fetch("/api/v1/siswa/dashboard", { credentials: "include" });
+        const res = await fetch("/api/v1/siswa/dashboard", { credentials: "include", headers: csrfHeaders() });
         if (!res.ok) {
           if (attempt < 2 && (res.status === 401 || res.status >= 500)) {
             await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
@@ -163,8 +163,8 @@ export default function SiswaBerandaPage() {
         const json = await res.json();
         const d = json.data as DashboardData;
 
-        setCache(`beranda:dashboard:${d.profil?.id || userId || "anon"}`, d, CACHE_TTL);
-        if (d.profil?.id) setUserId(d.profil.id);
+        setCache(`beranda:dashboard:${d.profil?.id || userIdRef.current || "anon"}`, d, CACHE_TTL);
+        if (d.profil?.id) userIdRef.current = d.profil.id;
 
         if (d.profil?.nama) setNama(d.profil.nama);
         if (d.feed) setFeed(d.feed);
@@ -182,7 +182,7 @@ export default function SiswaBerandaPage() {
 
     setError("Terjadi kesalahan saat memuat data. Coba lagi.");
     setLoading(false);
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     fetchData();

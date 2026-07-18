@@ -24,7 +24,7 @@ import {
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { apiFetch } from "@/lib/api-helpers";
 import { cn } from "@/lib/utils";
 
@@ -229,7 +229,7 @@ export default function GuruBerandaPage() {
   const aliveRef = useRef(true);
   const retryCount = useRef(0);
 
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     const [dashResult, onboardResult] = await Promise.all([
       apiFetch<DashboardData>("/api/v1/guru/dashboard"),
       apiFetch<OnboardingData>("/api/v1/guru/onboarding"),
@@ -247,9 +247,11 @@ export default function GuruBerandaPage() {
     }
     if (onboardResult.ok && onboardResult.data) {
       setOnboarding(onboardResult.data);
+    } else {
+      console.error("[guru/beranda] onboarding fetch failed:", onboardResult.error);
     }
     setLoading(false);
-  }
+  }, []);
 
   useEffect(() => {
     aliveRef.current = true;

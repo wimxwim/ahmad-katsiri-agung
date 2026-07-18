@@ -9,7 +9,6 @@ interface KursusSaya {
   judul: string;
   status: string;
   tanggalDaftar: string;
-  nama: string;
 }
 
 export default function SiswaKursusPage() {

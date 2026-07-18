@@ -77,7 +77,10 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const busyRef = useRef(false);
-  useEffect(() => { busyRef.current = busy !== null; }, [busy]);
+  function setBusyState(value: string | null) {
+    busyRef.current = value !== null;
+    setBusy(value);
+  }
   const loadRef = useRef<() => Promise<void>>(async () => {});
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -129,7 +132,7 @@ useEffect(() => {
 
   async function act(path: string, label: string, body?: Record<string, unknown>) {
     if (!draft) return;
-    setBusy(label);
+    setBusyState(label);
     setError("");
     setSuccessMsg("");
     try {
@@ -155,7 +158,7 @@ useEffect(() => {
       setError(e instanceof Error ? e.message : "Gagal");
       toast("error", e instanceof Error ? e.message : "Gagal");
     } finally {
-      setBusy(null);
+      setBusyState(null);
     }
   }
 
@@ -168,7 +171,7 @@ useEffect(() => {
 
   async function saveEditMateri() {
     if (!draft) return;
-    setBusy("edit");
+    setBusyState("edit");
     setError("");
     try {
       const res = await fetch(`/api/v1/guru/drafts/${draft.id}/edit-materi`, {
@@ -186,7 +189,7 @@ useEffect(() => {
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal");
     } finally {
-      setBusy(null);
+      setBusyState(null);
     }
   }
 

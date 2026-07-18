@@ -61,6 +61,7 @@ export default function SiswaMateriPage() {
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gagal menandai selesai");
+      setShowConfirm(false);
     } finally {
       setMarking(false);
     }

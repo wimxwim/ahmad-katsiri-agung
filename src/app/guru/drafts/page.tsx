@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Sparkles, FileText, CheckCircle2, XCircle, RefreshCw, Clock, AlertCircle, Loader2, Search, Filter, Zap, Wallet } from "lucide-react";
@@ -42,6 +42,7 @@ export default function GuruDraftsPage() {
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
   const [generateError, setGenerateError] = useState("");
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
+  const loadingRef = useRef(false);
 
   useEffect(() => {
     fetch("/api/v1/token/balance", { credentials: "include" })
@@ -90,6 +91,8 @@ export default function GuruDraftsPage() {
   }
 
   async function load() {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     try {
       setError("");
       const res = await fetch("/api/v1/guru/drafts", { credentials: "include" });
@@ -108,6 +111,7 @@ export default function GuruDraftsPage() {
       if (process.env.NODE_ENV !== "production") console.error("[guru/drafts] load failed:", error);
       setError("Terjadi kesalahan saat memuat draft.");
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   }
