@@ -1,13 +1,14 @@
 import { NextRequest } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
+import { requireNotSuspended } from "@/lib/token-service";
 import { apiError, apiSuccess, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { recordDonation } from "@/lib/token-service";
 import { sendDonationNotification } from "@/lib/telegram-notif";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { users, tokenTransactions } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -21,8 +22,31 @@ export async function POST(request: NextRequest) {
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const session = await requireGuru(request);
+    await requireNotSuspended(session.userId);
 
-    await recordDonation(session.userId);
+    const idempotencyKey = request.headers.get("x-idempotency-key");
+    if (idempotencyKey) {
+      const [existing] = await db
+        .select({ id: tokenTransactions.id })
+        .from(tokenTransactions)
+        .where(
+          and(
+            eq(tokenTransactions.userId, session.userId),
+            eq(tokenTransactions.type, "DONATION"),
+            eq(tokenTransactions.referenceId, idempotencyKey),
+          ),
+        )
+        .limit(1);
+      if (existing) {
+        return apiSuccess({
+          message: "Dukungan sudah tercatat. Terima kasih!",
+          qrisImageUrl: "/api/v1/qris",
+          idempotent: true,
+        });
+      }
+    }
+
+    await recordDonation(session.userId, idempotencyKey ? { referenceId: idempotencyKey } : undefined);
 
     const guru = await db.query.users.findFirst({
       where: eq(users.id, session.userId),
@@ -39,7 +63,7 @@ export async function POST(request: NextRequest) {
     }).catch((e) => console.error("Telegram donasi notif gagal:", e));
 
     return apiSuccess({
-      message: "Terima kasih atas donasi Anda. Semoga menjadi amal jariyah.",
+      message: "Terima kasih! Dukungan Anda membantu kami terus berinovasi.",
       qrisImageUrl: "/api/v1/qris",
     });
   } catch (e) {

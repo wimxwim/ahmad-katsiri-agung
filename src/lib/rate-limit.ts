@@ -141,7 +141,12 @@ export async function releaseConcurrent(userKey: string): Promise<void> {
     const cacheKey = `conc:${userKey}`;
     const r = getRedis();
     if (r) {
-      await r.decr(cacheKey);
+      const current = await r.get(cacheKey);
+      if (current && parseInt(String(current)) > 0) {
+        await r.decr(cacheKey);
+      } else {
+        await r.del(cacheKey);
+      }
       return;
     }
   } catch {

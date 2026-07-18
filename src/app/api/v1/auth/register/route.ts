@@ -28,7 +28,7 @@ const RegisterSchema = z.object({
   noAbsen: z.string().max(5).optional(),
   nis: z.string().max(30).optional(),
   portal: z.enum(["guru", "siswa"]).optional(),
-  redirectTo: z.string().startsWith("/").optional(),
+  redirectTo: z.string().refine((v) => v.startsWith("/") && !v.startsWith("//") && !v.includes("://")).optional(),
 });
 
 export async function POST(request: NextRequest) {

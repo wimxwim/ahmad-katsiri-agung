@@ -28,6 +28,8 @@ permission:
     "git diff --output*": deny
     "git log --output*": deny
     "git show --output*": deny
+    "browser-act*": allow
+    "curl*": allow
     "node --version*": allow
     "npm --version*": allow
   task:

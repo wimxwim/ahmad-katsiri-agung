@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireSession } from "@/lib/route-guard-v2";
+import { requireSession, GuardError } from "@/lib/route-guard-v2";
 import { checkRateLimitSync, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { pengumuman } from "@/lib/db/schema";
@@ -48,6 +48,7 @@ export async function GET(
   }
   return NextResponse.json(row);
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Pengumuman GET error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }
@@ -100,6 +101,7 @@ export async function PUT(
 
   return NextResponse.json(updated);
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Pengumuman PUT error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }
@@ -130,6 +132,7 @@ export async function DELETE(
   await db.delete(pengumuman).where(where);
   return NextResponse.json({ success: true });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Pengumuman DELETE error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

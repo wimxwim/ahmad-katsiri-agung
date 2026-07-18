@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
-import { requireSiswa } from "@/lib/route-guard-v2";
+import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
 import { kursus, transaksi } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
@@ -87,6 +87,7 @@ export async function POST(request: NextRequest) {
       token: snap.token,
     });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Payment create error:", e);
     return apiError("INTERNAL_ERROR", "Terjadi kesalahan server", undefined, 500);
   }

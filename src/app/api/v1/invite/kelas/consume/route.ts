@@ -9,7 +9,7 @@ import { eq, and } from "drizzle-orm";
 import { validateCsrf } from "@/lib/csrf-server";
 
 const ConsumeSchema = z.object({
-  kode: z.string().min(1).max(6),
+  kode: z.string().min(1).max(8),
 });
 
 export const dynamic = "force-dynamic";
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const { kode } = ConsumeSchema.parse(await request.json());
 
     const found = await db
-      .select({ id: kelas.id, nama: kelas.nama, tingkat: kelas.tingkat })
+      .select({ id: kelas.id, nama: kelas.nama, tingkat: kelas.tingkat, inviteExpiresAt: kelas.inviteExpiresAt })
       .from(kelas)
       .where(eq(kelas.kodeInvite, kode))
       .limit(1);
@@ -40,6 +40,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         error: "Kode undangan tidak ditemukan atau sudah tidak berlaku.",
+        errorCode: "INVALID_CODE",
+      }, { status: 404 });
+    }
+
+    if (found[0].inviteExpiresAt !== null && new Date(found[0].inviteExpiresAt) < new Date()) {
+      return NextResponse.json({
+        success: false,
+        error: "Kode undangan sudah kadaluarsa.",
         errorCode: "INVALID_CODE",
       }, { status: 404 });
     }

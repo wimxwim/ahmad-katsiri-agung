@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     }).catch((e) => console.error("Telegram donasi notif gagal:", e));
 
     return apiSuccess({
-      message: "Terima kasih atas donasi Anda. Semoga menjadi amal jariyah.",
+      message: "Terima kasih! Dukungan Anda membantu kami terus berinovasi.",
       proofUrl: proofLink ?? null,
     });
   } catch (e) {

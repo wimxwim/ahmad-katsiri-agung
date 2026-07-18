@@ -73,7 +73,7 @@ export async function sendDonationNotification(params: {
   loginTerakhir?: string;
 }): Promise<void> {
   const caption = [
-    "🤲 <b>DONASI BARU</b>",
+    "🤝 <b>SUPPORT BARU</b>",
     "",
     `👤 <b>Nama:</b> ${escapeHtml(params.nama)}`,
     `📧 <b>Email:</b> ${escapeHtml(params.email)}`,

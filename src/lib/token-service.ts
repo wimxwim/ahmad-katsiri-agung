@@ -519,6 +519,7 @@ export async function recordDonation(
   metadata?: {
     proofFileId?: string;
     proofLink?: string;
+    referenceId?: string;
   },
 ): Promise<void> {
   await db.insert(tokenTransactions).values({
@@ -530,6 +531,7 @@ export async function recordDonation(
     balanceAfter: 0,
     proofFileId: metadata?.proofFileId ?? null,
     proofLink: metadata?.proofLink ?? null,
+    referenceId: metadata?.referenceId ?? null,
     notes: "Donasi sukarela",
   });
 

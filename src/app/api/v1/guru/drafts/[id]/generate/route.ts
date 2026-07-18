@@ -20,7 +20,7 @@ import {
   SubscriptionLockedError,
   requireNotSuspended,
 } from "@/lib/token-service";
-import { GENERATE_COST, DAILY_GENERATE_LIMIT } from "@/lib/token-constants";
+import { GENERATE_COST, DAILY_GENERATE_LIMIT, PREMIUM_DAILY_GENERATE_LIMIT } from "@/lib/token-constants";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import {
   checkRateLimit,
@@ -46,6 +46,10 @@ export async function POST(
 
     const session = await requireGuru(request);
     await requireNotSuspended(session.userId);
+    const balance = await getBalance(session.userId);
+    const isPremium = balance.isUnlocked === true;
+    const CONCURRENT_TTL = isPremium ? 3 * 60 * 1000 : 30 * 60 * 1000;
+    const dailyLimit = isPremium ? PREMIUM_DAILY_GENERATE_LIMIT : DAILY_GENERATE_LIMIT;
     const { id } = await params;
 
     try {
@@ -127,7 +131,7 @@ export async function POST(
     if (!file) return apiError("File sumber tidak ditemukan", 404);
 
     concKey = `gen:${session.userId}`;
-    const concRl = await checkConcurrentLimit(concKey, MAX_CONCURRENT_PER_GURU);
+    const concRl = await checkConcurrentLimit(concKey, MAX_CONCURRENT_PER_GURU, CONCURRENT_TTL);
     if (!concRl.allowed) {
       return NextResponse.json(
         { success: false, error: "Terlalu banyak job aktif. Tunggu sebentar." },
@@ -145,13 +149,13 @@ export async function POST(
         sql`${aiGeneration.createdAt} >= ${todayStart}`,
         sql`${aiGeneration.status} IN ('generating', 'ready', 'approved')`,
       ));
-    if ((dailyCount?.count ?? 0) >= DAILY_GENERATE_LIMIT) {
+    if ((dailyCount?.count ?? 0) >= dailyLimit) {
       releaseConcurrent(concKey);
       return NextResponse.json({
         success: false,
-        error: `Batas generate harian tercapai (${DAILY_GENERATE_LIMIT}x/hari). Coba lagi besok atau upgrade paket.`,
+        error: `Batas generate harian tercapai (${dailyLimit}x/hari). Coba lagi besok atau upgrade paket.`,
         errorCode: "DAILY_LIMIT_REACHED",
-        dailyLimit: DAILY_GENERATE_LIMIT,
+        dailyLimit,
         currentCount: dailyCount?.count ?? 0,
       }, { status: 429 });
     }

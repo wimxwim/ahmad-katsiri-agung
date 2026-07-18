@@ -24,3 +24,6 @@ export const INITIAL_TOKEN_BALANCE = 2000;
 export const FREE_TIER_UPLOAD_LIMIT = 15;
 export const FREE_TIER_COURSE_LIMIT = 15;
 export const DAILY_GENERATE_LIMIT = 5;
+
+/** Premium: user yang sudah top-up (isUnlocked = true) dapat 20 generate/hari. */
+export const PREMIUM_DAILY_GENERATE_LIMIT = 20;

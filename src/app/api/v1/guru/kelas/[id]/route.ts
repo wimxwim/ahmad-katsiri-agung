@@ -6,7 +6,7 @@ import { sanitizeText } from "@/lib/sanitize";
 import { db } from "@/lib/db";
 import { kelas } from "@/lib/db/schema";
 import { apiError, apiRateLimit } from "@/lib/api-response";
-import { requireSession, GuardError } from "@/lib/route-guard-v2";
+import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
 
 const UpdateKelasSchema = z.object({
@@ -21,7 +21,7 @@ export async function PATCH(
   try {
     const csrfError = validateCsrf(request);
     if (csrfError) return csrfError;
-    const session = await requireSession(request);
+    const session = await requireGuru(request);
 
     const { id } = await params;
     const existing = await db
@@ -71,7 +71,7 @@ export async function DELETE(
   try {
     const csrfError = validateCsrf(request);
     if (csrfError) return csrfError;
-    const session = await requireSession(request);
+    const session = await requireGuru(request);
 
     const { id } = await params;
     const existing = await db

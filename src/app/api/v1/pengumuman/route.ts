@@ -3,7 +3,7 @@ import { z } from "zod";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
-import { requireRole } from "@/lib/route-guard-v2";
+import { requireRole, GuardError } from "@/lib/route-guard-v2";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { pengumuman } from "@/lib/db/schema";
@@ -52,6 +52,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({ data: rows.map(({ konten: _, ...rest }) => rest) }, { headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=60" } });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Pengumuman GET error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }
@@ -88,6 +89,7 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(row, { status: 201 });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Pengumuman POST error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

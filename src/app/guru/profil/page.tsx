@@ -243,9 +243,9 @@ export default function GuruProfilPage() {
         </h2>
 
         <p className="text-sm text-on-surface-variant mb-4 leading-relaxed">
-          AKAL Center hadir untuk membantu para guru menyebarkan ilmu agama dengan lebih mudah.
-          Donasi Anda — sekecil apa pun — sangat berarti untuk menjaga platform ini tetap berjalan
-          dan terus berkembang. Semoga menjadi amal jariyah yang mengalir pahalanya.
+          Platform ini dibuat oleh guru, untuk guru. Dukungan Anda — sekecil apa pun —
+          membantu kami terus berinovasi dan menjaga AKAL Center tetap berjalan
+          untuk pendidikan Indonesia.
         </p>
 
         <AnimatePresence mode="wait">
@@ -294,7 +294,7 @@ export default function GuruProfilPage() {
                   ) : (
                     <>
                       <Heart className="w-4 h-4" />
-                      Donasi Sekarang
+                      Support
                     </>
                   )}
                 </motion.button>
@@ -315,12 +315,12 @@ export default function GuruProfilPage() {
                   className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full text-sm font-semibold bg-glass border border-border-precision text-on-surface hover:shadow-glass-lg transition-all"
                 >
                   <Upload className="w-4 h-4" />
-                  Donasi + Upload Bukti
+                  Support + Upload Bukti
                 </motion.button>
               </div>
 
               <p className="text-[10px] text-on-surface-variant/60 text-center">
-                Upload bukti bersifat opsional. Donasi tidak mengubah saldo token.
+                Upload bukti bersifat opsional. Support tidak mengubah saldo token.
               </p>
             </motion.div>
           ) : (
@@ -336,7 +336,7 @@ export default function GuruProfilPage() {
                 Terima Kasih!
               </p>
               <p className="text-sm text-on-surface-variant mb-4">
-                Donasi Anda sangat berarti. Semoga menjadi amal jariyah yang mengalir pahalanya.
+                Dukungan Anda membantu kami terus berinovasi untuk pendidikan Indonesia.
               </p>
               <button
                 onClick={() => {
@@ -346,7 +346,7 @@ export default function GuruProfilPage() {
                 className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
               >
                 <Heart className="w-4 h-4" />
-                Donasi Lagi
+                Support Lagi
               </button>
             </motion.div>
           )}

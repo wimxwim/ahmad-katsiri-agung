@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireOwner } from "@/lib/route-guard-v2";
+import { requireOwner, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data: items, total: items.length });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     const msg = e instanceof Error ? e.message : "Terjadi kesalahan server";
     return apiError(msg, 500);
   }

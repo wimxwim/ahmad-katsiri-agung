@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { eq, and, inArray } from "drizzle-orm";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { requireRole } from "@/lib/route-guard-v2";
+import { requireRole, GuardError } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
 import { sertifikat, kursus, jawabanLog, skill, soal } from "@/lib/db/schema";
 import { generateQRHash } from "@/lib/sertifikat/generateQRHash";
@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
       message: "sertifikat_pdf_not_ready",
     }, { status: 201 });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Sertifikat generate error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

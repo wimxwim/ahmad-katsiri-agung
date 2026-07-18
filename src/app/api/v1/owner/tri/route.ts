@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireOwner } from "@/lib/route-guard-v2";
+import { requireOwner, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
@@ -170,6 +170,7 @@ export async function GET(request: NextRequest) {
     data: results,
   });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Owner TRI error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

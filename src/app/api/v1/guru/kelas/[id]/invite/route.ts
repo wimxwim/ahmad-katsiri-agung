@@ -12,7 +12,7 @@ import { validateCsrf } from "@/lib/csrf-server";
 export const dynamic = "force-dynamic";
 
 function generateKode(): string {
-  return crypto.randomInt(100000, 999999).toString();
+  return crypto.randomBytes(6).toString("base64url").slice(0, 8);
 }
 
 export async function POST(
@@ -38,12 +38,14 @@ export async function POST(
 
     if (!k) return apiError("Kelas tidak ditemukan", 404);
 
-    const kode = k.kodeInvite || generateKode();
+    const now = new Date();
+    const kodeExpired = k.kodeInvite && k.inviteExpiresAt && new Date(k.inviteExpiresAt) < now;
+    const kode = !kodeExpired ? k.kodeInvite || generateKode() : generateKode();
 
-    if (!k.kodeInvite) {
+    if (!k.kodeInvite || kodeExpired) {
       await db
         .update(kelas)
-        .set({ kodeInvite: kode })
+        .set({ kodeInvite: kode, inviteExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) })
         .where(eq(kelas.id, id));
     }
 

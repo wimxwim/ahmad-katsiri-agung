@@ -24,6 +24,10 @@ export async function GET(
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const { id } = await params;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return apiError("Format ID tidak valid", 400);
+    }
     const result = await db.select({
     id: kursus.id, guruId: kursus.guruId, judul: kursus.judul, slug: kursus.slug,
     deskripsi: kursus.deskripsi, harga: kursus.harga, isPublic: kursus.isPublic,

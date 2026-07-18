@@ -555,7 +555,8 @@ export const kelas = pgTable(
       .$onUpdate(() => new Date()),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
-    kodeInvite: varchar("kode_invite", { length: 6 }),
+    kodeInvite: varchar("kode_invite", { length: 8 }),
+    inviteExpiresAt: timestamp("invite_expires_at", { withTimezone: true }),
   },
   (table) => [
     index("kelas_guru_id_idx").on(table.guruId),

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
-import { requireSiswa } from "@/lib/route-guard-v2";
+import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
 import { siswaKursus, kursus, users } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ data: enrollments });
   } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Enroll status error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }
