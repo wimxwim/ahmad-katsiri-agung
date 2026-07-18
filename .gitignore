@@ -50,6 +50,9 @@ aws/
 !.env.example
 
 # Dev tooling
+.sniff/
+sniff-baselines/
+sniff-reports/
 .agents/
 .claude/
 .github/
