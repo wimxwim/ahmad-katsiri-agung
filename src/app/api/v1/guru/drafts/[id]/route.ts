@@ -1,10 +1,11 @@
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { aiGeneration } from "@/lib/db/schema";
+import { aiGeneration, fileMateri } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { validateCsrf } from "@/lib/csrf-server";
 
 export async function GET(
   request: NextRequest,
@@ -30,5 +31,44 @@ export async function GET(
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Draft detail error:", e);
     return apiError("Terjadi kesalahan server", 500);
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
+    const session = await requireGuru(request);
+    const { id } = await params;
+
+    const [draft] = await db
+      .select({ id: aiGeneration.id, fileMateriId: aiGeneration.fileMateriId })
+      .from(aiGeneration)
+      .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId!)))
+      .limit(1);
+
+    if (!draft) {
+      return apiError("Draft tidak ditemukan", 404);
+    }
+
+    await db
+      .delete(aiGeneration)
+      .where(eq(aiGeneration.id, id));
+
+    if (draft.fileMateriId) {
+      await db
+        .delete(fileMateri)
+        .where(eq(fileMateri.id, draft.fileMateriId));
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
+    console.error("Delete draft error:", e);
+    return apiError("Gagal menghapus draft", 500);
   }
 }

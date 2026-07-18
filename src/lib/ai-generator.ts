@@ -260,9 +260,9 @@ export async function runGeneration(
       truncatedSource = sanitizeUserText(sourceText);
     }
 
-    let aiResults: [ChatResult, ChatResult, ChatResult];
+    let materiRes: ChatResult;
     try {
-      const materiRes = await withTimeout(
+      materiRes = await withTimeout(
         chatWithFallback(
           [
             { role: "system", content: MATERI_SYSTEM },
@@ -274,8 +274,17 @@ export async function runGeneration(
         "ai-materi",
       );
       console.log("[ai-generator] materi done, starting quiz...");
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error("[ai-generator] materi AI failed, using fallback:", errMsg);
+      console.error("[ai-generator] error stack:", error instanceof Error ? (error.stack ?? "").slice(0, 500) : "");
+      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+      materiRes = fb[0];
+    }
 
-      const quizRes = await withTimeout(
+    let quizRes: ChatResult;
+    try {
+      quizRes = await withTimeout(
         chatWithFallback(
           [
             { role: "system", content: buildQuizSystemPrompt(quizCount) },
@@ -287,8 +296,17 @@ export async function runGeneration(
         "ai-quiz",
       );
       console.log("[ai-generator] quiz done, starting soal...");
+    } catch (error) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      console.error("[ai-generator] quiz AI failed, using fallback:", errMsg);
+      console.error("[ai-generator] error stack:", error instanceof Error ? (error.stack ?? "").slice(0, 500) : "");
+      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+      quizRes = fb[1];
+    }
 
-      const soalRes = await withTimeout(
+    let soalRes: ChatResult;
+    try {
+      soalRes = await withTimeout(
         chatWithFallback(
           [
             { role: "system", content: buildSoalSystemPrompt(soalCount) },
@@ -300,16 +318,13 @@ export async function runGeneration(
         "ai-soal",
       );
       console.log("[ai-generator] soal done.");
-
-      aiResults = [materiRes, quizRes, soalRes];
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      console.error("[ai-generator] upstream AI failed:", errMsg);
+      console.error("[ai-generator] soal AI failed, using fallback:", errMsg);
       console.error("[ai-generator] error stack:", error instanceof Error ? (error.stack ?? "").slice(0, 500) : "");
-      aiResults = fallbackAiResults(truncatedSource, quizCount, soalCount);
+      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+      soalRes = fb[2];
     }
-
-    const [materiRes, quizRes, soalRes] = aiResults;
 
     const materiParsed = parseMateriSafe(materiRes.content);
     const quizParsed = parseQuizSafe(quizRes.content);
@@ -447,9 +462,9 @@ export async function runGenerationFromText(
 
   const truncatedSource = sanitizeUserText(sourceText.slice(0, 12_000));
 
-  let aiResults: [ChatResult, ChatResult, ChatResult];
+  let materiRes: ChatResult;
   try {
-    const materiRes = await withTimeout(
+    materiRes = await withTimeout(
       chatWithFallback(
         [
           { role: "system", content: MATERI_SYSTEM },
@@ -461,8 +476,15 @@ export async function runGenerationFromText(
       "ai-materi",
     );
     console.log("[ai-generator] materi done, starting quiz...");
+  } catch (error) {
+    console.error("[ai-generator] materi AI failed, using fallback:", error);
+    const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+    materiRes = fb[0];
+  }
 
-    const quizRes = await withTimeout(
+  let quizRes: ChatResult;
+  try {
+    quizRes = await withTimeout(
       chatWithFallback(
         [
           { role: "system", content: buildQuizSystemPrompt(quizCount) },
@@ -474,8 +496,15 @@ export async function runGenerationFromText(
       "ai-quiz",
     );
     console.log("[ai-generator] quiz done, starting soal...");
+  } catch (error) {
+    console.error("[ai-generator] quiz AI failed, using fallback:", error);
+    const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+    quizRes = fb[1];
+  }
 
-    const soalRes = await withTimeout(
+  let soalRes: ChatResult;
+  try {
+    soalRes = await withTimeout(
       chatWithFallback(
         [
           { role: "system", content: buildSoalSystemPrompt(soalCount) },
@@ -487,13 +516,12 @@ export async function runGenerationFromText(
       "ai-soal",
     );
     console.log("[ai-generator] soal done.");
-    aiResults = [materiRes, quizRes, soalRes];
   } catch (error) {
-    console.error("[ai-generator] upstream AI failed:", error);
-    aiResults = fallbackAiResults(truncatedSource, quizCount, soalCount);
+    console.error("[ai-generator] soal AI failed, using fallback:", error);
+    const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+    soalRes = fb[2];
   }
 
-  const [materiRes, quizRes, soalRes] = aiResults;
   const materiParsed = parseMateriSafe(materiRes.content);
   const quizParsed = parseQuizSafe(quizRes.content);
   let soalParsed = parseSoalSafe(soalRes.content);

@@ -3,10 +3,11 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Sparkles, FileText, CheckCircle2, XCircle, RefreshCw, Clock, AlertCircle, Loader2, Search, Filter, Zap, Wallet } from "lucide-react";
+import { Sparkles, FileText, CheckCircle2, XCircle, RefreshCw, Clock, AlertCircle, Loader2, Search, Filter, Zap, Wallet, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 import { csrfHeaders } from "@/lib/csrf";
+import { useToast } from "@/components/ui/Toast";
 
 interface DraftItem {
   id: string;
@@ -42,6 +43,8 @@ export default function GuruDraftsPage() {
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
   const [generateError, setGenerateError] = useState("");
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { toast } = useToast();
   const loadingRef = useRef(false);
 
   useEffect(() => {
@@ -87,6 +90,25 @@ export default function GuruDraftsPage() {
         next.delete(draftId);
         return next;
       });
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!window.confirm("Hapus draft ini? Tindakan ini tidak bisa dibatalkan.")) return;
+    setDeletingId(id);
+    try {
+      const res = await fetch(`/api/v1/guru/drafts/${id}`, {
+        method: "DELETE",
+        headers: csrfHeaders(),
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Gagal menghapus");
+      toast("success", "Draft berhasil dihapus");
+      await load();
+    } catch (e) {
+      toast("error", e instanceof Error ? e.message : "Gagal menghapus");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -325,6 +347,18 @@ export default function GuruDraftsPage() {
                       )}
                     </button>
                   )}
+                  <button
+                    onClick={() => handleDelete(d.id)}
+                    disabled={deletingId === d.id}
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-full text-on-surface-variant/50 hover:text-red-600 hover:bg-red-50 active:scale-[0.95] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Hapus draft"
+                  >
+                    {deletingId === d.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
               </div>
             );
