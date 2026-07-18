@@ -63,7 +63,7 @@ export function DaftarPicker() {
       });
       const result = await res.json();
       if (result.error) {
-        setError(result.error);
+        setError(typeof result.error === "string" ? result.error : result.error?.message || "Terjadi kesalahan");
       } else if (result.success && result.redirect) {
         window.location.href = result.redirect;
       } else {

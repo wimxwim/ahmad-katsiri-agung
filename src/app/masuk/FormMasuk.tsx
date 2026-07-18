@@ -53,6 +53,7 @@ export function FormMasuk({
   async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+    setNoPassword(false);
     setLoading(true);
     const form = e.currentTarget;
     const formData = new FormData(form);

@@ -49,6 +49,7 @@ export default function KursusDetailPage() {
       // Clean URL
       const newUrl = window.location.pathname;
       window.history.replaceState({}, "", newUrl);
+      setTimeout(() => handleEnroll(), 100);
     }
   }, [fetchKursus]);
 
@@ -91,8 +92,8 @@ export default function KursusDetailPage() {
       }
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const errMsg = typeof j.error === "object" && j.error !== null && "message" in j.error ? String(j.error.message) : j.error;
-        setError(errMsg || j.message || "Gagal mendaftar");
+        const errMsg = typeof j.error === "object" && j.error !== null ? String(j.error.message || j.error.code || "Gagal mendaftar") : String(j.error || "Gagal mendaftar");
+        setError(errMsg);
         return;
       }
       setEnrolled(true);
