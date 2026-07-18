@@ -40,12 +40,12 @@ export default function SiswaListPage() {
       const params = new URLSearchParams();
       if (kursusId) params.set("kursusId", kursusId);
       const url = `/api/v1/guru/siswa${params.toString() ? `?${params.toString()}` : ""}`;
-      const result = await apiFetch(url, { signal: controller.signal });
+      const result = await apiFetch<{ data: SiswaItem[]; kursusOptions: KursusOption[] }>(url, { signal: controller.signal });
       if (controller.signal.aborted) return;
       if (!result.ok) throw new Error(result.error || "Gagal memuat data");
-      const raw = result.raw as { data?: SiswaItem[]; kursusOptions?: KursusOption[] };
-      setSiswa(raw?.data || []);
-      if (raw?.kursusOptions) setKursusOptions(raw.kursusOptions);
+      const body = result.data;
+      setSiswa(body?.data || []);
+      if (body?.kursusOptions) setKursusOptions(body.kursusOptions);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Gagal memuat data");
@@ -64,7 +64,9 @@ export default function SiswaListPage() {
     const matchRisk = filterRisk
       ? filterRisk === "berisiko"
         ? s.riskStatus === "berisiko" || s.riskStatus === "kritis"
-        : s.riskStatus === "aman" || s.riskStatus === null || s.riskStatus === undefined
+        : filterRisk === "aman"
+        ? s.riskStatus === "aman"
+        : true
       : true;
     return matchNama && matchRisk;
   });

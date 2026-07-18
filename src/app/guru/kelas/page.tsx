@@ -25,6 +25,8 @@ export default function GuruKelasPage() {
   const [editTingkat, setEditTingkat] = useState(7);
   const [inviteKode, setInviteKode] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editError, setEditError] = useState("");
 
   async function generateInvite(kelasId: string) {
     const result = await apiFetch<{ kode: string }>(`/api/v1/guru/kelas/${kelasId}/invite`, {
@@ -86,16 +88,30 @@ export default function GuruKelasPage() {
   async function handleDelete(id: string) {
     if (!confirm("Hapus kelas ini? Siswa di dalamnya tidak akan terhapus, hanya relasi yang diputus.")) return;
     setError("");
-    const result = await apiFetch(`/api/v1/guru/kelas/${id}`, { method: "DELETE" });
-    if (!result.ok) {
-      setError(result.error);
-    } else {
-      await load();
+    setDeletingId(id);
+    try {
+      const result = await apiFetch(`/api/v1/guru/kelas/${id}`, { method: "DELETE" });
+      if (!result.ok) {
+        setError(result.error);
+      } else {
+        await load();
+      }
+    } finally {
+      setDeletingId(null);
     }
   }
 
   async function handleUpdate(id: string) {
     setError("");
+    setEditError("");
+    if (editNama.trim().length === 0) {
+      setEditError("Nama kelas tidak boleh kosong");
+      return;
+    }
+    if (editNama.trim().length > 50) {
+      setEditError("Nama kelas maksimal 50 karakter");
+      return;
+    }
     const result = await apiFetch<KelasItem>(`/api/v1/guru/kelas/${id}`, {
       method: "PATCH",
       body: JSON.stringify({ nama: editNama, tingkat: editTingkat }),
@@ -237,6 +253,7 @@ export default function GuruKelasPage() {
                     max={20}
                     className="w-full mb-3 px-3 py-2 rounded-lg border border-border-precision text-sm"
                   />
+                  {editError && <p className="text-xs text-red-600 mb-2">{editError}</p>}
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleUpdate(k.id)}
@@ -269,6 +286,7 @@ export default function GuruKelasPage() {
                         setEditing(k);
                         setEditNama(k.nama);
                         setEditTingkat(k.tingkat);
+                        setEditError("");
                       }}
                       className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
                     >
@@ -284,9 +302,11 @@ export default function GuruKelasPage() {
                     <span className="text-on-surface-variant/20">|</span>
                     <button
                       onClick={() => handleDelete(k.id)}
-                      className="inline-flex items-center gap-1 font-semibold text-red-600 hover:underline"
+                      disabled={deletingId === k.id}
+                      className="inline-flex items-center gap-1 font-semibold text-red-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Trash2 className="w-3 h-3" /> Hapus
+                      {deletingId === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                      {deletingId === k.id ? "Menghapus..." : "Hapus"}
                     </button>
                   </div>
                   {inviteKode[k.id] && (

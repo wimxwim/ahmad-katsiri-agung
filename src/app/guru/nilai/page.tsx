@@ -60,7 +60,7 @@ export default function NilaiListPage() {
 
   return (
     <div>
-      <h1 className="font-heading font-bold text-2xl text-on-surface mb-6">Nilai</h1>
+      <h1 className="font-heading font-bold text-2xl text-on-surface mb-6">Daftar Kursus — Nilai</h1>
 
       <div className="relative mb-6">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/40" />

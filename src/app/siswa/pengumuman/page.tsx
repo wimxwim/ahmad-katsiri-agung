@@ -19,23 +19,26 @@ export default function SiswaPengumumanPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  async function fetchData() {
+    setLoading(true);
+    setError("");
+    try {
+      const r = await fetch("/api/v1/siswa/pengumuman", { credentials: "include" });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        throw new Error(j.error || "Gagal memuat");
+      }
+      const j = await r.json();
+      setData(j.data || []);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal memuat");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    fetch("/api/v1/siswa/pengumuman", { credentials: "include" })
-      .then(async (r) => {
-        if (!r.ok) {
-          const j = await r.json().catch(() => ({}));
-          throw new Error(j.error || "Gagal memuat");
-        }
-        return r.json();
-      })
-      .then((j) => {
-        setData(j.data || []);
-        setLoading(false);
-      })
-      .catch((e) => {
-        setError(e instanceof Error ? e.message : "Gagal memuat");
-        setLoading(false);
-      });
+    fetchData();
   }, []);
 
   if (loading) {
@@ -53,6 +56,9 @@ export default function SiswaPengumumanPage() {
       <div className="bg-glass border border-border-precision rounded-2xl p-6 text-center">
         <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
         <p className="text-sm text-red-700">{error}</p>
+        <button onClick={() => { setError(""); setLoading(true); fetchData(); }} className="mt-3 text-sm text-primary hover:underline">
+          Coba lagi
+        </button>
       </div>
     );
   }

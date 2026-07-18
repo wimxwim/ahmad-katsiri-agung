@@ -89,7 +89,7 @@ export default function OnboardingPage() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ step: id }),
-      }).catch(() => { /* offline — localStorage is enough */ });
+      }).catch((e) => { console.error("Onboarding sync failed:", e); });
       return next;
     });
   }

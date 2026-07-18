@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { db } from "@/lib/db";
 import { siswaKursus, kursus, users, riskSnapshot } from "@/lib/db/schema";
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await requireGuru(request);
 
-    const rl = await checkRateLimit(`guru-siswa:${session.userId}`, 20, 15000);
+    const rl = await checkRateLimitPerUser(`siswa-list:${session.userId}`, 20, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const filterKursusId = request.nextUrl.searchParams.get("kursusId");

@@ -79,9 +79,18 @@ export default function BuatKursusPage() {
               name="judul"
               required
               maxLength={200}
+              onChange={(e) => {
+                const slug = slugify(e.target.value);
+                if (slug) {
+                  (document.getElementById("slug-preview") as HTMLElement).textContent = `Slug: ${slug}`;
+                } else {
+                  (document.getElementById("slug-preview") as HTMLElement).textContent = "";
+                }
+              }}
               className="w-full px-4 py-2.5 rounded-xl bg-white border border-border-precision text-on-surface placeholder:text-on-surface-variant/70 focus:outline-hidden focus:border-primary/40 text-sm"
               placeholder="Contoh: Akidah Akhlak Kelas 7"
             />
+            <p id="slug-preview" className="text-xs text-on-surface-variant/60 mt-1"></p>
           </div>
 
           <div>

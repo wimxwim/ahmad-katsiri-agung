@@ -12,6 +12,13 @@ interface KursusSaya {
 }
 
 export default function SiswaKursusPage() {
+  const STATUS_LABEL: Record<string, string> = {
+    AKTIF: "Aktif",
+    NONAKTIF: "Nonaktif",
+    SELESAI: "Selesai",
+    DITANGGUHKAN: "Ditangguhkan",
+  };
+
   const [kursus, setKursus] = useState<KursusSaya[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -95,7 +102,7 @@ export default function SiswaKursusPage() {
                 <span className={`shrink-0 px-2 py-1 text-xs rounded-full font-medium ${
                   k.status === "AKTIF" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
                 }`}>
-                  {k.status}
+                  {STATUS_LABEL[k.status] || k.status}
                 </span>
               </div>
             </div>
