@@ -10,6 +10,8 @@ import { appendEvent } from "@/lib/event-store";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
 
+export const runtime = "nodejs";
+
 const SubmitSchema = z.object({
   durasiDetik: z.number().int().min(0).max(60 * 60 * 4),
   jawaban: z.record(

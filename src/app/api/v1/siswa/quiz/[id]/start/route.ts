@@ -4,6 +4,8 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { cacheSet } from "@/lib/cache-layer";
 
+export const runtime = "nodejs";
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

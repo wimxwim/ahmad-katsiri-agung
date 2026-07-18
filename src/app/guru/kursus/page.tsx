@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, Plus, BookOpen, Globe, Lock, Loader2, Share2, Copy, Check } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -25,7 +24,6 @@ interface KursusItem {
 }
 
 export default function KursusListPage() {
-  const router = useRouter();
   const [kursus, setKursus] = useState<KursusItem[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -95,22 +93,21 @@ export default function KursusListPage() {
     }
   }
 
-  useEffect(() => {
-    let alive = true;
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/v1/kursus", { credentials: "include" });
-        if (!res.ok) throw new Error("Gagal memuat kursus");
-        const { data } = await res.json();
-        if (alive) setKursus(data || []);
-      } catch (err) {
-        if (alive) setError(err instanceof Error ? err.message : "Gagal memuat kursus");
-      } finally {
-        if (alive) setLoading(false);
-      }
+  async function fetchData() {
+    try {
+      const res = await fetch("/api/v1/kursus", { credentials: "include" });
+      if (!res.ok) throw new Error("Gagal memuat kursus");
+      const { data } = await res.json();
+      setKursus(data || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memuat kursus");
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     fetchData();
-    return () => { alive = false; };
   }, []);
 
   const filtered = kursus.filter(
@@ -128,7 +125,7 @@ export default function KursusListPage() {
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
         <button
-          onClick={() => router.refresh()}
+          onClick={() => { setError(""); setLoading(true); fetchData(); }}
           className="text-sm text-primary hover:underline"
         >
           Coba lagi

@@ -29,6 +29,7 @@ function mapToEngine(quiz: QuizDetail) {
     judul: quiz.judul,
     durasiMenit: quiz.durasiMenit,
     totalSoal: quiz.soal.length,
+    modeEvaluasi: quiz.modeEvaluasi,
     soal: quiz.soal.map((s, i) => ({
       id: s.id,
       nomor: i + 1,

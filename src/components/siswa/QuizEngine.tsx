@@ -36,6 +36,7 @@ interface QuizData {
   durasiMenit: number;
   totalSoal: number;
   soal: SoalItem[];
+  modeEvaluasi: "BELAJAR" | "ULANGAN" | "CBT";
 }
 
 const tipeLabel: Record<string, string> = {
@@ -80,6 +81,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
     nilai: number; jumlahBenar: number; jumlahSalah: number; totalSoal: number;
     jawabanBenar: Record<string, string>;
   } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     selectedRef.current = selected;
@@ -131,12 +133,22 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
   soalRef.current = soal ?? null;
   const totalSoal = shuffledSoal.length;
 
-  const startQuiz = useCallback(() => {
+  const startQuiz = useCallback(async () => {
+    setError(null);
     setShuffledSoal(shuffleArray(quiz.soal));
-    fetch(`/api/v1/siswa/quiz/${quiz.id}/start`, {
-      method: "POST",
-      credentials: "include",
-    }).catch(() => { /* fire-and-forget */ });
+    try {
+      const startRes = await fetch(`/api/v1/siswa/quiz/${quiz.id}/start`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!startRes.ok) {
+        setError("Gagal memulai quiz. Silakan coba lagi.");
+        return;
+      }
+    } catch {
+      setError("Gagal memulai quiz. Periksa koneksi internet Anda.");
+      return;
+    }
     setJawaban({});
     setCurrentIndex(0);
     setSelected(null);
@@ -148,18 +160,36 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
     startTimeRef.current = Date.now();
     timerExpiredRef.current = false;
     submittedRef.current = false;
-  }, [quiz.soal, quiz.durasiMenit]);
+  }, [quiz.soal, quiz.durasiMenit, quiz.id]);
 
   const handleSelect = (option: string) => {
     if (showFeedback || !soal) return;
     setSelected(option);
-    setShowFeedback(true);
+    if (quiz.modeEvaluasi === "BELAJAR") {
+      setShowFeedback(true);
+    } else {
+      setJawaban((prev) => ({ ...prev, [soal.nomor]: option }));
+      if (currentIndex < totalSoal - 1) {
+        setCurrentIndex((prev) => prev + 1);
+      } else {
+        setQuizState("result");
+      }
+    }
   };
 
   const handleIsianSubmit = () => {
     if (!isianText.trim() || !soal) return;
     setSelected(isianText.trim());
-    setShowFeedback(true);
+    if (quiz.modeEvaluasi === "BELAJAR") {
+      setShowFeedback(true);
+    } else {
+      setJawaban((prev) => ({ ...prev, [soal.nomor]: isianText.trim() }));
+      if (currentIndex < totalSoal - 1) {
+        setCurrentIndex((prev) => prev + 1);
+      } else {
+        setQuizState("result");
+      }
+    }
   };
 
   const handleNext = () => {
@@ -203,13 +233,18 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
       }
     } catch (e) {
       console.error("Submit hasil gagal:", e);
-      setServerResult({
-        nilai: Math.round((hitungSkor() / totalSoal) * 100),
-        jumlahBenar: hitungSkor(),
-        jumlahSalah: totalSoal - hitungSkor(),
-        totalSoal: totalSoal,
-        jawabanBenar: {},
-      });
+      if (quiz.modeEvaluasi === "BELAJAR") {
+        setServerResult({
+          nilai: Math.round((hitungSkor() / totalSoal) * 100),
+          jumlahBenar: hitungSkor(),
+          jumlahSalah: totalSoal - hitungSkor(),
+          totalSoal: totalSoal,
+          jawabanBenar: {},
+        });
+      } else {
+        setError("Gagal mengirim jawaban. Silakan coba lagi.");
+        setQuizState("result");
+      }
     }
   }, [quiz.id, quiz.durasiMenit, timeLeft, jawaban]);
 
@@ -251,6 +286,34 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
 
   // ── INTRO ──
   if (quizState === "intro") {
+    if (error) {
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: EASE_CURVE }}
+          className="text-center max-w-lg mx-auto"
+        >
+          <div className="w-20 h-20 rounded-3xl bg-red-50 flex items-center justify-center mx-auto mb-8">
+            <XCircle className="w-10 h-10 text-red-500" />
+          </div>
+          <h2 className="font-heading text-3xl md:text-4xl text-on-surface mb-3">Gagal Memulai</h2>
+          <p className="text-on-surface-variant mb-8">{error}</p>
+          <button
+            onClick={startQuiz}
+            className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
+          >
+            <RotateCcw className="w-5 h-5" />
+            Coba Lagi
+          </button>
+          <div className="mt-6">
+            <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary transition-colors">
+              <ArrowLeft className="w-4 h-4" /> Kembali
+            </button>
+          </div>
+        </motion.div>
+      );
+    }
     return (
       <motion.div
         initial={{ opacity: 0, y: 40 }}
@@ -402,9 +465,11 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
           <button onClick={startQuiz} className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300">
             <RotateCcw className="w-5 h-5" /> Ulangi Kuis
           </button>
-          <button onClick={() => setShowReview(true)} className="inline-flex items-center gap-2 bg-white text-primary border-2 border-primary/20 px-8 py-4 rounded-full font-semibold hover:bg-primary/5 active:scale-[0.98] transition-all duration-300">
-            <BookOpen className="w-5 h-5" /> Review Jawaban
-          </button>
+{quiz.modeEvaluasi === "BELAJAR" && (
+            <button onClick={() => setShowReview(true)} className="inline-flex items-center gap-2 bg-white text-primary border-2 border-primary/20 px-8 py-4 rounded-full font-semibold hover:bg-primary/5 active:scale-[0.98] transition-all duration-300">
+              <BookOpen className="w-5 h-5" /> Review Jawaban
+            </button>
+          )}
         </div>
         <div className="mt-6">
           <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary transition-colors">

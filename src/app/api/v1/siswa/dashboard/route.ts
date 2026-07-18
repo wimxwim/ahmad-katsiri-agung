@@ -18,6 +18,8 @@ import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { withRetry } from "@/lib/retry";
 import { cacheGet, cacheSet, cacheKey } from "@/lib/cache-layer";
 
+export const runtime = "nodejs";
+
 interface StudentScope {
   enrolledIds: string[];
   kursusMap: Map<string, { id: string; judul: string; slug: string }>;

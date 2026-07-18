@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { materiPublished, siswaKursus, materiRead } from "@/lib/db/schema";
 import { and, asc, eq, inArray } from "drizzle-orm";
 
+export const runtime = "nodejs";
+
 export async function GET(request: NextRequest) {
   try {
     const session = await requireSiswa(request);

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, BookOpen } from "lucide-react";
 
@@ -12,25 +11,25 @@ interface KursusItem {
 }
 
 export default function NilaiListPage() {
-  const router = useRouter();
   const [kursus, setKursus] = useState<KursusItem[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/v1/kursus", { credentials: "include" });
-        if (!res.ok) throw new Error("Gagal memuat data");
-        const { data } = await res.json();
-        setKursus(data || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal memuat data");
-      } finally {
-        setLoading(false);
-      }
+  async function fetchData() {
+    try {
+      const res = await fetch("/api/v1/kursus", { credentials: "include" });
+      if (!res.ok) throw new Error("Gagal memuat data");
+      const { data } = await res.json();
+      setKursus(data || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memuat data");
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -54,7 +53,7 @@ export default function NilaiListPage() {
     return (
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline">Coba lagi</button>
+        <button onClick={() => { setError(""); setLoading(true); fetchData(); }} className="text-sm text-primary hover:underline">Coba lagi</button>
       </div>
     );
   }

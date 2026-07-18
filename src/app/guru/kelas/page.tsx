@@ -39,9 +39,13 @@ export default function GuruKelasPage() {
 
   async function copyInvite(kelasId: string, kode: string) {
     const link = `${window.location.origin}/masuk?portal=siswa&kode=${kode}`;
-    await navigator.clipboard.writeText(link);
-    setCopied(kelasId);
-    setTimeout(() => setCopied(null), 2000);
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(kelasId);
+      setTimeout(() => setCopied(null), 2000);
+    } catch {
+      // Clipboard API not available — silently ignore
+    }
   }
 
   async function load() {

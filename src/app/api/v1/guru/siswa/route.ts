@@ -6,6 +6,8 @@ import { siswaKursus, kursus, users, riskSnapshot } from "@/lib/db/schema";
 import { and, eq, inArray, isNull, desc } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 
+export const runtime = "nodejs";
+
 export async function GET(request: NextRequest) {
   try {
     const session = await requireGuru(request);

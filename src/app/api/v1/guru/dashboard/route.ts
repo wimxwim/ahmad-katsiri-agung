@@ -4,6 +4,8 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { getCachedDashboard } from "@/lib/dashboard-cache";
 
+export const runtime = "nodejs";
+
 export async function GET(request: NextRequest) {
   try {
     const session = await requireGuru(request);

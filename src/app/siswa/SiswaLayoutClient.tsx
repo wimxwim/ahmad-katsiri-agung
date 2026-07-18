@@ -70,7 +70,7 @@ export function SiswaLayoutClient({ children }: { children: React.ReactNode }) {
       subtitle="Ruang Siswa"
       defaultNama="Siswa"
       homeHref="/siswa/beranda"
-      profileHref="/siswa/profil"
+      profileHref="/siswa/beranda"
       bottomTabs={BOTTOM_TABS}
     >
       <KatalogKursusBar />

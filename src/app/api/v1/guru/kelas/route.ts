@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { requireNotSuspended } from "@/lib/token-service";
-import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { requireNotSuspended, SubscriptionLockedError } from "@/lib/token-service";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
 import { kelas } from "@/lib/db/schema";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { validateCsrf } from "@/lib/csrf-server";
+
+export const runtime = "nodejs";
 
 const CreateKelasSchema = z.object({
   nama: z.string().min(1).max(50),
@@ -19,8 +21,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await requireGuru(request);
 
-    const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`kelas-list:${ip}`, 60, 30000);
+    const rl = await checkRateLimitPerUser(`kelas-list:${session.userId}`, 60, 30000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const data = await db
@@ -45,8 +46,7 @@ export async function POST(request: NextRequest) {
     const session = await requireGuru(request);
     await requireNotSuspended(session.userId);
 
-    const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`kelas-create:${ip}`, 10, 60_000);
+    const rl = await checkRateLimitPerUser(`kelas-create:${session.userId}`, 10, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const body = await request.json();
@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: newKelas }, { status: 201 });
   } catch (e) {
+    if (e instanceof SubscriptionLockedError) return apiError(e.message, 403);
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Kelas create error:", e);
     return apiError("Terjadi kesalahan server", 500);

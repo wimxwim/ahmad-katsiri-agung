@@ -6,6 +6,8 @@ import { quizPublished, soalPublished, siswaKursus } from "@/lib/db/schema";
 import { and, asc, eq } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 
+export const runtime = "nodejs";
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

@@ -1,380 +1,342 @@
-# 🏗️ AKAL CENTER — Arsitektur Backend Komprehensif
-> Berdasarkan 20 skill backend engineering global 2026
-> Target: 2 GB RAM, 2 vCPU, 60 GB SSD, 810 user
+# AKAL Center — Architecture & System Design
+
+> **Updated:** 18 Juli 2026 — production audit, database cleaned, 13 fixes deployed
+> **Stack:** Next.js 16.2.10 (Vercel sin1) + Supabase Postgres (Singapore) + ImageKit + NaraRouter AI
+> **Domain:** https://akalcenter.my.id
 
 ---
 
-## 🎯 CLARIFY (System Design Framework)
-
-| Requirement | Value |
-|-------------|-------|
-| Daily Active Users | 400 siswa + 10 guru |
-| Reads/writes ratio | 90% read, 10% write |
-| Peak QPS | ~50 req/sec |
-| AI generation | 10-50 per hari (batch malam) |
-| Data retention | 7 tahun (sertifikat), 1 tahun (log) |
-| Consistency | Strong (ACID PostgreSQL) |
-| Availability | 99.5% (boleh downtime 3.6 jam/bulan) |
-| Latency target | p99 < 500ms |
-
----
-
-## 📐 HIGH-LEVEL ARCHITECTURE
+## 1. Deployment Architecture (Actual)
 
 ```
-                            ┌─────────────────────────────────────┐
-                            │        Cloudflare (DNS Only)        │
-                            │   akalcenter.my.id → VPS IP         │
-                            └──────────────┬──────────────────────┘
-                                           │
-                            ┌──────────────▼──────────────────────┐
-                            │         Nginx (Port 80/443)         │
-                            │   SSL Termination (Let's Encrypt)   │
-                            │   Rate Limiting (10 req/s)          │
-                            │   Gzip, Caching Headers             │
-                            └──────────────┬──────────────────────┘
-                                           │
-                            ┌──────────────▼──────────────────────┐
-                            │      Next.js (PM2, 1 instance)      │
-                            │   Port 3000                         │
-                            │   max-memory-restart: 700M          │
-                            └──────┬───────────────┬──────────────┘
-                                   │               │
-                    ┌──────────────▼───┐   ┌───────▼──────────────┐
-                    │   PostgreSQL 16  │   │   Redis 7            │
-                    │   Port 5432      │   │   Port 6379          │
-                    │   Pool: 8        │   │   maxmemory: 60MB    │
-                    │   shared: 512MB  │   │   Session + Cache    │
-                    └──────────────────┘   └──────────────────────┘
-                                   │
-                    ┌──────────────▼──────────────────────────────┐
-                    │            External Services                │
-                    │   ImageKit (PDF Storage)                    │
-                    │   NaraRouter (AI - DeepSeek/Mimo)           │
-                    │   Resend (Email)                            │
-                    │   Google OAuth (Login)                      │
-                    └─────────────────────────────────────────────┘
+Browser
+  │
+  ▼
+Vercel (sin1 — Singapore)
+  ├─ Next.js 16.2.10 App Router (Turbopack)
+  ├─ Edge Middleware (CSP, auth guard, CSRF, role routing)
+  ├─ 94 static pages + ~100 dynamic/API routes
+  ├─ Cron: daily midnight (cleanup, generate queue)
+  └─ Build: NODE_OPTIONS=--max-old-space-size=8192
+       │
+       ├─ Supabase Postgres (Singapore, Pooler)
+       │   ├─ 39 migrations (0000-0038)
+       │   ├─ 44 tables, ~30 active
+       │   └─ Connection: aws-1-ap-southeast-1.pooler.supabase.com:6543
+       │
+       ├─ ImageKit (PDF storage, 20 GB free)
+       │
+       ├─ NaraRouter (AI — deepseek-v4-flash-bynara)
+       │   └─ Base: https://router.bynara.id/v1
+       │
+       ├─ Upstash Redis (caching, rate limiting, session)
+       │
+       └─ Cloudflare Worker (akal-centre proxy)
+           └─ workers/akal-centre/index.ts
 ```
 
 ---
 
-## 🗄️ DATABASE: PostgreSQL Schema Design
+## 2. Request Lifecycle
 
-### Index Strategy (query-missing-indexes, query-composite-indexes)
-
-```sql
--- Users: frequently searched by email
-CREATE INDEX users_email_idx ON users (email);
-
--- AI Generation: filter by guru + status
-CREATE INDEX ai_gen_guru_status_idx ON ai_generation (guru_id, status);
-
--- File Materi: filter by kursus + guru
-CREATE INDEX file_materi_kursus_guru_idx ON file_materi (kursus_id, guru_id);
-
--- Jawaban Log: filter by siswa + kursus
-CREATE INDEX jawaban_log_siswa_kursus_idx ON jawaban_log (siswa_id, kursus_id);
-
--- Event Store: hash chain verification
-CREATE INDEX event_store_guru_idx ON event_store (guru_id, created_at);
 ```
-
-### Connection Pool (conn-pooling)
-```env
-DATABASE_URL=postgresql://akal:password@localhost:5432/akalcenter
-POOL_MAX=8
-POOL_IDLE_TIMEOUT=30000
-```
-
-### RLS Strategy (security-rls-basics)
-```sql
--- Enable RLS on multi-tenant tables
-ALTER TABLE ai_generation ENABLE ROW LEVEL SECURITY;
-ALTER TABLE file_materi ENABLE ROW LEVEL SECURITY;
-ALTER TABLE jawaban_log ENABLE ROW LEVEL SECURITY;
-
--- Guru only sees own data
-CREATE POLICY guru_owns_ai_gen ON ai_generation
-  FOR ALL TO authenticated
-  USING (guru_id = current_setting('app.current_user_id')::uuid);
-
--- Siswa only sees own jawaban
-CREATE POLICY siswa_owns_jawaban ON jawaban_log
-  FOR ALL TO authenticated
-  USING (siswa_id = current_setting('app.current_user_id')::uuid);
+1. Browser request
+   │
+2. Vercel Edge Middleware (src/middleware.ts)
+   ├─ CSP headers
+   ├─ JWT verification (cookie: __Host-akal_sesi)
+   ├─ Role-based routing (guru ↔ siswa)
+   ├─ CSRF token (cookie: __Host-psrf)
+   └─ x-user-* headers forwarded
+   │
+3. Route Handler (src/app/api/v1/**)
+   ├─ Rate limit (IP + user, sliding window)
+   ├─ Route guard (requireGuru / requireSiswa)
+   ├─ Input validation (zod v4)
+   ├─ Business logic
+   ├─ DB query (Drizzle ORM, parameterized)
+   └─ Response (structured JSON)
+   │
+4. Client (React 19, motion/react)
+   ├─ data-cache.ts (30s TTL in-memory)
+   ├─ apiFetch() helper (src/lib/api-helpers.ts)
+   ├─ Skeleton loaders + error states + empty states
+   └─ Staggered animation (EASE_CURVE: [0.16, 1, 0.3, 1])
 ```
 
 ---
 
-## ⚡ CACHING: Multi-Layer Strategy
-
-### Layer 1: Nginx Cache (static assets)
-```nginx
-location /_next/static/ {
-    expires 1y;
-    add_header Cache-Control "public, immutable";
-}
-location /public/ {
-    expires 7d;
-    add_header Cache-Control "public";
-}
-```
-
-### Layer 2: Redis Cache (dynamic data)
-```typescript
-// Kursus catalog (TTL 5 menit)
-async function getKursusCatalog() {
-  const cacheKey = "kursus:catalog";
-  const cached = await redis.get(cacheKey);
-  if (cached) return JSON.parse(cached);
-  
-  const data = await db.query.kursus.findMany({ 
-    where: eq(kursus.status, "published"),
-    limit: 50 
-  });
-  await redis.setex(cacheKey, 300, JSON.stringify(data));
-  return data;
-}
-
-// Invalidate on publish
-async function publishKursus(id: string) {
-  await db.update(kursus).set({ status: "published" }).where(eq(kursus.id, id));
-  await redis.del("kursus:catalog");
-}
-```
-
-### Layer 3: PostgreSQL Buffer (shared_buffers=512MB)
-- Hot data (users, kursus) cached in memory
-- Query plan cached via prepared statements
-
----
-
-## 🔐 AUTHENTICATION & AUTHORIZATION
-
-### Multi-Layer Defense (auth-flow-akal-center + security-review)
+## 3. Authentication Flow
 
 ```
-Layer 1: Middleware → JWT precheck + CSRF + CSP
-Layer 2: Route Guard → requireGuru/requireSiswa
-Layer 3: Database → RLS + ownership predicates
-Layer 4: Audit → hash-chained event store
-```
+┌─ LOGIN ─────────────────────────────────────────────────┐
+│  POST /api/v1/auth/login                                 │
+│  → validate Zod input                                     │
+│  → IP rate limit                                          │
+│  → find user by email                                     │
+│  → verify Argon2 password                                 │
+│  → check portal intent (guru/siswa)                       │
+│  → sign JWT (ES256 or HS256 fallback)                     │
+│  → set __Host-akal_sesi cookie (httpOnly, 8h)             │
+│  → set __Host-akal_refresh cookie (httpOnly, 30d)         │
+│  → audit event                                            │
+│  → redirect to role home                                  │
+└──────────────────────────────────────────────────────────┘
 
-### Rate Limiting (sliding window)
-```typescript
-// Per IP: 60 req/menit
-checkRateLimit(`ip:${ip}`, 60, 60_000)
+┌─ SESSION ────────────────────────────────────────────────┐
+│  Cookie: __Host-akal_sesi                                 │
+│  Payload: { userId, role, nama, email, kelas, ... }      │
+│  Role mapping: SISWA→murid, GURU→guru                    │
+│  Guard: route-guard-v2.ts (requireGuru/requireSiswa)     │
+│  Layout: require-dashboard-session.ts (page-level)        │
+└──────────────────────────────────────────────────────────┘
 
-// Per User: 120 req/menit
-checkRateLimit(`user:${userId}`, 120, 60_000)
-
-// AI Generation: 10/hari
-checkRateLimit(`gen:${userId}`, 10, 86400_000)
-```
-
-### CSRF Protection
-```typescript
-// Double-submit cookie pattern
-cookie __Host-psrf === header x-csrf-token
-
-// Exempt: login, register, OAuth, webhook, health
+┌─ LOGOUT ─────────────────────────────────────────────────┐
+│  POST /api/v1/auth/logout (MUST be POST, never GET)       │
+│  → clear cookies                                          │
+│  → revoke refresh tokens                                  │
+│  → redirect to /masuk                                     │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🤖 AI PIPELINE: Event-Driven Batch Processing
+## 4. Database Schema (Key Tables)
 
-### Arsitektur (orchestration-and-backfills)
-
+### Content Pipeline
 ```
-┌─ UPLOAD (siang) ──────────────────────────────────────────┐
-│  Guru upload PDF                                           │
-│  → ImageKit (storage)                                      │
-│  → Extract text (unpdf, 30 detik)                          │
-│  → Save to file_materi.extraction_text                     │
-│  → Create ai_generation record (status: queued)            │
-│  → Response: 3 detik, 55 MB RAM                            │
-└────────────────────────────────────────────────────────────┘
-
-┌─ GENERATE (2 mode) ───────────────────────────────────────┐
-│                                                            │
-│  MODE 1: Tombol "Generate Sekarang"                        │
-│  → POST /api/v1/guru/drafts/{id}/generate                  │
-│  → Baca extraction_text dari DB                            │
-│  → Concurrent limit: 1 (antri otomatis)                    │
-│  → 3 AI calls sequential: materi → quiz → soal             │
-│  → 90 detik/guru, 150 MB RAM                               │
-│                                                            │
-│  MODE 2: Cron jam 00:00 WIB                                │
-│  → POST /api/v1/cron/generate (Authorization: Bearer)      │
-│  → Query semua status=queued                               │
-│  → Process 1 per 1 (sequential)                            │
-│  → 10 guru = 15 menit, 150 MB RAM                          │
-│                                                            │
-│  AI Fallback chain:                                        │
-│  deepseek-v4-flash → retry 2x → mimo-v2.5 → local fallback │
-│  Retry: 503 backoff 1.5s/3s/6s                             │
-└────────────────────────────────────────────────────────────┘
+ai_generation (79 records cleaned)
+  ├─ guru_id, status (queued/extracting/generating/ready/rejected)
+  ├─ extraction_text, prompt_version
+  │
+  ├─→ materi_published (12 records cleaned)
+  │     ├─ judul, konten, ringkasan, kursus_id
+  │     └─ materi_sharing (visibility: PRIVAT/PUBLIK/KRABAT)
+  │
+  ├─→ quiz_published (12 records cleaned)
+  │     ├─ judul, mode_evaluasi (BELAJAR/ULANGAN/CBT)
+  │     ├─ durasi_menit, kursus_id
+  │     │
+  │     └─→ soal_published (190 records cleaned)
+  │           ├─ pertanyaan, tipe (PG/ISIAN/ESSAY)
+  │           ├─ pilihan_ganda (jsonb), kunci, poin, urutan
+  │           └─→ quiz_attempt (siswa answers, nilai)
+  │
+  └─→ file_materi (78 records cleaned)
+        ├─ kategori, file_url (ImageKit), extraction_text
 ```
 
-### Data Quality Contract (data-quality-and-contract-testing)
+### User & Enrollment
+```
+users
+  ├─ role: GURU | SISWA | ASISTEN_GURU | ORANG_TUA | OWNER | ADMIN_SEKOLAH
+  │
+  ├─→ kursus (guru_id, status, judul)
+  │     └─→ siswa_kursus (siswa_id, status: AKTIF/SELESAI)
+  │
+  └─→ kelas (guru_id, nama, tingkat)
+        └─→ siswa_kelas (siswa_id, kelas_id)
+```
 
-```typescript
-// Validasi sebelum publish
-interface DraftQualityCheck {
-  materiMinLength: 100,    // Minimal 100 karakter
-  quizMinItems: 5,         // Minimal 5 soal
-  soalMinItems: 3,         // Minimal 3 soal
-  noEmptyOpsi: true,       // Opsi PG tidak boleh kosong
-  kunciJawabanValid: true, // Kunci harus A/B/C/D
-}
+### Token & Payment
+```
+token_balances (user_id, balance, total_spent, is_unlocked)
+  └─→ token_transactions (amount, type, reference)
+
+payments (user_id, amount, status, proof_url)
+  └─→ transaksi (payment_id, kursus_id, status)
 ```
 
 ---
 
-## 📊 MONITORING & OBSERVABILITY
+## 5. AI Pipeline
 
-### Health Check (system-design)
 ```
-GET /api/health → {
-  status: "ok",
-  uptime: 12345,
-  services: {
-    postgres: { status: "connected", latencyMs: 2 },
-    redis: { status: "connected", latencyMs: 1 },
-    imagekit: { status: "connected", latencyMs: 150 },
-    ai: { status: "connected", latencyMs: 561 }
-  }
-}
-```
+┌─ UPLOAD ─────────────────────────────────────────────────┐
+│  Guru upload PDF/DOCX via /guru/upload                    │
+│  → ImageKit storage                                       │
+│  → Extract text (unpdf, 30s)                              │
+│  → Save to file_materi.extraction_text                    │
+│  → Create ai_generation (status: extracted)               │
+│  → Upload does NOT auto-trigger generate (BY DESIGN)      │
+└──────────────────────────────────────────────────────────┘
 
-### Structured Logging (backend-patterns)
-```typescript
-// JSON log format
-console.log(JSON.stringify({
-  timestamp: new Date().toISOString(),
-  level: "INFO",
-  service: "ai-generator",
-  generationId: "xxx",
-  tokensIn: 365,
-  tokensOut: 281,
-  durationMs: 31900,
-}));
-```
+┌─ GENERATE ───────────────────────────────────────────────┐
+│  Guru clicks "Generate AI" in /guru/drafts                │
+│  → POST /api/v1/guru/drafts/{id}/generate                 │
+│  → 3 AI calls sequential: materi → quiz → soal            │
+│  → NaraRouter: deepseek-v4-flash-bynara                   │
+│  → Fallback: local generator (ai-generator.ts)            │
+│  → Sanitizer: ai-sanitizer.ts (normalizes output)         │
+│  → Save to ai_output (per-category)                       │
+│  → Status: ready (for review)                             │
+└──────────────────────────────────────────────────────────┘
 
-### Alert Rules (incident-triage-and-pipeline-recovery)
-```
-DB connection > 80% pool → WARN
-AI generation failed > 3x → ERROR
-Disk usage > 80% → WARN
-RAM usage > 85% → CRITICAL
-Cron generate failed → ERROR
+┌─ REVIEW & PUBLISH ───────────────────────────────────────┐
+│  Guru reviews in /guru/drafts/{id}                        │
+│  → Approve/reject per category (materi/quiz/soal)         │
+│  → "Close Review" → publish to siswa                      │
+│  → Creates: materi_published + quiz_published + soal_published │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🛡️ SECURITY HARDENING
+## 6. Caching Strategy
 
-### Pre-Deployment Checklist (security-review)
-- [x] No hardcoded secrets (all in .env.production)
-- [x] JWT httpOnly cookies (SameSite=Lax)
-- [x] CSRF on all mutations
-- [x] Rate limiting per IP + per user
-- [x] Input validation (Zod)
-- [x] SQL parameterized (Drizzle ORM)
-- [x] File upload validation (size, type, magic bytes)
-- [x] Error messages generic (no stack traces)
-- [x] HTTPS enforced (Let's Encrypt)
-- [x] CSP headers configured
-- [x] RLS on multi-tenant tables
-- [x] Audit logging (hash-chained event store)
+| Layer | Tech | TTL | What |
+|-------|------|-----|------|
+| Client | data-cache.ts (in-memory Map) | 30s | Dashboard, quiz list, materi list |
+| Server | Upstash Redis | 5min | Kursus catalog, AI generation status |
+| Server | cache-layer.ts | 1h | Quiz start timestamps, session data |
+| CDN | Vercel Edge | 1y | Static assets (_next/static) |
 
-### Secrets Management
+---
+
+## 7. Rate Limiting
+
+| Scope | Limit | Window |
+|-------|-------|--------|
+| IP (general) | 60 req | 1 min |
+| User (general) | 120 req | 1 min |
+| Siswa dashboard | 30 req | 1 min |
+| Siswa quiz detail | 30 req | 1 min |
+| Siswa quiz submit | 10 req | 1 min |
+| AI generation | 10 req | 1 day |
+| Login attempts | 5 req | 15 min |
+
+---
+
+## 8. API Route Map (114 handlers)
+
+### Auth (9 routes)
 ```
-VPS filesystem (.env.production) ← 600 permissions
-PostgreSQL password ← strong, rotated 90 hari
-JWT_SECRET ← 64 char random
-CRON_SECRET ← 32 char random
-NaraRouter API key ← rotated via dashboard
+POST /api/v1/auth/login
+POST /api/v1/auth/register
+POST /api/v1/auth/logout
+POST /api/v1/auth/refresh
+POST /api/v1/auth/set-password
+GET  /api/v1/auth/google
+GET  /api/v1/auth/callback/google
+GET  /api/v1/auth/jwks
+```
+
+### Siswa (11 routes)
+```
+GET  /api/v1/siswa/dashboard
+GET  /api/v1/siswa/materi
+GET  /api/v1/siswa/materi/{id}
+POST /api/v1/siswa/materi/{id}       (progress tracking)
+GET  /api/v1/siswa/quiz
+GET  /api/v1/siswa/quiz/{id}         (ambil soal)
+POST /api/v1/siswa/quiz/{id}/start   (catat mulai)
+POST /api/v1/siswa/quiz/{id}/submit  (nilai + jawaban)
+GET  /api/v1/siswa/progres
+GET  /api/v1/siswa/feed
+GET  /api/v1/siswa/pengumuman
+```
+
+### Guru (30+ routes)
+```
+GET  /api/v1/guru/dashboard
+GET  /api/v1/guru/analytics
+GET  /api/v1/guru/onboarding
+POST /api/v1/guru/onboarding
+GET  /api/v1/guru/uploads
+POST /api/v1/guru/uploads
+GET  /api/v1/guru/drafts
+GET  /api/v1/guru/drafts/{id}
+POST /api/v1/guru/drafts/{id}/generate
+POST /api/v1/guru/drafts/{id}/close-review
+POST /api/v1/guru/drafts/{id}/approve-materi
+POST /api/v1/guru/drafts/{id}/reject-materi
+POST /api/v1/guru/drafts/{id}/regenerate-materi
+POST /api/v1/guru/drafts/{id}/edit-materi
+POST /api/v1/guru/drafts/{id}/approve-quiz
+POST /api/v1/guru/drafts/{id}/reject-quiz
+POST /api/v1/guru/drafts/{id}/approve-soal
+POST /api/v1/guru/drafts/{id}/reject-soal
+GET  /api/v1/guru/kelas
+POST /api/v1/guru/kelas
+PATCH /api/v1/guru/kelas/{id}
+DELETE /api/v1/guru/kelas/{id}
+POST /api/v1/guru/kelas/{id}/invite
+GET  /api/v1/guru/siswa
+GET  /api/v1/guru/siswa/{id}
+POST /api/v1/guru/siswa/import
+GET  /api/v1/guru/kursus/{id}/progres
+GET  /api/v1/guru/materi/{id}/sharing
+POST /api/v1/guru/materi/{id}/sharing
+GET  /api/v1/guru/sertifikat/kursus
+POST /api/v1/guru/sertifikat/generate
+GET  /api/v1/guru/token/balance
+POST /api/v1/guru/token/topup
+POST /api/v1/guru/krabat/connect
+POST /api/v1/guru/krabat/approve
+```
+
+### Shared (20+ routes)
+```
+GET  /api/v1/kursus
+POST /api/v1/kursus
+GET  /api/v1/kursus/{id}
+POST /api/v1/kursus/{id}/invite
+PATCH /api/v1/kursus/{id}/publish
+GET  /api/v1/kursus/{id}/nilai
+GET  /api/v1/katalog
+POST /api/v1/enroll
+GET  /api/v1/enroll/status
+GET  /api/v1/pengumuman
+POST /api/v1/pengumuman
+GET  /api/v1/pengumuman/{id}
+PUT  /api/v1/pengumuman/{id}
+DELETE /api/v1/pengumuman/{id}
+POST /api/v1/payment/create
+POST /api/v1/payment/submit
+POST /api/v1/payment/webhook
+GET  /api/v1/token/balance
+GET  /api/v1/token/plans
+POST /api/v1/token/topup
+POST /api/v1/token/topup/upload
+POST /api/v1/sertifikat/generate
+POST /api/v1/invite/kelas/consume
+```
+
+### Cron (6 routes)
+```
+POST /api/v1/cron/generate
+POST /api/v1/cron/cleanup
+POST /api/v1/cron/analytics
+POST /api/v1/cron/prune-events
+POST /api/v1/cron/refresh-ai-costs
+POST /api/v1/cron/reset-quota
 ```
 
 ---
 
-## 🔄 DISASTER RECOVERY (data-platform-disaster-recovery)
+## 9. File Map
 
-### RTO/RPO
-| Metric | Target |
-|--------|--------|
-| RTO (Recovery Time) | 2 jam |
-| RPO (Recovery Point) | 24 jam (backup harian) |
-
-### Backup Strategy
-```
-1. PostgreSQL: pg_dump setiap jam 2 pagi → /opt/backups/
-2. Retensi: 7 hari lokal, 30 hari remote (rsync ke storage lain)
-3. ImageKit: file PDF tidak di-backup (cloud storage, 99.9% SLA)
-4. Konfigurasi: /opt/akal-center/ di-git (GitHub)
-```
-
-### Recovery Drill
-```bash
-# 1. Restore database
-gunzip /opt/backups/akalcenter_20260711_020000.sql.gz
-psql akalcenter < akalcenter_20260711_020000.sql
-
-# 2. Restore app
-git clone https://github.com/wimxwim/ahmad-katsiri-agung.git /opt/akal-center
-cd /opt/akal-center
-bash scripts/deploy-vps.sh
-
-# 3. Verify
-curl https://akalcenter.my.id/api/health
-```
+| File | Role |
+|------|------|
+| `src/middleware.ts` | Edge: CSP, auth guard, CSRF, role routing |
+| `src/lib/auth.ts` | JWT sign/verify (crypto.randomUUID) |
+| `src/lib/session.ts` | Role mapping, cookie constants |
+| `src/lib/route-guard-v2.ts` | Canonical API guards |
+| `src/lib/require-dashboard-session.ts` | Page layout guard |
+| `src/lib/ai.ts` | NaraRouter client (deepseek-v4-flash-bynara) |
+| `src/lib/ai-generator.ts` | AI orchestration (upload→generate→fallback) |
+| `src/lib/ai-sanitizer.ts` | AI output normalizer |
+| `src/lib/db/schema.ts` | Drizzle ORM schema (~30 tables) |
+| `src/lib/db/migrations/` | 39 SQL migration files |
+| `src/lib/cache-layer.ts` | Redis cache abstraction |
+| `src/lib/data-cache.ts` | Client-side in-memory cache |
+| `src/lib/rate-limit.ts` | Sliding window rate limiter |
+| `src/lib/csrf.ts` | CSRF headers + validation |
+| `src/lib/api-helpers.ts` | apiFetch() helper |
+| `src/lib/api-response.ts` | Structured API responses |
+| `src/lib/event-store.ts` | Hash-chained audit events |
+| `workers/akal-centre/` | Cloudflare Worker proxy |
 
 ---
 
-## 📈 SCALING PATH
-
-### Vertical Scale (2 GB → 4 GB → 8 GB)
-```
-2 GB: 400 siswa + 10 guru → 71% RAM ✅
-4 GB: 800 siswa + 20 guru → 2 PM2 instances
-8 GB: 1500 siswa + 50 guru → 4 PM2 instances
-```
-
-### Horizontal Scale (future)
-```
-VPS 1 (App) + VPS 2 (DB) → ketika 2000+ user
-VPS 1 (App) + VPS 2 (App) + VPS 3 (DB) → load balancer
-```
-
-### Bottleneck Analysis
-| Bottleneck | Current | Limit | Fix |
-|-----------|---------|-------|-----|
-| RAM | 2 GB | 71% normal | Vertical scale |
-| DB connections | 8 pool | 50 max PG | Increase pool |
-| AI generation | 1 concurrent | 10/hari cron | Batch malam |
-| Disk | 60 GB | 8 GB used | OK for years |
-| Network | 1 Gbps | ~10 Mbps | OK |
-
----
-
-## 🎯 DEPLOYMENT PIPELINE
-
-```bash
-# 1. Build & test locally
-npm run build
-
-# 2. Push to GitHub
-git push origin main
-
-# 3. Deploy to VPS
-bash scripts/deploy-vps.sh
-
-# 4. Verify
-curl https://akalcenter.my.id/api/health
-```
-
----
-
-*Arsitektur ini dirancang berdasarkan 20 skill backend engineering global — tidak main-main.*
+*Audited from production codebase — 18 Juli 2026.*
