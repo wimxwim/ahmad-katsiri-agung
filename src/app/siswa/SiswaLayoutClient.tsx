@@ -62,6 +62,7 @@ export function SiswaLayoutClient({ children }: { children: React.ReactNode }) {
     invalidateCache("beranda:dashboard");
     invalidateCache("materi:");
     invalidateCache("quiz:");
+    window.dispatchEvent(new CustomEvent("akal:cache-invalidated"));
   });
 
   return (

@@ -91,6 +91,9 @@ function MateriContent() {
       setKursusList(cached);
       return;
     }
+    // NOTE: Tight coupling — fetching kursusList from the dashboard feed API.
+    // Ideally this should come from a dedicated endpoint like GET /api/v1/enroll/status.
+    // Keeping as-is since the feed API reliably returns kursusList.
     fetch("/api/v1/siswa/feed", { credentials: "include" })
       .then(async (r) => {
         if (!r.ok) return;

@@ -8,15 +8,13 @@ import {
   materiRead,
   siswaKursus,
   kursus,
-  quizPublished,
-  soalPublished,
-  quizAttempt,
   pengumuman,
 } from "@/lib/db/schema";
-import { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, or } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { withRetry } from "@/lib/retry";
 import { cacheGet, cacheSet, cacheKey } from "@/lib/cache-layer";
+import { fetchQuizList } from "@/lib/quiz-helpers";
 
 export const runtime = "nodejs";
 
@@ -205,59 +203,7 @@ async function fetchFeed(scope: StudentScope, userId: string) {
 }
 
 async function fetchQuiz(scope: StudentScope, userId: string) {
-  return withRetry(async () => {
-    if (scope.enrolledIds.length === 0) return { data: [], totalAttempt: 0 };
-
-    const quizList = await db
-      .select()
-      .from(quizPublished)
-      .where(inArray(quizPublished.kursusId, scope.enrolledIds))
-      .orderBy(asc(quizPublished.publishedAt))
-      .limit(100);
-
-    const quizIds = quizList.map((q) => q.id);
-    const soalCount = new Map<string, number>();
-    if (quizIds.length > 0) {
-      const counts = await db
-        .select({ quizPublishedId: soalPublished.quizPublishedId, count: sql<number>`count(*)::int` })
-        .from(soalPublished)
-        .where(inArray(soalPublished.quizPublishedId, quizIds))
-        .groupBy(soalPublished.quizPublishedId);
-      for (const c of counts) {
-        if (!c.quizPublishedId) continue;
-        soalCount.set(c.quizPublishedId, c.count);
-      }
-    }
-
-    const attempts = await db
-      .select()
-      .from(quizAttempt)
-      .where(and(eq(quizAttempt.siswaId, userId), inArray(quizAttempt.quizPublishedId, quizIds)));
-
-    const bestByQuiz = new Map<string, { nilai: number | null; selesai: boolean }>();
-    for (const a of attempts) {
-      const prev = bestByQuiz.get(a.quizPublishedId);
-      const aNilai = a.nilai ?? 0;
-      const prevNilai = prev?.nilai ?? -1;
-      if (aNilai > prevNilai || ((a.status === "SELESAI" || a.status === "BELAJAR") && !prev?.selesai)) {
-        bestByQuiz.set(a.quizPublishedId, { nilai: a.nilai, selesai: a.status === "SELESAI" || a.status === "BELAJAR" });
-      }
-    }
-
-    const data = quizList.map((q) => {
-      const totalSoal = soalCount.get(q.id) || 0;
-      const best = bestByQuiz.get(q.id);
-      return {
-        ...q,
-        totalSoal,
-        sudahDikerjakan: !!best?.selesai,
-        nilaiTerbaik: q.modeEvaluasi === "CBT" ? null : best?.nilai ?? null,
-        tampilkanNilai: q.modeEvaluasi !== "CBT",
-      };
-    });
-
-    return { data, totalAttempt: attempts.length };
-  });
+  return withRetry(() => fetchQuizList(scope.enrolledIds, userId));
 }
 
 async function fetchPengumuman(scope: StudentScope) {

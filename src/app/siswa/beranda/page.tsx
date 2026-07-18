@@ -188,6 +188,14 @@ export default function SiswaBerandaPage() {
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    function handleCacheInvalidated() {
+      fetchData();
+    }
+    window.addEventListener("akal:cache-invalidated", handleCacheInvalidated);
+    return () => window.removeEventListener("akal:cache-invalidated", handleCacheInvalidated);
+  }, [fetchData]);
+
   if (loading) return <SkeletonDashboardSiswa />;
 
   if (error) {
