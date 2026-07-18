@@ -3,7 +3,7 @@ import { createHash } from "crypto";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiSuccess, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
-import { topUpBalance, requireNotSuspended } from "@/lib/token-service";
+import { topUpBalance, requireNotSuspended, SubscriptionLockedError, InsufficientBalanceError } from "@/lib/token-service";
 import { MIN_TOPUP, MAX_TOPUP, MAX_TOPUP_PER_DAY } from "@/lib/token-constants";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { sendTopupNotification } from "@/lib/telegram-notif";
@@ -167,6 +167,14 @@ export async function POST(request: NextRequest) {
     });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
+
+    if (e instanceof SubscriptionLockedError) {
+      return apiError("ACCOUNT_SUSPENDED", e.message, undefined, 403);
+    }
+
+    if (e instanceof InsufficientBalanceError) {
+      return apiError("INSUFFICIENT_BALANCE", e.message, { currentBalance: e.currentBalance, required: e.required }, 409);
+    }
 
     if (imageKitFileId && adapter) {
       adapter.delete(imageKitFileId).catch((delErr) =>
