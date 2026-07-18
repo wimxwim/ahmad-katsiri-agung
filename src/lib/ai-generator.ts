@@ -294,7 +294,7 @@ export async function runGeneration(
             { role: "system", content: buildSoalSystemPrompt(soalCount) },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2000, soalCount * 150) },
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2000, soalCount * 200) },
         ),
         AI_TIMEOUT_MS,
         "ai-soal",
@@ -313,7 +313,17 @@ export async function runGeneration(
 
     const materiParsed = parseMateriSafe(materiRes.content);
     const quizParsed = parseQuizSafe(quizRes.content);
-    const soalParsed = parseSoalSafe(soalRes.content);
+    let soalParsed = parseSoalSafe(soalRes.content);
+
+    if (!soalParsed) {
+      console.warn("[ai-generator] soal AI output invalid, menggunakan fallback lokal. Raw preview:", soalRes.content.slice(0, 500));
+      const fallback = fallbackAiResults(truncatedSource, quizCount, soalCount);
+      const fallbackSoal = parseSoalSafe(fallback[2].content);
+      if (fallbackSoal) {
+        soalParsed = fallbackSoal;
+        console.log("[ai-generator] soal fallback berhasil —", fallbackSoal.soal.length, "item");
+      }
+    }
 
     if (!materiParsed || !quizParsed) {
       const missing = [
@@ -327,10 +337,6 @@ export async function runGeneration(
       throw new GenerationSchemaError(
         (!materiParsed ? "materi" : !quizParsed ? "quiz" : "soal") as "materi" | "quiz" | "soal",
       );
-    }
-
-    if (!soalParsed) {
-      console.error("[ai-generator] soal output invalid:", soalRes.content.slice(0, 2000));
     }
 
     const tokensIn = materiRes.tokensIn + quizRes.tokensIn + soalRes.tokensIn;
@@ -475,7 +481,7 @@ export async function runGenerationFromText(
           { role: "system", content: buildSoalSystemPrompt(soalCount) },
           { role: "user", content: `Materi:\n\n${truncatedSource}` },
         ],
-        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2000, soalCount * 150) },
+        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2000, soalCount * 200) },
       ),
       AI_TIMEOUT_MS,
       "ai-soal",
@@ -490,7 +496,17 @@ export async function runGenerationFromText(
   const [materiRes, quizRes, soalRes] = aiResults;
   const materiParsed = parseMateriSafe(materiRes.content);
   const quizParsed = parseQuizSafe(quizRes.content);
-  const soalParsed = parseSoalSafe(soalRes.content);
+  let soalParsed = parseSoalSafe(soalRes.content);
+
+  if (!soalParsed) {
+    console.warn("[ai-generator] soal AI output invalid, menggunakan fallback lokal. Raw preview:", soalRes.content.slice(0, 500));
+    const fallback = fallbackAiResults(truncatedSource, quizCount, soalCount);
+    const fallbackSoal = parseSoalSafe(fallback[2].content);
+    if (fallbackSoal) {
+      soalParsed = fallbackSoal;
+      console.log("[ai-generator] soal fallback berhasil —", fallbackSoal.soal.length, "item");
+    }
+  }
 
   if (!materiParsed || !quizParsed) {
     await db

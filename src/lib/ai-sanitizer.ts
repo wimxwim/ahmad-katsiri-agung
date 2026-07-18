@@ -139,7 +139,7 @@ export const SoalResultSchema = z.object({
   soal: z
     .array(GeneratedSoalSchema)
     .min(1)
-    .max(35)
+    .max(50)
     .transform((arr) =>
       arr.map((s) => {
         if (s.tipe === "PG" && s.opsi) {
