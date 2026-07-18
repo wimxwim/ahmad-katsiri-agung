@@ -294,7 +294,7 @@ export async function runGeneration(
             { role: "system", content: buildSoalSystemPrompt(soalCount) },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, soalCount * 50) },
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2000, soalCount * 150) },
         ),
         AI_TIMEOUT_MS,
         "ai-soal",
@@ -443,41 +443,44 @@ export async function runGenerationFromText(
 
   let aiResults: [ChatResult, ChatResult, ChatResult];
   try {
-    const [materiRes, quizRes, soalRes] = await Promise.all([
-      withTimeout(
-        chatWithFallback(
-          [
-            { role: "system", content: MATERI_SYSTEM },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
-          ],
-          { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
-        ),
-        AI_TIMEOUT_MS,
-        "ai-materi",
+    const materiRes = await withTimeout(
+      chatWithFallback(
+        [
+          { role: "system", content: MATERI_SYSTEM },
+          { role: "user", content: `Materi:\n\n${truncatedSource}` },
+        ],
+        { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
       ),
-      withTimeout(
-        chatWithFallback(
-          [
-            { role: "system", content: buildQuizSystemPrompt(quizCount) },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
-          ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60) },
-        ),
-        AI_TIMEOUT_MS,
-        "ai-quiz",
+      AI_TIMEOUT_MS,
+      "ai-materi",
+    );
+    console.log("[ai-generator] materi done, starting quiz...");
+
+    const quizRes = await withTimeout(
+      chatWithFallback(
+        [
+          { role: "system", content: buildQuizSystemPrompt(quizCount) },
+          { role: "user", content: `Materi:\n\n${truncatedSource}` },
+        ],
+        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60) },
       ),
-      withTimeout(
-        chatWithFallback(
-          [
-            { role: "system", content: buildSoalSystemPrompt(soalCount) },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
-          ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, soalCount * 50) },
-        ),
-        AI_TIMEOUT_MS,
-        "ai-soal",
+      AI_TIMEOUT_MS,
+      "ai-quiz",
+    );
+    console.log("[ai-generator] quiz done, starting soal...");
+
+    const soalRes = await withTimeout(
+      chatWithFallback(
+        [
+          { role: "system", content: buildSoalSystemPrompt(soalCount) },
+          { role: "user", content: `Materi:\n\n${truncatedSource}` },
+        ],
+        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2000, soalCount * 150) },
       ),
-    ]);
+      AI_TIMEOUT_MS,
+      "ai-soal",
+    );
+    console.log("[ai-generator] soal done.");
     aiResults = [materiRes, quizRes, soalRes];
   } catch (error) {
     console.error("[ai-generator] upstream AI failed:", error);
