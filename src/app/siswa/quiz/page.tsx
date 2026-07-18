@@ -208,7 +208,7 @@ export default function SiswaQuizListPage() {
                       {q.durasiMenit} menit
                     </span>
                     <span>{q.totalSoal} soal</span>
-                    {q.sudahDikerjakan && q.nilaiTerbaik != null && (
+                    {q.sudahDikerjakan && q.nilaiTerbaik !== null && q.nilaiTerbaik !== undefined && (
                       <span className="text-emerald-700 font-bold">Nilai {q.nilaiTerbaik}</span>
                     )}
                   </div>

@@ -318,7 +318,7 @@ function MateriContent() {
                       <span className="text-[11px] font-bold text-primary tabular-nums">
                         {m.progressPersen > 0
                           ? `${m.progressPersen}%`
-                          : "Baru"}
+                          : "0%"}
                       </span>
                     </div>
                   )}

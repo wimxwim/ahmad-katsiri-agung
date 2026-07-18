@@ -31,6 +31,9 @@ const soal = [
 ];
 
 export default function TestMathPage() {
+  // Test/debug page — do not render in production
+  if (process.env.NODE_ENV === "production") return null;
+
   return (
     <div className="max-w-2xl mx-auto py-8">
       <h1 className="font-heading font-bold text-2xl mb-6">Test Math + RTL</h1>

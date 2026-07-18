@@ -28,10 +28,14 @@ export default function SiswaMateriPage() {
   useEffect(() => {
     if (!id) return;
     fetch(`/api/v1/siswa/materi/${id}`, { credentials: "include" })
-      .then((r) => (r.ok ? r.json() : r.json().then((j) => ({ error: j }))))
+      .then(async (r) => {
+        const j = await r.json();
+        if (r.ok) return j;
+        return { error: j };
+      })
       .then((j) => {
         if (j.error) {
-          setError(j.error.error || "Gagal memuat");
+          setError(j.error?.error || j.error?.message || "Gagal memuat");
         } else {
           setMateri(j.data);
         }

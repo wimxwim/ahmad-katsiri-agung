@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Search, BookOpen } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf";
 
 interface KursusItem {
   id: string;
@@ -18,7 +19,7 @@ export default function NilaiListPage() {
 
   async function fetchData() {
     try {
-      const res = await fetch("/api/v1/kursus", { credentials: "include" });
+      const res = await fetch("/api/v1/kursus", { credentials: "include", headers: { ...csrfHeaders() } });
       if (!res.ok) throw new Error("Gagal memuat data");
       const { data } = await res.json();
       setKursus(data || []);
