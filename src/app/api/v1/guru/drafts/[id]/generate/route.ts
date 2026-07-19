@@ -192,16 +192,6 @@ export async function POST(
     let sourceText = file.extractionText;
 
     if (!sourceText || sourceText.length < 50) {
-      if (file.status === "extracting") {
-        releaseConcurrent(concKey);
-        return NextResponse.json({
-          success: false,
-          error: "Dokumen masih diekstrak. Tunggu beberapa saat lalu coba lagi.",
-          errorCode: "EXTRACTION_IN_PROGRESS",
-          fileStatus: file.status,
-        }, { status: 409 });
-      }
-
       if (!file.imagekitFileId) {
         releaseConcurrent(concKey);
         return NextResponse.json({
