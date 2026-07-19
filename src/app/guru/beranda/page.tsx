@@ -465,6 +465,7 @@ export default function GuruBerandaPage() {
         <div className="flex gap-3">
           <StatRailCard label="Kursus" value={data.totalKursus} icon={BookOpen} color="#005231" />
           <StatRailCard label="Siswa" value={data.totalSiswa} icon={Users} color="#005231" />
+          <StatRailCard label="Kuis Dikerjakan" value={data.totalKuisDikerjakan} icon={FileCheck} color="#005231" />
           <StatRailCard label="Draft AI" value={data.draftMenunggu} icon={FileCheck} color="#5a4200" />
           <StatRailCard label="Materi Terbit" value={data.totalMateriPublished} icon={GraduationCap} color="#005231" />
         </div>

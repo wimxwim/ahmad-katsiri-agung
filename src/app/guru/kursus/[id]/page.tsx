@@ -124,8 +124,8 @@ export default function KursusDetailPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
         <StatCard label="Siswa Terdaftar" value={kursus.enrolledCount ?? siswa.length} icon={Users} color="#005231" />
-        <StatCard label="Quiz Selesai" value={kursus.quizSelesaiCount != null ? Number(kursus.quizSelesaiCount) : "-"} icon={FileText} color="#005231" trend="Segera" />
-        <StatCard label="Rata-rata Skor" value={avgSkor > 0 ? `${avgSkor}%` : "-"} icon={BarChart3} color="#005231" />
+        <StatCard label="Siswa Selesai Quiz" value={kursus.quizSelesaiCount ?? 0} icon={FileText} color="#005231" />
+        <StatCard label="Rata-rata Skor" value={`${avgSkor}%`} icon={BarChart3} color="#005231" />
       </div>
 
       <h2 className="font-heading font-bold text-lg text-on-surface mb-4">Siswa Terdaftar</h2>
@@ -151,13 +151,9 @@ export default function KursusDetailPage() {
                     <td className="px-4 py-3 text-on-surface-variant">{i + 1}</td>
                     <td className="px-4 py-3 font-medium text-on-surface">{s.nama}</td>
                     <td className="px-4 py-3 text-right">
-                      {s.skorRataRata === 0 && siswa.length === 1 ? (
-                        <span className="text-on-surface-variant/40">-</span>
-                      ) : (
-                        <span className={s.skorRataRata < 70 ? "text-red-600 font-medium" : "text-emerald-600 font-medium"}>
-                          {s.skorRataRata}%
-                        </span>
-                      )}
+                      <span className={s.skorRataRata < 70 ? "text-red-600 font-medium" : "text-emerald-600 font-medium"}>
+                        {s.skorRataRata}%
+                      </span>
                     </td>
                   </tr>
                 ))}

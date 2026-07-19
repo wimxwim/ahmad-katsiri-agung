@@ -1,3 +1,6 @@
+// DEPRECATED: This endpoint uses legacy jawabanLog table.
+// Use POST /api/v1/guru/sertifikat/generate instead.
+// Scheduled for removal: 2026-08-01
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { eq, and, inArray } from "drizzle-orm";
@@ -24,6 +27,8 @@ function generateNomorSertifikat(): string {
 export async function POST(request: NextRequest) {
   try {
     const session = await requireRole(request, ["guru", "owner"]);
+
+    console.warn("DEPRECATED: /api/v1/sertifikat/generate uses legacy jawabanLog table. Use /api/v1/guru/sertifikat/generate instead.");
 
     const csrfError = validateCsrf(request);
     if (csrfError) return csrfError;
@@ -109,10 +114,13 @@ export async function POST(request: NextRequest) {
         .where(eq(sertifikat.id, existing.id))
         .returning();
 
-      return NextResponse.json({
+      const res = NextResponse.json({
         data: { nomorSertifikat: updated.nomorSertifikat, qrSecretHash: updated.qrSecretHash },
         message: "sertifikat_pdf_not_ready",
       });
+      res.headers.set("Deprecation", "true");
+      res.headers.set("Sunset", "Sat, 01 Aug 2026 00:00:00 GMT");
+      return res;
     }
 
     const nomorSertifikat = generateNomorSertifikat();
@@ -123,10 +131,13 @@ export async function POST(request: NextRequest) {
       .values({ siswaId, kursusId, nomorSertifikat, qrSecretHash })
       .returning();
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       data: { nomorSertifikat: newSertifikat.nomorSertifikat, qrSecretHash: newSertifikat.qrSecretHash },
       message: "sertifikat_pdf_not_ready",
     }, { status: 201 });
+    res.headers.set("Deprecation", "true");
+    res.headers.set("Sunset", "Sat, 01 Aug 2026 00:00:00 GMT");
+    return res;
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Sertifikat generate error:", e);
