@@ -65,7 +65,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
   const [quizState, setQuizState] = useState<QuizState>("intro");
   const [shuffledSoal, setShuffledSoal] = useState<SoalItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [jawaban, setJawaban] = useState<Record<number, string>>({});
+  const [jawaban, setJawaban] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [showReview, setShowReview] = useState(false);
@@ -102,10 +102,10 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
         const s = selectedRef.current;
         const q = soalRef.current;
         if (s && q) {
-          setJawaban((prev) => ({ ...prev, [q.nomor]: s }));
+          setJawaban((prev) => ({ ...prev, [q.id]: s }));
         }
         if (isianTextRef.current && soalRef.current) {
-          setJawaban((prev) => ({ ...prev, [soalRef.current!.nomor]: isianTextRef.current }));
+          setJawaban((prev) => ({ ...prev, [soalRef.current!.id]: isianTextRef.current }));
         }
         setQuizState("result");
       }
@@ -168,7 +168,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
     if (quiz.modeEvaluasi === "BELAJAR") {
       setShowFeedback(true);
     } else {
-      setJawaban((prev) => ({ ...prev, [soal.nomor]: option }));
+      setJawaban((prev) => ({ ...prev, [soal.id]: option }));
       if (currentIndex < totalSoal - 1) {
         setCurrentIndex((prev) => prev + 1);
       } else {
@@ -183,7 +183,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
     if (quiz.modeEvaluasi === "BELAJAR") {
       setShowFeedback(true);
     } else {
-      setJawaban((prev) => ({ ...prev, [soal.nomor]: isianText.trim() }));
+      setJawaban((prev) => ({ ...prev, [soal.id]: isianText.trim() }));
       if (currentIndex < totalSoal - 1) {
         setCurrentIndex((prev) => prev + 1);
       } else {
@@ -196,7 +196,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
     if (soal) {
       const answer = soal.tipe === "PG" ? selected : isianText.trim();
       if (answer) {
-        setJawaban((prev) => ({ ...prev, [soal.nomor]: answer }));
+        setJawaban((prev) => ({ ...prev, [soal.id]: answer }));
       }
     }
     setSelected(null);
@@ -255,7 +255,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
   const hitungSkor = useCallback(() => {
     let benar = 0;
     for (const s of shuffledSoal) {
-      const jawab = jawaban[s.nomor];
+      const jawab = jawaban[s.id];
       if (!jawab) continue;
       if (s.tipe === "PG") {
         if (jawab === s.kunci) benar++;
@@ -370,7 +370,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
           </div>
           <div className="space-y-6">
             {shuffledSoal.map((s, i) => {
-              const userAnswer = jawaban[s.nomor];
+              const userAnswer = jawaban[s.id];
               const correctAnswer = serverResult?.jawabanBenar[s.id] ?? s.kunci;
               const correct = s.tipe === "PG" ? userAnswer === correctAnswer : userAnswer?.toLowerCase().trim() === correctAnswer.toLowerCase().trim();
               const opsiEntries = Object.entries(s.opsi);
@@ -606,7 +606,7 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
               onClick={() => {
                 if (i === currentIndex) return;
                 if (showFeedback) {
-                  if (selected) setJawaban((prev) => ({ ...prev, [soal.nomor]: selected }));
+                  if (selected) setJawaban((prev) => ({ ...prev, [soal.id]: selected }));
                   setSelected(null);
                   setIsianText("");
                   setShowFeedback(false);
@@ -616,8 +616,8 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
               className={cn(
                 "w-10 h-10 min-w-[44px] min-h-[44px] rounded-full text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden",
                 i === currentIndex && "bg-primary text-white scale-110",
-                i !== currentIndex && jawaban[s.nomor] && "bg-emerald-100 text-emerald-700 border border-emerald-300",
-                i !== currentIndex && !jawaban[s.nomor] && "bg-surface text-on-surface-variant border border-border-precision",
+                i !== currentIndex && jawaban[s.id] && "bg-emerald-100 text-emerald-700 border border-emerald-300",
+                i !== currentIndex && !jawaban[s.id] && "bg-surface text-on-surface-variant border border-border-precision",
               )}
             >
               {i + 1}

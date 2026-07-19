@@ -34,11 +34,11 @@ function getApiKey(): string {
 }
 
 export function getModelName(): string {
-  return process.env.AI_MODEL || "deepseek-v4-flash-bynara";
+  return process.env.AI_MODEL || "deepseek-v4-flash";
 }
 
 export function getFlashModel(): string {
-  return process.env.AI_FLASH_MODEL || "deepseek-v4-flash-bynara";
+  return process.env.AI_FLASH_MODEL || "deepseek-v4-flash";
 }
 
 export type AiTaskComplexity = "heavy" | "light";

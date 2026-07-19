@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SignJWT } from "jose";
-import { randomUUID } from "crypto";
-import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
-import { apiError, apiRateLimit } from "@/lib/api-response";
-import { db } from "@/lib/db";
-import { kursus, inviteTokens } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { hs256Secret } from "@/lib/auth-keys";
+import { requireNotSuspended } from "@/lib/token-service";
+import { apiError, apiRateLimit } from "@/lib/api-response";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
+import { db } from "@/lib/db";
+import { kursus } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
+import crypto from "crypto";
 import { validateCsrf } from "@/lib/csrf-server";
+
+export const dynamic = "force-dynamic";
+
+function generateKode(): string {
+  return crypto.randomBytes(6).toString("base64url").slice(0, 8);
+}
 
 export async function POST(
   request: NextRequest,
@@ -18,47 +23,36 @@ export async function POST(
     const csrfError = validateCsrf(request);
     if (csrfError) return csrfError;
     const session = await requireGuru(request);
+    await requireNotSuspended(session.userId);
 
-    const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`kursus-invite:${ip}`, 10, 60_000);
+    const rl = await checkRateLimitPerUser(`kursus-invite:${session.userId}`, 10, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const { id } = await params;
 
     const [k] = await db
-      .select({ id: kursus.id, judul: kursus.judul, guruId: kursus.guruId })
+      .select()
       .from(kursus)
       .where(and(eq(kursus.id, id), eq(kursus.guruId, session.userId)))
       .limit(1);
+
     if (!k) return apiError("Kursus tidak ditemukan", 404);
 
-    const tokenJti = randomUUID();
-    const token = await new SignJWT({
-      kursusId: k.id,
-      guruId: k.guruId,
-      action: "enroll",
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setIssuedAt()
-      .setExpirationTime("24h")
-      .setJti(tokenJti)
-      .sign(hs256Secret());
+    const now = new Date();
+    const kodeExpired = k.kodeInvite && k.inviteExpiresAt && new Date(k.inviteExpiresAt) < now;
+    const kode = !kodeExpired ? k.kodeInvite || generateKode() : generateKode();
 
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const [saved] = await db
-      .insert(inviteTokens)
-      .values({
-        kursusId: k.id,
-        guruId: session.userId,
-        jti: tokenJti,
-        expiresAt,
-      })
-      .returning();
+    if (!k.kodeInvite || kodeExpired) {
+      await db
+        .update(kursus)
+        .set({ kodeInvite: kode, inviteExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) })
+        .where(eq(kursus.id, id));
+    }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin;
-    const inviteLink = `${baseUrl}/undang?token=${token}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://akalcenter.my.id";
+    const inviteLink = `${baseUrl}/undang/${kode}`;
 
-    return NextResponse.json({ data: { token, inviteLink, kursusJudul: k.judul, inviteTokenId: saved.id } });
+    return NextResponse.json({ success: true, data: { kode, inviteLink } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Kursus invite error:", e);

@@ -16,8 +16,8 @@ interface MasteryChartProps {
 }
 
 function masteryLabel(pL: number): { label: string; color: string } {
-  if (pL >= 0.8) return { label: "Dikuasai", color: "bg-emerald-500" };
-  if (pL >= 0.6) return { label: "Dalam Proses", color: "bg-amber-400" };
+  if (pL >= 0.7) return { label: "Dikuasai", color: "bg-emerald-500" };
+  if (pL >= 0.5) return { label: "Dalam Proses", color: "bg-amber-400" };
   return { label: "Perlu Remedial", color: "bg-red-400" };
 }
 

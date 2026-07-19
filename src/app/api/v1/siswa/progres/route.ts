@@ -63,9 +63,10 @@ export async function GET(request: NextRequest) {
       .from(siswaKursus)
       .where(and(eq(siswaKursus.siswaId, session.userId!), eq(siswaKursus.status, "AKTIF")));
 
-    const totalRata = attempts.length > 0
+    const completedAttempts = attempts.filter((a) => a.status === "SELESAI" || a.status === "BELAJAR");
+    const totalRata = completedAttempts.length > 0
       ? Math.round(
-          attempts.reduce((sum, a) => sum + (a.nilai ?? 0), 0) / attempts.length,
+          completedAttempts.reduce((sum, a) => sum + (a.nilai ?? 0), 0) / completedAttempts.length,
         )
       : 0;
     const totalSelesai = attempts.filter((a) => a.status === "SELESAI" || a.status === "BELAJAR").length;

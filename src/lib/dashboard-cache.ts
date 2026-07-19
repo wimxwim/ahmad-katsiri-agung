@@ -13,9 +13,11 @@ import {
   skill,
   quotas,
   quotaUsages,
+  users,
 } from "@/lib/db/schema";
-import { and, eq, sql, desc, inArray } from "drizzle-orm";
+import { and, eq, sql, desc, inArray, isNull } from "drizzle-orm";
 import { calculateRiskScore, getRiskLabel } from "@/lib/analytics/calculateRiskScore";
+import { KKM } from "@/lib/constants";
 
 export interface DashboardSummary {
   totalKursus: number;
@@ -79,7 +81,8 @@ export async function computeSummary(guruId: string): Promise<DashboardSummary> 
         .selectDistinct({ siswaId: siswaKursus.siswaId })
         .from(siswaKursus)
         .innerJoin(kursus, eq(siswaKursus.kursusId, kursus.id))
-        .where(eq(kursus.guruId, guruId)),
+        .innerJoin(users, and(eq(siswaKursus.siswaId, users.id), isNull(users.deletedAt)))
+        .where(and(eq(kursus.guruId, guruId), eq(siswaKursus.status, "AKTIF"))),
 
       db
         .select({ id: quizPublished.id, kursusId: quizPublished.kursusId })
@@ -187,7 +190,7 @@ export async function computeAnalytics(guruId: string): Promise<DashboardAnalyti
           .select({
             siswaId: quizAttempt.siswaId,
             total: sql<number>`cast(count(*) as integer)`,
-            benar: sql<number>`cast(sum(case when ${quizAttempt.nilai} >= 70 then 1 else 0 end) as integer)`,
+            benar: sql<number>`cast(sum(case when ${quizAttempt.nilai} >= ${KKM} then 1 else 0 end) as integer)`,
           })
           .from(quizAttempt)
           .where(inArray(quizAttempt.siswaId, enrolledSiswaIds))
@@ -208,7 +211,7 @@ export async function computeAnalytics(guruId: string): Promise<DashboardAnalyti
         const lastLogin = loginMap.get(siswaId);
         const loginGap = lastLogin ? Math.max(0, (now - new Date(lastLogin).getTime()) / DAY_MS) : 30;
         const risk = calculateRiskScore({
-          completionRate: quizPerf,
+          completionRate: qs && qs.total > 0 ? 1 : 0,
           quizPerformance: quizPerf,
           attendanceRate: 0.5,
           loginGap,

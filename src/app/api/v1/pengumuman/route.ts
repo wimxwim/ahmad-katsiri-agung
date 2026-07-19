@@ -6,7 +6,7 @@ import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { requireRole, GuardError } from "@/lib/route-guard-v2";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { pengumuman } from "@/lib/db/schema";
+import { pengumuman, kursus } from "@/lib/db/schema";
 import { desc, eq, or, and, gte, sql } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -79,6 +79,16 @@ export async function POST(request: NextRequest) {
   const { judul, konten, target = "SEMUA", kursusId, expiresAt, isPinned = false } = parsed.data;
 
   if (!session.userId) return apiError("Session tidak valid", 401);
+
+  if (kursusId && session.role !== "owner") {
+    const [k] = await db
+      .select({ guruId: kursus.guruId })
+      .from(kursus)
+      .where(eq(kursus.id, kursusId))
+      .limit(1);
+    if (!k) return apiError("Kursus tidak ditemukan", 404);
+    if (k.guruId !== session.userId) return apiError("Anda tidak memiliki akses ke kursus ini", 403);
+  }
 
   const [row] = await db
     .insert(pengumuman)

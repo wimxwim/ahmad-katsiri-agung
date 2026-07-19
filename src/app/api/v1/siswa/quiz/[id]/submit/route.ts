@@ -104,13 +104,14 @@ export async function POST(
 
     for (const s of soals) {
       const questionNumber = s.urutan || soals.indexOf(s) + 1;
-      totalPoin += s.poin || 1;
       const userAnswer = parsed.data.jawaban[s.id];
       const correctAnswer = s.kunci;
       let isCorrect = false;
       if (s.tipe === "PG") {
+        totalPoin += s.poin || 1;
         isCorrect = typeof userAnswer === "string" && userAnswer.toUpperCase() === correctAnswer.toUpperCase();
       } else if (s.tipe === "ISIAN") {
+        totalPoin += s.poin || 1;
         const u = typeof userAnswer === "string" ? userAnswer.trim().toLowerCase() : "";
         const c = correctAnswer.trim().toLowerCase();
         isCorrect = u === c;
@@ -121,9 +122,7 @@ export async function POST(
       if (isCorrect) {
         jumlahBenar += 1;
         totalPoinDiperoleh += s.poin || 1;
-      } else if (s.tipe !== "PG" && s.tipe !== "ISIAN") {
-        jumlahSalah += 0;
-      } else {
+      } else if (s.tipe === "PG" || s.tipe === "ISIAN") {
         jumlahSalah += 1;
         weakAreas.push(questionNumber);
       }

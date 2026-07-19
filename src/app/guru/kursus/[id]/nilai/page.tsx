@@ -33,19 +33,21 @@ export default function KursusNilaiPage() {
       setKursusNama(kd.data?.judul || "");
 
       const nd = await nilaiRes.json().catch(() => ({ data: [] }));
-      const logEntries = (nd.data || []) as { siswaId: string; nama: string; isBenar: boolean }[];
-      const aggregated = new Map<string, { nama: string; benar: number; total: number }>();
+      const logEntries = (nd.data || []) as { siswaId: string; nama: string; nilai: number | null }[];
+      const aggregated = new Map<string, { nama: string; totalNilai: number; count: number }>();
       for (const entry of logEntries) {
         const key = entry.siswaId;
-        const existing = aggregated.get(key) || { nama: entry.nama, benar: 0, total: 0 };
-        if (entry.isBenar) existing.benar++;
-        existing.total++;
+        const existing = aggregated.get(key) || { nama: entry.nama, totalNilai: 0, count: 0 };
+        if (entry.nilai !== null && entry.nilai !== undefined) {
+          existing.totalNilai += entry.nilai;
+          existing.count++;
+        }
         aggregated.set(key, existing);
       }
       const list: { siswaId: string; nama: string; skorRataRata: number }[] = [];
       for (const [siswaId, v] of aggregated) {
-        const pct = v.total > 0 ? Math.round((v.benar / v.total) * 100) : 0;
-        list.push({ siswaId, nama: v.nama, skorRataRata: pct });
+        const avg = v.count > 0 ? Math.round(v.totalNilai / v.count) : 0;
+        list.push({ siswaId, nama: v.nama, skorRataRata: avg });
       }
       list.sort((a, b) => a.nama.localeCompare(b.nama));
       setSiswaData(list);

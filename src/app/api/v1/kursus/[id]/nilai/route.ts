@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { jawabanLog, users, kursus, quizSession } from "@/lib/db/schema";
-import { and, eq, isNull } from "drizzle-orm";
+import { quizAttempt, quizPublished, users, kursus } from "@/lib/db/schema";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { requireRole, GuardError } from "@/lib/route-guard-v2";
 
@@ -27,40 +27,58 @@ export async function GET(
 
     if (!isOwner && !isGuruOfCourse) {
       if (session.role === "murid") {
-        const logs = await db
+        const attempts = await db
           .select({
-            id: jawabanLog.id,
-            siswaId: jawabanLog.siswaId,
-            soalId: jawabanLog.soalId,
-            isBenar: jawabanLog.isBenar,
-            createdAt: jawabanLog.createdAt,
+            id: quizAttempt.id,
+            siswaId: quizAttempt.siswaId,
+            nilai: quizAttempt.nilai,
+            jumlahBenar: quizAttempt.jumlahBenar,
+            jumlahSalah: quizAttempt.jumlahSalah,
+            durasiDetik: quizAttempt.durasiDetik,
+            waktuSelesai: quizAttempt.waktuSelesai,
+            status: quizAttempt.status,
+            quizJudul: quizPublished.judul,
             nama: users.nama,
           })
-          .from(jawabanLog)
-          .innerJoin(quizSession, eq(jawabanLog.quizSessionId, quizSession.id))
-          .leftJoin(users, and(eq(jawabanLog.siswaId, users.id), isNull(users.deletedAt)))
-.where(and(eq(quizSession.kursusId, id), eq(jawabanLog.siswaId, session.userId)));
-        const filtered = logs.filter((l) => l.siswaId === session.userId);
-        return NextResponse.json({ data: filtered, total: filtered.length });
+          .from(quizAttempt)
+          .innerJoin(quizPublished, eq(quizAttempt.quizPublishedId, quizPublished.id))
+          .leftJoin(users, and(eq(quizAttempt.siswaId, users.id), isNull(users.deletedAt)))
+          .where(and(eq(quizPublished.kursusId, id), eq(quizAttempt.siswaId, session.userId)));
+        return NextResponse.json({ data: attempts, total: attempts.length });
       }
       return apiError("Anda tidak memiliki akses ke kursus ini", 403);
     }
 
-    const logs = await db
+    const quizList = await db
+      .select({ id: quizPublished.id })
+      .from(quizPublished)
+      .where(eq(quizPublished.kursusId, id));
+
+    const quizIds = quizList.map((q) => q.id);
+
+    if (quizIds.length === 0) {
+      return NextResponse.json({ data: [], total: 0 });
+    }
+
+    const attempts = await db
       .select({
-        id: jawabanLog.id,
-        siswaId: jawabanLog.siswaId,
-        soalId: jawabanLog.soalId,
-        isBenar: jawabanLog.isBenar,
-        createdAt: jawabanLog.createdAt,
+        id: quizAttempt.id,
+        siswaId: quizAttempt.siswaId,
+        nilai: quizAttempt.nilai,
+        jumlahBenar: quizAttempt.jumlahBenar,
+        jumlahSalah: quizAttempt.jumlahSalah,
+        durasiDetik: quizAttempt.durasiDetik,
+        waktuSelesai: quizAttempt.waktuSelesai,
+        status: quizAttempt.status,
+        quizJudul: quizPublished.judul,
         nama: users.nama,
       })
-      .from(jawabanLog)
-      .innerJoin(quizSession, eq(jawabanLog.quizSessionId, quizSession.id))
-      .leftJoin(users, and(eq(jawabanLog.siswaId, users.id), isNull(users.deletedAt)))
-      .where(eq(quizSession.kursusId, id));
+      .from(quizAttempt)
+      .innerJoin(quizPublished, eq(quizAttempt.quizPublishedId, quizPublished.id))
+      .leftJoin(users, and(eq(quizAttempt.siswaId, users.id), isNull(users.deletedAt)))
+      .where(inArray(quizAttempt.quizPublishedId, quizIds));
 
-    return NextResponse.json({ data: logs, total: logs.length });
+    return NextResponse.json({ data: attempts, total: attempts.length });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Nilai error:", e);

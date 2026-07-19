@@ -4,7 +4,7 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { users, siswaKursus, materiPublished, materiRead, quizAttempt, quizPublished, pengumuman } from "@/lib/db/schema";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, and, inArray } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       const [nr] = await db
         .select({ avg: sql<number>`round(avg(${quizAttempt.nilai}))`.mapWith(Number) })
         .from(quizAttempt)
-        .where(eq(quizAttempt.siswaId, siswaId));
+        .where(and(eq(quizAttempt.siswaId, siswaId), inArray(quizAttempt.status, ["SELESAI", "BELAJAR"])));
       nilaiRata = nr?.avg ?? null;
 
       const [qt] = await db

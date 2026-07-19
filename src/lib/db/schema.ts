@@ -111,6 +111,8 @@ export const kursus = pgTable(
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
+    kodeInvite: varchar("kode_invite", { length: 8 }),
+    inviteExpiresAt: timestamp("invite_expires_at", { withTimezone: true }),
   },
   (table) => [
     unique("kursus_slug_sekolah_unique").on(table.slug, table.sekolahId),

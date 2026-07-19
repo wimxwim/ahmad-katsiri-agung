@@ -173,11 +173,21 @@ export async function POST(
       throw e;
     }
 
-    const sp = request.nextUrl.searchParams;
-    const rawSoal = sp.get("soalCount");
-    const rawQuiz = sp.get("quizCount");
-    const soalCount = rawSoal ? Math.min(50, Math.max(5, parseInt(rawSoal, 10) || 35)) : 35;
-    const quizCount = rawQuiz ? Math.min(15, Math.max(5, parseInt(rawQuiz, 10) || 5)) : 5;
+    let soalCount = 35;
+    let quizCount = 5;
+    try {
+      const body = await request.clone().json().catch(() => null);
+      if (body && typeof body === "object") {
+        const pg = typeof body.pgCount === "number" ? body.pgCount : 0;
+        const isian = typeof body.isianCount === "number" ? body.isianCount : 0;
+        const essay = typeof body.essayCount === "number" ? body.essayCount : 0;
+        const totalFromBody = pg + isian + essay;
+        if (totalFromBody > 0) soalCount = Math.min(50, Math.max(5, totalFromBody));
+        if (typeof body.quizCount === "number" && body.quizCount > 0) quizCount = Math.min(15, Math.max(5, body.quizCount));
+      }
+    } catch {
+      // fallback to defaults
+    }
 
     let sourceText = file.extractionText;
 

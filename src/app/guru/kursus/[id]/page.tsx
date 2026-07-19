@@ -36,18 +36,20 @@ export default function KursusDetailPage() {
         const kursusData = await kursusRes.json();
         setKursus(kursusData.data);
         const nilaiData = await nilaiRes.json().catch(() => ({ data: [] }));
-        const logEntries: { siswaId: string; nama: string; isBenar: boolean }[] = nilaiData.data || [];
-        const siswaMap = new Map<string, { nama: string; benar: number; total: number }>();
+        const logEntries: { siswaId: string; nama: string; nilai: number | null }[] = nilaiData.data || [];
+        const siswaMap = new Map<string, { nama: string; totalNilai: number; count: number }>();
         for (const entry of logEntries) {
           const key = entry.siswaId;
-          const existing = siswaMap.get(key) || { nama: entry.nama, benar: 0, total: 0 };
-          if (entry.isBenar) existing.benar++;
-          existing.total++;
+          const existing = siswaMap.get(key) || { nama: entry.nama, totalNilai: 0, count: 0 };
+          if (entry.nilai !== null && entry.nilai !== undefined) {
+            existing.totalNilai += entry.nilai;
+            existing.count++;
+          }
           siswaMap.set(key, existing);
         }
         const siswaList: SiswaItem[] = [];
         for (const [siswaId, v] of siswaMap) {
-          siswaList.push({ siswaId, nama: v.nama, skorRataRata: v.total > 0 ? Math.round((v.benar / v.total) * 100) : 0 });
+          siswaList.push({ siswaId, nama: v.nama, skorRataRata: v.count > 0 ? Math.round(v.totalNilai / v.count) : 0 });
         }
         setSiswa(siswaList);
       } catch (err) {

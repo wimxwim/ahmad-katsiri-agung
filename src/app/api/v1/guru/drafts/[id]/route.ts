@@ -20,7 +20,34 @@ export async function GET(
 
     const { id } = await params;
     const [row] = await db
-      .select({ id: aiGeneration.id, guruId: aiGeneration.guruId, fileMateriId: aiGeneration.fileMateriId, status: aiGeneration.status, materiStatus: aiGeneration.materiStatus, quizStatus: aiGeneration.quizStatus, soalStatus: aiGeneration.soalStatus, materiKonten: aiGeneration.materiKonten, quizSoal: aiGeneration.quizSoal, soalItems: aiGeneration.soalItems, sourceFileName: aiGeneration.sourceFileName, createdAt: aiGeneration.createdAt, updatedAt: aiGeneration.updatedAt, errorMessage: aiGeneration.errorMessage })
+      .select({
+        id: aiGeneration.id,
+        guruId: aiGeneration.guruId,
+        fileMateriId: aiGeneration.fileMateriId,
+        status: aiGeneration.status,
+        materiStatus: aiGeneration.materiStatus,
+        quizStatus: aiGeneration.quizStatus,
+        soalStatus: aiGeneration.soalStatus,
+        materiJudul: aiGeneration.materiJudul,
+        materiKonten: aiGeneration.materiKonten,
+        materiEditedKonten: aiGeneration.materiEditedKonten,
+        materiApprovedAt: aiGeneration.materiApprovedAt,
+        quizJudul: aiGeneration.quizJudul,
+        quizSoal: aiGeneration.quizSoal,
+        quizEditedSoal: aiGeneration.quizEditedSoal,
+        quizApprovedAt: aiGeneration.quizApprovedAt,
+        soalItems: aiGeneration.soalItems,
+        soalEditedItems: aiGeneration.soalEditedItems,
+        soalApprovedAt: aiGeneration.soalApprovedAt,
+        publishedAt: aiGeneration.publishedAt,
+        sourceFileName: aiGeneration.sourceFileName,
+        tokenInput: aiGeneration.tokenInput,
+        tokenOutput: aiGeneration.tokenOutput,
+        modelName: aiGeneration.modelName,
+        createdAt: aiGeneration.createdAt,
+        updatedAt: aiGeneration.updatedAt,
+        errorMessage: aiGeneration.errorMessage,
+      })
       .from(aiGeneration)
       .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)))
       .limit(1);

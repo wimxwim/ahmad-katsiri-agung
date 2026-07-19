@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       .selectDistinct({ siswaId: siswaKursus.siswaId })
       .from(siswaKursus)
       .innerJoin(kursus, eq(siswaKursus.kursusId, kursus.id))
-      .where(eq(kursus.guruId, guruId)),
+      .where(and(eq(kursus.guruId, guruId), eq(siswaKursus.status, "AKTIF"))),
     db
       .select({ id: eventStore.id })
       .from(eventStore)
