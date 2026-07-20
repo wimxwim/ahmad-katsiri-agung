@@ -49,6 +49,14 @@ export async function POST(
       );
     }
 
+    // Idempotency check: prevent double-click from re-publishing
+    if (row.status === "approved") {
+      return NextResponse.json({
+        success: true,
+        data: { redirectTo: `/guru/drafts/${id}/published` },
+      });
+    }
+
     const rl = await checkRateLimit(`draft-close:${session.userId}`, 20, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
@@ -60,7 +68,9 @@ export async function POST(
     const materiKontenFinal = sanitizeText(row.materiEditedKonten ?? row.materiKonten ?? "", 50_000);
     const materiJudulFinal = sanitizeText(row.materiJudul || "Materi tanpa judul", 200);
 
-    const updated = await db.transaction(async (tx) => {
+    let updated;
+    try {
+      updated = await db.transaction(async (tx) => {
       let materiId: string | null = null;
       let quizId: string | null = null;
 
@@ -79,6 +89,7 @@ export async function POST(
             ringkasan: sanitizeText(ringkasan, 250),
           })
           .returning({ id: materiPublished.id });
+        if (!m?.id) throw new Error("Gagal insert materiPublished");
         materiId = m.id;
 
         await tx.insert(materiSharing).values({
@@ -100,6 +111,7 @@ export async function POST(
             durasiMenit: 20,
           })
           .returning({ id: quizPublished.id });
+        if (!q?.id) throw new Error("Gagal insert quizPublished");
         quizId = q.id;
 
         const items = (row.quizEditedSoal ?? row.quizSoal) as Array<{
@@ -109,15 +121,16 @@ export async function POST(
           kunci: string;
         }>;
         if (items.length > 0) {
+          const validTypes = ["PG", "ISIAN", "ESSAY"];
           await tx.insert(soalPublished).values(
             items.map((s, i) => ({
               aiGenerationId: row.id,
               quizPublishedId: quizId!,
               urutan: i,
-              pertanyaan: s.pertanyaan,
-              tipe: s.tipe,
+              pertanyaan: s.pertanyaan || "Soal tidak tersedia",
+              tipe: validTypes.includes(s.tipe) ? s.tipe : "PG",
               pilihanGanda: s.opsi ?? null,
-              kunci: s.kunci,
+              kunci: s.kunci || "A",
               poin: 1,
             })),
           );
@@ -132,15 +145,16 @@ export async function POST(
           kunci: string;
         }>;
         if (items.length > 0) {
+          const validTypes = ["PG", "ISIAN", "ESSAY"];
           await tx.insert(soalPublished).values(
             items.map((s, i) => ({
               aiGenerationId: row.id,
               quizPublishedId: null,
               urutan: i,
-              pertanyaan: s.pertanyaan,
-              tipe: s.tipe,
+              pertanyaan: s.pertanyaan || "Soal tidak tersedia",
+              tipe: validTypes.includes(s.tipe) ? s.tipe : "PG",
               pilihanGanda: s.opsi ?? null,
-              kunci: s.kunci,
+              kunci: s.kunci || "A",
               poin: 1,
             })),
           );
@@ -173,6 +187,16 @@ export async function POST(
 
       return updated;
     });
+    } catch (err: any) {
+      console.error("Close review error:", err);
+      if (err?.code === "23505") {
+        return apiError("Draft sudah diterbitkan sebelumnya. Refresh halaman.", 409);
+      }
+      if (err?.code === "22P02" || err?.code === "23503") {
+        return apiError("Data tidak valid. Coba generate ulang konten.", 400);
+      }
+      return apiError("Gagal menerbitkan draft. Coba lagi.", 500);
+    }
 
     await appendEvent(`gen:${session.userId}`, "gen.review_closed", {
       generationId: id,

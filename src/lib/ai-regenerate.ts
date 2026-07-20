@@ -228,7 +228,7 @@ export async function regenerateQuizOnly(generationId: string): Promise<void> {
       quizApprovedAt: null,
       tokenInput: newTokenInput,
       tokenOutput: newTokenOutput,
-      modelName: quizRes.model,
+      modelName: typeof quizRes.model === 'string' ? quizRes.model : String(quizRes.model ?? 'unknown'),
       updatedAt: new Date(),
     })
     .where(eq(aiGeneration.id, generationId));
@@ -353,7 +353,7 @@ export async function regenerateSoalOnly(generationId: string): Promise<void> {
       soalApprovedAt: null,
       tokenInput: newTokenInput,
       tokenOutput: newTokenOutput,
-      modelName: soalRes.model,
+      modelName: typeof soalRes.model === 'string' ? soalRes.model : String(soalRes.model ?? 'unknown'),
       updatedAt: new Date(),
     })
     .where(eq(aiGeneration.id, generationId));

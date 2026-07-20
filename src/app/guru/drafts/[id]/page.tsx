@@ -252,7 +252,7 @@ useEffect(() => {
                 Detail teknis
               </summary>
               <p className="text-xs text-on-surface-variant/60 mt-1">
-                Model: {draft.modelName}
+                Model: {typeof draft.modelName === 'string' ? draft.modelName : (draft.modelName && typeof draft.modelName === 'object' ? JSON.stringify(draft.modelName) : 'Tidak diketahui')}
                 {draft.tokenInput != null && draft.tokenOutput != null && (
                   <span> · {draft.tokenInput + draft.tokenOutput} token</span>
                 )}
