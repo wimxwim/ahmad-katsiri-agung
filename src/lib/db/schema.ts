@@ -262,7 +262,7 @@ export const jawabanLog = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     soalId: uuid("soal_id")
       .notNull()
-      .references(() => soal.id, { onDelete: "cascade" }),
+      .references(() => soalPublished.id, { onDelete: "cascade" }),
     sekolahId: uuid("sekolah_id").references(() => sekolah.id),
     jawabanSiswa: text("jawaban_siswa").notNull(),
     isBenar: boolean("is_benar").notNull(),
@@ -710,9 +710,9 @@ export const jawabanLogRelations = relations(jawabanLog, ({ one }) => ({
     fields: [jawabanLog.siswaId],
     references: [users.id],
   }),
-  soal: one(soal, {
+  soalPublished: one(soalPublished, {
     fields: [jawabanLog.soalId],
-    references: [soal.id],
+    references: [soalPublished.id],
   }),
   quizSession: one(quizSession, {
     fields: [jawabanLog.quizSessionId],
