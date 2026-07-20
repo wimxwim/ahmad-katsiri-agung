@@ -14,9 +14,11 @@ import {
   quotas,
   quotaUsages,
   users,
+  teacherReadinessSnapshot,
 } from "@/lib/db/schema";
 import { and, eq, sql, desc, inArray, isNull } from "drizzle-orm";
 import { calculateRiskScore, getRiskLabel } from "@/lib/analytics/calculateRiskScore";
+import { getTRILabel } from "@/lib/analytics/calculateTRI";
 import { KKM } from "@/lib/constants";
 
 export interface DashboardSummary {
@@ -43,6 +45,10 @@ export interface DashboardData extends DashboardSummary {
   weakTopics: { pertanyaan: string; errorRate: number; totalJawab: number }[];
   siswaBerisiko: number;
   siswaKritis: number;
+  triScore?: number;
+  triLabel?: string;
+  triKomponen?: Record<string, number>;
+  triSnapshotDate?: string;
 }
 
 export async function getCachedDashboard(guruId: string): Promise<DashboardData> {
@@ -59,7 +65,26 @@ export async function getCachedDashboard(guruId: string): Promise<DashboardData>
     await cacheSet(analyticsK, analytics, 900);
   }
 
-  const data: DashboardData = { ...summary, ...analytics };
+  // Get latest TRI snapshot
+  const [latestTri] = await db
+    .select({
+      triScore: teacherReadinessSnapshot.triScore,
+      komponen: teacherReadinessSnapshot.komponen,
+      snapshotDate: teacherReadinessSnapshot.snapshotDate,
+    })
+    .from(teacherReadinessSnapshot)
+    .where(eq(teacherReadinessSnapshot.guruId, guruId))
+    .orderBy(desc(teacherReadinessSnapshot.snapshotDate))
+    .limit(1);
+
+  const data: DashboardData = {
+    ...summary,
+    ...analytics,
+    triScore: latestTri?.triScore ?? undefined,
+    triLabel: latestTri ? getTRILabel(latestTri.triScore) : undefined,
+    triKomponen: latestTri?.komponen as Record<string, number> ?? undefined,
+    triSnapshotDate: latestTri?.snapshotDate?.toISOString() ?? undefined,
+  };
   await cacheSet(k, data, 90);
   return data;
 }
