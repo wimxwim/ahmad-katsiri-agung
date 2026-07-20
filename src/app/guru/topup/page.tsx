@@ -377,7 +377,7 @@ export default function GuruTopupPage() {
               <>
                 <div className="relative rounded-2xl overflow-hidden bg-white border border-border-precision mb-4">
                   <img
-                    src={plans?.qrisImageUrl ?? "/qris-gopay.webp"}
+                    src={plans?.qrisImageUrl ?? "/qris-gopay.png"}
                     alt="QRIS GoPay"
                     className="w-full max-w-[280px] mx-auto p-4"
                   />

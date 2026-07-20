@@ -95,7 +95,7 @@ export default function PembayaranPage() {
 
           <div className="bg-white rounded-2xl p-4 border border-border-precision mb-6 flex justify-center">
             <Image
-              src="/qris-gopay.webp"
+              src="/qris-gopay.png"
               alt="QRIS GoPay"
               width={280}
               height={280}

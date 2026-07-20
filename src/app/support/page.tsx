@@ -123,7 +123,7 @@ export default function SupportPage() {
 
           <div className="bg-white/80 rounded-2xl p-4 border border-border-precision max-w-xs mx-auto">
             <img
-              src="/qris-gopay.webp"
+              src="/qris-gopay.png"
               alt="QRIS GoPay"
               className="w-full h-auto rounded-xl"
             />

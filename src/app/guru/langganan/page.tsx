@@ -292,7 +292,7 @@ export default function GuruLanggananPage() {
 
             <div className="relative rounded-2xl overflow-hidden bg-white border border-border-precision mb-6">
               <img
-                src="/qris-gopay.webp"
+                src="/qris-gopay.png"
                 alt="QRIS GoPay"
                 className="w-full max-w-[280px] mx-auto p-4"
               />

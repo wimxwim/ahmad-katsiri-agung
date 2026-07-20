@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       plans: TOPUP_PLANS,
       minCustom: MIN_TOPUP,
       maxCustom: MAX_TOPUP,
-      qrisImageUrl: "/qris-gopay.webp",
+      qrisImageUrl: "/qris-gopay.png",
     });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
