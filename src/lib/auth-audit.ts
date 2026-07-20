@@ -18,7 +18,10 @@ export type AuthEventType =
   | "auth.logout"
   | "auth.intent_mismatch"
   | "auth.google.linked"
-  | "auth.password.set";
+  | "auth.password.set"
+  | "auth.forgot_password.attempt"
+  | "auth.forgot_password.requested"
+  | "auth.password.reset";
 
 interface AuthLogOptions {
   userId?: string;
@@ -27,6 +30,7 @@ interface AuthLogOptions {
   ip?: string;
   reason?: string;
   method?: "password" | "google" | "csv_import";
+  emailSent?: boolean;
 }
 
 export async function logAuthEvent(
@@ -43,6 +47,7 @@ export async function logAuthEvent(
     ...(options.method ? { method: options.method } : {}),
     ...(options.ip ? { ipMasked: maskIp(options.ip) } : {}),
     ...(options.reason ? { reason: options.reason } : {}),
+    ...(options.emailSent !== undefined ? { emailSent: options.emailSent } : {}),
   };
   try {
     await appendEvent(streamId, eventType, payload);

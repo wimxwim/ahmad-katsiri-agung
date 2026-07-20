@@ -50,6 +50,11 @@ export function FormLoginSiswa({
         </label>
         <PasswordInput />
       </div>
+      <div className="text-right">
+        <Link href="/lupa-password" className="text-xs text-on-surface-variant hover:text-primary transition-colors">
+          Lupa password?
+        </Link>
+      </div>
       <ErrorAlert message={error} />
       {noPassword && (
         <button

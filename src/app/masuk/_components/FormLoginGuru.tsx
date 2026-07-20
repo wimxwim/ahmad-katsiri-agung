@@ -39,6 +39,11 @@ export function FormLoginGuru({ redirectTo, onSubmit, onBack, error, loading, no
         <label className="block text-sm font-semibold text-on-surface mb-1.5">Kata Sandi</label>
         <PasswordInput />
       </div>
+      <div className="text-right">
+        <Link href="/lupa-password" className="text-xs text-on-surface-variant hover:text-primary transition-colors">
+          Lupa password?
+        </Link>
+      </div>
       <ErrorAlert message={error} />
       {noPassword && (
         <button

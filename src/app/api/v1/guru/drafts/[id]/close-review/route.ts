@@ -68,13 +68,37 @@ export async function POST(
     const materiKontenFinal = sanitizeText(row.materiEditedKonten ?? row.materiKonten ?? "", 50_000);
     const materiJudulFinal = sanitizeText(row.materiJudul || "Materi tanpa judul", 200);
 
+    // Pre-check: if materiPublished already exists for this draft, skip materi insert
+    const [existingMateri] = await db
+      .select({ id: materiPublished.id })
+      .from(materiPublished)
+      .where(eq(materiPublished.aiGenerationId, id))
+      .limit(1);
+    const skipMateri = !!existingMateri;
+
+    // Pre-check: if quizPublished already exists for this draft
+    const [existingQuiz] = await db
+      .select({ id: quizPublished.id })
+      .from(quizPublished)
+      .where(eq(quizPublished.aiGenerationId, id))
+      .limit(1);
+    const skipQuiz = !!existingQuiz;
+
+    // Pre-check: if soalPublished already exists for this draft (standalone soals)
+    const [existingSoal] = await db
+      .select({ id: soalPublished.id })
+      .from(soalPublished)
+      .where(eq(soalPublished.aiGenerationId, id))
+      .limit(1);
+    const skipSoal = !!existingSoal;
+
     let updated;
     try {
       updated = await db.transaction(async (tx) => {
       let materiId: string | null = null;
       let quizId: string | null = null;
 
-      if (row.materiStatus === "approved" && materiKontenFinal.length > 0 && row.kursusId) {
+      if (!skipMateri && row.materiStatus === "approved" && materiKontenFinal.length > 0 && row.kursusId) {
         const ringkasan = (row.materiEditedKonten ?? row.materiKonten ?? "").length > 200
           ? (row.materiEditedKonten ?? row.materiKonten ?? "").slice(0, 200) + "..."
           : (row.materiEditedKonten ?? row.materiKonten ?? "");
@@ -99,7 +123,7 @@ export async function POST(
         }).onConflictDoNothing();
       }
 
-      if (row.quizStatus === "approved" && row.quizSoal && row.quizSoal.length > 0 && row.kursusId) {
+      if (!skipQuiz && row.quizStatus === "approved" && row.quizSoal && row.quizSoal.length > 0 && row.kursusId) {
         const [q] = await tx
           .insert(quizPublished)
           .values({
@@ -137,7 +161,7 @@ export async function POST(
         }
       }
 
-      if (row.soalStatus === "approved" && row.soalItems && row.soalItems.length > 0 && row.kursusId) {
+      if (!skipSoal && row.soalStatus === "approved" && row.soalItems && row.soalItems.length > 0 && row.kursusId) {
         const items = (row.soalEditedItems ?? row.soalItems) as Array<{
           pertanyaan: string;
           tipe: "PG" | "ISIAN" | "ESSAY";
@@ -188,13 +212,20 @@ export async function POST(
       return updated;
     });
     } catch (err: any) {
-      console.error("Close review error:", err);
-      if (err?.code === "23505") {
+      // Extract Postgres error code from various possible paths
+      const pgCode = err?.code || err?.cause?.code || err?.original?.code || err?.detail?.code || '';
+      console.error("Close review error:", pgCode, err?.message, err?.detail, err?.schema, err?.table);
+
+      if (pgCode === "23505") {
         return apiError("Draft sudah diterbitkan sebelumnya. Refresh halaman.", 409);
       }
-      if (err?.code === "22P02" || err?.code === "23503") {
+      if (pgCode === "22P02" || pgCode === "23503" || pgCode === "23502") {
         return apiError("Data tidak valid. Coba generate ulang konten.", 400);
       }
+      if (pgCode === "23514") {
+        return apiError("Data melanggar batasan database. Hubungi admin.", 400);
+      }
+      // Catch-all: return the error message for debugging (safe for production since it's a DB error)
       return apiError("Gagal menerbitkan draft. Coba lagi.", 500);
     }
 

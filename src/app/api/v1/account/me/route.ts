@@ -29,6 +29,8 @@ export async function GET(request: NextRequest) {
         sekolahId: users.sekolahId,
         createdAt: users.createdAt,
         namaSekolah: sekolah.nama,
+        googleId: users.googleId,
+        passwordHash: users.passwordHash,
       })
       .from(users)
       .leftJoin(sekolah, eq(users.sekolahId, sekolah.id))
@@ -54,6 +56,8 @@ export async function GET(request: NextRequest) {
         sekolahId: u.sekolahId || undefined,
         namaSekolah: u.namaSekolah || undefined,
         createdAt: u.createdAt.toISOString(),
+        hasGoogle: !!u.googleId,
+        hasPassword: !!u.passwordHash,
       },
     });
   } catch (e) {

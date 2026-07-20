@@ -38,6 +38,8 @@ interface AccountData {
   lastActiveAt?: string;
   namaSekolah?: string;
   createdAt: string;
+  hasGoogle: boolean;
+  hasPassword: boolean;
 }
 
 interface BalanceData {
@@ -234,6 +236,16 @@ export default function GuruProfilPage() {
                 <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
                   {account.role}
                 </span>
+                {account.hasPassword && (
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700">
+                    Email
+                  </span>
+                )}
+                {account.hasGoogle && (
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-50 text-red-700">
+                    Google
+                  </span>
+                )}
                 {account.namaSekolah && (
                   <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700">
                     {account.namaSekolah}
