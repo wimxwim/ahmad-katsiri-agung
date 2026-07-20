@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse, after } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import {
   checkRateLimit,
@@ -171,6 +171,30 @@ export async function POST(request: NextRequest) {
       return { fileId: fm.id, generationId: gen.id };
     });
 
+    // Update status to "extracting" so frontend can show progress
+    await db.update(aiGeneration)
+      .set({ status: "extracting" })
+      .where(eq(aiGeneration.id, job.generationId));
+
+    // Ekstrak teks langsung dari bytes (sudah di memori, tidak perlu download ulang dari ImageKit)
+    let extractionStatus: "extracted" | "queued" = "queued";
+    try {
+      const text = await extractText(bytes, detected);
+      if (text && text.length >= 50) {
+        await db.update(fileMateri)
+          .set({ extractionText: text, status: "extracted", updatedAt: new Date() })
+          .where(eq(fileMateri.id, job.fileId));
+        await db.update(aiGeneration)
+          .set({ status: "extracted", leaseUntil: null, updatedAt: new Date() })
+          .where(eq(aiGeneration.id, job.generationId));
+        extractionStatus = "extracted";
+        appendEvent(`gen:${session.userId}`, "gen.extracted", { generationId: job.generationId, textLength: text.length }).catch(() => {});
+      }
+    } catch (extractErr) {
+      console.error("Inline extraction failed (file will be retried via Buat AI):", extractErr);
+      // file tetap di ImageKit, user bisa retry lewat tombol Buat AI
+    }
+
     incrementUploadCount(session.userId!).catch(() => {});
 
     const guru = await db.query.users.findFirst({
@@ -207,17 +231,15 @@ export async function POST(request: NextRequest) {
       at: new Date().toISOString(),
     }).catch(() => {});
 
-    after(() => {
-      queueExtraction(job.fileId, job.generationId, uploadResult.link, detected, session.userId!);
-    });
-
     return NextResponse.json({
       success: true,
       fileId: job.fileId,
       jobId: job.generationId,
       fileName: originalName,
-      status: "queued",
-      message: "Dokumen diterima. Teks akan diekstrak secara otomatis. Buka halaman Draft AI untuk generate materi.",
+      status: extractionStatus,
+      message: extractionStatus === "extracted"
+        ? "Dokumen diterima dan berhasil diekstrak. Buka halaman Draft AI untuk generate materi."
+        : "Dokumen diterima. Ekstraksi gagal — klik Buat AI di halaman Draft untuk mencoba lagi.",
     }, { status: 202 });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
@@ -235,80 +257,6 @@ export async function POST(request: NextRequest) {
     const msg = e instanceof Error ? e.message : "Terjadi kesalahan server";
     return apiError(msg, 500);
   }
-}
-
-function queueExtraction(
-  fileId: string,
-  generationId: string,
-  fileUrl: string,
-  ext: string,
-  guruId: string,
-): void {
-  Promise.resolve().then(async () => {
-    try {
-      await db
-        .update(aiGeneration)
-        .set({ status: "extracting", leaseUntil: new Date(Date.now() + 5 * 60 * 1000), updatedAt: new Date() })
-        .where(eq(aiGeneration.id, generationId));
-
-      await db
-        .update(fileMateri)
-        .set({ status: "extracting", updatedAt: new Date() })
-        .where(eq(fileMateri.id, fileId));
-
-      const fileRes = await fetch(fileUrl, { signal: AbortSignal.timeout(60_000) });
-      if (!fileRes.ok) {
-        throw new Error(`Gagal mengunduh file: ${fileRes.status}`);
-      }
-      const fileBytes = Buffer.from(await fileRes.arrayBuffer());
-      let text = "";
-      try {
-        text = await extractText(fileBytes, ext);
-      } catch (extractErr) {
-        if (ext === "pdf") {
-          console.warn("First extraction attempt failed, retrying with extended timeout:", extractErr);
-          text = await extractText(fileBytes, ext);
-        } else {
-          throw extractErr;
-        }
-      }
-
-      if (text && text.length >= 50) {
-        await db
-          .update(fileMateri)
-          .set({ extractionText: text, status: "extracted", updatedAt: new Date() })
-          .where(eq(fileMateri.id, fileId));
-
-        await db
-          .update(aiGeneration)
-          .set({ status: "extracted", leaseUntil: null, updatedAt: new Date() })
-          .where(eq(aiGeneration.id, generationId));
-
-        await appendEvent(`gen:${guruId}`, "gen.extracted", { generationId, textLength: text.length });
-      } else {
-        await db
-          .update(fileMateri)
-          .set({ status: "failed", updatedAt: new Date() })
-          .where(eq(fileMateri.id, fileId));
-
-        await db
-          .update(aiGeneration)
-          .set({ status: "failed", errorMessage: "Teks hasil ekstraksi terlalu pendek", updatedAt: new Date() })
-          .where(eq(aiGeneration.id, generationId));
-      }
-    } catch (err) {
-      console.error("Background extraction failed:", err);
-      await db
-        .update(fileMateri)
-        .set({ status: "failed", updatedAt: new Date() })
-        .where(eq(fileMateri.id, fileId));
-
-      await db
-        .update(aiGeneration)
-        .set({ status: "failed", errorMessage: "Ekstraksi gagal: " + (err instanceof Error ? err.message.slice(0, 200) : "unknown"), updatedAt: new Date() })
-        .where(eq(aiGeneration.id, generationId));
-    }
-  });
 }
 
 export async function GET(request: NextRequest) {

@@ -266,7 +266,7 @@ export async function POST(
         and(
           eq(aiGeneration.id, id),
           eq(aiGeneration.guruId, session.userId!),
-          sql`${aiGeneration.status} IN ('queued', 'extracted', 'failed')`,
+          sql`${aiGeneration.status} IN ('queued', 'extracted', 'failed', 'extracting')`,
         ),
       )
       .returning({ id: aiGeneration.id });
