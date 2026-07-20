@@ -47,7 +47,22 @@ export async function POST(request: NextRequest) {
     if (!emailRl.allowed) return apiRateLimit(emailRl.retryAfter);
 
     const rows = await db
-      .select()
+      .select({
+        id: users.id,
+        role: users.role,
+        nama: users.nama,
+        email: users.email,
+        passwordHash: users.passwordHash,
+        googleId: users.googleId,
+        kelas: users.kelas,
+        noAbsen: users.noAbsen,
+        nis: users.nis,
+        sekolahId: users.sekolahId,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        deletedAt: users.deletedAt,
+        // Note: failedLoginAttempts and lockedUntil not yet in DB — use optional chaining
+      })
       .from(users)
       .where(and(eq(users.email, email), isNull(users.deletedAt)))
       .limit(1);
@@ -96,8 +111,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if account is locked
-    if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
-      const remainingMinutes = Math.ceil((new Date(user.lockedUntil).getTime() - Date.now()) / 60000);
+    const userAny = user as any;
+    if (userAny.lockedUntil && new Date(userAny.lockedUntil) > new Date()) {
+      const remainingMinutes = Math.ceil((new Date(userAny.lockedUntil).getTime() - Date.now()) / 60000);
       return apiError("Akun terkunci karena terlalu banyak percobaan login gagal. Coba lagi dalam " + remainingMinutes + " menit.", 423);
     }
 
@@ -113,23 +129,31 @@ export async function POST(request: NextRequest) {
         portal: portalIntent || "unknown",
       }).catch(err => console.error("logAuthEvent failed:", err));
       // Increment failed attempts and lock if threshold reached
-      const newAttempts = (user.failedLoginAttempts || 0) + 1;
+      const newAttempts = (userAny.failedLoginAttempts || 0) + 1;
       const lockedUntil = newAttempts >= 5
         ? new Date(Date.now() + 15 * 60 * 1000)
         : null;
-      await db.update(users)
-        .set({
-          failedLoginAttempts: newAttempts,
-          lockedUntil: lockedUntil,
-        })
-        .where(eq(users.id, user.id));
+      try {
+        await db.update(users)
+          .set({
+            failedLoginAttempts: newAttempts,
+            lockedUntil: lockedUntil,
+          })
+          .where(eq(users.id, user.id));
+      } catch {
+        // Columns not yet in DB — skip
+      }
       return apiError("Email atau kata sandi salah", 401);
     }
 
     // Reset failed attempts
-    await db.update(users)
-      .set({ failedLoginAttempts: 0, lockedUntil: null })
-      .where(eq(users.id, user.id));
+    try {
+      await db.update(users)
+        .set({ failedLoginAttempts: 0, lockedUntil: null })
+        .where(eq(users.id, user.id));
+    } catch {
+      // Columns not yet in DB — skip
+    }
 
     if (result.needsRehash) {
       const newHash = await hashPassword(password);

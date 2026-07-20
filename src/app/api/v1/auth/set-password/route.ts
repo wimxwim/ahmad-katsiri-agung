@@ -50,11 +50,11 @@ export async function POST(request: NextRequest) {
       return apiError("User tidak ditemukan", 404);
     }
 
-    await logAuthEvent("auth.password.set", {
+    logAuthEvent("auth.password.set", {
       userId: session.userId,
       email: session.email,
       ip,
-    });
+    }).catch(err => console.error("logAuthEvent failed:", err));
 
     return NextResponse.json({ success: true });
   } catch (e) {

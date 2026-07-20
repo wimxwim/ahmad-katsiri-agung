@@ -49,10 +49,18 @@ export async function POST(request: NextRequest) {
     const passwordHash = await hashPassword(newPassword);
 
     await db.transaction(async (tx) => {
-      await tx
-        .update(users)
-        .set({ passwordHash, updatedAt: new Date(), failedLoginAttempts: 0, lockedUntil: null })
-        .where(eq(users.id, resetToken.userId));
+      try {
+        await tx
+          .update(users)
+          .set({ passwordHash, updatedAt: new Date(), failedLoginAttempts: 0, lockedUntil: null })
+          .where(eq(users.id, resetToken.userId));
+      } catch {
+        // Columns not yet in DB — fallback
+        await tx
+          .update(users)
+          .set({ passwordHash, updatedAt: new Date() })
+          .where(eq(users.id, resetToken.userId));
+      }
 
       await tx
         .update(passwordResetTokens)

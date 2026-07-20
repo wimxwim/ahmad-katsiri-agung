@@ -288,6 +288,27 @@
       "when": 1721400000000,
       "tag": "0040_add_skill_id_to_soal_published",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1753000000000,
+      "tag": "0041_add_users_security_columns",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1753000001000,
+      "tag": "0042_create_password_reset_tokens",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1753000002000,
+      "tag": "0043_add_soal_published_skill_id",
+      "breakpoints": true
     }
   ]
 }

@@ -91,7 +91,21 @@ export async function GET(request: NextRequest) {
     }
 
     const matches = await db
-      .select()
+      .select({
+        id: users.id,
+        role: users.role,
+        nama: users.nama,
+        email: users.email,
+        passwordHash: users.passwordHash,
+        googleId: users.googleId,
+        kelas: users.kelas,
+        noAbsen: users.noAbsen,
+        nis: users.nis,
+        sekolahId: users.sekolahId,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        deletedAt: users.deletedAt,
+      })
       .from(users)
       .where(
         and(

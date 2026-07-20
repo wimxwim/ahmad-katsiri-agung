@@ -28,11 +28,11 @@ export async function POST(request: NextRequest) {
     let userId: string | undefined;
     if (session) {
       userId = session.userId;
-      await logAuthEvent("auth.logout", {
+      logAuthEvent("auth.logout", {
         userId,
         email: session.email,
         ip,
-      });
+      }).catch(err => console.error("logAuthEvent failed:", err));
     }
 
     if (userId) {

@@ -23,8 +23,6 @@ export async function GET(request: NextRequest) {
         role: users.role,
         kelas: users.kelas,
         noAbsen: users.noAbsen,
-        tanggalLahir: users.tanggalLahir,
-        uploadCount: users.uploadCount,
         lastActiveAt: users.lastActiveAt,
         sekolahId: users.sekolahId,
         createdAt: users.createdAt,
@@ -50,8 +48,7 @@ export async function GET(request: NextRequest) {
         role: u.role,
         kelas: u.kelas || undefined,
         noAbsen: u.noAbsen || undefined,
-        tanggalLahir: u.tanggalLahir ? u.tanggalLahir.toISOString() : undefined,
-        uploadCount: u.uploadCount,
+        
         lastActiveAt: u.lastActiveAt ? u.lastActiveAt.toISOString() : undefined,
         sekolahId: u.sekolahId || undefined,
         namaSekolah: u.namaSekolah || undefined,
