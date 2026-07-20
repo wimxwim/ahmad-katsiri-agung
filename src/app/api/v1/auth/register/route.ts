@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const allowedRoles = INTENT_PORTAL[portal];
     const sessionRoleOfRequested = roleToSessionRole(role);
     if (!allowedRoles.includes(sessionRoleOfRequested)) {
-      await logAuthEvent("auth.intent_mismatch", { email, portal, reason: `register_role=${role}` });
+      logAuthEvent("auth.intent_mismatch", { email, portal, reason: `register_role=${role}` }).catch(err => console.error("logAuthEvent failed:", err));
       return apiError(`Portal ${portal} tidak menerima role ${role}.`, 400);
     }
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (existing.length > 0) {
-      await logAuthEvent("auth.register.duplicate", { email, reason: "duplicate", ip });
+      logAuthEvent("auth.register.duplicate", { email, reason: "duplicate", ip }).catch(err => console.error("logAuthEvent failed:", err));
       return apiError("Email sudah terdaftar. Silakan masuk atau gunakan email lain.", 409);
     }
 
@@ -91,12 +91,12 @@ export async function POST(request: NextRequest) {
       return [newUser];
     });
 
-    await appendEvent("token:system", "token.granted", {
+    appendEvent("token:system", "token.granted", {
       userId: user.id,
       amount: INITIAL_TOKEN_BALANCE,
       reason: "new_user_bonus",
       at: new Date().toISOString(),
-    });
+    }).catch(err => console.error("appendEvent failed:", err));
 
     const sessionRole = roleToSessionRole(user.role);
     const token = await signSession({
@@ -132,20 +132,20 @@ export async function POST(request: NextRequest) {
       path: "/api/v1/auth/refresh",
       maxAge: 30 * 24 * 60 * 60,
     });
-    await logAuthEvent("auth.register.success", {
+    logAuthEvent("auth.register.success", {
       userId: user.id,
       email: user.email,
       method: "password",
       ip,
       portal: portal || "unknown",
-    });
-    await logAuthEvent("auth.login.success", {
+    }).catch(err => console.error("logAuthEvent failed:", err));
+    logAuthEvent("auth.login.success", {
       userId: user.id,
       email: user.email,
       method: "password",
       ip,
       portal: portal || "unknown",
-    });
+    }).catch(err => console.error("logAuthEvent failed:", err));
     return response;
   } catch (e) {
     console.error("Register error:", e);

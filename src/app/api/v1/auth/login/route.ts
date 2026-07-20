@@ -54,13 +54,13 @@ export async function POST(request: NextRequest) {
 
     if (rows.length === 0) {
       await bcrypt.hash("akal-dummy-timing", 10);
-      await logAuthEvent("auth.login.failed", {
+      logAuthEvent("auth.login.failed", {
         email,
         reason: "user_not_found",
         method: "password",
         ip,
         portal: portalIntent || "unknown",
-      });
+      }).catch(err => console.error("logAuthEvent failed:", err));
       return apiError("Email atau kata sandi salah", 401);
     }
 
@@ -68,12 +68,12 @@ export async function POST(request: NextRequest) {
     const sessionRole = roleToSessionRole(user.role);
 
     if (portalIntent && !INTENT_PORTAL[portalIntent].includes(sessionRole)) {
-      await logAuthEvent("auth.intent_mismatch", {
+      logAuthEvent("auth.intent_mismatch", {
         userId: user.id,
         email: user.email,
         portal: portalIntent,
         reason: `db_role=${sessionRole}`,
-      });
+      }).catch(err => console.error("logAuthEvent failed:", err));
       const expected = sessionRole === "murid" || sessionRole === "orang_tua" ? "siswa" : "guru";
       return apiError(
         "INTENT_MISMATCH",
@@ -84,14 +84,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (!user.passwordHash) {
-      await logAuthEvent("auth.login.failed", {
+      logAuthEvent("auth.login.failed", {
         userId: user.id,
         email: user.email,
         reason: "no_password_set",
         method: "password",
         ip,
         portal: portalIntent || "unknown",
-      });
+      }).catch(err => console.error("logAuthEvent failed:", err));
       return apiError("NO_PASSWORD_SET", "Akun ini belum punya kata sandi. Masuk lewat Google dulu lalu atur kata sandi di halaman profil.", { email }, 401);
     }
 
@@ -104,14 +104,14 @@ export async function POST(request: NextRequest) {
     const result = await verifyPassword(password, user.passwordHash);
     if (!result.valid) {
       const failReason = result.error || "bad_password";
-      await logAuthEvent("auth.login.failed", {
+      logAuthEvent("auth.login.failed", {
         userId: user.id,
         email: user.email,
         reason: failReason,
         method: "password",
         ip,
         portal: portalIntent || "unknown",
-      });
+      }).catch(err => console.error("logAuthEvent failed:", err));
       // Increment failed attempts and lock if threshold reached
       const newAttempts = (user.failedLoginAttempts || 0) + 1;
       const lockedUntil = newAttempts >= 5
@@ -179,13 +179,13 @@ export async function POST(request: NextRequest) {
       path: "/api/v1/auth/refresh",
       maxAge: 30 * 24 * 60 * 60,
     });
-    await logAuthEvent("auth.login.success", {
+    logAuthEvent("auth.login.success", {
       userId: user.id,
       email: user.email,
       method: "password",
       ip,
       portal: portalIntent || "unknown",
-    });
+    }).catch(err => console.error("logAuthEvent failed:", err));
     return response;
   } catch (e) {
     console.error("Login error:", e);

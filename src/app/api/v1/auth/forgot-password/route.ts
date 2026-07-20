@@ -35,11 +35,11 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (!user || !user.passwordHash) {
-      await logAuthEvent("auth.forgot_password.attempt", {
+      logAuthEvent("auth.forgot_password.attempt", {
         email,
         reason: user ? "no_password_set" : "user_not_found",
         ip,
-      });
+      }).catch(err => console.error("logAuthEvent failed:", err));
       return apiSuccess({ message: "Jika email terdaftar, link reset password telah dikirim." });
     }
 
@@ -80,12 +80,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await logAuthEvent("auth.forgot_password.requested", {
+    logAuthEvent("auth.forgot_password.requested", {
       userId: user.id,
       email: user.email,
       ip,
       emailSent,
-    });
+    }).catch(err => console.error("logAuthEvent failed:", err));
 
     return apiSuccess({
       message: "Jika email terdaftar, link reset password telah dikirim.",

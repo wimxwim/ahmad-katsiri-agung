@@ -60,10 +60,10 @@ export async function POST(request: NextRequest) {
         .where(eq(passwordResetTokens.id, resetToken.id));
     });
 
-    await logAuthEvent("auth.password.reset", {
+    logAuthEvent("auth.password.reset", {
       userId: resetToken.userId,
       ip,
-    });
+    }).catch(err => console.error("logAuthEvent failed:", err));
 
     return apiSuccess({ message: "Password berhasil direset. Silakan login dengan password baru." });
   } catch (e) {

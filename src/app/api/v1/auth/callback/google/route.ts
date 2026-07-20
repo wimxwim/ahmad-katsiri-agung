@@ -59,14 +59,14 @@ export async function GET(request: NextRequest) {
     const returnTo = cookieStore.get("akal_google_return")?.value;
 
     if (errorParam) {
-      await logAuthEvent("auth.login.failed", { ip, reason: `google:${errorParam}`, method: "google", portal: portal || "unknown" });
+      logAuthEvent("auth.login.failed", { ip, reason: `google:${errorParam}`, method: "google", portal: portal || "unknown" }).catch(err => console.error("logAuthEvent failed:", err));
       const resp = NextResponse.redirect(`${redirectBase}/masuk?error=login_google_dibatalkan`, 302);
       clearTempCookies(resp);
       return resp;
     }
 
     if (!code || !state || !expectedState || state !== expectedState) {
-      await logAuthEvent("auth.login.failed", { ip, reason: "google:state_mismatch", method: "google", portal: portal || "unknown" });
+      logAuthEvent("auth.login.failed", { ip, reason: "google:state_mismatch", method: "google", portal: portal || "unknown" }).catch(err => console.error("logAuthEvent failed:", err));
       const resp = NextResponse.redirect(`${redirectBase}/masuk?error=sesi_google_tidak_valid`, 302);
       clearTempCookies(resp);
       return resp;
@@ -77,14 +77,14 @@ export async function GET(request: NextRequest) {
       profile = await exchangeCodeAndGetProfile(code);
     } catch (e) {
       console.error("Google exchange error:", e);
-      await logAuthEvent("auth.login.failed", { ip, reason: "google:exchange_failed", method: "google", portal: portal || "unknown" });
+      logAuthEvent("auth.login.failed", { ip, reason: "google:exchange_failed", method: "google", portal: portal || "unknown" }).catch(err => console.error("logAuthEvent failed:", err));
       const resp = NextResponse.redirect(`${redirectBase}/masuk?error=tidak_terhubung_google`, 302);
       clearTempCookies(resp);
       return resp;
     }
 
     if (!profile.emailVerified) {
-      await logAuthEvent("auth.login.failed", { ip, reason: "google:email_unverified", method: "google", portal: portal || "unknown" });
+      logAuthEvent("auth.login.failed", { ip, reason: "google:email_unverified", method: "google", portal: portal || "unknown" }).catch(err => console.error("logAuthEvent failed:", err));
       const resp = NextResponse.redirect(`${redirectBase}/masuk?error=email_google_belum_diverifikasi`, 302);
       clearTempCookies(resp);
       return resp;
@@ -107,11 +107,11 @@ export async function GET(request: NextRequest) {
       const sessionRole = newRole;
 
       if (portal && !INTENT_PORTAL[portal].includes(sessionRole)) {
-        await logAuthEvent("auth.intent_mismatch", {
+        logAuthEvent("auth.intent_mismatch", {
           email: profile.email,
           portal,
           reason: "google_signup_first_time_no_user_created",
-        });
+        }).catch(err => console.error("logAuthEvent failed:", err));
         const resp = NextResponse.redirect(
           `${redirectBase}/masuk/role-mismatch?expected=${portal}&actual=${sessionRole}&reason=google_signup_first_time`,
           302,
@@ -134,12 +134,12 @@ export async function GET(request: NextRequest) {
 
       await db.insert(tokenBalances).values({ userId: user.id, balance: INITIAL_TOKEN_BALANCE });
 
-      await appendEvent("token:system", "token.granted", {
+      appendEvent("token:system", "token.granted", {
         userId: user.id,
         amount: INITIAL_TOKEN_BALANCE,
         reason: "new_user_bonus_google",
         at: new Date().toISOString(),
-      });
+      }).catch(err => console.error("appendEvent failed:", err));
 
       const token = await signSession({
         userId: user.id,
@@ -152,9 +152,9 @@ export async function GET(request: NextRequest) {
       const target = (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//"))
         ? returnTo
         : ROLE_HOME_PATHS[sessionRole];
-      await logAuthEvent("auth.register.success", { userId: user.id, email: user.email, method: "google", portal: portal || "unknown", ip });
-      await logAuthEvent("auth.login.success", { userId: user.id, email: user.email, method: "google", portal: portal || "unknown", ip });
-      await logAuthEvent("auth.google.linked", { userId: user.id, email: user.email, ip });
+      logAuthEvent("auth.register.success", { userId: user.id, email: user.email, method: "google", portal: portal || "unknown", ip }).catch(err => console.error("logAuthEvent failed:", err));
+      logAuthEvent("auth.login.success", { userId: user.id, email: user.email, method: "google", portal: portal || "unknown", ip }).catch(err => console.error("logAuthEvent failed:", err));
+      logAuthEvent("auth.google.linked", { userId: user.id, email: user.email, ip }).catch(err => console.error("logAuthEvent failed:", err));
 
       const resp = NextResponse.redirect(`${redirectBase}${target}`, 302);
       clearTempCookies(resp);
@@ -179,12 +179,12 @@ export async function GET(request: NextRequest) {
     const sessionRole = roleToSessionRole(user.role);
 
     if (portal && !INTENT_PORTAL[portal].includes(sessionRole)) {
-      await logAuthEvent("auth.intent_mismatch", {
+      logAuthEvent("auth.intent_mismatch", {
         userId: user.id,
         email: user.email,
         portal,
         reason: "google_existing_role_mismatch",
-      });
+      }).catch(err => console.error("logAuthEvent failed:", err));
       const resp = NextResponse.redirect(
         `${redirectBase}/masuk/role-mismatch?expected=${portal}&actual=${sessionRole}&reason=google_existing`,
         302,
@@ -198,15 +198,15 @@ export async function GET(request: NextRequest) {
         .update(users)
         .set({ googleId: profile.googleId, updatedAt: new Date() })
         .where(eq(users.id, user.id));
-      await logAuthEvent("auth.google.linked", { userId: user.id, email: user.email, ip });
+      logAuthEvent("auth.google.linked", { userId: user.id, email: user.email, ip }).catch(err => console.error("logAuthEvent failed:", err));
     } else if (user.googleId !== profile.googleId) {
-      await logAuthEvent("auth.login.failed", {
+      logAuthEvent("auth.login.failed", {
         userId: user.id,
         email: user.email,
         reason: "google:id_mismatch_with_existing_link",
         method: "google",
         ip,
-      });
+      }).catch(err => console.error("logAuthEvent failed:", err));
       const resp = NextResponse.redirect(`${redirectBase}/masuk?error=akun_google_tidak_cocok`, 302);
       clearTempCookies(resp);
       return resp;
@@ -223,7 +223,7 @@ export async function GET(request: NextRequest) {
     const target = (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//"))
       ? returnTo
       : ROLE_HOME_PATHS[sessionRole];
-    await logAuthEvent("auth.login.success", { userId: user.id, email: user.email, method: "google", portal: portal || "unknown", ip });
+    logAuthEvent("auth.login.success", { userId: user.id, email: user.email, method: "google", portal: portal || "unknown", ip }).catch(err => console.error("logAuthEvent failed:", err));
 
     const resp = NextResponse.redirect(`${redirectBase}${target}`, 302);
     clearTempCookies(resp);
