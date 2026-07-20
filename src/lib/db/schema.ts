@@ -87,6 +87,8 @@ export const users = pgTable(
 export const statusPublikasiEnum = pgEnum("status_publikasi", [
   "DRAFT",
   "PUBLIK",
+  "PRIVAT",
+  "KRABAT",
   "ARSIP",
 ]);
 

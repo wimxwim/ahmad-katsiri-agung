@@ -202,7 +202,6 @@ export async function POST(
           .update(kursus)
           .set({
             statusPublikasi: "PUBLIK",
-            isPublic: true,
             publishedAt: new Date(),
             updatedAt: new Date(),
           })

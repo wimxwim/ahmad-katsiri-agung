@@ -30,9 +30,9 @@ export async function POST(request: NextRequest) {
     }
 
     const [course] = await db
-      .select({ id: kursus.id, isPublic: kursus.isPublic, statusPublikasi: kursus.statusPublikasi })
+      .select({ id: kursus.id, statusPublikasi: kursus.statusPublikasi })
       .from(kursus)
-      .where(and(eq(kursus.id, parsed.data.kursusId), eq(kursus.isPublic, true), eq(kursus.statusPublikasi, "PUBLIK")))
+      .where(and(eq(kursus.id, parsed.data.kursusId), eq(kursus.statusPublikasi, "PUBLIK")))
       .limit(1);
 
     if (!course) {

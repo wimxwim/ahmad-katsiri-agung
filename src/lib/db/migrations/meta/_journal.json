@@ -323,6 +323,13 @@
       "when": 1753000004000,
       "tag": "0045_add_kursus_deleted_at",
       "breakpoints": false
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": "2026-07-20T04:30:00.000Z",
+      "tag": "0046_add_privat_krabat_enum",
+      "breakpoints": false
     }
   ]
 }

@@ -49,7 +49,6 @@ export async function GET(request: NextRequest) {
       judul: kursus.judul,
       slug: kursus.slug,
       deskripsi: kursus.deskripsi,
-      isPublic: kursus.isPublic,
       statusPublikasi: kursus.statusPublikasi,
       guruId: kursus.guruId,
       createdAt: kursus.createdAt,
@@ -61,7 +60,7 @@ export async function GET(request: NextRequest) {
         query = query.where(eq(kursus.guruId, session.userId));
       }
     } else {
-      query = query.where(eq(kursus.isPublic, true));
+      query = query.where(eq(kursus.statusPublikasi, "PUBLIK"));
     }
 
     if (slug) {

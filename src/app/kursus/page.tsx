@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
-import { Search, BookOpen, ArrowRight, Library } from "lucide-react";
+import { Search, BookOpen, ArrowRight, Library, UserPlus, Loader2, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface KursusItem {
@@ -11,7 +12,7 @@ interface KursusItem {
   judul: string;
   slug: string;
   deskripsi: string | null;
-  isPublic: boolean;
+  statusPublikasi: string;
   createdAt: string;
 }
 
@@ -39,6 +40,9 @@ export default function KatalogKursusPage() {
   const [kursus, setKursus] = useState<KursusItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [enrolling, setEnrolling] = useState<string | null>(null);
+  const [enrolled, setEnrolled] = useState<Set<string>>(new Set());
+  const router = useRouter();
 
   useEffect(() => {
     fetchKursus();
@@ -51,11 +55,40 @@ export default function KatalogKursusPage() {
       const res = await fetch("/api/v1/kursus");
       if (!res.ok) throw new Error("Gagal memuat data");
       const { data } = await res.json();
-      setKursus((data || []).filter((k: KursusItem) => k.isPublic));
+      setKursus(data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal memuat data");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleEnroll(e: React.MouseEvent, kursusId: string, slug: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    setEnrolling(kursusId);
+    try {
+      const res = await fetch("/api/v1/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ kursusId }),
+      });
+      if (res.status === 401) {
+        router.push(`/masuk?portal=siswa&redirect=${encodeURIComponent(`/kursus/${slug}`)}`);
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok && res.status !== 409) {
+        throw new Error(data.error || "Gagal mendaftar");
+      }
+      setEnrolled((prev) => new Set(prev).add(kursusId));
+      router.push(`/siswa/materi?kursusId=${kursusId}&welcome=1`);
+    } catch (err) {
+      // Silently fail — if already enrolled, redirect anyway
+      router.push(`/siswa/materi?kursusId=${kursusId}&welcome=1`);
+    } finally {
+      setEnrolling(null);
     }
   }
 
@@ -163,7 +196,7 @@ export default function KatalogKursusPage() {
                     <BookOpen className="w-6 h-6 text-primary" />
                   </div>
                   <h3 className="font-heading font-bold text-on-surface group-hover:text-primary transition-colors mb-2 text-base">
-                    {k.judul}
+                    {typeof k.judul === 'string' && k.judul !== '[object Object]' ? k.judul : 'Kursus'}
                   </h3>
                   <p className="text-xs text-on-surface-variant line-clamp-2 mb-4 leading-relaxed">
                     {k.deskripsi || "Belum ada deskripsi"}
@@ -171,16 +204,32 @@ export default function KatalogKursusPage() {
                   <div className="flex items-center justify-between pt-4 border-t border-border-precision">
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        k.isPublic
+                        k.statusPublikasi === "PUBLIK"
                           ? "bg-emerald-50 text-emerald-700"
                           : "bg-amber-50 text-amber-700"
                       }`}
                     >
-                      {k.isPublic ? "Publik" : "Privat"}
+                      {k.statusPublikasi === "PUBLIK" ? "Publik" : "Tertutup"}
                     </span>
-                    <span className="text-primary text-sm font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      Lihat <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={(e) => handleEnroll(e, k.id, k.slug)}
+                        disabled={enrolling === k.id}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        {enrolling === k.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : enrolled.has(k.id) ? (
+                          <Check className="w-3 h-3" />
+                        ) : (
+                          <UserPlus className="w-3 h-3" />
+                        )}
+                        {enrolled.has(k.id) ? "Terdaftar" : "Daftar"}
+                      </button>
+                      <span className="text-primary text-sm font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        Lihat <ArrowRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
                   </div>
                 </Link>
               </motion.div>

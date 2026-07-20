@@ -50,7 +50,7 @@ export async function POST(
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://akalcenter.my.id";
-    const inviteLink = `${baseUrl}/undang/${kode}`;
+    const inviteLink = `${baseUrl}/undang?kode=${kode}`;
 
     return NextResponse.json({ success: true, data: { kode, inviteLink } });
   } catch (e) {

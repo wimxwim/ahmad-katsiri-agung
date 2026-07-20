@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Plus, BookOpen, Globe, Lock, Loader2, Share2, Copy, Check, Pencil, Trash2 } from "lucide-react";
+import { Search, Plus, BookOpen, Globe, Lock, Loader2, Share2, Copy, Check, Pencil, Trash2, Users, Archive } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 import { csrfHeaders } from "@/lib/csrf";
@@ -10,6 +10,8 @@ import { csrfHeaders } from "@/lib/csrf";
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
   DRAFT: { label: "Draft", color: "bg-amber-50 text-amber-700" },
   PUBLIK: { label: "Publik", color: "bg-emerald-50 text-emerald-700" },
+  PRIVAT: { label: "Privat", color: "bg-blue-50 text-blue-700" },
+  KRABAT: { label: "Krabat", color: "bg-purple-50 text-purple-700" },
   ARSIP: { label: "Arsip", color: "bg-surface text-on-surface-variant" },
 };
 
@@ -19,7 +21,6 @@ interface KursusItem {
   slug: string;
   deskripsi: string | null;
   statusPublikasi: string;
-  isPublic: boolean;
   createdAt: string;
 }
 
@@ -128,7 +129,7 @@ export default function KursusListPage() {
     setTimeout(() => setCopied(null), 2000);
   }
 
-  async function handlePublish(id: string, newStatus: "PUBLIK" | "DRAFT" | "ARSIP") {
+  async function handlePublish(id: string, newStatus: "PUBLIK" | "DRAFT" | "ARSIP" | "PRIVAT" | "KRABAT") {
     setPublishing(id);
     setError("");
     try {
@@ -143,7 +144,7 @@ export default function KursusListPage() {
         throw new Error(j.error || "Gagal mengubah status");
       }
       const { data } = await res.json();
-      setKursus((prev) => prev.map((k) => (k.id === id ? { ...k, statusPublikasi: data.statusPublikasi, isPublic: data.isPublic } : k)));
+      setKursus((prev) => prev.map((k) => (k.id === id ? { ...k, statusPublikasi: data.statusPublikasi } : k)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal mengubah status");
     } finally {
@@ -261,7 +262,7 @@ export default function KursusListPage() {
                   Nilai
                 </Link>
                 <span className="text-on-surface-variant/20">|</span>
-                {k.statusPublikasi === "DRAFT" || k.statusPublikasi === "ARSIP" ? (
+                {k.statusPublikasi === "DRAFT" && (
                   <button
                     onClick={() => handlePublish(k.id, "PUBLIK")}
                     disabled={publishing === k.id}
@@ -270,14 +271,91 @@ export default function KursusListPage() {
                     {publishing === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Globe className="w-3 h-3" />}
                     Publikasikan
                   </button>
-                ) : (
+                )}
+                {k.statusPublikasi === "PUBLIK" && (
+                  <>
+                    <button
+                      onClick={() => handlePublish(k.id, "PRIVAT")}
+                      disabled={publishing === k.id}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline disabled:opacity-50"
+                    >
+                      {publishing === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Lock className="w-3 h-3" />}
+                      Privatkan
+                    </button>
+                    <span className="text-on-surface-variant/20">|</span>
+                    <button
+                      onClick={() => handlePublish(k.id, "KRABAT")}
+                      disabled={publishing === k.id}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-purple-600 hover:underline disabled:opacity-50"
+                    >
+                      {publishing === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Users className="w-3 h-3" />}
+                      Krabat
+                    </button>
+                  </>
+                )}
+                {k.statusPublikasi === "PRIVAT" && (
+                  <>
+                    <button
+                      onClick={() => handlePublish(k.id, "PUBLIK")}
+                      disabled={publishing === k.id}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:underline disabled:opacity-50"
+                    >
+                      {publishing === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Globe className="w-3 h-3" />}
+                      Publikasikan
+                    </button>
+                    <span className="text-on-surface-variant/20">|</span>
+                    <button
+                      onClick={() => handlePublish(k.id, "KRABAT")}
+                      disabled={publishing === k.id}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-purple-600 hover:underline disabled:opacity-50"
+                    >
+                      {publishing === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Users className="w-3 h-3" />}
+                      Krabat
+                    </button>
+                  </>
+                )}
+                {k.statusPublikasi === "KRABAT" && (
+                  <>
+                    <button
+                      onClick={() => handlePublish(k.id, "PUBLIK")}
+                      disabled={publishing === k.id}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:underline disabled:opacity-50"
+                    >
+                      {publishing === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Globe className="w-3 h-3" />}
+                      Publikasikan
+                    </button>
+                    <span className="text-on-surface-variant/20">|</span>
+                    <button
+                      onClick={() => handlePublish(k.id, "PRIVAT")}
+                      disabled={publishing === k.id}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline disabled:opacity-50"
+                    >
+                      {publishing === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Lock className="w-3 h-3" />}
+                      Privatkan
+                    </button>
+                  </>
+                )}
+                {(k.statusPublikasi === "DRAFT" || k.statusPublikasi === "PUBLIK" || k.statusPublikasi === "PRIVAT" || k.statusPublikasi === "KRABAT") && (
+                  <>
+                    <span className="text-on-surface-variant/20">|</span>
+                    <button
+                      onClick={() => handlePublish(k.id, "ARSIP")}
+                      disabled={publishing === k.id}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500 hover:underline disabled:opacity-50"
+                    >
+                      {publishing === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Archive className="w-3 h-3" />}
+                      Arsipkan
+                    </button>
+                  </>
+                )}
+                {k.statusPublikasi === "ARSIP" && (
                   <button
-                    onClick={() => handlePublish(k.id, "DRAFT")}
+                    onClick={() => handlePublish(k.id, "PUBLIK")}
                     disabled={publishing === k.id}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 hover:underline disabled:opacity-50"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:underline disabled:opacity-50"
                   >
-                    {publishing === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Lock className="w-3 h-3" />}
-                    Privatkan
+                    {publishing === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Globe className="w-3 h-3" />}
+                    Publikasikan
                   </button>
                 )}
                 <span className="text-on-surface-variant/20">|</span>

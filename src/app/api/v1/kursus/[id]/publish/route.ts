@@ -10,7 +10,7 @@ import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
 
 const PublishSchema = z.object({
-  status: z.enum(["DRAFT", "PUBLIK", "ARSIP"]),
+  status: z.enum(["DRAFT", "PUBLIK", "PRIVAT", "KRABAT", "ARSIP"]),
 });
 
 export async function PATCH(
@@ -53,7 +53,6 @@ export async function PATCH(
       .set({
         statusPublikasi: parsed.data.status,
         publishedAt,
-        isPublic: parsed.data.status === "PUBLIK",
         updatedAt: new Date(),
       })
       .where(where)

@@ -33,7 +33,7 @@ export async function GET(
     }
     const result = await db.select({
     id: kursus.id, guruId: kursus.guruId, judul: kursus.judul, slug: kursus.slug,
-    deskripsi: kursus.deskripsi, harga: kursus.harga, isPublic: kursus.isPublic,
+    deskripsi: kursus.deskripsi, harga: kursus.harga,
     statusPublikasi: kursus.statusPublikasi, publishedAt: kursus.publishedAt,
     createdAt: kursus.createdAt, updatedAt: kursus.updatedAt,
   }).from(kursus).where(and(eq(kursus.id, id), isNull(kursus.deletedAt))).limit(1);
@@ -44,8 +44,8 @@ export async function GET(
 
     const isOwner = session?.role === "owner";
     const isGuruPemilik = session?.role === "guru" && k.guruId === session?.userId;
-    const isSiswaPublic = session?.role === "murid" && k.isPublic;
-    const isPublicCourse = k.isPublic && k.statusPublikasi === "PUBLIK";
+    const isSiswaPublic = session?.role === "murid" && k.statusPublikasi === "PUBLIK";
+    const isPublicCourse = k.statusPublikasi === "PUBLIK";
 
     if (!isOwner && !isGuruPemilik && !isSiswaPublic && !isPublicCourse) {
       return apiError("Anda tidak punya akses ke kursus ini", 403);
