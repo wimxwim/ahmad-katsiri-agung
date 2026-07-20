@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { jawabanLog, studentAbility, soal, skillMastery } from "@/lib/db/schema";
+import { jawabanLog, studentAbility, soal, skillMastery, riskSnapshot } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { uuidv7 } from "@/lib/uuid";
 import { estimateTheta } from "@/lib/analytics/calculateIRT";
@@ -7,6 +7,7 @@ import { updateElo } from "@/lib/analytics/calculateElo";
 import { updateBKT, slipForward } from "@/lib/analytics/calculateBKT";
 import { calculateNextReview } from "@/lib/analytics/calculateSpacedRep";
 import { appendEvent } from "@/lib/event-store";
+import { calculateRiskScore, getRiskLabel } from "@/lib/analytics/calculateRiskScore";
 
 interface AnswerItem {
   soalId: string;        // original soal.id
@@ -153,6 +154,38 @@ export async function processQuizResults(params: {
       kursusId: params.kursusId,
       answersCount: params.answers.length,
       theta,
+    });
+
+    // 6. Risk snapshot
+    const totalSoal = params.answers.length;
+    const totalBenar = params.answers.filter(a => a.isCorrect).length;
+    const quizPerformance = totalSoal > 0 ? totalBenar / totalSoal : 0;
+
+    const riskScore = calculateRiskScore({
+      completionRate: 1.0,
+      quizPerformance,
+      attendanceRate: 1.0,
+      loginGap: 0,
+      timelinessRate: 1.0,
+      participationRate: 1.0,
+    });
+
+    const riskStatus = getRiskLabel(riskScore);
+
+    await db.insert(riskSnapshot).values({
+      siswaId: params.siswaId,
+      kursusId: params.kursusId,
+      riskScore,
+      status: riskStatus,
+      komponen: {
+        completionRate: 1.0,
+        quizPerformance,
+        attendanceRate: 1.0,
+        loginGap: 0,
+        timelinessRate: 1.0,
+        participationRate: 1.0,
+      },
+      snapshotDate: new Date(),
     });
   } catch (err) {
     console.error("processQuizResults failed:", err);
