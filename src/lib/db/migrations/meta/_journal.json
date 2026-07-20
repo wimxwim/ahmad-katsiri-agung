@@ -330,6 +330,13 @@
       "when": "2026-07-20T04:30:00.000Z",
       "tag": "0046_add_privat_krabat_enum",
       "breakpoints": false
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": "2026-07-20T05:00:00.000Z",
+      "tag": "0047_add_sekolah_id_to_soal",
+      "breakpoints": false
     }
   ]
 }

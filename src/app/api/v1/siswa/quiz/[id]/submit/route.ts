@@ -45,7 +45,9 @@ export async function POST(
 
     // Fetch original soal records for algorithm data
     const soalIds = ((quiz as any).soalIds as string[]) || [];
-    const soalRecords = await db.select().from(soal).where(inArray(soal.id, soalIds));
+    const soalRecords = soalIds.length > 0
+      ? await db.select().from(soal).where(inArray(soal.id, soalIds))
+      : [];
     const soalMap = new Map(soalRecords.map(s => [s.id, s]));
 
     const [enroll] = await db
