@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { users, sekolah } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { requireSession, GuardError } from "@/lib/route-guard-v2";
@@ -23,9 +23,15 @@ export async function GET(request: NextRequest) {
         role: users.role,
         kelas: users.kelas,
         noAbsen: users.noAbsen,
+        tanggalLahir: users.tanggalLahir,
+        uploadCount: users.uploadCount,
+        lastActiveAt: users.lastActiveAt,
+        sekolahId: users.sekolahId,
         createdAt: users.createdAt,
+        namaSekolah: sekolah.nama,
       })
       .from(users)
+      .leftJoin(sekolah, eq(users.sekolahId, sekolah.id))
       .where(and(eq(users.id, session.userId), isNull(users.deletedAt)))
       .limit(1);
 
@@ -42,6 +48,11 @@ export async function GET(request: NextRequest) {
         role: u.role,
         kelas: u.kelas || undefined,
         noAbsen: u.noAbsen || undefined,
+        tanggalLahir: u.tanggalLahir ? u.tanggalLahir.toISOString() : undefined,
+        uploadCount: u.uploadCount,
+        lastActiveAt: u.lastActiveAt ? u.lastActiveAt.toISOString() : undefined,
+        sekolahId: u.sekolahId || undefined,
+        namaSekolah: u.namaSekolah || undefined,
         createdAt: u.createdAt.toISOString(),
       },
     });

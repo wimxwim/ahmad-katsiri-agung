@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  User,
   Heart,
   Wallet,
   Upload,
@@ -11,6 +10,13 @@ import {
   Coins,
   ChevronRight,
   LogOut,
+  BookOpen,
+  Users,
+  FileText,
+  CheckSquare,
+  Crown,
+  Lock,
+  Sparkles,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -20,27 +26,58 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+interface AccountData {
+  id: string;
+  nama: string;
+  email: string;
+  role: string;
+  kelas?: string;
+  noAbsen?: string;
+  tanggalLahir?: string;
+  uploadCount: number;
+  lastActiveAt?: string;
+  namaSekolah?: string;
+  createdAt: string;
+}
+
 interface BalanceData {
   userId: string;
   balance: number;
   totalTopup: number;
   totalSpent: number;
   lastTopupAt: Date | null;
+  subscription?: {
+    isUnlocked: boolean;
+    uploadCount: number;
+    uploadLimit: number;
+    canGenerate: boolean;
+    canUpload: boolean;
+  };
 }
 
-interface SessionData {
-  userId: string;
-  nama: string;
-  email: string;
-  role: string;
+interface DashboardData {
+  totalKursus: number;
+  totalSiswa: number;
+  draftMenunggu: number;
+  totalKuisDikerjakan: number;
+  siswaBelumMengerjakan: number;
+  totalMateriPublished: number;
+  totalQuizPublished: number;
+  kursusList: { id: string; judul: string; slug: string; deskripsi: string | null; statusPublikasi: string }[];
+  aiQuotaUsed: number;
+  aiQuotaLimit: number;
+  weakTopics: { pertanyaan: string; errorRate: number; totalJawab: number }[];
+  siswaBerisiko: number;
+  siswaKritis: number;
 }
 
 const SPRING_CONFIG = { type: "spring" as const, stiffness: 100, damping: 20 };
 
 export default function GuruProfilPage() {
   const router = useRouter();
+  const [account, setAccount] = useState<AccountData | null>(null);
   const [balance, setBalance] = useState<BalanceData | null>(null);
-  const [session, setSession] = useState<SessionData | null>(null);
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [donating, setDonating] = useState(false);
   const [donated, setDonated] = useState(false);
   const [donateError, setDonateError] = useState("");
@@ -49,13 +86,15 @@ export default function GuruProfilPage() {
   const mountedRef = useRef(true);
 
   const fetchData = useCallback(async () => {
-    const [balRes, sesRes] = await Promise.all([
+    const [accRes, balRes, dashRes] = await Promise.all([
+      apiFetch<AccountData>("/api/v1/account/me"),
       apiFetch<BalanceData>("/api/v1/token/balance"),
-      apiFetch<SessionData>("/api/sesi"),
+      apiFetch<DashboardData>("/api/v1/guru/dashboard"),
     ]);
     if (!mountedRef.current) return;
+    if (accRes.ok && accRes.data) setAccount(accRes.data);
     if (balRes.ok && balRes.data) setBalance(balRes.data);
-    if (sesRes.ok && sesRes.data) setSession(sesRes.data);
+    if (dashRes.ok && dashRes.data) setDashboard(dashRes.data);
     setLoading(false);
   }, []);
 
@@ -110,17 +149,25 @@ export default function GuruProfilPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const allFailed = !loading && !account && !balance && !dashboard;
+
   if (loading) {
     return (
       <div className="space-y-6 max-w-2xl mx-auto">
         <div className="h-7 w-48 bg-primary/5 rounded-lg animate-pulse" />
-        <div className="bg-glass rounded-card p-8 h-48 animate-pulse border border-border-precision" />
-        <div className="bg-glass rounded-card p-8 h-48 animate-pulse border border-border-precision" />
+        <div className="bg-glass rounded-card p-6 h-28 animate-pulse border border-border-precision" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-glass rounded-card p-6 h-28 animate-pulse border border-border-precision" />
+          ))}
+        </div>
+        <div className="bg-glass rounded-card p-6 h-28 animate-pulse border border-border-precision" />
+        <div className="bg-glass rounded-card p-6 h-28 animate-pulse border border-border-precision" />
       </div>
     );
   }
 
-  if (!loading && !balance && !session) {
+  if (allFailed) {
     return (
       <div className="space-y-6 max-w-2xl mx-auto">
         <motion.div
@@ -156,6 +203,7 @@ export default function GuruProfilPage() {
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -167,33 +215,151 @@ export default function GuruProfilPage() {
         <h1 className="font-heading font-bold text-2xl text-on-surface">Profil Guru</h1>
       </motion.div>
 
-      {session && (
+      {/* Profile Card */}
+      {account && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...SPRING_CONFIG, delay: 0.1 }}
           className="bg-glass border border-border-precision rounded-card p-6 shadow-glass"
         >
-          <div className="flex items-center gap-4 mb-4">
-            <span className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-              <User className="w-7 h-7" />
-            </span>
-            <div>
-              <p className="font-heading font-bold text-lg text-on-surface">{session.nama}</p>
-              <p className="text-sm text-on-surface-variant">{session.email}</p>
-              <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
-                {session.role}
-              </span>
+          <div className="flex items-start gap-4">
+            <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <span className="font-heading font-bold text-xl">{account.nama.charAt(0).toUpperCase()}</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-heading font-bold text-lg text-on-surface truncate">{account.nama}</p>
+              <p className="text-sm text-on-surface-variant truncate">{account.email}</p>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
+                  {account.role}
+                </span>
+                {account.namaSekolah && (
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700">
+                    {account.namaSekolah}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 text-xs text-on-surface-variant">
+                <span>
+                  Bergabung{" "}
+                  {new Date(account.createdAt).toLocaleDateString("id-ID", {
+                    year: "numeric",
+                    month: "long",
+                  })}
+                </span>
+                <span>Upload {account.uploadCount}</span>
+              </div>
             </div>
           </div>
         </motion.div>
       )}
 
-      {balance && (
+      {/* Stats Grid */}
+      {dashboard && (
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...SPRING_CONFIG, delay: 0.15 }}
+          className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+        >
+          <div className="bg-glass border border-border-precision rounded-card p-5 shadow-glass">
+            <div className="w-10 h-10 rounded-xl bg-primary/5 text-primary flex items-center justify-center mb-3">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <p className="font-heading text-2xl font-bold text-on-surface tabular-nums">{dashboard.totalKursus}</p>
+            <p className="text-[11px] text-on-surface-variant mt-0.5">Total Kursus</p>
+          </div>
+          <div className="bg-glass border border-border-precision rounded-card p-5 shadow-glass">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+              <Users className="w-5 h-5" />
+            </div>
+            <p className="font-heading text-2xl font-bold text-on-surface tabular-nums">{dashboard.totalSiswa}</p>
+            <p className="text-[11px] text-on-surface-variant mt-0.5">Total Siswa</p>
+          </div>
+          <div className="bg-glass border border-border-precision rounded-card p-5 shadow-glass">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3">
+              <FileText className="w-5 h-5" />
+            </div>
+            <p className="font-heading text-2xl font-bold text-on-surface tabular-nums">{dashboard.totalMateriPublished}</p>
+            <p className="text-[11px] text-on-surface-variant mt-0.5">Materi</p>
+          </div>
+          <div className="bg-glass border border-border-precision rounded-card p-5 shadow-glass">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
+              <CheckSquare className="w-5 h-5" />
+            </div>
+            <p className="font-heading text-2xl font-bold text-on-surface tabular-nums">{dashboard.totalQuizPublished}</p>
+            <p className="text-[11px] text-on-surface-variant mt-0.5">Quiz</p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Langganan Card */}
+      {balance && balance.subscription && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...SPRING_CONFIG, delay: 0.2 }}
+          className="bg-glass border border-border-precision rounded-card p-6 shadow-glass"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-heading font-semibold text-lg text-on-surface flex items-center gap-2">
+              <Crown className="w-5 h-5 text-amber-500" />
+              Langganan
+            </h2>
+          </div>
+
+          {balance.subscription.isUnlocked ? (
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 mb-3">
+                <CheckCircle className="w-3.5 h-3.5" />
+                Aktif
+              </span>
+              <div className="space-y-2 mt-3">
+                <div className="flex items-center gap-2 text-sm text-on-surface-variant">
+                  <Sparkles className="w-4 h-4 text-emerald-500" />
+                  Upload Unlimited
+                </div>
+                <div className="flex items-center gap-2 text-sm text-on-surface-variant">
+                  <Sparkles className="w-4 h-4 text-emerald-500" />
+                  Generate AI Unlimited
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 mb-3">
+                <Lock className="w-3.5 h-3.5" />
+                Free Tier
+              </span>
+              <div className="space-y-2 mt-3">
+                <div className="flex items-center gap-2 text-sm text-on-surface-variant">
+                  <Upload className="w-4 h-4 text-amber-500" />
+                  Upload: {balance.subscription.uploadCount}/{balance.subscription.uploadLimit}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-on-surface-variant">
+                  <Lock className="w-4 h-4 text-red-400" />
+                  Generate AI: terkunci (top-up Rp5.000)
+                </div>
+              </div>
+              <Link
+                href="/guru/topup"
+                className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+              >
+                Top-Up Sekarang
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* Token Balance Card */}
+      {balance && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...SPRING_CONFIG, delay: 0.25 }}
           className="bg-glass border border-border-precision rounded-card p-6 shadow-glass"
         >
           <div className="flex items-center justify-between mb-4">
@@ -233,10 +399,11 @@ export default function GuruProfilPage() {
         </motion.div>
       )}
 
+      {/* Donation Card */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ ...SPRING_CONFIG, delay: 0.2 }}
+        transition={{ ...SPRING_CONFIG, delay: 0.3 }}
         className="bg-glass border border-border-precision rounded-card p-6 shadow-glass"
       >
         <h2 className="font-heading font-semibold text-lg text-on-surface flex items-center gap-2 mb-4">
@@ -355,10 +522,11 @@ export default function GuruProfilPage() {
         </AnimatePresence>
       </motion.div>
 
+      {/* Logout Button */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ ...SPRING_CONFIG, delay: 0.25 }}
+        transition={{ ...SPRING_CONFIG, delay: 0.35 }}
         className="bg-glass border border-border-precision rounded-card shadow-glass overflow-hidden"
       >
         <button
