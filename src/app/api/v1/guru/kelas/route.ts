@@ -15,7 +15,7 @@ export const runtime = "nodejs";
 const CreateKelasSchema = z.object({
   nama: z.string().min(1).max(50),
   tingkat: z.number().int().min(1).max(20),
-  kursusId: z.string().uuid().optional(),
+  kursusId: z.string().min(1).optional(),
 });
 
 export async function GET(request: NextRequest) {

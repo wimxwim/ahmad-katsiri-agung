@@ -12,7 +12,7 @@ import { validateCsrf } from "@/lib/csrf-server";
 const UpdateKelasSchema = z.object({
   nama: z.string().min(1).max(50).optional(),
   tingkat: z.number().int().min(1).max(20).optional(),
-  kursusId: z.string().uuid().nullable().optional(),
+  kursusId: z.string().min(1).nullable().optional(),
 });
 
 export async function PATCH(
