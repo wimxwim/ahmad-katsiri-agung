@@ -11,6 +11,7 @@ import {
   soal,
   studentAbility,
   skill,
+  skillMastery,
 } from "@/lib/db/schema";
 import { and, asc, desc, eq, gte, isNull, sql, like, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
@@ -327,6 +328,25 @@ export async function GET(request: NextRequest) {
     ? Math.round(totalSemuaNilai / totalAttemptAll)
     : 0;
 
+  // Skill mastery per siswa
+  const allSiswaIds = siswaList.map(s => s.siswaId);
+  const skillMasteryData = allSiswaIds.length > 0
+    ? await db
+        .select({
+          siswaId: skillMastery.siswaId,
+          nama: users.nama,
+          skillId: skillMastery.skillId,
+          pL: skillMastery.pL,
+          memoryStrength: skillMastery.memoryStrength,
+          repetitionNum: skillMastery.repetitionNum,
+          lastPracticedAt: skillMastery.lastPracticedAt,
+          nextReviewAt: skillMastery.nextReviewAt,
+        })
+        .from(skillMastery)
+        .leftJoin(users, eq(skillMastery.siswaId, users.id))
+        .where(inArray(skillMastery.siswaId, allSiswaIds))
+    : [];
+
   const responseData = {
     data: {
       totalKursus: kursusList.length,
@@ -358,6 +378,7 @@ export async function GET(request: NextRequest) {
         irtC: s.irtC,
         difficulty: s.eloRating < 900 ? "Sulit" : s.eloRating < 1000 ? "Sedang" : "Mudah",
       })),
+      skillMastery: skillMasteryData,
     },
   };
   await cacheSet(cacheK, responseData, 300);
