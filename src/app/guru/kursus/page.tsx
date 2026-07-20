@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Plus, BookOpen, Globe, Lock, Loader2, Share2, Copy, Check } from "lucide-react";
+import { Search, Plus, BookOpen, Globe, Lock, Loader2, Share2, Copy, Check, Pencil, Trash2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 import { csrfHeaders } from "@/lib/csrf";
@@ -32,6 +32,11 @@ export default function KursusListPage() {
   const [inviting, setInviting] = useState<string | null>(null);
   const [inviteLinks, setInviteLinks] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [editJudul, setEditJudul] = useState("");
+  const [editDeskripsi, setEditDeskripsi] = useState("");
 
   async function handleInvite(id: string) {
     setInviting(id);
@@ -52,6 +57,59 @@ export default function KursusListPage() {
       setError(err instanceof Error ? err.message : "Gagal membuat link undangan");
     } finally {
       setInviting(null);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    setDeleting(id);
+    setError("");
+    try {
+      const res = await fetch(`/api/v1/kursus/${id}`, {
+        method: "DELETE",
+        headers: { ...csrfHeaders() },
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || "Gagal menghapus kursus");
+      }
+      setKursus((prev) => prev.filter((k) => k.id !== id));
+      setConfirmDelete(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal menghapus kursus");
+    } finally {
+      setDeleting(null);
+    }
+  }
+
+  async function handleEdit(id: string) {
+    setEditing((prev) => (prev === id ? null : id));
+    const k = kursus.find((c) => c.id === id);
+    if (k) {
+      setEditJudul(k.judul === "[object Object]" ? "" : String(k.judul ?? ""));
+      setEditDeskripsi(k.deskripsi || "");
+    }
+  }
+
+  async function handleSaveEdit(id: string) {
+    if (!editJudul.trim()) return;
+    setError("");
+    try {
+      const res = await fetch(`/api/v1/kursus/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        credentials: "include",
+        body: JSON.stringify({ judul: editJudul.trim(), deskripsi: editDeskripsi.trim() }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || "Gagal mengedit kursus");
+      }
+      const { data } = await res.json();
+      setKursus((prev) => prev.map((k) => (k.id === id ? { ...k, judul: data.judul, deskripsi: data.deskripsi } : k)));
+      setEditing(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal mengedit kursus");
     }
   }
 
@@ -184,7 +242,7 @@ export default function KursusListPage() {
                   {STATUS_BADGE[k.statusPublikasi]?.label || "Draft"}
                 </span>
               </div>
-              <h3 className="font-heading font-semibold text-on-surface mb-1.5">{typeof k.judul === 'string' ? (k.judul === '[object Object]' ? 'Kursus' : k.judul) : String(k.judul ?? 'Kursus')}</h3>
+              <h3 className="font-heading font-semibold text-on-surface mb-1.5">{typeof k.judul === 'string' && k.judul !== '[object Object]' ? k.judul : 'Kursus'}</h3>
               <p className="text-sm text-on-surface-variant line-clamp-2 mb-4">
                 {k.deskripsi || "Tanpa deskripsi"}
               </p>
@@ -231,7 +289,54 @@ export default function KursusListPage() {
                   {inviting === k.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Share2 className="w-3 h-3" />}
                   Undang
                 </button>
+                <span className="text-on-surface-variant/20">|</span>
+                <button
+                  onClick={() => handleEdit(k.id)}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline"
+                >
+                  <Pencil className="w-3 h-3" />
+                  Edit
+                </button>
+                <span className="text-on-surface-variant/20">|</span>
+                <button
+                  onClick={() => setConfirmDelete(k.id)}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:underline"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Hapus
+                </button>
               </div>
+              {editing === k.id && (
+                <div className="mt-3 p-3 rounded-xl bg-blue-50 border border-blue-100 space-y-2">
+                  <input
+                    value={editJudul}
+                    onChange={(e) => setEditJudul(e.target.value)}
+                    placeholder="Judul kursus"
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-border-precision text-sm focus:outline-hidden focus:border-primary/40"
+                  />
+                  <textarea
+                    value={editDeskripsi}
+                    onChange={(e) => setEditDeskripsi(e.target.value)}
+                    placeholder="Deskripsi"
+                    rows={2}
+                    className="w-full px-3 py-2 rounded-lg bg-white border border-border-precision text-sm focus:outline-hidden focus:border-primary/40 resize-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleSaveEdit(k.id)}
+                      className="px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-lg hover:brightness-110"
+                    >
+                      Simpan
+                    </button>
+                    <button
+                      onClick={() => setEditing(null)}
+                      className="px-3 py-1.5 bg-white border border-border-precision text-xs font-semibold rounded-lg hover:bg-surface"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              )}
               {inviteLinks[k.id] && (
                 <div className="mt-3 p-3 rounded-xl bg-primary/5 border border-primary/10">
                   <p className="text-xs font-semibold text-primary mb-1">Link Undangan</p>
@@ -257,6 +362,32 @@ export default function KursusListPage() {
               )}
             </div>
           ))}
+        </div>
+      )}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-xl">
+            <h3 className="font-heading font-semibold text-lg text-on-surface mb-2">Hapus Kursus?</h3>
+            <p className="text-sm text-on-surface-variant mb-6">
+              Kursus yang dihapus tidak bisa dikembalikan. Semua materi, kuis, dan data siswa di kursus ini akan tetap ada namun kursus tidak bisa diakses.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="px-4 py-2 text-sm font-semibold text-on-surface-variant hover:bg-surface rounded-xl"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => handleDelete(confirmDelete)}
+                disabled={deleting === confirmDelete}
+                className="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded-xl hover:bg-red-700 disabled:opacity-50 inline-flex items-center gap-2"
+              >
+                {deleting === confirmDelete ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Hapus
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

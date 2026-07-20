@@ -7,7 +7,10 @@ import { db } from "@/lib/db";
 import { kursus, siswaKursus, users } from "@/lib/db/schema";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
-import { GuardError } from "@/lib/route-guard-v2";
+import { requireGuru, GuardError } from "@/lib/route-guard-v2";
+import { validateCsrf } from "@/lib/csrf-server";
+import { sanitizeText } from "@/lib/sanitize";
+import { z } from "zod";
 
 export async function GET(
   _req: NextRequest,
@@ -33,7 +36,7 @@ export async function GET(
     deskripsi: kursus.deskripsi, harga: kursus.harga, isPublic: kursus.isPublic,
     statusPublikasi: kursus.statusPublikasi, publishedAt: kursus.publishedAt,
     createdAt: kursus.createdAt, updatedAt: kursus.updatedAt,
-  }).from(kursus).where(eq(kursus.id, id)).limit(1);
+  }).from(kursus).where(and(eq(kursus.id, id), isNull(kursus.deletedAt))).limit(1);
     if (!result.length) {
       return apiError("Kursus tidak ditemukan", 404);
     }
@@ -93,6 +96,107 @@ export async function GET(
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Kursus detail error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
+    const session = await requireGuru(request);
+
+    const { id } = await params;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return apiError("Format ID tidak valid", 400);
+    }
+
+    const [existing] = await db
+      .select({ id: kursus.id, guruId: kursus.guruId })
+      .from(kursus)
+      .where(eq(kursus.id, id))
+      .limit(1);
+
+    if (!existing) return apiError("Kursus tidak ditemukan", 404);
+    if (existing.guruId !== session.userId && session.role !== "owner") {
+      return apiError("Anda tidak punya akses ke kursus ini", 403);
+    }
+
+    const now = new Date();
+    await db
+      .update(kursus)
+      .set({ deletedAt: now, updatedAt: now })
+      .where(eq(kursus.id, id));
+
+    return NextResponse.json({ success: true, data: { id, deletedAt: now.toISOString() } });
+  } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
+    console.error("Kursus DELETE error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
+}
+
+const EditKursusSchema = z.object({
+  judul: z.string().min(1).max(200).optional(),
+  deskripsi: z.string().max(500).optional(),
+});
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
+
+    const session = await requireGuru(request);
+
+    const { id } = await params;
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return apiError("Format ID tidak valid", 400);
+    }
+
+    const body = await request.json();
+    const parsed = EditKursusSchema.safeParse(body);
+    if (!parsed.success) {
+      return apiError("VALIDATION_ERROR", "Data tidak valid", parsed.error.flatten(), 400);
+    }
+
+    const [existing] = await db
+      .select({ id: kursus.id, guruId: kursus.guruId, judul: kursus.judul })
+      .from(kursus)
+      .where(eq(kursus.id, id))
+      .limit(1);
+
+    if (!existing) return apiError("Kursus tidak ditemukan", 404);
+    if (existing.guruId !== session.userId && session.role !== "owner") {
+      return apiError("Anda tidak punya akses ke kursus ini", 403);
+    }
+
+    const updateData: Record<string, unknown> = { updatedAt: new Date() };
+    if (parsed.data.judul !== undefined) {
+      updateData.judul = sanitizeText(parsed.data.judul, 200);
+    }
+    if (parsed.data.deskripsi !== undefined) {
+      updateData.deskripsi = sanitizeText(parsed.data.deskripsi, 500);
+    }
+
+    const [updated] = await db
+      .update(kursus)
+      .set(updateData)
+      .where(eq(kursus.id, id))
+      .returning();
+
+    return NextResponse.json({ success: true, data: updated });
+  } catch (e) {
+    if (e instanceof GuardError) return apiError(e.message, e.status);
+    console.error("Kursus PATCH error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }
 }

@@ -8,7 +8,7 @@ import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
 import { db } from "@/lib/db";
 import { kursus } from "@/lib/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, isNull } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       statusPublikasi: kursus.statusPublikasi,
       guruId: kursus.guruId,
       createdAt: kursus.createdAt,
-    }).from(kursus).$dynamic();
+    }).from(kursus).where(isNull(kursus.deletedAt)).$dynamic();
 
     if (isGuruLike) {
       if (isOwner && scope === "all") {

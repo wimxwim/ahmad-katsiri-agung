@@ -309,6 +309,20 @@
       "when": 1753000002000,
       "tag": "0043_add_soal_published_skill_id",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1753000003000,
+      "tag": "0044_add_kursus_invite_fields",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1753000004000,
+      "tag": "0045_add_kursus_deleted_at",
+      "breakpoints": false
     }
   ]
 }
