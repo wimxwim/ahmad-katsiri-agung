@@ -330,6 +330,26 @@ useEffect(() => {
         </div>
       )}
 
+      {draft.status !== "extracted" && !isProcessing && (
+        <div className="mb-6 p-5 bg-glass rounded-2xl border border-border-precision">
+          <h3 className="font-heading font-bold text-lg text-on-surface mb-3">Regenerate AI</h3>
+          <p className="text-sm text-on-surface-variant mb-4">
+            Generate ulang semua konten (materi, kuis, dan soal) dari file sumber yang sama.
+          </p>
+          <button
+            onClick={() => act("/regenerate", "regen-all")}
+            disabled={busy === "regen-all"}
+            className="inline-flex items-center gap-2 bg-white text-on-surface border border-border-precision px-6 py-3 rounded-full text-sm font-semibold hover:bg-surface active:scale-[0.98] disabled:opacity-50 w-full justify-center"
+          >
+            {busy === "regen-all" ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Meregenerasi...</>
+            ) : (
+              <><RefreshCw className="w-4 h-4" /> Regenerate Semua</>
+            )}
+          </button>
+        </div>
+      )}
+
       {allApproved && isReady && (
         <div className="mb-6 p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -554,6 +574,13 @@ useEffect(() => {
                     >
                       <XCircle className="w-3 h-3" /> Tolak
                     </button>
+                    <button
+                      onClick={() => act("/regenerate-quiz", "regen-quiz")}
+                      disabled={busy === "regen-quiz"}
+                      className="inline-flex items-center gap-1.5 bg-white text-on-surface border border-border-precision px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-surface active:scale-[0.98]"
+                    >
+                      <RefreshCw className="w-3 h-3" /> Regenerate
+                    </button>
                   </div>
                 </>
               )}
@@ -599,6 +626,13 @@ useEffect(() => {
                       className="inline-flex items-center gap-1.5 bg-white text-red-600 border border-red-200 px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-red-50 active:scale-[0.98]"
                     >
                       <XCircle className="w-3 h-3" /> Tolak
+                    </button>
+                    <button
+                      onClick={() => act("/regenerate-soal", "regen-soal")}
+                      disabled={busy === "regen-soal"}
+                      className="inline-flex items-center gap-1.5 bg-white text-on-surface border border-border-precision px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-surface active:scale-[0.98]"
+                    >
+                      <RefreshCw className="w-3 h-3" /> Regenerate
                     </button>
                   </div>
                 </>

@@ -66,17 +66,42 @@ async function checkAI(): Promise<{ status: string; latencyMs: number }> {
   }
 }
 
+async function checkTelegram(): Promise<{ status: string; latencyMs: number }> {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (!botToken) {
+    return { status: "not_configured", latencyMs: 0 };
+  }
+  const start = Date.now();
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${botToken}/getMe`, {
+      signal: AbortSignal.timeout(5_000),
+    });
+    const latencyMs = Date.now() - start;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.ok) {
+        return { status: "connected", latencyMs };
+      }
+      return { status: "error_auth", latencyMs };
+    }
+    return { status: `error_${res.status}`, latencyMs };
+  } catch {
+    return { status: "unreachable", latencyMs: Date.now() - start };
+  }
+}
+
 export async function GET() {
   const t0 = performance.now();
-  const [pg, redis, supabase, imagekit, ai] = await Promise.all([
+  const [pg, redis, supabase, imagekit, ai, telegram] = await Promise.all([
     checkPostgres(),
     checkRedis(),
     checkSupabase(),
     checkImageKit(),
     checkAI(),
+    checkTelegram(),
   ]);
 
-  const services = { postgres: pg, redis, supabase, imagekit, ai };
+  const services = { postgres: pg, redis, supabase, imagekit, ai, telegram };
   const allOk = Object.values(services).every(
     (s) => s.status === "connected" || s.status === "not_configured" || s.status === "not_applicable",
   );

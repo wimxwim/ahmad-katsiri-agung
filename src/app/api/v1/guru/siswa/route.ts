@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
         tanggalDaftar: siswaKursus.tanggalDaftar,
       })
       .from(siswaKursus)
-      .where(inArray(siswaKursus.kursusId, kursusIds))
+      .where(and(inArray(siswaKursus.kursusId, kursusIds), eq(siswaKursus.status, "AKTIF")))
       .leftJoin(users, and(eq(siswaKursus.siswaId, users.id), isNull(users.deletedAt)))
       .leftJoin(kursus, eq(siswaKursus.kursusId, kursus.id));
 

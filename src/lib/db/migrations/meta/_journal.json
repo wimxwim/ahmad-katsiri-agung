@@ -260,6 +260,27 @@
       "when": 1786400000019,
       "tag": "0036_add_tier_and_reset",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1752944300000,
+      "tag": "0037_add_token_transaction_chain",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1752944301000,
+      "tag": "0038_enable_rls_remaining",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1752944302000,
+      "tag": "0039_add_kelas_invite_expires_at",
+      "breakpoints": true
     }
   ]
 }

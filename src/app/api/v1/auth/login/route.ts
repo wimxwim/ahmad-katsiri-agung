@@ -31,7 +31,7 @@ const LoginSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`login:${ip}`, 5, 15_000);
+    const rl = await checkRateLimit(`login:${ip}`, 3, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const body = await request.json();
@@ -95,6 +95,12 @@ export async function POST(request: NextRequest) {
       return apiError("NO_PASSWORD_SET", "Akun ini belum punya kata sandi. Masuk lewat Google dulu lalu atur kata sandi di halaman profil.", { email }, 401);
     }
 
+    // Check if account is locked
+    if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
+      const remainingMinutes = Math.ceil((new Date(user.lockedUntil).getTime() - Date.now()) / 60000);
+      return apiError("Akun terkunci karena terlalu banyak percobaan login gagal. Coba lagi dalam " + remainingMinutes + " menit.", 423);
+    }
+
     const result = await verifyPassword(password, user.passwordHash);
     if (!result.valid) {
       const failReason = result.error || "bad_password";
@@ -106,8 +112,24 @@ export async function POST(request: NextRequest) {
         ip,
         portal: portalIntent || "unknown",
       });
+      // Increment failed attempts and lock if threshold reached
+      const newAttempts = (user.failedLoginAttempts || 0) + 1;
+      const lockedUntil = newAttempts >= 5
+        ? new Date(Date.now() + 15 * 60 * 1000)
+        : null;
+      await db.update(users)
+        .set({
+          failedLoginAttempts: newAttempts,
+          lockedUntil: lockedUntil,
+        })
+        .where(eq(users.id, user.id));
       return apiError("Email atau kata sandi salah", 401);
     }
+
+    // Reset failed attempts
+    await db.update(users)
+      .set({ failedLoginAttempts: 0, lockedUntil: null })
+      .where(eq(users.id, user.id));
 
     if (result.needsRehash) {
       const newHash = await hashPassword(password);

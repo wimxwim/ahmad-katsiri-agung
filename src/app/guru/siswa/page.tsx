@@ -40,12 +40,13 @@ export default function SiswaListPage() {
       const params = new URLSearchParams();
       if (kursusId) params.set("kursusId", kursusId);
       const url = `/api/v1/guru/siswa${params.toString() ? `?${params.toString()}` : ""}`;
-      const result = await apiFetch<{ data: SiswaItem[]; kursusOptions: KursusOption[] }>(url, { signal: controller.signal });
+      const result = await apiFetch<SiswaItem[]>(url, { signal: controller.signal });
       if (controller.signal.aborted) return;
       if (!result.ok) throw new Error(result.error || "Gagal memuat data");
       const body = result.data;
-      setSiswa(body?.data || []);
-      if (body?.kursusOptions) setKursusOptions(body.kursusOptions);
+      setSiswa(body || []);
+      const raw = result.raw as { kursusOptions?: KursusOption[] } | null;
+      if (raw?.kursusOptions) setKursusOptions(raw.kursusOptions);
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Gagal memuat data");

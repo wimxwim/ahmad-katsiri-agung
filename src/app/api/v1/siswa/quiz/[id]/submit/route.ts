@@ -9,6 +9,9 @@ import { cacheGet, cacheDel } from "@/lib/cache-layer";
 import { appendEvent } from "@/lib/event-store";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
+import { soal } from "@/lib/db/schema";
+import { inArray } from "drizzle-orm";
+import { processQuizResults } from "@/lib/analytics/quiz-processor";
 
 export const runtime = "nodejs";
 
@@ -39,6 +42,11 @@ export async function POST(
       .where(eq(quizPublished.id, id))
       .limit(1);
     if (!quiz) return apiError("Kuis tidak ditemukan", 404);
+
+    // Fetch original soal records for algorithm data
+    const soalIds = ((quiz as any).soalIds as string[]) || [];
+    const soalRecords = await db.select().from(soal).where(inArray(soal.id, soalIds));
+    const soalMap = new Map(soalRecords.map(s => [s.id, s]));
 
     const [enroll] = await db
       .select({ id: siswaKursus.id })
@@ -159,6 +167,38 @@ export async function POST(
         jawaban: parsed.data.jawaban,
       })
       .returning();
+
+    // Fire-and-forget: process quiz results for analytics
+    const answersForProcessor = soals.map((s, i) => {
+      const soalId = soalIds[i];
+      const soalRecord = soalId ? soalMap.get(soalId) : null;
+      const userAnswer = parsed.data.jawaban[s.id];
+      let isCorrect = false;
+      if (s.tipe === "PG") {
+        isCorrect = typeof userAnswer === "string" && userAnswer.toUpperCase() === s.kunci.toUpperCase();
+      } else if (s.tipe === "ISIAN") {
+        const u = typeof userAnswer === "string" ? userAnswer.trim().toLowerCase() : "";
+        const c = s.kunci.trim().toLowerCase();
+        isCorrect = u === c;
+      }
+      return {
+        soalId: soalId || s.id,
+        isCorrect,
+        jawabanSiswa: typeof userAnswer === "string" ? userAnswer : JSON.stringify(userAnswer || ""),
+        waktuJawabDetik: Math.round(parsed.data.durasiDetik / soals.length),
+        irtA: soalRecord?.irtA ?? 1.0,
+        irtB: soalRecord?.irtB ?? 0.0,
+        irtC: soalRecord?.irtC ?? 0.25,
+        eloRating: soalRecord?.eloRating ?? 1000,
+      };
+    });
+
+    processQuizResults({
+      siswaId: session.userId!,
+      kursusId: quiz.kursusId,
+      quizSessionId: id,
+      answers: answersForProcessor,
+    }).catch(err => console.error("Quiz processor failed:", err));
 
     await appendEvent(`quiz:${id}`, "quiz.attempt_submitted", {
       siswaId: session.userId,

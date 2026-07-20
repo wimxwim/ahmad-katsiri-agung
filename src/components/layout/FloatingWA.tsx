@@ -9,6 +9,7 @@ const WA_NUMBER_FALLBACK = process.env.NEXT_PUBLIC_WA_NUMBER || WA_NUMBER;
 const DASHBOARD_PREFIXES = ["/guru", "/siswa", "/owner", "/admin-sekolah", "/orang-tua"];
 
 export function FloatingWA({ waNumber }: { waNumber?: string }) {
+  if (!WA_NUMBER) return null;
   const pathname = usePathname();
   const num = waNumber ?? WA_NUMBER_FALLBACK;
   const isDashboard = DASHBOARD_PREFIXES.some((p) => pathname.startsWith(p));

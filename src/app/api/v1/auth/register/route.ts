@@ -22,7 +22,12 @@ import { INITIAL_TOKEN_BALANCE } from "@/lib/token-constants";
 const RegisterSchema = z.object({
   nama: z.string().min(2).max(100),
   email: z.string().email().max(255),
-  password: z.string().min(8).max(128),
+  password: z.string()
+    .min(8, "Password minimal 8 karakter")
+    .max(128, "Password maksimal 128 karakter")
+    .refine((val) => /[A-Z]/.test(val), "Password harus mengandung minimal 1 huruf besar")
+    .refine((val) => /[a-z]/.test(val), "Password harus mengandung minimal 1 huruf kecil")
+    .refine((val) => /[0-9]/.test(val), "Password harus mengandung minimal 1 angka"),
   role: z.enum(["SISWA", "ORANG_TUA", "GURU", "ASISTEN_GURU", "OWNER", "ADMIN_SEKOLAH"]).optional().default("SISWA"),
   kelas: z.string().max(10).optional(),
   noAbsen: z.string().max(5).optional(),

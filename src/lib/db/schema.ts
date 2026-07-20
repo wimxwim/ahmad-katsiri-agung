@@ -75,6 +75,8 @@ export const users = pgTable(
     lastActiveAt: timestamp("last_active_at", { withTimezone: true }),
     suspendedAt: timestamp("suspended_at", { withTimezone: true }),
     uploadCount: integer("upload_count").notNull().default(0),
+    failedLoginAttempts: integer("failed_login_attempts").notNull().default(0),
+    lockedUntil: timestamp("locked_until", { withTimezone: true }),
   },
   (table) => [
     index("users_sekolah_id_idx").on(table.sekolahId),
@@ -425,6 +427,7 @@ export const transaksi = pgTable(
   (t) => [
     index("transaksi_status_idx").on(t.status),
     index("transaksi_siswa_idx").on(t.siswaId),
+    index("transaksi_kursus_id_idx").on(t.kursusId),
   ]
 );
 
@@ -717,6 +720,10 @@ export const studentAbilityRelations = relations(studentAbility, ({ one }) => ({
     fields: [studentAbility.siswaId],
     references: [users.id],
   }),
+  kursus: one(kursus, {
+    fields: [studentAbility.kursusId],
+    references: [kursus.id],
+  }),
 }));
 
 export const skillMasteryRelations = relations(skillMastery, ({ one }) => ({
@@ -770,6 +777,10 @@ export const transaksiRelations = relations(transaksi, ({ one }) => ({
   kursus: one(kursus, {
     fields: [transaksi.kursusId],
     references: [kursus.id],
+  }),
+  siswa: one(users, {
+    fields: [transaksi.siswaId],
+    references: [users.id],
   }),
 }));
 
@@ -964,6 +975,7 @@ export const quizPublished = pgTable(
   },
   (t) => ({
     kursusIdx: index("quiz_published_kursus_idx").on(t.kursusId),
+    guruIdx: index("quiz_published_guru_id_idx").on(t.guruId),
   }),
 );
 
@@ -982,6 +994,7 @@ export const soalPublished = pgTable(
   },
   (t) => ({
     quizIdx: index("soal_published_quiz_idx").on(t.quizPublishedId, t.urutan),
+    aiGenIdx: index("soal_published_ai_generation_id_idx").on(t.aiGenerationId),
   }),
 );
 
@@ -1316,6 +1329,31 @@ export const payments = pgTable("payments", {
 }, (t) => ({
   userStatusIdx: index("idx_payments_user_status").on(t.userId, t.status),
   statusIdx: index("idx_payments_status").on(t.status, t.createdAt),
+}));
+
+export const paymentsRelations = relations(payments, ({ one }) => ({
+  user: one(users, {
+    fields: [payments.userId],
+    references: [users.id],
+  }),
+}));
+
+export const aiRequestsRelations = relations(aiRequests, ({ one }) => ({
+  user: one(users, {
+    fields: [aiRequests.userId],
+    references: [users.id],
+  }),
+}));
+
+export const quotaUsagesRelations = relations(quotaUsages, ({ one }) => ({
+  user: one(users, {
+    fields: [quotaUsages.userId],
+    references: [users.id],
+  }),
+  quota: one(quotas, {
+    fields: [quotaUsages.quotaId],
+    references: [quotas.id],
+  }),
 }));
 
 export const onboardingProgress = pgTable("onboarding_progress", {

@@ -12,6 +12,7 @@ interface KursusDetail {
   judul: string;
   deskripsi: string | null;
   enrolledCount?: number;
+  enrolledStudents?: { siswaId: string; nama: string | null; email: string | null; status: string | null; tanggalDaftar: string | null }[];
   quizSelesaiCount?: number;
 }
 interface SiswaItem { siswaId: string; nama: string; skorRataRata: number }
@@ -37,20 +38,20 @@ export default function KursusDetailPage() {
         setKursus(kursusData.data);
         const nilaiData = await nilaiRes.json().catch(() => ({ data: [] }));
         const logEntries: { siswaId: string; nama: string; nilai: number | null }[] = nilaiData.data || [];
-        const siswaMap = new Map<string, { nama: string; totalNilai: number; count: number }>();
+        const skorMap = new Map<string, number[]>();
         for (const entry of logEntries) {
-          const key = entry.siswaId;
-          const existing = siswaMap.get(key) || { nama: entry.nama, totalNilai: 0, count: 0 };
           if (entry.nilai !== null && entry.nilai !== undefined) {
-            existing.totalNilai += entry.nilai;
-            existing.count++;
+            const arr = skorMap.get(entry.siswaId) || [];
+            arr.push(entry.nilai);
+            skorMap.set(entry.siswaId, arr);
           }
-          siswaMap.set(key, existing);
         }
-        const siswaList: SiswaItem[] = [];
-        for (const [siswaId, v] of siswaMap) {
-          siswaList.push({ siswaId, nama: v.nama, skorRataRata: v.count > 0 ? Math.round(v.totalNilai / v.count) : 0 });
-        }
+        const enrolledRaw = kursusData.data.enrolledStudents || [];
+        const siswaList: SiswaItem[] = enrolledRaw.map((e: { siswaId: string; nama: string | null }) => {
+          const scores = skorMap.get(e.siswaId);
+          const skorRataRata = scores && scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+          return { siswaId: e.siswaId, nama: e.nama || "Tanpa Nama", skorRataRata };
+        });
         setSiswa(siswaList);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Gagal memuat data");

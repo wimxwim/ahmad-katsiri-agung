@@ -4,8 +4,8 @@ import { verifySession } from "@/lib/auth";
 import { SESSION_COOKIE_NAME } from "@/lib/session";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { kursus, siswaKursus } from "@/lib/db/schema";
-import { and, eq, sql } from "drizzle-orm";
+import { kursus, siswaKursus, users } from "@/lib/db/schema";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { GuardError } from "@/lib/route-guard-v2";
 
@@ -59,6 +59,23 @@ export async function GET(
       console.error("enrolledCount query failed:", e);
     }
 
+    let enrolledStudents: { siswaId: string; nama: string | null; email: string | null; status: string | null; tanggalDaftar: Date | null }[] = [];
+    try {
+      enrolledStudents = await db
+        .select({
+          siswaId: siswaKursus.siswaId,
+          nama: users.nama,
+          email: users.email,
+          status: siswaKursus.status,
+          tanggalDaftar: siswaKursus.tanggalDaftar,
+        })
+        .from(siswaKursus)
+        .leftJoin(users, and(eq(siswaKursus.siswaId, users.id), isNull(users.deletedAt)))
+        .where(and(eq(siswaKursus.kursusId, id), eq(siswaKursus.status, "AKTIF")));
+    } catch (e) {
+      console.error("enrolledStudents query failed:", e);
+    }
+
     let quizSelesaiCount = 0;
     try {
       const [count] = await db
@@ -72,7 +89,7 @@ export async function GET(
     }
 
     const cc = session ? "private, max-age=30, stale-while-revalidate=60" : "public, max-age=60, stale-while-revalidate=120";
-    return NextResponse.json({ data: { ...k, enrolledCount, quizSelesaiCount } }, { headers: { "Cache-Control": cc, "Vary": "Cookie" } });
+    return NextResponse.json({ data: { ...k, enrolledCount, enrolledStudents, quizSelesaiCount } }, { headers: { "Cache-Control": cc, "Vary": "Cookie" } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Kursus detail error:", e);

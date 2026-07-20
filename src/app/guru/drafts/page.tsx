@@ -22,7 +22,7 @@ interface DraftItem {
 }
 
 const STATUS_META: Record<string, { label: string; color: string; icon: typeof Sparkles }> = {
-  queued: { label: "Antrian", color: "bg-blue-50 text-blue-700", icon: Clock },
+  queued: { label: "Siap diproses", color: "bg-blue-50 text-blue-700", icon: Clock },
   extracting: { label: "Membaca dokumen...", color: "bg-amber-50 text-amber-700", icon: RefreshCw },
   extracted: { label: "Dokumen sudah dibaca", color: "bg-amber-50 text-amber-700", icon: FileText },
   generating: { label: "Sedang menyiapkan...", color: "bg-amber-50 text-amber-700", icon: Sparkles },
@@ -39,7 +39,7 @@ export default function GuruDraftsPage() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [kategoriFilter, setKategoriFilter] = useState("");
+  const [kategoriFilter, setKategoriFilter] = useState("semua");
   const [generatingIds, setGeneratingIds] = useState<Set<string>>(new Set());
   const [generateError, setGenerateError] = useState("");
   const [tokenBalance, setTokenBalance] = useState<number | null>(null);
@@ -145,7 +145,7 @@ export default function GuruDraftsPage() {
         (d.materiJudul || "").toLowerCase().includes(q) ||
         d.sourceFileName.toLowerCase().includes(q);
       const matchStatus = !statusFilter || d.status === statusFilter;
-      const matchKategori = !kategoriFilter || d.kategori === kategoriFilter;
+      const matchKategori = kategoriFilter === "semua" || d.kategori === kategoriFilter;
       return matchSearch && matchStatus && matchKategori;
     });
   }, [drafts, search, statusFilter, kategoriFilter]);
@@ -264,10 +264,12 @@ export default function GuruDraftsPage() {
                   onChange={(e) => setKategoriFilter(e.target.value)}
                   className="pl-10 pr-4 py-2.5 rounded-xl border border-border-precision bg-white text-sm outline-hidden focus:border-primary/40 appearance-none cursor-pointer min-w-[140px]"
                 >
-                  <option value="">Semua Kategori</option>
-                  {uniqueKategoris.map((k) => (
-                    <option key={k} value={k}>{k}</option>
-                  ))}
+                  <option value="semua">Semua Kategori</option>
+                  <option value="materi">📄 Materi</option>
+                  <option value="ppt">📊 PPT</option>
+                  <option value="soal">📝 Soal</option>
+                  <option value="docs">📋 Docs</option>
+                  <option value="modul_ajar">📚 Modul Ajar</option>
                 </select>
               </div>
             )}

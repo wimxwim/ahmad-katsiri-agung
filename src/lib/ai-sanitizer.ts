@@ -216,6 +216,19 @@ function normalizeSoalPayload(raw: unknown): unknown {
         : Array.isArray(raw.data)
           ? raw.data
           : raw.soal;
+
+  // Unwrap nested: {result: {soal: [...]}}, {data: {questions: [...]}}, etc.
+  const keys = Object.keys(raw);
+  if (keys.length === 1) {
+    const inner = (raw as Record<string, unknown>)[keys[0]];
+    if (isObject(inner)) {
+      const innerKeys = Object.keys(inner);
+      if (innerKeys.includes("soal") || innerKeys.includes("items") || innerKeys.includes("questions") || innerKeys.includes("data")) {
+        return normalizeSoalPayload(inner);
+      }
+    }
+  }
+
   const soal = Array.isArray(source) ? source.map(normalizeSoalItem) : source;
   return { ...raw, soal };
 }
@@ -254,6 +267,19 @@ function normalizeOpsi(value: unknown): Record<string, string> | undefined {
     return Object.keys(output).length > 0 ? output : undefined;
   }
 
+  // Parse string opsi: "A. xxx\nB. yyy" -> {A: "xxx", B: "yyy"}
+  if (typeof value === "string") {
+    const lines = value.split(/\n|\\n/).filter(Boolean);
+    const parsed: Record<string, string> = {};
+    for (const line of lines) {
+      const match = line.match(/^([A-E])[.)]\s*(.+)/);
+      if (match) {
+        parsed[match[1]] = match[2].trim();
+      }
+    }
+    if (Object.keys(parsed).length >= 2) return parsed;
+  }
+
   if (!isObject(value)) return undefined;
 
   const output: Record<string, string> = {};
@@ -286,6 +312,13 @@ function cleanOptionEntry(value: unknown): string {
 }
 
 function normalizeKunci(value: unknown, tipe: unknown, opsi: Record<string, string> | undefined): unknown {
+  // Convert numeric keys: 0->A, 1->B, 2->C, 3->D, 4->E
+  if (typeof value === "number" || /^\d+$/.test(String(value))) {
+    const num = typeof value === "number" ? value : parseInt(String(value), 10);
+    if (num >= 0 && num <= 4) {
+      return String.fromCharCode(65 + num); // 0->A, 1->B, ...
+    }
+  }
   if (typeof value !== "string") return value;
   if (tipe !== "PG" || !opsi) return value;
   const cleaned = cleanText(value, SAFE_TEXT_LIMITS.kunci);
