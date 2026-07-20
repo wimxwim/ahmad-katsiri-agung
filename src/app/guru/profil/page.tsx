@@ -17,6 +17,10 @@ import {
   Crown,
   Lock,
   Sparkles,
+  Key,
+  Shield,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -84,6 +88,13 @@ export default function GuruProfilPage() {
   const [donated, setDonated] = useState(false);
   const [donateError, setDonateError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordDone, setPasswordDone] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mountedRef = useRef(true);
 
@@ -149,6 +160,39 @@ export default function GuruProfilPage() {
     const file = e.target.files?.[0];
     if (file) handleDonateWithProof(file);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleSetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError("");
+
+    if (newPassword.length < 8) {
+      setPasswordError("Password minimal 8 karakter.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Password tidak cocok.");
+      return;
+    }
+
+    setPasswordLoading(true);
+    const res = await apiFetch("/api/v1/auth/set-password", {
+      method: "POST",
+      body: JSON.stringify({ newPassword }),
+    });
+    setPasswordLoading(false);
+
+    if (res.ok) {
+      setPasswordDone(true);
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => {
+        setPasswordDone(false);
+        setShowPasswordForm(false);
+      }, 2000);
+    } else {
+      setPasswordError(res.error || "Gagal mengatur password.");
+    }
   };
 
   const allFailed = !loading && !account && !balance && !dashboard;
@@ -362,6 +406,107 @@ export default function GuruProfilPage() {
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* Ganti Password Card */}
+      {account && (
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...SPRING_CONFIG, delay: 0.22 }}
+          className="bg-glass border border-border-precision rounded-card p-6 shadow-glass"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-heading font-semibold text-lg text-on-surface flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              Keamanan
+            </h2>
+          </div>
+
+          {!showPasswordForm ? (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-on-surface">Password</p>
+                <p className="text-xs text-on-surface-variant mt-0.5">
+                  {account.hasPassword ? "••••••••" : "Belum diatur"}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowPasswordForm(true);
+                  setPasswordDone(false);
+                  setPasswordError("");
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-all"
+              >
+                <Key className="w-4 h-4" />
+                {account.hasPassword ? "Ganti" : "Atur"}
+              </button>
+            </div>
+          ) : passwordDone ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex items-center gap-3 bg-emerald-50 text-emerald-700 rounded-xl px-4 py-3"
+            >
+              <CheckCircle className="w-5 h-5 shrink-0" />
+              <span className="text-sm font-semibold">Password berhasil disimpan!</span>
+            </motion.div>
+          ) : (
+            <form onSubmit={handleSetPassword} className="space-y-3">
+              {passwordError && (
+                <div className="flex items-center gap-2 bg-red-50 text-red-700 rounded-xl px-4 py-2.5 text-sm">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  {passwordError}
+                </div>
+              )}
+              <div className="relative">
+                <input
+                  type={showPw ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Password baru (min. 8 karakter)"
+                  required
+                  className="w-full px-4 py-2.5 pr-12 rounded-full bg-white/80 border border-border-precision text-sm text-on-surface placeholder:text-on-surface-variant/40 outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(!showPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-on-surface-variant hover:text-on-surface"
+                >
+                  {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <input
+                type={showPw ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Konfirmasi password baru"
+                required
+                className="w-full px-4 py-2.5 rounded-full bg-white/80 border border-border-precision text-sm text-on-surface placeholder:text-on-surface-variant/40 outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={passwordLoading}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-primary text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all disabled:opacity-50"
+                >
+                  {passwordLoading ? "Menyimpan..." : "Simpan"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordForm(false);
+                    setPasswordError("");
+                  }}
+                  className="px-4 py-2.5 rounded-full text-sm font-semibold bg-white/60 border border-border-precision text-on-surface-variant hover:text-on-surface transition-all"
+                >
+                  Batal
+                </button>
+              </div>
+            </form>
           )}
         </motion.div>
       )}

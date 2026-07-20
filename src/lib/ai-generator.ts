@@ -378,7 +378,7 @@ export async function runGeneration(
           errorMessage: soalParsed ? null : "Soal AI belum valid. Materi dan quiz tetap siap direview; gunakan regenerate soal dari halaman draft.",
           tokenInput: tokensIn,
           tokenOutput: tokensOut,
-          modelName: getModelName(),
+          modelName: typeof getModelName() === 'string' ? getModelName() : String(getModelName() ?? 'unknown'),
           updatedAt: new Date(),
         })
         .where(eq(aiGeneration.id, generationId))
@@ -423,7 +423,7 @@ export async function runGeneration(
       soalItems: (u.soalItems as unknown as GeneratedSoal[]) || [],
       tokensIn: u.tokenInput || 0,
       tokensOut: u.tokenOutput || 0,
-      modelName: u.modelName || getModelName(),
+      modelName: typeof (u.modelName || getModelName()) === 'string' ? (u.modelName || getModelName()) : String(u.modelName || getModelName() || 'unknown'),
     };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Generation gagal";    await db
@@ -567,7 +567,7 @@ export async function runGenerationFromText(
       errorMessage: soalParsed ? null : "Soal belum valid. Materi dan quiz siap direview.",
       tokenInput: tokensIn,
       tokenOutput: tokensOut,
-      modelName: getModelName(),
+      modelName: typeof getModelName() === 'string' ? getModelName() : String(getModelName() ?? 'unknown'),
       updatedAt: new Date(),
     })
     .where(eq(aiGeneration.id, generationId));

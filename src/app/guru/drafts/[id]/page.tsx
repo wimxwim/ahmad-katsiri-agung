@@ -252,7 +252,7 @@ useEffect(() => {
                 Detail teknis
               </summary>
               <p className="text-xs text-on-surface-variant/60 mt-1">
-                Model: {typeof draft.modelName === 'string' ? draft.modelName : (draft.modelName && typeof draft.modelName === 'object' ? JSON.stringify(draft.modelName) : 'Tidak diketahui')}
+                Model: {typeof draft.modelName === 'string' ? (draft.modelName === '[object Object]' ? 'Tidak diketahui' : draft.modelName) : (draft.modelName && typeof draft.modelName === 'object' ? JSON.stringify(draft.modelName) : 'Tidak diketahui')}
                 {draft.tokenInput != null && draft.tokenOutput != null && (
                   <span> · {draft.tokenInput + draft.tokenOutput} token</span>
                 )}
@@ -551,7 +551,7 @@ useEffect(() => {
                           <ul className="text-xs mt-1 space-y-0.5 list-none pl-0">
                             {Object.entries(s.opsi).map(([k, v]) => (
                               <li key={k} className={s.kunci === k ? "font-semibold text-emerald-700" : ""}>
-                                {k}. {v} {s.kunci === k && <Check className="w-3 h-3 inline shrink-0" />}
+                                {k}. {typeof v === 'string' ? (v === '[object Object]' ? '?' : v) : String(v ?? '')} {s.kunci === k && <Check className="w-3 h-3 inline shrink-0" />}
                               </li>
                             ))}
                           </ul>
@@ -601,7 +601,7 @@ useEffect(() => {
                           <ul className="text-xs mt-1 space-y-0.5 list-none pl-0">
                             {Object.entries(s.opsi).map(([k, v]) => (
                               <li key={k} className={s.kunci === k ? "font-semibold text-emerald-700" : ""}>
-                                {k}. {v} {s.kunci === k && <Check className="w-3 h-3 inline shrink-0" />}
+                                {k}. {typeof v === 'string' ? (v === '[object Object]' ? '?' : v) : String(v ?? '')} {s.kunci === k && <Check className="w-3 h-3 inline shrink-0" />}
                               </li>
                             ))}
                           </ul>
