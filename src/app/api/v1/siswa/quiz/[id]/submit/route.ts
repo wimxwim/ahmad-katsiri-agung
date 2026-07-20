@@ -3,7 +3,7 @@ import { z } from "zod";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { quizAttempt, quizPublished, soalPublished, siswaKursus } from "@/lib/db/schema";
+import { quizAttempt, quizPublished, quizSession, soalPublished, siswaKursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { cacheGet, cacheDel } from "@/lib/cache-layer";
 import { appendEvent } from "@/lib/event-store";
@@ -196,10 +196,23 @@ export async function POST(
       };
     });
 
+    // Buat quizSession row untuk analytics FK
+    const [quizSessionRow] = await db
+      .insert(quizSession)
+      .values({
+        kursusId: quiz.kursusId,
+        judul: `Sesi ${quiz.judul}`,
+        durasiMenit: Math.ceil(parsed.data.durasiDetik / 60),
+        soalIds: Object.keys(parsed.data.jawaban),
+        isActive: false,
+        createdAt: new Date(),
+      })
+      .returning();
+
     processQuizResults({
       siswaId: session.userId!,
       kursusId: quiz.kursusId,
-      quizSessionId: id,
+      quizSessionId: quizSessionRow.id,
       answers: answersForProcessor,
     }).catch(err => console.error("Quiz processor failed:", err));
 
