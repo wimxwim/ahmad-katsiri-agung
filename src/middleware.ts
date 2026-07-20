@@ -9,6 +9,7 @@ const PUBLIC_PREFIXES = [
   "/api/readyz",
   "/api/csp-report",
   "/api/v1/payment/webhook",
+  "/images",
 ];
 
 const PUBLIC_PATHS = new Set([
@@ -34,6 +35,8 @@ const PUBLIC_PATHS = new Set([
   "/offline",
   "/robots.txt",
   "/apple-icon.png",
+  "/qris-gopay.png",
+  "/logo.webp",
 ]);
 
 const ROLE_ROUTE_MAP: Record<string, string[]> = {
@@ -76,12 +79,14 @@ export default async function middleware(request: NextRequest) {
     }
   }
 
+  const isStaticAsset = /\.(png|webp|jpg|jpeg|gif|svg|ico|css|js|woff2?|ttf|pdf|json|xml|txt)$/i.test(pathname);
   const isPublic =
     PUBLIC_PATHS.has(pathname) ||
     PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
     pathname.startsWith("/kursus/") ||
     pathname.startsWith("/verify/") ||
-    pathname.startsWith("/undang/");
+    pathname.startsWith("/undang/") ||
+    isStaticAsset;
   if (isPublic) return response;
 
   const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
