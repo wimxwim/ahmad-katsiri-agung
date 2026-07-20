@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Loader2, AlertCircle, ClipboardList, FileText } from "lucide-react";
+import { MateriRenderer } from "@/components/siswa/MateriRenderer";
 import { csrfHeaders } from "@/lib/csrf";
 
 interface MateriDetail {
@@ -13,6 +14,10 @@ interface MateriDetail {
   ringkasan: string | null;
   publishedAt: string;
   nextId: string | null;
+  quizId: string | null;
+  quizJudul: string | null;
+  soalBatchId: string | null;
+  soalBatchTotal: number | null;
 }
 
 export default function SiswaMateriPage() {
@@ -116,34 +121,54 @@ export default function SiswaMateriPage() {
           </div>
         </div>
 
-        <div className="prose prose-sm max-w-none text-on-surface whitespace-pre-wrap leading-relaxed">
-          {materi.konten}
-        </div>
+        <MateriRenderer konten={materi.konten} />
 
         <div className="mt-8 pt-6 border-t border-border-precision/40">
           {done ? (
-            <div className="flex items-center gap-3 p-4 rounded-2xl border border-emerald-300 bg-emerald-50/40 text-emerald-900">
-              <CheckCircle2 className="w-5 h-5 shrink-0" />
-              <div className="flex-1">
-                <p className="font-semibold">Materi ditandai selesai</p>
-                <p className="text-sm">Progresmu sudah tersimpan. Lanjut ke materi berikutnya?</p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-4 rounded-2xl border border-emerald-300 bg-emerald-50/40 text-emerald-900">
+                <CheckCircle2 className="w-5 h-5 shrink-0" />
+                <div className="flex-1">
+                  <p className="font-semibold">Materi ditandai selesai</p>
+                  <p className="text-sm">Progresmu sudah tersimpan.</p>
+                </div>
               </div>
-              {materi.nextId ? (
-                <Link
-                  href={`/siswa/materi/${materi.nextId}`}
-                  className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all shrink-0"
-                >
-                  Lanjut
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              ) : (
-                <Link
-                  href="/siswa/materi"
-                  className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all shrink-0"
-                >
-                  Lihat semua materi
-                </Link>
-              )}
+              <div className="flex flex-wrap gap-3">
+                {materi.quizId && (
+                  <Link
+                    href={`/siswa/cbt/${materi.quizId}`}
+                    className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
+                  >
+                    <ClipboardList className="w-4 h-4" />
+                    Kerjakan Quiz
+                  </Link>
+                )}
+                {materi.soalBatchId && (
+                  <Link
+                    href={`/siswa/soal/${materi.soalBatchId}`}
+                    className="inline-flex items-center gap-2 bg-tertiary text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Soal Latihan{materi.soalBatchTotal ? ` (${materi.soalBatchTotal})` : ""}
+                  </Link>
+                )}
+                {materi.nextId ? (
+                  <Link
+                    href={`/siswa/materi/${materi.nextId}`}
+                    className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
+                  >
+                    Lanjut
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                ) : (
+                  <Link
+                    href="/siswa/materi"
+                    className="inline-flex items-center gap-2 border border-border-precision text-on-surface-variant px-4 py-2.5 rounded-full text-sm font-semibold hover:bg-surface active:scale-[0.98] transition-all"
+                  >
+                    Lihat semua materi
+                  </Link>
+                )}
+              </div>
             </div>
           ) : showConfirm ? (
             <div className="flex items-center gap-3">

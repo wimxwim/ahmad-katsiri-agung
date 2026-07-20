@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { MathRenderer } from "@/components/ui/MathRenderer";
 import { cn } from "@/lib/utils";
+import { useQuizLock } from "@/hooks/useQuizLock";
+import { QuizLockOverlay } from "@/components/siswa/QuizLockOverlay";
 
 type QuizState = "intro" | "playing" | "result";
 
@@ -88,6 +90,17 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
   });
 
   isianTextRef.current = isianText;
+
+  const onMaxViolations = useCallback(() => {
+    setQuizState("result");
+  }, []);
+
+  const lock = useQuizLock({
+    enabled: quizState === "playing",
+    mode: quiz.modeEvaluasi,
+    maxViolations: 3,
+    onMaxViolations,
+  });
 
   const totalSeconds = quiz.durasiMenit * 60;
 
@@ -497,6 +510,13 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
 
   return (
     <div className="max-w-2xl mx-auto">
+      <QuizLockOverlay
+        show={lock.showWarning}
+        violations={lock.violations}
+        maxViolations={3}
+        mode={quiz.modeEvaluasi}
+      />
+
       <div className="flex items-center justify-between mb-3">
         <button onClick={handleExit} className="inline-flex items-center gap-1 text-sm text-on-surface-variant hover:text-red-500 transition-colors">
           <ArrowLeft className="w-4 h-4" />

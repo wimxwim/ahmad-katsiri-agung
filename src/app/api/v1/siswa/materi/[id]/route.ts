@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { materiPublished, materiRead, siswaKursus } from "@/lib/db/schema";
+import { materiPublished, materiRead, siswaKursus, quizPublished, soalPublished } from "@/lib/db/schema";
 import { and, eq, gt, asc } from "drizzle-orm";
+import { isNull, sql } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
 
@@ -61,6 +62,23 @@ export async function GET(
       .orderBy(asc(materiPublished.urutan))
       .limit(1);
 
+    const [relatedQuiz] = await db
+      .select({ id: quizPublished.id, judul: quizPublished.judul })
+      .from(quizPublished)
+      .where(eq(quizPublished.aiGenerationId, row.aiGenerationId))
+      .limit(1);
+
+    const soalCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(soalPublished)
+      .where(
+        and(
+          eq(soalPublished.aiGenerationId, row.aiGenerationId),
+          isNull(soalPublished.quizPublishedId),
+        ),
+      )
+      .then((r) => Number(r[0]?.count ?? 0));
+
     if (existing) {
       await db
         .update(materiRead)
@@ -73,7 +91,16 @@ export async function GET(
       });
     }
 
-    return NextResponse.json({ data: { ...row, nextId: nextRow?.id ?? null } });
+    return NextResponse.json({
+      data: {
+        ...row,
+        nextId: nextRow?.id ?? null,
+        quizId: relatedQuiz?.id ?? null,
+        quizJudul: relatedQuiz?.judul ?? null,
+        soalBatchId: soalCount > 0 ? row.aiGenerationId : null,
+        soalBatchTotal: soalCount,
+      },
+    });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Materi detail error:", e);
