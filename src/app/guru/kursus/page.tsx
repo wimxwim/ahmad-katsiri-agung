@@ -184,7 +184,7 @@ export default function KursusListPage() {
                   {STATUS_BADGE[k.statusPublikasi]?.label || "Draft"}
                 </span>
               </div>
-              <h3 className="font-heading font-semibold text-on-surface mb-1.5">{k.judul}</h3>
+              <h3 className="font-heading font-semibold text-on-surface mb-1.5">{typeof k.judul === 'string' ? (k.judul === '[object Object]' ? 'Kursus' : k.judul) : String(k.judul ?? 'Kursus')}</h3>
               <p className="text-sm text-on-surface-variant line-clamp-2 mb-4">
                 {k.deskripsi || "Tanpa deskripsi"}
               </p>

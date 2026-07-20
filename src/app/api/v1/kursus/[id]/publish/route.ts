@@ -59,12 +59,17 @@ export async function PATCH(
       .where(where)
       .returning();
 
-    await appendEvent(`kursus:${id}`, "kursus.status_changed", {
-      guruId: session.userId,
-      from: existing.statusPublikasi,
-      to: parsed.data.status,
-      publishedAt: publishedAt?.toISOString() || null,
-    });
+    try {
+      await appendEvent(`kursus:${id}`, "kursus.status_changed", {
+        guruId: session.userId,
+        from: existing.statusPublikasi,
+        to: parsed.data.status,
+        publishedAt: publishedAt?.toISOString() || null,
+      });
+    } catch (err) {
+      console.error("Failed to append kursus event:", err);
+      // Non-blocking: kursus status update already succeeded
+    }
 
     return NextResponse.json({ data: updated });
   } catch (e) {

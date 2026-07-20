@@ -111,7 +111,7 @@ export default function KursusDetailPage() {
 
       <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
         <div>
-          <h1 className="font-heading font-bold text-2xl text-on-surface">{kursus.judul}</h1>
+          <h1 className="font-heading font-bold text-2xl text-on-surface">{typeof kursus.judul === 'string' ? (kursus.judul === '[object Object]' ? 'Kursus' : kursus.judul) : String(kursus.judul ?? 'Kursus')}</h1>
           <p className="text-on-surface-variant text-sm mt-1">{kursus.deskripsi || ""}</p>
         </div>
         <Link

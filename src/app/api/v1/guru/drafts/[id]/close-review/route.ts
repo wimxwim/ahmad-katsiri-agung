@@ -229,10 +229,15 @@ export async function POST(
       return apiError("Gagal menerbitkan draft. Coba lagi.", 500);
     }
 
-    await appendEvent(`gen:${session.userId}`, "gen.review_closed", {
-      generationId: id,
-      fullyApproved: allApproved,
-    });
+    try {
+      await appendEvent(`gen:${session.userId}`, "gen.review_closed", {
+        generationId: id,
+        fullyApproved: allApproved,
+      });
+    } catch (err) {
+      console.error("Failed to append close-review event:", err);
+      // Non-blocking
+    }
 
     if (allApproved && row.fileMateriId) {
       await db

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { requireNotSuspended } from "@/lib/token-service";
+import { requireNotSuspended, SubscriptionLockedError } from "@/lib/token-service";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
@@ -52,6 +52,7 @@ export async function POST(
     return NextResponse.json({ success: true, data: { kode } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
+    if (e instanceof SubscriptionLockedError) return apiError(e.message, 403);
     console.error("Invite error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }
