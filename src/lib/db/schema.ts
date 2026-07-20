@@ -553,6 +553,7 @@ export const kelas = pgTable(
     nama: varchar("nama", { length: 50 }).notNull(),
     tingkat: integer("tingkat").notNull(),
     sekolahId: uuid("sekolah_id").references(() => sekolah.id),
+    kursusId: uuid("kursus_id").references(() => kursus.id),
     guruId: uuid("guru_id").references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -614,6 +615,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 
 export const kelasRelations = relations(kelas, ({ one, many }) => ({
   sekolah: one(sekolah, { fields: [kelas.sekolahId], references: [sekolah.id] }),
+  kursus: one(kursus, { fields: [kelas.kursusId], references: [kursus.id] }),
   guru: one(users, {
     fields: [kelas.guruId],
     references: [users.id],

@@ -16,6 +16,12 @@ interface KursusItem {
   slug: string;
 }
 
+interface KelasItem {
+  id: string;
+  nama: string;
+  tingkat: number;
+}
+
 interface FileHistoryItem {
   id: string;
   namaFile: string;
@@ -43,6 +49,8 @@ export default function GuruUploadPage() {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [historyError, setHistoryError] = useState("");
   const [successFileName, setSuccessFileName] = useState<string | null>(null);
+  const [kelasList, setKelasList] = useState<KelasItem[]>([]);
+  const [selectedKelasId, setSelectedKelasId] = useState<string>("");
   const { toast } = useToast();
 
   async function loadHistory() {
@@ -73,6 +81,10 @@ export default function GuruUploadPage() {
         console.error("[guru/upload] fetch kursus failed:", error);
         setKursusError("Gagal memuat daftar kursus");
       });
+    fetch("/api/v1/guru/kelas", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : { data: [] }))
+      .then((j) => setKelasList(j.data || []))
+      .catch(() => {});
     loadHistory();
   }, []);
 
@@ -135,6 +147,9 @@ export default function GuruUploadPage() {
     const fd = new FormData();
     fd.append("file", file);
     fd.append("kursusId", selectedKursus);
+    if (selectedKelasId) {
+      fd.append("kelasId", selectedKelasId);
+    }
 
     setJob({ state: "uploading", progress: 40, message: "Mengupload ke server..." });
     try {
@@ -212,13 +227,28 @@ export default function GuruUploadPage() {
           <label className="block text-sm font-semibold text-on-surface mb-1.5">
             Kelas tujuan <span className="font-normal text-on-surface-variant">(opsional)</span>
           </label>
-          <Link
-            href="/guru/kelas"
-            className="w-full px-4 py-2.5 rounded-xl border border-border-precision bg-white text-sm text-on-surface-variant flex items-center gap-2 hover:bg-surface transition-colors"
-          >
-            <Layers className="w-4 h-4" />
-            Pilih kelas nanti di halaman kelas
-          </Link>
+          {kelasList.length === 0 ? (
+            <Link
+              href="/guru/kelas"
+              className="w-full px-4 py-2.5 rounded-xl border border-border-precision bg-white text-sm text-on-surface-variant flex items-center gap-2 hover:bg-surface transition-colors"
+            >
+              <Layers className="w-4 h-4" />
+              Buat kelas dulu
+            </Link>
+          ) : (
+            <select
+              value={selectedKelasId}
+              onChange={(e) => setSelectedKelasId(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-border-precision bg-white text-sm outline-hidden focus:border-primary/40"
+            >
+              <option value="">Tanpa kelas</option>
+              {kelasList.map((k) => (
+                <option key={k.id} value={k.id}>
+                  {k.nama} (Tingkat {k.tingkat})
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
 

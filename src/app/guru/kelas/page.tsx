@@ -9,20 +9,29 @@ interface KelasItem {
   id: string;
   nama: string;
   tingkat: number;
+  kursusId: string | null;
   createdAt: string;
+}
+
+interface KursusItem {
+  id: string;
+  judul: string;
 }
 
 export default function GuruKelasPage() {
   const [items, setItems] = useState<KelasItem[]>([]);
+  const [kursusList, setKursusList] = useState<KursusItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [nama, setNama] = useState("");
   const [tingkat, setTingkat] = useState(7);
+  const [kursusId, setKursusId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editing, setEditing] = useState<KelasItem | null>(null);
   const [editNama, setEditNama] = useState("");
   const [editTingkat, setEditTingkat] = useState(7);
+  const [editKursusId, setEditKursusId] = useState("");
   const [inviteKode, setInviteKode] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -62,23 +71,34 @@ export default function GuruKelasPage() {
     setLoading(false);
   }
 
+  async function loadKursus() {
+    const result = await apiFetch<KursusItem[]>("/api/v1/guru/kursus");
+    if (result.ok && result.data) {
+      setKursusList(result.data);
+    }
+  }
+
   useEffect(() => {
     load();
+    loadKursus();
   }, []);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setError("");
+    const body: { nama: string; tingkat: number; kursusId?: string } = { nama, tingkat };
+    if (kursusId) body.kursusId = kursusId;
     const result = await apiFetch<KelasItem>("/api/v1/guru/kelas", {
       method: "POST",
-      body: JSON.stringify({ nama, tingkat }),
+      body: JSON.stringify(body),
     });
     if (!result.ok) {
       setError(result.error);
     } else {
       setNama("");
       setTingkat(7);
+      setKursusId("");
       setShowForm(false);
       await load();
     }
@@ -112,9 +132,10 @@ export default function GuruKelasPage() {
       setEditError("Nama kelas maksimal 50 karakter");
       return;
     }
+    const body: { nama: string; tingkat: number; kursusId: string | null } = { nama: editNama, tingkat: editTingkat, kursusId: editKursusId || null };
     const result = await apiFetch<KelasItem>(`/api/v1/guru/kelas/${id}`, {
       method: "PATCH",
-      body: JSON.stringify({ nama: editNama, tingkat: editTingkat }),
+      body: JSON.stringify(body),
     });
     if (!result.ok) {
       setError(result.error);
@@ -190,6 +211,21 @@ export default function GuruKelasPage() {
               />
             </div>
           </div>
+          <div className="mt-4">
+            <label className="block text-sm font-semibold text-on-surface mb-1.5">
+              Kursus (opsional)
+            </label>
+            <select
+              value={kursusId}
+              onChange={(e) => setKursusId(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-xl border border-border-precision bg-white text-sm outline-hidden focus:border-primary/40 focus:ring-3 focus:ring-primary/10"
+            >
+              <option value="">-- Tanpa kursus --</option>
+              {kursusList.map((k) => (
+                <option key={k.id} value={k.id}>{k.judul}</option>
+              ))}
+            </select>
+          </div>
           <div className="mt-4 flex gap-2">
             <button
               type="submit"
@@ -251,8 +287,18 @@ export default function GuruKelasPage() {
                     onChange={(e) => setEditTingkat(Number(e.target.value))}
                     min={1}
                     max={20}
-                    className="w-full mb-3 px-3 py-2 rounded-lg border border-border-precision text-sm"
+                    className="w-full mb-2 px-3 py-2 rounded-lg border border-border-precision text-sm"
                   />
+                  <select
+                    value={editKursusId}
+                    onChange={(e) => setEditKursusId(e.target.value)}
+                    className="w-full mb-3 px-3 py-2 rounded-lg border border-border-precision text-sm"
+                  >
+                    <option value="">-- Tanpa kursus --</option>
+                    {kursusList.map((k) => (
+                      <option key={k.id} value={k.id}>{k.judul}</option>
+                    ))}
+                  </select>
                   {editError && <p className="text-xs text-red-600 mb-2">{editError}</p>}
                   <div className="flex gap-2">
                     <button
@@ -278,6 +324,11 @@ export default function GuruKelasPage() {
                     <div>
                       <p className="font-heading font-semibold text-on-surface">{k.nama}</p>
                       <p className="text-xs text-on-surface-variant">Tingkat {k.tingkat}</p>
+                      {k.kursusId && (
+                        <p className="text-xs text-on-surface-variant/70">
+                          {kursusList.find((ku) => ku.id === k.kursusId)?.judul ?? "Kursus"}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
@@ -286,6 +337,7 @@ export default function GuruKelasPage() {
                         setEditing(k);
                         setEditNama(k.nama);
                         setEditTingkat(k.tingkat);
+                        setEditKursusId(k.kursusId ?? "");
                         setEditError("");
                       }}
                       className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"

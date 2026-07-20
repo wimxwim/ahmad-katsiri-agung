@@ -4,7 +4,7 @@ import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimit, checkRateLimitPerUser, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { kelas, siswaKelas } from "@/lib/db/schema";
+import { kelas, siswaKelas, siswaKursus } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { validateCsrf } from "@/lib/csrf-server";
 
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const { kode } = ConsumeSchema.parse(await request.json());
 
     const found = await db
-      .select({ id: kelas.id, nama: kelas.nama, tingkat: kelas.tingkat, inviteExpiresAt: kelas.inviteExpiresAt })
+      .select({ id: kelas.id, nama: kelas.nama, tingkat: kelas.tingkat, inviteExpiresAt: kelas.inviteExpiresAt, kursusId: kelas.kursusId })
       .from(kelas)
       .where(eq(kelas.kodeInvite, kode))
       .limit(1);
@@ -72,6 +72,28 @@ export async function POST(request: NextRequest) {
       siswaId: session.userId,
       kelasId: k.id,
     });
+
+    // Auto-enroll to linked kursus if exists
+    if (k.kursusId) {
+      try {
+        const [existingKursus] = await db
+          .select({ id: siswaKursus.id })
+          .from(siswaKursus)
+          .where(and(eq(siswaKursus.siswaId, session.userId), eq(siswaKursus.kursusId, k.kursusId)))
+          .limit(1);
+
+        if (!existingKursus) {
+          await db.insert(siswaKursus).values({
+            siswaId: session.userId,
+            kursusId: k.kursusId,
+            status: "AKTIF",
+          });
+        }
+      } catch (err) {
+        // Non-blocking: kelas enrollment succeeded, kursus enrollment is best-effort
+        console.error("Auto-enroll kursus failed:", err);
+      }
+    }
 
     return NextResponse.json({
       success: true,

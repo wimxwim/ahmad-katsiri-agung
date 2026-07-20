@@ -12,6 +12,7 @@ import { validateCsrf } from "@/lib/csrf-server";
 const UpdateKelasSchema = z.object({
   nama: z.string().min(1).max(50).optional(),
   tingkat: z.number().int().min(1).max(20).optional(),
+  kursusId: z.string().uuid().nullable().optional(),
 });
 
 export async function PATCH(
@@ -42,9 +43,10 @@ export async function PATCH(
     const parsed = UpdateKelasSchema.safeParse(body);
     if (!parsed.success) return apiError(parsed.error.issues[0]?.message || "Data tidak valid", 400);
 
-    const updates: { nama?: string; tingkat?: number; updatedAt: Date } = { updatedAt: new Date() };
+    const updates: { nama?: string; tingkat?: number; kursusId?: string | null; updatedAt: Date } = { updatedAt: new Date() };
     if (parsed.data.nama !== undefined) updates.nama = sanitizeText(parsed.data.nama, 50);
     if (parsed.data.tingkat !== undefined) updates.tingkat = parsed.data.tingkat;
+    if (parsed.data.kursusId !== undefined) updates.kursusId = parsed.data.kursusId;
 
     const where = session.role === "owner"
       ? eq(kelas.id, id)

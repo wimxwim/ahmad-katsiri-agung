@@ -15,6 +15,7 @@ export const runtime = "nodejs";
 const CreateKelasSchema = z.object({
   nama: z.string().min(1).max(50),
   tingkat: z.number().int().min(1).max(20),
+  kursusId: z.string().uuid().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
         nama: sanitizeText(parsed.data.nama, 50),
         tingkat: parsed.data.tingkat,
         guruId: session.userId,
+        kursusId: parsed.data.kursusId ?? null,
       })
       .returning();
 
