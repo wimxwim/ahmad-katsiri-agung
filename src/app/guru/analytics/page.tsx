@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, Users, TrendingUp, Award, AlertTriangle, Send, ChevronRight, BarChart3, XCircle, RefreshCw, Lightbulb, GraduationCap, FileEdit, ListChecks } from "lucide-react";
+import { BookOpen, Users, TrendingUp, Award, AlertTriangle, Send, ChevronRight, BarChart3, XCircle, RefreshCw, Lightbulb, GraduationCap, FileEdit, ListChecks, Brain, Target } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { apiFetch } from "@/lib/api-helpers";
 import { KKM } from "@/lib/constants";
@@ -36,6 +36,25 @@ interface RemedialItem {
   kursus: string[];
 }
 
+interface StudentAbility {
+  siswaId: string;
+  nama: string;
+  kursusId: string;
+  theta: number;
+  level: string;
+}
+
+interface SoalDifficultyItem {
+  id: string;
+  pertanyaan: string;
+  tipe: string;
+  eloRating: number;
+  irtA: number;
+  irtB: number;
+  irtC: number;
+  difficulty: string;
+}
+
 interface AnalyticsResponse {
   totalKursus: number;
   totalSiswa: number;
@@ -49,6 +68,8 @@ interface AnalyticsResponse {
   kursusBreakdown: KursusBreakdown[];
   remedialList: RemedialItem[];
   weakTopics: WeakTopic[];
+  studentAbilities: StudentAbility[];
+  soalDifficulty: SoalDifficultyItem[];
 }
 
 export default function GuruAnalyticsPage() {
@@ -464,6 +485,117 @@ export default function GuruAnalyticsPage() {
                       </div>
                       <ChevronRight className="w-4 h-4 text-on-surface-variant/40 ml-2 shrink-0" />
                     </Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {data.studentAbilities && data.studentAbilities.length > 0 && (
+            <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-heading font-semibold text-on-surface flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-purple-600" />
+                  Kemampuan Siswa (IRT)
+                </h2>
+                <span className="text-xs text-on-surface-variant">
+                  Theta &theta; &mdash; makin tinggi makin mahir
+                </span>
+              </div>
+              <p className="text-sm text-on-surface-variant mb-4">
+                Estimasi kemampuan siswa berdasarkan pola jawaban. Nilai theta dihitung otomatis setiap siswa mengerjakan quiz.
+              </p>
+              <div className="space-y-2">
+                {data.studentAbilities.map((s) => (
+                  <div key={s.siswaId} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border-precision">
+                    <div className={`w-10 h-10 rounded-full grid place-items-center font-heading font-bold text-sm shrink-0 ${
+                      s.level === "Mahir" ? "bg-emerald-100 text-emerald-700" :
+                      s.level === "Menengah" ? "bg-blue-100 text-blue-700" :
+                      s.level === "Dasar" ? "bg-amber-100 text-amber-700" :
+                      "bg-red-100 text-red-700"
+                    }`}>
+                      {s.theta.toFixed(1)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-on-surface text-sm truncate">{s.nama}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                          s.level === "Mahir" ? "bg-emerald-50 text-emerald-700" :
+                          s.level === "Menengah" ? "bg-blue-50 text-blue-700" :
+                          s.level === "Dasar" ? "bg-amber-50 text-amber-700" :
+                          "bg-red-50 text-red-700"
+                        }`}>
+                          {s.level}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="w-24 bg-gray-100 rounded-full h-2 overflow-hidden shrink-0">
+                      <div
+                        className={`h-full rounded-full ${
+                          s.theta >= 1.5 ? "bg-emerald-400" :
+                          s.theta >= 0.5 ? "bg-blue-400" :
+                          s.theta >= -0.5 ? "bg-amber-400" :
+                          "bg-red-400"
+                        }`}
+                        style={{ width: `${Math.min(Math.max(((s.theta + 2) / 4) * 100, 5), 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {data.soalDifficulty && data.soalDifficulty.length > 0 && (
+            <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-heading font-semibold text-on-surface flex items-center gap-2">
+                  <Target className="w-4 h-4 text-orange-600" />
+                  Tingkat Kesulitan Soal (Elo)
+                </h2>
+                <span className="text-xs text-on-surface-variant">
+                  Rating Elo &mdash; makin rendah makin sulit
+                </span>
+              </div>
+              <p className="text-sm text-on-surface-variant mb-4">
+                {data.soalDifficulty.length} soal dengan rating kesulitan. Soal sulit perlu perhatian lebih dalam pengajaran.
+              </p>
+              <div className="space-y-2">
+                {data.soalDifficulty.map((s) => (
+                  <div key={s.id} className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border-precision">
+                    <div className={`w-12 h-10 rounded-lg grid place-items-center font-heading font-bold text-xs shrink-0 ${
+                      s.difficulty === "Sulit" ? "bg-red-100 text-red-700" :
+                      s.difficulty === "Sedang" ? "bg-amber-100 text-amber-700" :
+                      "bg-emerald-100 text-emerald-700"
+                    }`}>
+                      {Math.round(s.eloRating)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-on-surface text-sm line-clamp-1">{s.pertanyaan}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs text-on-surface-variant">{s.tipe}</span>
+                        <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                          s.difficulty === "Sulit" ? "bg-red-50 text-red-600" :
+                          s.difficulty === "Sedang" ? "bg-amber-50 text-amber-600" :
+                          "bg-emerald-50 text-emerald-600"
+                        }`}>
+                          {s.difficulty}
+                        </span>
+                      </div>
+                      <p className="text-xs text-on-surface-variant/60 mt-0.5">
+                        IRT: a={s.irtA.toFixed(1)} b={s.irtB.toFixed(1)} c={s.irtC.toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="w-24 bg-gray-100 rounded-full h-2 overflow-hidden shrink-0">
+                      <div
+                        className={`h-full rounded-full ${
+                          s.difficulty === "Sulit" ? "bg-red-400" :
+                          s.difficulty === "Sedang" ? "bg-amber-400" :
+                          "bg-emerald-400"
+                        }`}
+                        style={{ width: `${Math.min(Math.max((s.eloRating / 1500) * 100, 5), 100)}%` }}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

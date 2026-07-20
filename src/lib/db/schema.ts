@@ -991,10 +991,12 @@ export const soalPublished = pgTable(
     pilihanGanda: jsonb("pilihan_ganda"),
     kunci: text("kunci").notNull(),
     poin: integer("poin").notNull().default(1),
+    skillId: uuid("skill_id").references(() => skill.id, { onDelete: "set null" }),
   },
   (t) => ({
     quizIdx: index("soal_published_quiz_idx").on(t.quizPublishedId, t.urutan),
     aiGenIdx: index("soal_published_ai_generation_id_idx").on(t.aiGenerationId),
+    skillIdIdx: index("soal_published_skill_id_idx").on(t.skillId),
   }),
 );
 

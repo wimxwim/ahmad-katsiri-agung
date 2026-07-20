@@ -281,6 +281,13 @@
       "when": 1752944302000,
       "tag": "0039_add_kelas_invite_expires_at",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1721400000000,
+      "tag": "0040_add_skill_id_to_soal_published",
+      "breakpoints": true
     }
   ]
 }

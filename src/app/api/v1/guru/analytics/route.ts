@@ -9,12 +9,15 @@ import {
   users,
   jawabanLog,
   soal,
+  studentAbility,
+  skill,
 } from "@/lib/db/schema";
-import { and, desc, eq, gte, sql, like, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNull, sql, like, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
+import { cacheGet, cacheSet, cacheKey } from "@/lib/cache-layer";
 import { db } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
@@ -25,6 +28,14 @@ export async function GET(request: NextRequest) {
 
     const rl = await checkRateLimitPerUser(`analytics:${guruId}`, 5, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
+
+    const cacheK = cacheKey("analytics-page", "guru", guruId);
+    const cached = await cacheGet(cacheK);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: { "Cache-Control": "private, max-age=120, stale-while-revalidate=300" },
+      });
+    }
 
   const now = new Date();
   const fourWeeksAgo = new Date(now);
@@ -233,7 +244,7 @@ export async function GET(request: NextRequest) {
     })(),
     (async (): Promise<WeakTopic[]> => {
       try {
-        const jawabanStats = await db
+        const jawabanStats = kursusIds.length > 0 ? await db
           .select({
             soalId: jawabanLog.soalId,
             totalJawab: sql<number>`cast(count(*) as integer)`,
@@ -241,10 +252,13 @@ export async function GET(request: NextRequest) {
             totalSalah: sql<number>`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as integer)`,
           })
           .from(jawabanLog)
+          .innerJoin(soal, eq(jawabanLog.soalId, soal.id))
+          .innerJoin(skill, eq(soal.skillId, skill.id))
+          .where(inArray(skill.kursusId, kursusIds))
           .groupBy(jawabanLog.soalId)
           .having(sql`count(*) >= 3`)
           .orderBy(desc(sql`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as real) / cast(count(*) as real)`))
-          .limit(10);
+          .limit(10) : [];
 
         if (jawabanStats.length === 0) return [];
         const soalIds = jawabanStats.map((s) => s.soalId);
@@ -273,12 +287,47 @@ export async function GET(request: NextRequest) {
     })(),
   ]);
 
+  // Query student abilities (IRT theta) for all students in guru's courses
+  const studentAbilities = kursusIds.length > 0
+    ? await db
+        .select({
+          siswaId: studentAbility.siswaId,
+          nama: users.nama,
+          kursusId: studentAbility.kursusId,
+          theta: studentAbility.theta,
+        })
+        .from(studentAbility)
+        .leftJoin(users, and(eq(studentAbility.siswaId, users.id), isNull(users.deletedAt)))
+        .where(inArray(studentAbility.kursusId, kursusIds))
+        .orderBy(desc(studentAbility.theta))
+        .limit(20)
+    : [];
+
+  // Query soal difficulty (Elo rating) - hardest and easiest soals
+  const soalDifficulty = kursusIds.length > 0
+    ? await db
+        .select({
+          id: soal.id,
+          teks: soal.teks,
+          tipe: soal.tipe,
+          eloRating: soal.eloRating,
+          irtA: soal.irtA,
+          irtB: soal.irtB,
+          irtC: soal.irtC,
+        })
+        .from(soal)
+        .innerJoin(skill, eq(soal.skillId, skill.id))
+        .where(inArray(skill.kursusId, kursusIds))
+        .orderBy(asc(soal.eloRating))
+        .limit(10)
+    : [];
+
   const totalSemuaNilai = kursusBreakdown.reduce((s, k) => s + k.rataNilai * k.totalAttempt, 0);
   const rataNilaiKeseluruhan = totalAttemptAll > 0
     ? Math.round(totalSemuaNilai / totalAttemptAll)
     : 0;
 
-  return NextResponse.json({
+  const responseData = {
     data: {
       totalKursus: kursusList.length,
       totalSiswa: siswaList.length,
@@ -292,8 +341,27 @@ export async function GET(request: NextRequest) {
       kursusBreakdown,
       remedialList,
       weakTopics,
+      studentAbilities: studentAbilities.map(s => ({
+        siswaId: s.siswaId,
+        nama: s.nama ?? "Siswa",
+        kursusId: s.kursusId,
+        theta: s.theta,
+        level: s.theta >= 1.5 ? "Mahir" : s.theta >= 0.5 ? "Menengah" : s.theta >= -0.5 ? "Dasar" : "Pemula",
+      })),
+      soalDifficulty: soalDifficulty.map(s => ({
+        id: s.id,
+        pertanyaan: s.teks,
+        tipe: s.tipe,
+        eloRating: s.eloRating,
+        irtA: s.irtA,
+        irtB: s.irtB,
+        irtC: s.irtC,
+        difficulty: s.eloRating < 900 ? "Sulit" : s.eloRating < 1000 ? "Sedang" : "Mudah",
+      })),
     },
-  }, { headers: { "Cache-Control": "private, max-age=120, stale-while-revalidate=300" } });
+  };
+  await cacheSet(cacheK, responseData, 300);
+  return NextResponse.json(responseData, { headers: { "Cache-Control": "private, max-age=120, stale-while-revalidate=300" } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Analytics guru error:", e);

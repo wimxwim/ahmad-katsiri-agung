@@ -1,13 +1,16 @@
 import { db } from "@/lib/db";
-import { jawabanLog, studentAbility, soal } from "@/lib/db/schema";
+import { jawabanLog, studentAbility, soal, skillMastery } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { uuidv7 } from "@/lib/uuid";
 import { estimateTheta } from "@/lib/analytics/calculateIRT";
 import { updateElo } from "@/lib/analytics/calculateElo";
+import { updateBKT, slipForward } from "@/lib/analytics/calculateBKT";
+import { calculateNextReview } from "@/lib/analytics/calculateSpacedRep";
 import { appendEvent } from "@/lib/event-store";
 
 interface AnswerItem {
   soalId: string;        // original soal.id
+  skillId?: string | null;  // NEW
   isCorrect: boolean;
   jawabanSiswa: string;
   waktuJawabDetik: number;
@@ -78,6 +81,72 @@ export async function processQuizResults(params: {
       await db.update(soal)
         .set({ eloRating: newRatingSoal, updatedAt: new Date() })
         .where(eq(soal.id, a.soalId));
+    }
+
+    // 4. BKT: update skill mastery per skill
+    const skillMap = new Map<string, { correct: number; total: number }>();
+    for (const a of params.answers) {
+      if (!a.skillId) continue;
+      if (!skillMap.has(a.skillId)) skillMap.set(a.skillId, { correct: 0, total: 0 });
+      const entry = skillMap.get(a.skillId)!;
+      entry.total += 1;
+      if (a.isCorrect) entry.correct += 1;
+    }
+
+    for (const [skillId, stats] of skillMap) {
+      const [existingSkill] = await db.select({
+        id: skillMastery.id,
+        pL: skillMastery.pL,
+        repetitionNum: skillMastery.repetitionNum,
+        memoryStrength: skillMastery.memoryStrength,
+      }).from(skillMastery).where(and(
+        eq(skillMastery.siswaId, params.siswaId),
+        eq(skillMastery.skillId, skillId),
+      )).limit(1);
+
+      const prevPL = existingSkill?.pL ?? 0.1;
+      const prevRep = existingSkill?.repetitionNum ?? 0;
+      const prevEF = existingSkill?.memoryStrength ?? 2.5;
+      const prevInterval = 1; // schema has no interval column, default 1 day
+
+      // Update BKT for each answer in this skill
+      let pL = prevPL;
+      for (const a of params.answers) {
+        if (a.skillId !== skillId) continue;
+        pL = updateBKT(pL, a.isCorrect);
+      }
+      pL = slipForward(pL);
+
+      // Calculate spaced repetition
+      const qualityScore = stats.correct === stats.total ? 5
+        : stats.correct >= stats.total * 0.75 ? 4
+        : stats.correct >= stats.total * 0.5 ? 3
+        : 2;
+      const newRep = prevRep + 1;
+      const { newEF, nextDate } = calculateNextReview(qualityScore, prevInterval, prevEF, newRep);
+
+      if (existingSkill) {
+        await db.update(skillMastery).set({
+          pL,
+          memoryStrength: newEF,
+          repetitionNum: newRep,
+          lastPracticedAt: new Date(),
+          nextReviewAt: nextDate,
+          updatedAt: new Date(),
+        }).where(eq(skillMastery.id, existingSkill.id));
+      } else {
+        await db.insert(skillMastery).values({
+          id: uuidv7(),
+          siswaId: params.siswaId,
+          skillId,
+          pL,
+          memoryStrength: newEF,
+          repetitionNum: newRep,
+          lastPracticedAt: new Date(),
+          nextReviewAt: nextDate,
+          updatedAt: new Date(),
+        });
+      }
     }
 
     await appendEvent(`siswa:${params.siswaId}`, "quiz.processed", {

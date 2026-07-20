@@ -190,6 +190,7 @@ export async function POST(
         irtB: soalRecord?.irtB ?? 0.0,
         irtC: soalRecord?.irtC ?? 0.25,
         eloRating: soalRecord?.eloRating ?? 1000,
+        skillId: soalRecord?.skillId ?? null,
       };
     });
 
