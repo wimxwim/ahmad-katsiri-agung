@@ -9,6 +9,9 @@ import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
 
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

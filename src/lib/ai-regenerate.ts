@@ -251,33 +251,30 @@ export async function regenerateQuizOnly(generationId: string): Promise<void> {
 }
 
 export async function regenerateSoalOnly(generationId: string): Promise<void> {
-  // 1. Fetch the aiGeneration record with file relation
   const gen = await db.query.aiGeneration.findFirst({
     where: eq(aiGeneration.id, generationId),
     with: { file: true },
   });
-  if (!gen || !gen.file) {
-    console.error("regenerateSoalOnly: generation not found or no file", generationId);
+  if (!gen) {
+    console.error("regenerateSoalOnly: generation not found", generationId);
     return;
   }
 
-  // 2. Set status to generating
   await db
     .update(aiGeneration)
     .set({ status: "generating", updatedAt: new Date() })
     .where(eq(aiGeneration.id, generationId));
   await appendEvent(`gen:${gen.guruId}`, "gen.soal_regenerating", { generationId });
 
-  // 3. Re-extract text from source file
-  let sourceText = gen.file.extractionText;
+  let sourceText = gen.file?.extractionText ?? null;
   if (!sourceText || sourceText.length < 50) {
-    const fileUrl = gen.file.linkAkses;
+    const fileUrl = gen.file?.linkAkses;
     if (fileUrl) {
       try {
         const fileRes = await fetch(fileUrl, { signal: AbortSignal.timeout(30_000) });
         if (fileRes.ok) {
           const fileBytes = Buffer.from(await fileRes.arrayBuffer());
-          const ext = gen.file.tipeMime?.includes("pdf") ? "pdf" : "docx";
+          const ext = gen.file?.tipeMime?.includes("pdf") ? "pdf" : "docx";
           sourceText = await extractText(fileBytes, ext);
         }
       } catch (e) {
