@@ -241,7 +241,7 @@ function fallbackQuestion(seed: string, index: number): string {
   return `Mengapa siswa perlu memahami materi tentang ${cleaned.toLowerCase()}?`;
 }
 
-function fallbackAiResults(sourceText: string, quizCount = 5, soalCount = 35): [ChatResult, ChatResult, ChatResult] {
+function fallbackAiResults(sourceText: string, quizCount = 5, soalCount = 20): [ChatResult, ChatResult, ChatResult] {
   const sentences = sentencePool(sourceText);
   const topic = fallbackTopic(sourceText);
   const basis = sentences.length > 0 ? sentences : [topic];
@@ -348,7 +348,57 @@ export function validateCoverage(
     uncoveredSoal,
   };
 }
+async function generateSoalBatch(
+  sourceText: string,
+  soalCount: number,
+  tingkat?: number,
+): Promise<ChatResult> {
+  const BATCH_SIZE = 10;
+  const batches = Math.ceil(soalCount / BATCH_SIZE);
+  let allItems: ValidatedSoalItem[] = [];
+  let totalTokensIn = 0;
+  let totalTokensOut = 0;
 
+  for (let i = 0; i < batches; i++) {
+    const batchSize = Math.min(BATCH_SIZE, soalCount - i * BATCH_SIZE);
+    try {
+      const batchRes = await withTimeout(
+        chatWithFallback(
+          [
+            { role: "system", content: buildSoalSystemPrompt(batchSize, tingkat) },
+            { role: "user", content: `Materi:\n\n${sourceText}` },
+          ],
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, batchSize * 200) },
+        ),
+        SOAL_TIMEOUT_MS,
+        "ai-soal",
+      );
+      const batchParsed = parseSoalSafe(batchRes.content);
+      if (batchParsed && batchParsed.soal.length > 0) {
+        allItems.push(...batchParsed.soal);
+        totalTokensIn += batchRes.tokensIn;
+        totalTokensOut += batchRes.tokensOut;
+        console.log(`[ai-generator] soal batch ${i + 1}/${batches}: ${batchParsed.soal.length} soal OK`);
+      } else {
+        console.warn(`[ai-generator] soal batch ${i + 1}/${batches}: parse failed, skipping`);
+      }
+    } catch (error) {
+      console.error(`[ai-generator] soal batch ${i + 1}/${batches} failed:`, error);
+    }
+  }
+
+  if (allItems.length === 0) {
+    throw new Error(`Gagal generate soal: 0/${soalCount} soal berhasil setelah ${batches} batch`);
+  }
+
+  const combinedJson = JSON.stringify({ soal: allItems });
+  return {
+    content: combinedJson,
+    tokensIn: totalTokensIn,
+    tokensOut: totalTokensOut,
+    model: getModelName(),
+  };
+}
 export async function runGeneration(
   generationId: string,
   fileBytes: Buffer,
@@ -469,22 +519,11 @@ export async function runGeneration(
 
     let soalRes: ChatResult;
     try {
-      soalRes = await withTimeout(
-        chatWithFallback(
-          [
-            { role: "system", content: buildSoalSystemPrompt(soalCount) },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
-          ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, soalCount * 200) },
-        ),
-        SOAL_TIMEOUT_MS,
-        "ai-soal",
-      );
-      console.log("[ai-generator] soal done.");
+      soalRes = await generateSoalBatch(truncatedSource, soalCount);
+      console.log("[ai-generator] soal done (batch).");
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
       console.error("[ai-generator] soal AI failed, using fallback:", errMsg);
-      console.error("[ai-generator] error stack:", error instanceof Error ? (error.stack ?? "").slice(0, 500) : "");
       const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
       soalRes = fb[2];
       await db
@@ -497,7 +536,6 @@ export async function runGeneration(
         .where(eq(aiGeneration.id, generationId))
         .catch(() => {});
     }
-
     let materiParsed = parseMateriSafe(materiRes.content);
     let quizParsed = parseQuizSafe(quizRes.content);
     let soalParsed = parseSoalSafe(soalRes.content);
@@ -701,18 +739,8 @@ export async function runGenerationFromText(
 
   let soalRes: ChatResult;
   try {
-    soalRes = await withTimeout(
-      chatWithFallback(
-        [
-          { role: "system", content: buildSoalSystemPrompt(soalCount, tingkat) },
-{ role: "user", content: `Materi:\n\n${truncatedSource}` },
-        ],
-        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, soalCount * 200) },
-      ),
-      SOAL_TIMEOUT_MS,
-      "ai-soal",
-    );
-    console.log("[ai-generator] soal done.");
+    soalRes = await generateSoalBatch(truncatedSource, soalCount, tingkat);
+    console.log("[ai-generator] soal done (batch).");
   } catch (error) {
     console.error("[ai-generator] soal AI failed, using fallback:", error);
     const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
@@ -727,7 +755,6 @@ export async function runGenerationFromText(
       .where(eq(aiGeneration.id, generationId))
       .catch(() => {});
   }
-
   let materiParsed = parseMateriSafe(materiRes.content);
   let quizParsed = parseQuizSafe(quizRes.content);
   let soalParsed = parseSoalSafe(soalRes.content);
