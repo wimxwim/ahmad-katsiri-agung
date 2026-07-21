@@ -169,14 +169,7 @@ ATURAN KEAMANAN:
 }
 
 export function buildSoalSystemPrompt(count: number, _tingkat?: number): string {
-  return `Kamu penulis soal PAI SMP/MTs. Hasilkan ${count} soal PG dari materi. ATURAN:
-1. JSON: {"soal":[{pertanyaan,tipe:"PG",opsi:{A,B,C,D},kunci,penjelasan}]}
-2. SETIAP soal uji aspek BERBEDA — jangan ulangi topik. Cakup semua bagian materi.
-3. Kognitif: 30% ingat, 30% paham, 25% terapan, 15% analisis.
-4. Distraktor masuk akal dari kesalahpahaman umum siswa — bukan jawaban jelas salah.
-5. Tingkat kesulitan: ${Math.round(count * 0.3)} mudah, ${Math.round(count * 0.4)} sedang, ${Math.round(count * 0.3)} sulit.
-6. Penjelasan 1-2 kalimat untuk setiap kunci jawaban.
-7. Bahasa Indonesia SMP/MTs. Tanpa markup. Tanpa data siswa asli.`;
+  return `Kamu penulis soal PAI. Hasilkan ${count} soal PG dari materi. JSON: {"soal":[{pertanyaan,tipe:"PG",opsi:{A,B,C,D},kunci,penjelasan}]}. Setiap soal uji aspek berbeda, jangan ulangi topik. Distraktor masuk akal. Penjelasan 1-2 kalimat. Bahasa Indonesia, tanpa markup.`;
 }
 
 export function buildQuizSystemPrompt(count: number): string {
@@ -237,6 +230,20 @@ function fallbackQuestion(seed: string, index: number): string {
   const cleaned = seed.replace(/[?.!]+$/g, "").slice(0, 140);
   if (index % 2 === 0) return `Apa inti dari pernyataan berikut: ${cleaned}?`;
   return `Mengapa siswa perlu memahami materi tentang ${cleaned.toLowerCase()}?`;
+}
+
+const FALLBACK_PATTERNS = [
+  /^Apa inti dari pernyataan berikut:/i,
+  /^Mengapa siswa perlu memahami materi tentang/i,
+];
+
+function isFallbackSoal(soalItems: unknown[]): boolean {
+  if (!Array.isArray(soalItems) || soalItems.length === 0) return false;
+  const sample = soalItems.slice(0, 3);
+  return sample.every((s: any) => {
+    const q = s?.pertanyaan || "";
+    return FALLBACK_PATTERNS.some((p) => p.test(q));
+  });
 }
 
 function fallbackAiResults(sourceText: string, quizCount = 5, soalCount = 20): [ChatResult, ChatResult, ChatResult] {
@@ -538,6 +545,20 @@ export async function runGeneration(
     let quizParsed = parseQuizSafe(quizRes.content);
     let soalParsed = parseSoalSafe(soalRes.content);
 
+    if (soalParsed && isFallbackSoal(soalParsed.soal)) {
+      console.warn("[ai-generator] FALLBACK DETECTED — soal contains template patterns");
+      await db
+        .update(aiGeneration)
+        .set({ 
+          soalStatus: "not_generated",
+          errorMessage: "AI gagal menghasilkan soal berkualitas. Silakan regenerate.",
+          updatedAt: new Date() 
+        })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
+      soalParsed = null;
+    }
+
     if (!materiParsed) {
       console.warn("[ai-generator] materi parse failed, using fallback");
       const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
@@ -756,6 +777,20 @@ export async function runGenerationFromText(
   let materiParsed = parseMateriSafe(materiRes.content);
   let quizParsed = parseQuizSafe(quizRes.content);
   let soalParsed = parseSoalSafe(soalRes.content);
+
+  if (soalParsed && isFallbackSoal(soalParsed.soal)) {
+    console.warn("[ai-generator] FALLBACK DETECTED — soal contains template patterns");
+    await db
+      .update(aiGeneration)
+      .set({ 
+        soalStatus: "not_generated",
+        errorMessage: "AI gagal menghasilkan soal berkualitas. Silakan regenerate.",
+        updatedAt: new Date() 
+      })
+      .where(eq(aiGeneration.id, generationId))
+      .catch(() => {});
+    soalParsed = null;
+  }
 
   if (!materiParsed) {
     console.warn("[ai-generator] materi parse failed, using fallback");

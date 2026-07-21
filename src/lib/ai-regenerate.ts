@@ -327,7 +327,7 @@ export async function regenerateSoalOnly(generationId: string): Promise<void> {
         { role: "system", content: buildSoalSystemPrompt(soalCount) },
         { role: "user", content: `Buat ${soalCount} soal dari teks berikut:\n\n${truncated}` },
       ],
-      { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2000, soalCount * 200) },
+      { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(3000, soalCount * 320) },
     );
   } catch (err) {
     await db
