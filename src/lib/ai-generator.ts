@@ -353,7 +353,7 @@ export async function runGeneration(
   generationId: string,
   fileBytes: Buffer,
   ext: string,
-  soalCount = 35,
+  soalCount = 20,
   quizCount = 5,
 ): Promise<GenerationResult> {
   const [gen] = await db
@@ -487,6 +487,15 @@ export async function runGeneration(
       console.error("[ai-generator] error stack:", error instanceof Error ? (error.stack ?? "").slice(0, 500) : "");
       const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
       soalRes = fb[2];
+      await db
+        .update(aiGeneration)
+        .set({ 
+          soalStatus: "not_generated",
+          errorMessage: `SOAL_AI_FAILED: ${errMsg.slice(0, 400)}`,
+          updatedAt: new Date() 
+        })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
     }
 
     let materiParsed = parseMateriSafe(materiRes.content);
@@ -632,7 +641,7 @@ export async function runGenerationFromText(
   generationId: string,
   sourceText: string,
   guruId: string,
-  soalCount = 35,
+  soalCount = 20,
   quizCount = 5,
   tingkat?: number,
 ): Promise<void> {
@@ -708,6 +717,15 @@ export async function runGenerationFromText(
     console.error("[ai-generator] soal AI failed, using fallback:", error);
     const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
     soalRes = fb[2];
+    await db
+      .update(aiGeneration)
+      .set({ 
+        soalStatus: "not_generated",
+        errorMessage: `SOAL_AI_FAILED: ${error instanceof Error ? error.message.slice(0, 400) : String(error).slice(0, 400)}`,
+        updatedAt: new Date() 
+      })
+      .where(eq(aiGeneration.id, generationId))
+      .catch(() => {});
   }
 
   let materiParsed = parseMateriSafe(materiRes.content);
