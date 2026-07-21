@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { checkRateLimit, checkConcurrentLimit, releaseConcurrent } from "@/lib/rate-limit";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import { apiError, apiRateLimit } from "@/lib/api-response";
@@ -60,13 +60,15 @@ export async function POST(
       .set({ soalStatus: "not_generated", updatedAt: new Date() })
       .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)));
 
-    regenerateSoalOnly(id)
-      .catch((e) => {
-        console.error("Regen soal async error:", e);
-      })
-      .finally(() => {
-        releaseConcurrent(`gen:${session.userId}`);
-      });
+    after(async () => {
+      regenerateSoalOnly(id)
+        .catch((e) => {
+          console.error("Regen soal async error:", e);
+        })
+        .finally(() => {
+          releaseConcurrent(`gen:${session.userId}`);
+        });
+    });
 
     await appendEvent(`gen:${session.userId}`, "gen.soal_regenerate_queued", { generationId: id });
 

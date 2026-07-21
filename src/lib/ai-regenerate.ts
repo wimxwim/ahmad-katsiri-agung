@@ -287,6 +287,30 @@ export async function regenerateSoalOnly(generationId: string): Promise<void> {
   }
 
   if (!sourceText || sourceText.length < 50) {
+    if (gen.materiKonten) {
+      try {
+        const parsed = JSON.parse(typeof gen.materiKonten === "string" ? gen.materiKonten : String(gen.materiKonten));
+        const parts: string[] = [];
+        if (parsed.pendahuluan) parts.push(parsed.pendahuluan);
+        if (parsed.konten && Array.isArray(parsed.konten)) {
+          for (const k of parsed.konten) {
+            if (k.isi) parts.push(k.isi);
+            if (k.dalil) parts.push(k.dalil);
+            if (k.contoh) parts.push(k.contoh);
+          }
+        }
+        if (parsed.poinPenting && Array.isArray(parsed.poinPenting)) {
+          parts.push(parsed.poinPenting.join(" "));
+        }
+        sourceText = parts.join("\n\n");
+        console.log("regenerateSoalOnly: using materiKonten as fallback source, length:", sourceText.length);
+      } catch (e) {
+        console.error("regenerateSoalOnly: failed to parse materiKonten:", e);
+      }
+    }
+  }
+
+  if (!sourceText || sourceText.length < 50) {
     await db
       .update(aiGeneration)
       .set({ status: "failed", errorMessage: "Gagal mengekstrak teks untuk soal", updatedAt: new Date() })
@@ -298,7 +322,7 @@ export async function regenerateSoalOnly(generationId: string): Promise<void> {
   const truncated = sourceText.slice(0, 20000);
 
   // 5. Call AI for soal generation
-  const soalCount = 35; // default
+  const soalCount = 20;
   let soalRes: ChatResult;
   try {
     soalRes = await chat(
