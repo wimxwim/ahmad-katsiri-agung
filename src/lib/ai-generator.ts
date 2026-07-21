@@ -506,13 +506,25 @@ export async function runGeneration(
     }
 
     if (!soalParsed) {
-      console.warn("[ai-generator] soal AI output invalid, menggunakan fallback lokal. Raw preview:", soalRes.content.slice(0, 500));
+      const rawPreview = soalRes.content.slice(0, 2000);
+      console.error("[ai-generator] SOAL PARSE FAILED — RAW AI OUTPUT:", rawPreview);
+      console.error("[ai-generator] SOAL MODEL:", soalRes.model, "TOKENS:", soalRes.tokensIn, soalRes.tokensOut);
+      
       const fallback = fallbackAiResults(truncatedSource, quizCount, soalCount);
       const fallbackSoal = parseSoalSafe(fallback[2].content);
       if (fallbackSoal) {
         soalParsed = fallbackSoal;
         console.log("[ai-generator] soal fallback berhasil —", fallbackSoal.soal.length, "item");
       }
+      
+      await db
+        .update(aiGeneration)
+        .set({ 
+          errorMessage: `SOAL_PARSE_FAILED|model=${soalRes.model}|tokens=${soalRes.tokensIn}+${soalRes.tokensOut}|raw=${rawPreview}`,
+          updatedAt: new Date() 
+        })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
     }
 
     if (!materiParsed || !quizParsed) {
@@ -715,13 +727,25 @@ export async function runGenerationFromText(
   }
 
   if (!soalParsed) {
-    console.warn("[ai-generator] soal AI output invalid, menggunakan fallback lokal. Raw preview:", soalRes.content.slice(0, 500));
+    const rawPreview = soalRes.content.slice(0, 2000);
+    console.error("[ai-generator] SOAL PARSE FAILED — RAW AI OUTPUT:", rawPreview);
+    console.error("[ai-generator] SOAL MODEL:", soalRes.model, "TOKENS:", soalRes.tokensIn, soalRes.tokensOut);
+    
     const fallback = fallbackAiResults(truncatedSource, quizCount, soalCount);
     const fallbackSoal = parseSoalSafe(fallback[2].content);
     if (fallbackSoal) {
       soalParsed = fallbackSoal;
       console.log("[ai-generator] soal fallback berhasil —", fallbackSoal.soal.length, "item");
     }
+    
+    await db
+      .update(aiGeneration)
+      .set({ 
+        errorMessage: `SOAL_PARSE_FAILED|model=${soalRes.model}|tokens=${soalRes.tokensIn}+${soalRes.tokensOut}|raw=${rawPreview}`,
+        updatedAt: new Date() 
+      })
+      .where(eq(aiGeneration.id, generationId))
+      .catch(() => {});
   }
 
   if (!materiParsed || !quizParsed) {
