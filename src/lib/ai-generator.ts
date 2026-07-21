@@ -370,6 +370,47 @@ export function validateCoverage(
   };
 }
 
+function extractJson(content: string): string {
+  const fence = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const raw = (fence ? fence[1] : content).trim();
+  if (raw.startsWith("{") && raw.endsWith("}")) return raw;
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  if (start >= 0 && end > start) return raw.slice(start, end + 1).trim();
+  return raw;
+}
+
+function materiToText(rawContent: string): string {
+  try {
+    const parsed = JSON.parse(extractJson(rawContent));
+    const parts: string[] = [];
+    if (parsed.judul) parts.push(`JUDUL: ${parsed.judul}`);
+    if (parsed.ringkasan) parts.push(`RINGKASAN: ${parsed.ringkasan}`);
+    if (parsed.tujuanPembelajaran?.length) {
+      parts.push(`TUJUAN: ${parsed.tujuanPembelajaran.join('; ')}`);
+    }
+    if (parsed.pendahuluan) parts.push(`PENDAHULUAN: ${parsed.pendahuluan}`);
+    if (parsed.konten?.length) {
+      for (const k of parsed.konten) {
+        parts.push(`\n${k.judul || ''}: ${k.isi || ''}`);
+        if (k.dalil) parts.push(`  Dalil: ${k.dalil}`);
+        if (k.contoh) parts.push(`  Contoh: ${k.contoh}`);
+        if (k.hikmah) parts.push(`  Hikmah: ${k.hikmah}`);
+      }
+    }
+    if (parsed.istilahKunci?.length) {
+      parts.push(`\nISTILAH KUNCI: ${parsed.istilahKunci.map((i: {istilah: string, definisi: string}) => `${i.istilah}: ${i.definisi}`).join('; ')}`);
+    }
+    if (parsed.poinPenting?.length) {
+      parts.push(`\nPOIN PENTING: ${parsed.poinPenting.join('; ')}`);
+    }
+    if (parsed.refleksi) parts.push(`REFLEKSI: ${parsed.refleksi}`);
+    return parts.join('\n');
+  } catch {
+    return rawContent.slice(0, 8000);
+  }
+}
+
 export async function runGeneration(
   generationId: string,
   fileBytes: Buffer,
@@ -494,7 +535,7 @@ export async function runGeneration(
         chatWithFallback(
           [
             { role: "system", content: buildSoalSystemPrompt(soalCount) },
-            { role: "user", content: `MATERI SISWA:\n\n${materiRes.content.slice(0, 8000)}` },
+{ role: "user", content: `MATERI SISWA:\n\n${materiToText(materiRes.content)}` },
           ],
           { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, soalCount * 200) },
         ),
@@ -693,7 +734,7 @@ export async function runGenerationFromText(
       chatWithFallback(
         [
           { role: "system", content: buildSoalSystemPrompt(soalCount, tingkat) },
-          { role: "user", content: `MATERI SISWA:\n\n${materiRes.content.slice(0, 8000)}` },
+          { role: "user", content: `MATERI SISWA:\n\n${materiToText(materiRes.content)}` },
         ],
         { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, soalCount * 200) },
       ),
