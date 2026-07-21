@@ -96,6 +96,10 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
     const { id } = await params;
     try {
       const res = await fetch(`/api/v1/guru/drafts/${id}`, { credentials: "include" });
+      if (res.status === 401) {
+        router.push("/masuk");
+        return;
+      }
       if (!res.ok) {
         setDraft(null);
         setLoading(false);
@@ -142,6 +146,12 @@ useEffect(() => {
         credentials: "include",
         ...(body ? { body: JSON.stringify(body) } : {}),
       });
+      if (res.status === 402) {
+        const j = await res.json().catch(() => ({}));
+        toast("error", j.error || "Saldo tidak mencukupi. Silakan top-up.");
+        setTimeout(() => router.push("/guru/topup"), 2000);
+        return;
+      }
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         throw new Error(j.error || "Gagal");

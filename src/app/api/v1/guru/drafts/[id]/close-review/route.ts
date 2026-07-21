@@ -16,6 +16,7 @@ import { appendEvent } from "@/lib/event-store";
 import { sanitizeText } from "@/lib/sanitize";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
+import { invalidateGuruCache } from "@/lib/dashboard-cache";
 
 export async function POST(
   request: NextRequest,
@@ -161,6 +162,8 @@ export async function POST(
         }
       }
 
+      let soalId: string | null = null;
+
       if (!skipSoal && row.soalStatus === "approved" && row.soalItems && row.soalItems.length > 0 && row.kursusId) {
         const items = (row.soalEditedItems ?? row.soalItems) as Array<{
           pertanyaan: string;
@@ -170,7 +173,7 @@ export async function POST(
         }>;
         if (items.length > 0) {
           const validTypes = ["PG", "ISIAN", "ESSAY"];
-          await tx.insert(soalPublished).values(
+          const inserted = await tx.insert(soalPublished).values(
             items.map((s, i) => ({
               aiGenerationId: row.id,
               quizPublishedId: null,
@@ -181,7 +184,10 @@ export async function POST(
               kunci: s.kunci || "A",
               poin: 1,
             })),
-          );
+          ).returning({ id: soalPublished.id });
+          if (inserted.length > 0) {
+            soalId = inserted[0].id;
+          }
         }
       }
 
@@ -192,6 +198,7 @@ export async function POST(
           publishedAt: allApproved ? new Date() : null,
           publishedMateriId: materiId,
           publishedQuizId: quizId,
+          publishedSoalId: soalId,
           updatedAt: new Date(),
         })
         .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)))
@@ -244,6 +251,8 @@ export async function POST(
         .set({ extractionText: null, updatedAt: new Date() })
         .where(eq(fileMateri.id, row.fileMateriId));
     }
+
+    await invalidateGuruCache(session.userId!).catch(() => {});
 
     return NextResponse.json({
       success: true,

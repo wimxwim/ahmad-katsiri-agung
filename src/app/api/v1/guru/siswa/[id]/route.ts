@@ -26,20 +26,16 @@ export async function GET(
 
     if (!siswa) return apiError("Siswa tidak ditemukan", 404);
 
-    const guruKursus = await db
-      .select({ id: kursus.id, judul: kursus.judul })
-      .from(kursus)
-      .where(eq(kursus.guruId, session.userId!));
-
-    const guruKursusIds = guruKursus.map((k) => k.id);
-
     const enrollments = await db
       .select({ kursusId: siswaKursus.kursusId })
       .from(siswaKursus)
+      .innerJoin(kursus, and(
+        eq(siswaKursus.kursusId, kursus.id),
+        eq(kursus.guruId, session.userId!)
+      ))
       .where(
         and(
           eq(siswaKursus.siswaId, id),
-          inArray(siswaKursus.kursusId, guruKursusIds),
           eq(siswaKursus.status, "AKTIF"),
         ),
       );
@@ -50,7 +46,10 @@ export async function GET(
       return apiError("Siswa tidak terdaftar di kursus Anda", 403);
     }
 
-    const enrolledKursus = guruKursus.filter((k) => enrolledKursusIds.includes(k.id));
+    const enrolledKursus = await db
+      .select({ id: kursus.id, judul: kursus.judul })
+      .from(kursus)
+      .where(inArray(kursus.id, enrolledKursusIds));
 
     const quizPubs = await db
       .select()
