@@ -37,7 +37,7 @@ export async function POST(
     const rl = await checkRateLimit(`draft-regen-soal:${session.userId}`, 5, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const conc = await checkConcurrentLimit(`gen:${session.userId}`, 2);
+    const conc = await checkConcurrentLimit(`gen:${session.userId}`, 2, 3 * 60 * 1000);
     if (!conc.allowed) {
       return apiError("Terlalu banyak job aktif. Tunggu job sebelumnya selesai.", 429);
     }
