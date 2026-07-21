@@ -80,7 +80,7 @@ export async function POST(
 
     const ext = (file.tipeMime.includes("pdf") ? "pdf" : file.tipeMime.includes("word") ? "docx" : "doc");
 
-    const concRl = await checkConcurrentLimit(`gen:${session.userId}`, 2);
+    const concRl = await checkConcurrentLimit(`gen:${session.userId}`, 2, 3 * 60 * 1000);
     if (!concRl.allowed) {
       return apiError("Sudah ada 2 job AI aktif. Tunggu selesai sebelum regenerate.", 429);
     }
