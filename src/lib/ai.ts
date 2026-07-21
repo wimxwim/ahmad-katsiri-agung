@@ -130,12 +130,7 @@ export async function chatWithFallback(
     const heavyModel = getModelForTask("heavy");
     const flashModel = getFlashModel();
     const currentModel = options.model || getModelName();
-
-    if (flashModel === heavyModel) {
-      throw e;
-    }
-
-    if (currentModel === heavyModel) {
+    if (currentModel === heavyModel && flashModel !== heavyModel) {
       console.warn("Heavy model failed, falling back to flash:", (e as Error).message);
       try {
         return await chat(messages, { ...options, model: flashModel });
