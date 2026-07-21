@@ -633,6 +633,7 @@ export async function isUserUnlocked(userId: string): Promise<boolean> {
 }
 
 export async function requireUnlocked(userId: string): Promise<void> {
+  if (process.env.FREE_GENERATE_MODE === "true") return;
   const unlocked = await isUserUnlocked(userId);
   if (!unlocked) {
     throw new SubscriptionLockedError(
