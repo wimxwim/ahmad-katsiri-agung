@@ -494,7 +494,7 @@ export async function runGeneration(
         chatWithFallback(
           [
             { role: "system", content: buildSoalSystemPrompt(soalCount) },
-            { role: "user", content: `MATERI SISWA:\n\n${materiRes.content}` },
+            { role: "user", content: `MATERI SISWA:\n\n${materiRes.content.slice(0, 8000)}` },
           ],
           { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, soalCount * 200) },
         ),
@@ -693,7 +693,7 @@ export async function runGenerationFromText(
       chatWithFallback(
         [
           { role: "system", content: buildSoalSystemPrompt(soalCount, tingkat) },
-          { role: "user", content: `MATERI SISWA:\n\n${materiRes.content}` },
+          { role: "user", content: `MATERI SISWA:\n\n${materiRes.content.slice(0, 8000)}` },
         ],
         { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, soalCount * 200) },
       ),
