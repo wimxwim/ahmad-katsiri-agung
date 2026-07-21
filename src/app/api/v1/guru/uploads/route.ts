@@ -9,7 +9,7 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
-import { fileMateri, kursus, users, aiGeneration } from "@/lib/db/schema";
+import { fileMateri, kursus, users, aiGeneration, kelas } from "@/lib/db/schema";
 import { and, eq, desc, lt } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { extractText } from "@/lib/text-extractor";
@@ -19,6 +19,15 @@ import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
+
+function tingkatToFase(tingkat: number): string {
+  if (tingkat <= 2) return "A";
+  if (tingkat <= 4) return "B";
+  if (tingkat <= 6) return "C";
+  if (tingkat <= 9) return "D";
+  if (tingkat <= 10) return "E";
+  return "F";
+}
 
 const ALLOWED_EXT = new Set(["pdf", "docx"]);
 const ALLOWED_MIME = new Set([
@@ -79,9 +88,13 @@ export async function POST(request: NextRequest) {
     const fd = await request.formData();
     const file = fd.get("file");
     const kursusId = fd.get("kursusId");
+    const kelasId = fd.get("kelasId");
 
     if (!(file instanceof File)) return apiError("File tidak ditemukan", 400);
     if (typeof kursusId !== "string" || !kursusId) return apiError("kursusId wajib diisi", 400);
+    if (typeof kelasId !== "string" || !kelasId) {
+      return apiError("kelasId wajib diisi. Pilih kelas tujuan sebelum upload.", 400);
+    }
 
     if (file.size > MAX_SIZE) {
       return apiError(`File terlalu besar (maks 10MB)`, 413);
@@ -118,6 +131,13 @@ export async function POST(request: NextRequest) {
       .limit(1);
     if (!ownedKursus) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
 
+    const [kelasRow] = await db
+      .select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId })
+      .from(kelas)
+      .where(and(eq(kelas.id, kelasId), eq(kelas.guruId, session.userId!)))
+      .limit(1);
+    if (!kelasRow) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
+
     const subStatus = await getSubscriptionStatus(session.userId!);
     if (!subStatus.canUpload) {
       return apiError(
@@ -151,6 +171,7 @@ export async function POST(request: NextRequest) {
           imagekitFileId: uploadResult.fileId,
           linkAkses: uploadResult.link,
           kursusId,
+          kelasId,
           guruId: session.userId!,
           status: "uploaded",
           kategori: detectKategori(originalName, detected),
@@ -165,6 +186,8 @@ export async function POST(request: NextRequest) {
           kursusId,
           sourceFileName: originalName,
           status: "queued",
+          tingkat: kelasRow.tingkat,
+          fase: tingkatToFase(kelasRow.tingkat),
         })
         .returning({ id: aiGeneration.id });
 

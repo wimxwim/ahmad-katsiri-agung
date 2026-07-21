@@ -11,8 +11,7 @@ import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import { validateCsrf } from "@/lib/csrf-server";
-import { checkGenerateBalance, deductGenerateCost, getBalance, refundBalance, getGenerateCost, InsufficientBalanceError, requireUnlocked, SubscriptionLockedError } from "@/lib/token-service";
-import { GENERATE_COST } from "@/lib/token-constants";
+import { checkBalance, getBalance, refundBalance, InsufficientBalanceError, requireUnlocked, SubscriptionLockedError, deductGenerateCostDynamic, settleGenerationCost, estimateGenerationCost } from "@/lib/token-service";
 
 export async function POST(
   request: NextRequest,
@@ -96,19 +95,20 @@ export async function POST(
       throw e;
     }
 
-    const hasBalance = await checkGenerateBalance(session.userId!);
+    const estimatedCost = estimateGenerationCost(12000);
+    const hasBalance = await checkBalance(session.userId!, estimatedCost);
     if (!hasBalance) {
       releaseConcurrent(`gen:${session.userId}`);
       const bal = await getBalance(session.userId!);
       return NextResponse.json({
         success: false,
-        error: `Saldo token tidak cukup. Minimal Rp${GENERATE_COST}/generate. Top-up sekarang?`,
+        error: `Saldo token tidak cukup. Estimasi biaya Rp${estimatedCost}/generate.`,
         balance: bal.balance,
-        required: GENERATE_COST,
+        required: estimatedCost,
       }, { status: 402 });
     }
 
-    await deductGenerateCost(session.userId!);
+    const { chargedAmount } = await deductGenerateCostDynamic(session.userId!, 12000, id);
 
     await db
       .update(aiGeneration)
@@ -117,9 +117,28 @@ export async function POST(
     await appendEvent(`gen:${session.userId}`, "gen.queued", { generationId: id });
 
     runGeneration(id, bytes, ext)
+      .then(async () => {
+        const [gen] = await db
+          .select({ tokenInput: aiGeneration.tokenInput, tokenOutput: aiGeneration.tokenOutput })
+          .from(aiGeneration)
+          .where(eq(aiGeneration.id, id))
+          .limit(1);
+
+        if (gen && gen.tokenInput != null && gen.tokenOutput != null) {
+          await settleGenerationCost(
+            session.userId!,
+            gen.tokenInput,
+            gen.tokenOutput,
+            chargedAmount,
+            id,
+          ).catch((settleErr) => {
+            console.error("Settle regenerate cost failed:", settleErr);
+          });
+        }
+      })
       .catch((e) => {
         console.error("Regenerate async error:", e);
-        refundBalance(session.userId!, getGenerateCost()).catch(() => {});
+        refundBalance(session.userId!, chargedAmount, { notes: "Regenerate gagal. Token dikembalikan.", referenceId: `refund:${id}` }).catch(() => {});
       })
       .finally(() => {
         releaseConcurrent(`gen:${session.userId}`);

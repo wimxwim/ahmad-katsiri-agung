@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { tokenBalances, tokenTransactions, users } from "@/lib/db/schema";
 import { eq, sql, and, desc } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
-import { GENERATE_COST, INITIAL_TOKEN_BALANCE, FREE_TIER_UPLOAD_LIMIT } from "@/lib/token-constants";
+import { GENERATE_COST, INITIAL_TOKEN_BALANCE, FREE_TIER_UPLOAD_LIMIT, API_INPUT_COST_PER_TOKEN, API_OUTPUT_COST_PER_TOKEN, MARGIN_MULTIPLIER, MIN_GENERATE_CHARGE, MAX_GENERATE_CHARGE, ESTIMATED_OUTPUT_TOKENS, CHARS_PER_TOKEN_ESTIMATE } from "@/lib/token-constants";
 
 export class InsufficientBalanceError extends Error {
   constructor(
@@ -105,6 +105,21 @@ export async function checkGenerateBalance(userId: string): Promise<boolean> {
   return checkBalance(userId, GENERATE_COST);
 }
 
+export function estimateGenerationCost(sourceTextLength: number): number {
+  const estimatedInputTokens = Math.ceil(sourceTextLength / CHARS_PER_TOKEN_ESTIMATE);
+  const totalTokens = estimatedInputTokens + ESTIMATED_OUTPUT_TOKENS;
+  const avgCostPerToken = (API_INPUT_COST_PER_TOKEN + API_OUTPUT_COST_PER_TOKEN) / 2;
+  const apiCost = totalTokens * avgCostPerToken;
+  return Math.min(MAX_GENERATE_CHARGE, Math.max(MIN_GENERATE_CHARGE, Math.ceil(apiCost * MARGIN_MULTIPLIER)));
+}
+
+export function calculateActualPrice(tokensIn: number, tokensOut: number): number {
+  const inputCost = tokensIn * API_INPUT_COST_PER_TOKEN;
+  const outputCost = tokensOut * API_OUTPUT_COST_PER_TOKEN;
+  const apiCost = inputCost + outputCost;
+  return Math.min(MAX_GENERATE_CHARGE, Math.max(MIN_GENERATE_CHARGE, Math.ceil(apiCost * MARGIN_MULTIPLIER)));
+}
+
 export async function deductBalance(
   userId: string,
   amount: number,
@@ -201,6 +216,19 @@ export async function deductGenerateCost(userId: string, referenceId?: string): 
   return deductBalance(userId, GENERATE_COST, { notes: "AI generation cost", referenceId });
 }
 
+export async function deductGenerateCostDynamic(
+  userId: string,
+  sourceTextLength: number,
+  referenceId?: string,
+): Promise<{ balance: TokenBalance; chargedAmount: number }> {
+  const estimatedCost = estimateGenerationCost(sourceTextLength);
+  const balance = await deductBalance(userId, estimatedCost, {
+    notes: `AI generation cost (estimated: Rp${estimatedCost})`,
+    referenceId: referenceId ? `gen:${referenceId}` : undefined,
+  });
+  return { balance, chargedAmount: estimatedCost };
+}
+
 export async function refundBalance(
   userId: string,
   amount: number,
@@ -284,6 +312,36 @@ export async function refundBalance(
       unlockedAt: after?.unlockedAt ?? null,
     };
   });
+}
+
+export async function settleGenerationCost(
+  userId: string,
+  tokensIn: number,
+  tokensOut: number,
+  preChargedAmount: number,
+  referenceId?: string,
+): Promise<{ actualPrice: number; refunded: number; additionalCharged: number }> {
+  const actualPrice = calculateActualPrice(tokensIn, tokensOut);
+
+  if (actualPrice < preChargedAmount) {
+    const refund = preChargedAmount - actualPrice;
+    await refundBalance(userId, refund, {
+      notes: `Refund kelebihan biaya generate. Estimasi: Rp${preChargedAmount}, Aktual: Rp${actualPrice}`,
+      referenceId: referenceId ? `settle:${referenceId}` : undefined,
+    });
+    return { actualPrice, refunded: refund, additionalCharged: 0 };
+  }
+
+  if (actualPrice > preChargedAmount) {
+    const additional = Math.min(actualPrice - preChargedAmount, preChargedAmount);
+    await deductBalance(userId, additional, {
+      notes: `Tambahan biaya generate. Estimasi: Rp${preChargedAmount}, Aktual: Rp${actualPrice}`,
+      referenceId: referenceId ? `settle:${referenceId}` : undefined,
+    });
+    return { actualPrice, refunded: 0, additionalCharged: additional };
+  }
+
+  return { actualPrice, refunded: 0, additionalCharged: 0 };
 }
 
 export async function topUpBalance(

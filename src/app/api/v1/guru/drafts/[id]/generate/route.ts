@@ -10,17 +10,18 @@ import { runGenerationFromText } from "@/lib/ai-generator";
 import { extractText } from "@/lib/text-extractor";
 import { invalidateGuruCache } from "@/lib/dashboard-cache";
 import {
-  checkGenerateBalance,
-  deductGenerateCost,
+  checkBalance,
   getBalance,
   refundBalance,
-  getGenerateCost,
   InsufficientBalanceError,
   requireUnlocked,
   SubscriptionLockedError,
   requireNotSuspended,
+  deductGenerateCostDynamic,
+  settleGenerationCost,
+  estimateGenerationCost,
 } from "@/lib/token-service";
-import { GENERATE_COST, DAILY_GENERATE_LIMIT, PREMIUM_DAILY_GENERATE_LIMIT } from "@/lib/token-constants";
+import { DAILY_GENERATE_LIMIT, PREMIUM_DAILY_GENERATE_LIMIT } from "@/lib/token-constants";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import {
   checkRateLimit,
@@ -240,16 +241,17 @@ export async function POST(
       }
     }
 
-    const hasBalance = await checkGenerateBalance(session.userId!);
+    const estimatedCost = estimateGenerationCost(sourceText.length);
+    const hasBalance = await checkBalance(session.userId!, estimatedCost);
     if (!hasBalance) {
       releaseConcurrent(concKey);
       const bal = await getBalance(session.userId!);
       return NextResponse.json({
         success: false,
-        error: `Saldo token tidak cukup. Minimal Rp${GENERATE_COST}/generate.`,
+        error: `Saldo token tidak cukup. Estimasi biaya Rp${estimatedCost}/generate.`,
         errorCode: "INSUFFICIENT_BALANCE",
         balance: bal.balance,
-        required: GENERATE_COST,
+        required: estimatedCost,
       }, { status: 402 });
     }
 
@@ -280,8 +282,10 @@ export async function POST(
       }, { status: 409 });
     }
 
+    let chargedAmount = estimatedCost;
     try {
-      await deductGenerateCost(session.userId!, id);
+      const result = await deductGenerateCostDynamic(session.userId!, sourceText.length, id);
+      chargedAmount = result.chargedAmount;
     } catch (e) {
       releaseConcurrent(concKey);
       await db
@@ -303,11 +307,30 @@ export async function POST(
 
     const guruId = session.userId!;
     const finalText = sourceText;
+    const tingkat = gen.tingkat ?? undefined;
 
     after(async () => {
       try {
-        await runGenerationFromText(id, finalText, guruId, soalCount, quizCount);
+        await runGenerationFromText(id, finalText, guruId, soalCount, quizCount, tingkat);
         invalidateGuruCache(guruId).catch(() => {});
+
+        const [gen] = await db
+          .select({ tokenInput: aiGeneration.tokenInput, tokenOutput: aiGeneration.tokenOutput })
+          .from(aiGeneration)
+          .where(eq(aiGeneration.id, id))
+          .limit(1);
+
+        if (gen && gen.tokenInput != null && gen.tokenOutput != null) {
+          await settleGenerationCost(
+            guruId,
+            gen.tokenInput,
+            gen.tokenOutput,
+            chargedAmount,
+            id,
+          ).catch((settleErr) => {
+            console.error("Settle generation cost failed:", settleErr);
+          });
+        }
       } catch (err) {
         const errMsg = err instanceof Error ? err.message : String(err);
         console.error("Background generation failed:", errMsg);
@@ -318,7 +341,7 @@ export async function POST(
           : "Generate gagal. Token dikembalikan otomatis.";
 
         try {
-          await refundBalance(guruId, getGenerateCost(), { notes: refundNote, referenceId: `refund:${id}` });
+          await refundBalance(guruId, chargedAmount, { notes: refundNote, referenceId: `refund:${id}` });
         } catch {
           console.error("Refund failed for generation:", id);
         }
@@ -346,10 +369,10 @@ export async function POST(
       success: true,
       generationId: id,
       status: "generating",
-      charged: GENERATE_COST,
+      estimatedCost: chargedAmount,
       soalCount,
       quizCount,
-      message: "Generate dimulai. Anda dapat meninggalkan halaman. Hasil akan muncul di Draft AI.",
+      message: "Generate dimulai. Biaya akan disesuaikan dengan token aktual. Anda dapat meninggalkan halaman.",
     }, { status: 202 });
   } catch (e) {
     if (concKey) releaseConcurrent(concKey);

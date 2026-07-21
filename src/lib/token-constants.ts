@@ -1,5 +1,14 @@
 export const GENERATE_COST = 85;
 
+/** Dynamic Pricing: 1.000% margin */
+export const API_INPUT_COST_PER_TOKEN = 0.001232;
+export const API_OUTPUT_COST_PER_TOKEN = 0.002464;
+export const MARGIN_MULTIPLIER = 11.5;
+export const MIN_GENERATE_CHARGE = 50;
+export const MAX_GENERATE_CHARGE = 500;
+export const ESTIMATED_OUTPUT_TOKENS = 3000;
+export const CHARS_PER_TOKEN_ESTIMATE = 4;
+
 export const TOPUP_PLANS = [
   { id: "5k", amount: 5000, label: "Rp5.000", value: 5000 },
   { id: "10k", amount: 10000, label: "Rp10.000", value: 10000 },

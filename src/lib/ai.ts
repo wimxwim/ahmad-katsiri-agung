@@ -88,7 +88,7 @@ export async function chat(
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
-        const isRetryable = [502, 503, 504].includes(res.status);
+        const isRetryable = [429, 500, 502, 503, 504].includes(res.status);
         if (isRetryable && attempt < retries) {
           lastError = new Error(`NaraRouter ${res.status} (attempt ${attempt + 1}/${retries + 1})`);
           await new Promise((r) => setTimeout(r, 1500 * Math.pow(2, attempt)));
@@ -130,7 +130,12 @@ export async function chatWithFallback(
     const heavyModel = getModelForTask("heavy");
     const flashModel = getFlashModel();
     const currentModel = options.model || getModelName();
-    if (currentModel === heavyModel && flashModel !== heavyModel) {
+
+    if (flashModel === heavyModel) {
+      throw e;
+    }
+
+    if (currentModel === heavyModel) {
       console.warn("Heavy model failed, falling back to flash:", (e as Error).message);
       try {
         return await chat(messages, { ...options, model: flashModel });

@@ -450,6 +450,7 @@ export const fileMateri = pgTable(
     status: varchar("status", { length: 20 }).notNull().default("uploaded"),
     extractionText: text("extraction_text"),
     kategori: varchar("kategori", { length: 20 }).notNull().default("materi"),
+    kelasId: uuid("kelas_id").references(() => kelas.id),
     guruId: uuid("guru_id").references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -850,6 +851,8 @@ export const aiGeneration = pgTable("ai_generation", {
   tokenOutput: integer("token_output"),
   modelName: varchar("model_name", { length: 100 }),
   errorMessage: text("error_message"),
+  tingkat: integer("tingkat"),
+  fase: varchar("fase", { length: 1 }),
   attemptCount: integer("attempt_count").notNull().default(0),
   leaseUntil: timestamp("lease_until", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })

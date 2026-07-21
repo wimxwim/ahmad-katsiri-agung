@@ -4,23 +4,9 @@ import { eq, and } from "drizzle-orm";
 import { extractText } from "@/lib/text-extractor";
 import { chat, getModelName, getModelForTask, type ChatResult } from "@/lib/ai";
 import { parseMateriSafe, parseQuizSafe, parseSoalSafe } from "@/lib/ai-sanitizer";
-import { buildQuizSystemPrompt, buildSoalSystemPrompt } from "@/lib/ai-generator";
+import { buildQuizSystemPrompt, buildSoalSystemPrompt, buildMateriSystemPrompt } from "@/lib/ai-generator";
 import { appendEvent } from "@/lib/event-store";
 import { incrementUsage } from "@/lib/quota-guard";
-
-const MATERI_SYSTEM = `Kamu adalah asisten pengajar PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi mentah dan menghasilkan MATERI TERSTRUKTUR untuk siswa SMP/MTs. ATURAN:
-1. Output HARUS JSON valid dengan field:
-   - "judul": string (judul materi, singkat dan jelas, maks 100 karakter)
-   - "ringkasan": string (ringkasan 1-2 kalimat, maks 200 karakter)
-   - "pendahuluan": string (paragraf pengantar, 2-4 kalimat)
-   - "konten": array of { "judul": string, "isi": string } (3-5 bagian, tiap isi 2-4 kalimat)
-   - "poinPenting": array of string (3-5 poin kunci)
-2. Bahasa Indonesia, gaya untuk siswa SMP/MTs.
-3. JANGAN masukkan HTML, script, atau markup apapun.
-4. JANGAN masukkan instruksi, disclaimer, atau komentar di luar JSON.
-5. Jangan sebut "Berikut adalah" atau "Ini rangkuman" — langsung tulis isi.
-6. JANGAN gunakan data siswa asli (nama, NISN, nilai) dalam output.
-7. Data yang dikirim HANYA untuk generasi konten — tidak untuk training model.`;
 
 export async function regenerateMateriOnly(generationId: string): Promise<void> {
   const [gen] = await db
@@ -74,13 +60,14 @@ export async function regenerateMateriOnly(generationId: string): Promise<void> 
     return;
   }
 
-  const truncatedSource = sourceText.slice(0, 12_000);
+  const truncatedSource = sourceText.slice(0, 20_000);
+  const tingkat = gen.tingkat ?? undefined;
   const materiRes = await chat(
     [
-      { role: "system", content: MATERI_SYSTEM },
+      { role: "system", content: buildMateriSystemPrompt(tingkat) },
       { role: "user", content: `Materi:\n\n${truncatedSource}` },
     ],
-    { model: getModelForTask("heavy"), temperature: 0.4, maxTokens: 1800 },
+    { model: getModelForTask("heavy"), temperature: 0.4, maxTokens: 2500 },
   );
   const materiParsed = parseMateriSafe(materiRes.content);
   if (!materiParsed) {
@@ -182,7 +169,7 @@ export async function regenerateQuizOnly(generationId: string): Promise<void> {
   }
 
   // 4. Truncate source text
-  const truncated = sourceText.slice(0, 12000);
+  const truncated = sourceText.slice(0, 20000);
 
   // 5. Call AI for quiz generation
   const quizCount = 5; // default
@@ -308,7 +295,7 @@ export async function regenerateSoalOnly(generationId: string): Promise<void> {
   }
 
   // 4. Truncate source text
-  const truncated = sourceText.slice(0, 12000);
+  const truncated = sourceText.slice(0, 20000);
 
   // 5. Call AI for soal generation
   const soalCount = 35; // default

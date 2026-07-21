@@ -90,6 +90,8 @@ const GeneratedSoalSchema = z.object({
     .record(z.string(), z.string().transform((v) => cleanText(v, SAFE_TEXT_LIMITS.opsi)))
     .optional(),
   kunci: z.string().transform((v) => cleanText(v, SAFE_TEXT_LIMITS.kunci)),
+  penjelasan: z.string().transform((v) => cleanText(v, 500)).optional(),
+  sourceSection: z.string().transform((v) => cleanText(v, 200)).optional(),
 });
 
 const GeneratedQuizSchema = GeneratedSoalSchema;
@@ -97,20 +99,39 @@ const GeneratedQuizSchema = GeneratedSoalSchema;
 export const MateriResultSchema = z.object({
   judul: z.string().transform((v) => cleanText(v, SAFE_TEXT_LIMITS.judul)).pipe(z.string().min(3)),
   ringkasan: z.string().transform((v) => cleanText(v, 300)).pipe(z.string().min(10)),
+  tujuanPembelajaran: z
+    .array(z.string().transform((v) => cleanText(v, 300)))
+    .min(1)
+    .max(8)
+    .optional(),
   pendahuluan: z.string().transform((v) => cleanText(v, 2000)).pipe(z.string().min(20)),
   konten: z
     .array(
       z.object({
         judul: z.string().transform((v) => cleanText(v, 200)),
-        isi: z.string().transform((v) => cleanText(v, 2000)).pipe(z.string().min(20)),
+        isi: z.string().transform((v) => cleanText(v, 3000)).pipe(z.string().min(20)),
+        dalil: z.string().transform((v) => cleanText(v, 500)).nullable().optional(),
+        contoh: z.string().transform((v) => cleanText(v, 500)).optional(),
+        hikmah: z.string().transform((v) => cleanText(v, 500)).optional(),
+        poinSoal: z.array(z.string().transform((v) => cleanText(v, 300))).max(8).optional(),
       }),
     )
     .min(1)
-    .max(10),
+    .max(12),
+  istilahKunci: z
+    .array(
+      z.object({
+        istilah: z.string().transform((v) => cleanText(v, 200)),
+        definisi: z.string().transform((v) => cleanText(v, 500)),
+      }),
+    )
+    .max(15)
+    .optional(),
   poinPenting: z
     .array(z.string().transform((v) => cleanText(v, 300)))
     .min(1)
-    .max(10),
+    .max(12),
+  refleksi: z.string().transform((v) => cleanText(v, 1000)).optional(),
 });
 
 export const QuizResultSchema = z.object({

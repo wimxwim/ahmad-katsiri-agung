@@ -9,6 +9,7 @@ import {
   parseQuizSafe,
   parseSoalSafe,
   type ValidatedSoal,
+  type ValidatedSoalItem,
 } from "@/lib/ai-sanitizer";
 import { incrementUsage } from "@/lib/quota-guard";
 
@@ -24,6 +25,73 @@ const PROMPT_INJECTION_PATTERNS = [
   /bypass\s+(all\s+)?(instructions?|prompts?|safety|rules|security)/gi,
   /disregard\s+(all\s+)?(previous|prior|above)\s+(instructions?|prompts?)/gi,
 ];
+
+const GRADE_GUIDELINES: Record<string, {
+  label: string;
+  sentenceLength: string;
+  vocabulary: string;
+  cognitiveStyle: string;
+  difficultyDistribution: string;
+  bloomDistribution: string;
+}> = {
+  "A": {
+    label: "Fase A (SD Kelas 1-2)",
+    sentenceLength: "Maksimal 5 kata per kalimat.",
+    vocabulary: "Kata sangat sederhana (maks 2 suku kata). Hindari istilah teknis.",
+    cognitiveStyle: "Contoh konkret dari kehidupan sehari-hari anak. Cerita pendek.",
+    difficultyDistribution: "50% mudah, 30% sedang, 20% sulit.",
+    bloomDistribution: "L1 (Recall) 70%, L2 (Understand) 30%.",
+  },
+  "B": {
+    label: "Fase B (SD Kelas 3-4)",
+    sentenceLength: "Maksimal 8 kata per kalimat.",
+    vocabulary: "Kata sederhana. Istilah baru harus dijelaskan.",
+    cognitiveStyle: "Contoh konkret. Hubungan sederhana. Analogi visual.",
+    difficultyDistribution: "40% mudah, 40% sedang, 20% sulit.",
+    bloomDistribution: "L1 50%, L2 40%, L3 10%.",
+  },
+  "C": {
+    label: "Fase C (SD Kelas 5-6)",
+    sentenceLength: "Maksimal 12 kata per kalimat.",
+    vocabulary: "Istilah sederhana dengan definisi dalam kalimat.",
+    cognitiveStyle: "Kausalitas sederhana. Cerita dengan konflik moral.",
+    difficultyDistribution: "30% mudah, 45% sedang, 25% sulit.",
+    bloomDistribution: "L1 30%, L2 45%, L3 25%.",
+  },
+  "D": {
+    label: "Fase D (SMP/MTs Kelas 7-9)",
+    sentenceLength: "8-15 kata per kalimat.",
+    vocabulary: "Istilah PAI/Akidah Akhlak boleh digunakan dengan definisi singkat. Istilah Arab diperbolehkan.",
+    cognitiveStyle: "Abstraksi terbatas. Hubungan sebab-akibat. Penerapan dalam konteks remaja. Dalil Al-Quran dan Hadits.",
+    difficultyDistribution: "30% mudah, 40% sedang, 30% sulit.",
+    bloomDistribution: "L1 20%, L2 35%, L3 30%, L4 15%.",
+  },
+  "E": {
+    label: "Fase E (SMA Kelas 10)",
+    sentenceLength: "10-18 kata per kalimat.",
+    vocabulary: "Istilah akademik dan Arab diperbolehkan. Dalil lengkap dengan terjemahan.",
+    cognitiveStyle: "Analisis, perbandingan, evaluasi. Multi-perspektif. Isu kontemporer.",
+    difficultyDistribution: "20% mudah, 40% sedang, 40% sulit.",
+    bloomDistribution: "L1 10%, L2 25%, L3 30%, L4 25%, L5 10%.",
+  },
+  "F": {
+    label: "Fase F (SMA Kelas 11-12)",
+    sentenceLength: "12-20+ kata per kalimat.",
+    vocabulary: "Istilah akademik penuh. Dalil dengan tafsir. Referensi literatur.",
+    cognitiveStyle: "Sintesis, kritik, evaluasi kritis. Argumentasi multi-dimensi. Etika digital.",
+    difficultyDistribution: "15% mudah, 35% sedang, 50% sulit.",
+    bloomDistribution: "L1 5%, L2 15%, L3 25%, L4 30%, L5 20%, L6 5%.",
+  },
+};
+
+function tingkatToFase(tingkat: number): string {
+  if (tingkat <= 2) return "A";
+  if (tingkat <= 4) return "B";
+  if (tingkat <= 6) return "C";
+  if (tingkat <= 9) return "D";
+  if (tingkat <= 10) return "E";
+  return "F";
+}
 
 function sanitizeUserText(text: string): string {
   let sanitized = text;
@@ -49,31 +117,90 @@ export interface GenerationResult {
   modelName: string;
 }
 
-const MATERI_SYSTEM = `Kamu adalah asisten pengajar PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi mentah dan menghasilkan MATERI TERSTRUKTUR untuk siswa SMP/MTs. ATURAN:
-1. Output HARUS JSON valid dengan field:
-   - "judul": string (judul materi, singkat dan jelas, maks 100 karakter)
-   - "ringkasan": string (ringkasan 1-2 kalimat, maks 200 karakter)
-   - "pendahuluan": string (paragraf pengantar, 2-4 kalimat)
-   - "konten": array of { "judul": string, "isi": string } (3-5 bagian, tiap isi 2-4 kalimat)
-   - "poinPenting": array of string (3-5 poin kunci)
-2. Bahasa Indonesia, gaya untuk siswa SMP/MTs.
-3. JANGAN masukkan HTML, script, atau markup apapun.
-4. JANGAN masukkan instruksi, disclaimer, atau komentar di luar JSON.
-5. Jangan sebut "Berikut adalah" atau "Ini rangkuman" — langsung tulis isi.
-6. JANGAN gunakan data siswa asli (nama, NISN, nilai) dalam output.
-7. Data yang dikirim HANYA untuk generasi konten — tidak untuk training model.`;
+export function buildMateriSystemPrompt(tingkat?: number): string {
+  const fase = tingkatToFase(tingkat ?? 7);
+  const cfg = GRADE_GUIDELINES[fase];
+  return `Kamu adalah pengembang kurikulum PAI/Akidah Akhlak Indonesia untuk ${cfg.label}.
 
-export function buildSoalSystemPrompt(count: number): string {
-  return `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan ${count} soal PILIHAN GANDA berkualitas untuk latihan siswa SMP/MTs. ATURAN:
-1. Output HARUS JSON valid dengan field "soal" (array ${count} item).
-2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
+TUGAS: Menerima teks materi mentah dan menghasilkan MATERI PEMBELAJARAN KOMPREHENSIF yang akan menjadi SATU-SATUNYA sumber belajar siswa. Siswa hanya akan membaca materi ini — tidak ada sumber lain.
+
+ATURAN COVERAGE (WAJIB):
+1. Identifikasi SEMUA topik, sub-topik, istilah, dalil, dan konsep dalam teks sumber.
+2. PASTIKAN setiap topik dijelaskan dengan cukup detail sehingga siswa bisa menjawab soal tentang topik tersebut.
+3. Untuk setiap topik, sertakan: definisi, dalil/ayat dengan terjemahan, contoh konkret, dan hikmah.
+4. Jangan lewatkan istilah kunci, nama tokoh, peristiwa, atau nilai-nilai penting.
+
+ATURAN FORMAT (WAJIB):
+1. Output HARUS JSON valid.
+2. Struktur:
+{
+  "judul": "string (maks 100 karakter)",
+  "ringkasan": "string (maks 250 karakter)",
+  "tujuanPembelajaran": ["string x 3-5"],
+  "pendahuluan": "string (3-5 kalimat pengantar)",
+  "konten": [
+    {
+      "judul": "string (nama sub-bab)",
+      "isi": "string (4-8 kalimat, WAJIB detail dan informatif)",
+      "dalil": "string | null (ayat/hadits + terjemahan jika ada)",
+      "contoh": "string (2-3 kalimat contoh penerapan dalam kehidupan)",
+      "hikmah": "string (nilai atau pelajaran yang bisa dipetik)",
+      "poinSoal": ["string x 3-5 potensi soal dari bagian ini"]
+    }
+  ],
+  "istilahKunci": [{"istilah": "string", "definisi": "string"}],
+  "poinPenting": ["string x 5-8"],
+  "refleksi": "string (pertanyaan refleksi untuk siswa, 2-3 kalimat)"
+}
+3. konten: 5-8 bagian, setiap bagian isi minimal 4 kalimat.
+4. istilahKunci: 5-10 item, setiap definisi 1-2 kalimat.
+5. poinPenting: 5-8 item, setiap poin 1 kalimat.
+
+ATURAN BAHASA (KHUSUS ${cfg.label}):
+- ${cfg.sentenceLength}
+- ${cfg.vocabulary}
+- ${cfg.cognitiveStyle}
+
+ATURAN KEAMANAN:
+- JANGAN masukkan HTML, script, atau markup.
+- JANGAN masukkan instruksi, disclaimer, atau komentar di luar JSON.
+- JANGAN gunakan data siswa asli.
+- Data dikirim HANYA untuk generasi konten.`;
+}
+
+export function buildSoalSystemPrompt(count: number, tingkat?: number): string {
+  const fase = tingkatToFase(tingkat ?? 7);
+  const cfg = GRADE_GUIDELINES[fase];
+  return `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima MATERI SISWA (yang sudah di-generate) dan menghasilkan ${count} soal PILIHAN GANDA yang SEMUA JAWABANNYA ADA di dalam materi tersebut.
+
+ATURAN COVERAGE (WAJIB — paling penting):
+1. BACA materi siswa dengan teliti sebelum membuat soal.
+2. Setiap soal HARUS bisa dijawab HANYA dengan membaca materi siswa.
+3. Kunci jawaban HARUS secara eksplisit atau implisit ada di dalam teks materi.
+4. JANGAN membuat soal yang jawabannya tidak ada di materi.
+5. Gunakan SEMUA bagian konten materi sebagai sumber soal secara merata.
+6. Cantumkan "sourceSection": "nama sub-bab" untuk setiap soal.
+
+ATURAN FORMAT:
+1. Output HARUS JSON valid.
+2. Struktur: { "soal": [{ "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D", "penjelasan": string, "sourceSection": string }] }
 3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
-4. Buat distraktor (opsi salah) yang masuk akal dan menantang — jangan terlalu mudah.
+4. Buat distraktor (opsi salah) yang masuk akal dan menantang.
 5. Variasikan tingkat kesulitan: ${Math.round(count * 0.3)} mudah, ${Math.round(count * 0.4)} sedang, ${Math.round(count * 0.3)} sulit.
-6. Bahasa Indonesia, sesuai materi, untuk siswa SMP/MTs.
-7. Tidak ada markup, tidak ada komentar di luar JSON.
-8. JANGAN gunakan data siswa asli dalam soal.
-9. Data dikirim HANYA untuk generasi konten — tidak untuk training model.`;
+
+ATURAN KESULITAN (KHUSUS ${cfg.label}):
+- ${cfg.difficultyDistribution}
+- ${cfg.bloomDistribution}
+
+ATURAN BAHASA:
+- ${cfg.sentenceLength}
+- ${cfg.vocabulary}
+- ${cfg.cognitiveStyle}
+
+ATURAN KEAMANAN:
+- Tidak ada markup, tidak ada komentar di luar JSON.
+- JANGAN gunakan data siswa asli dalam soal.
+- Data dikirim HANYA untuk generasi konten.`;
 }
 
 export function buildQuizSystemPrompt(count: number): string {
@@ -172,18 +299,75 @@ function fallbackAiResults(sourceText: string, quizCount = 5, soalCount = 35): [
   const materiStructured = {
     judul: topic,
     ringkasan: basis[0]?.slice(0, 200) || topic,
+    tujuanPembelajaran: ["Memahami materi pembelajaran", "Menerapkan konsep dalam kehidupan"],
     pendahuluan: basis.slice(0, 2).join(" ") || topic,
-    konten: basis.slice(0, 3).map((s, i) => ({
+    konten: basis.slice(0, 5).map((s, i) => ({
       judul: `Bagian ${i + 1}`,
       isi: s.slice(0, 500),
+      dalil: null,
+      contoh: "Terapkan dalam kehidupan sehari-hari.",
+      hikmah: "Memahami materi ini membantu kita menjadi lebih baik.",
+      poinSoal: [s.slice(0, 100)],
     })),
-    poinPenting: basis.slice(0, 3).map((s) => s.slice(0, 150)),
+    istilahKunci: [{ istilah: "Materi", definisi: "Pokok pembahasan yang dipelajari" }],
+    poinPenting: basis.slice(0, 5).map((s) => s.slice(0, 150)),
+    refleksi: "Apa yang sudah kamu pahami dari materi ini?",
   };
   return [
     { content: JSON.stringify(materiStructured), tokensIn: 0, tokensOut: 0, model: "local-fallback" },
     { content: JSON.stringify({ judul: `Kuis ${topic}`, soal: quizItems }), tokensIn: 0, tokensOut: 0, model: "local-fallback" },
     { content: JSON.stringify({ soal: soalItems }), tokensIn: 0, tokensOut: 0, model: "local-fallback" },
   ];
+}
+
+export function validateCoverage(
+  materiKonten: string,
+  soalItems: ValidatedSoalItem[],
+): { covered: number; total: number; percentage: number; uncoveredSoal: string[] } {
+  const materiText = materiKonten.toLowerCase();
+  const total = soalItems.length;
+  const uncoveredSoal: string[] = [];
+
+  let covered = 0;
+  for (const soal of soalItems) {
+    const kunci = soal.kunci?.toLowerCase() || "";
+    const pertanyaan = soal.pertanyaan?.toLowerCase() || "";
+
+    const opsiValue = soal.opsi?.[soal.kunci]?.toLowerCase() || "";
+    const penjelasan = (soal as Record<string, unknown>).penjelasan as string | undefined;
+    const penjelasanLower = penjelasan?.toLowerCase() || "";
+
+    const kunciCovered =
+      kunci.length > 2 && materiText.includes(kunci);
+    const opsiCovered =
+      opsiValue.length > 5 && materiText.includes(opsiValue.slice(0, 20));
+    const penjelasanCovered =
+      penjelasanLower.length > 10 && materiText.includes(penjelasanLower.slice(0, 30));
+
+    const pertanyaanKeywords = pertanyaan
+      .replace(/[?.,!]/g, "")
+      .split(" ")
+      .filter((w: string) => w.length > 4)
+      .slice(0, 5);
+
+    const keywordMatches = pertanyaanKeywords.filter((kw: string) => materiText.includes(kw));
+    const keywordCoverage = pertanyaanKeywords.length > 0
+      ? keywordMatches.length / pertanyaanKeywords.length
+      : 0;
+
+    if (kunciCovered || opsiCovered || penjelasanCovered || keywordCoverage >= 0.6) {
+      covered++;
+    } else {
+      uncoveredSoal.push(soal.pertanyaan.slice(0, 100));
+    }
+  }
+
+  return {
+    covered,
+    total,
+    percentage: total > 0 ? Math.round((covered / total) * 100) : 0,
+    uncoveredSoal,
+  };
 }
 
 export async function runGeneration(
@@ -245,7 +429,7 @@ export async function runGeneration(
       .where(eq(aiGeneration.id, generationId));
     await appendEvent(`gen:${gen.guruId}`, "gen.generating", { generationId });
 
-    const MAX_SOURCE_LENGTH = 12_000;
+    const MAX_SOURCE_LENGTH = 20_000;
     let truncatedSource: string;
     if (sourceText.length > MAX_SOURCE_LENGTH) {
       await appendEvent(`gen:${gen.guruId}`, "gen.truncation_warning", {
@@ -265,10 +449,10 @@ export async function runGeneration(
       materiRes = await withTimeout(
         chatWithFallback(
           [
-            { role: "system", content: MATERI_SYSTEM },
+            { role: "system", content: buildMateriSystemPrompt() },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
-          { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
+          { model: getModelForTask("light"), temperature: 0.3, maxTokens: 2500 },
         ),
         AI_TIMEOUT_MS,
         "ai-materi",
@@ -310,9 +494,9 @@ export async function runGeneration(
         chatWithFallback(
           [
             { role: "system", content: buildSoalSystemPrompt(soalCount) },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
+            { role: "user", content: `MATERI SISWA:\n\n${materiRes.content}` },
           ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2000, soalCount * 200) },
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, soalCount * 200) },
         ),
         AI_TIMEOUT_MS,
         "ai-soal",
@@ -447,6 +631,7 @@ export async function runGenerationFromText(
   guruId: string,
   soalCount = 35,
   quizCount = 5,
+  tingkat?: number,
 ): Promise<void> {
   const [gen] = await db
     .select()
@@ -460,17 +645,17 @@ export async function runGenerationFromText(
     .set({ status: "generating", updatedAt: new Date() })
     .where(eq(aiGeneration.id, generationId));
 
-  const truncatedSource = sanitizeUserText(sourceText.slice(0, 12_000));
+  const truncatedSource = sanitizeUserText(sourceText.slice(0, 20_000));
 
   let materiRes: ChatResult;
   try {
     materiRes = await withTimeout(
       chatWithFallback(
         [
-          { role: "system", content: MATERI_SYSTEM },
+          { role: "system", content: buildMateriSystemPrompt(tingkat) },
           { role: "user", content: `Materi:\n\n${truncatedSource}` },
         ],
-        { model: getModelForTask("light"), temperature: 0.3, maxTokens: 1500 },
+        { model: getModelForTask("light"), temperature: 0.3, maxTokens: 2500 },
       ),
       AI_TIMEOUT_MS,
       "ai-materi",
@@ -507,10 +692,10 @@ export async function runGenerationFromText(
     soalRes = await withTimeout(
       chatWithFallback(
         [
-          { role: "system", content: buildSoalSystemPrompt(soalCount) },
-          { role: "user", content: `Materi:\n\n${truncatedSource}` },
+          { role: "system", content: buildSoalSystemPrompt(soalCount, tingkat) },
+          { role: "user", content: `MATERI SISWA:\n\n${materiRes.content}` },
         ],
-        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2000, soalCount * 200) },
+        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, soalCount * 200) },
       ),
       AI_TIMEOUT_MS,
       "ai-soal",
@@ -568,6 +753,8 @@ export async function runGenerationFromText(
       tokenInput: tokensIn,
       tokenOutput: tokensOut,
       modelName: typeof getModelName() === 'string' ? getModelName() : String(getModelName() ?? 'unknown'),
+      tingkat: tingkat ?? null,
+      fase: tingkat ? tingkatToFase(tingkat) : null,
       updatedAt: new Date(),
     })
     .where(eq(aiGeneration.id, generationId));
