@@ -168,39 +168,17 @@ ATURAN KEAMANAN:
 - Data dikirim HANYA untuk generasi konten.`;
 }
 
-export function buildSoalSystemPrompt(count: number, tingkat?: number): string {
-  const fase = tingkatToFase(tingkat ?? 7);
-  const cfg = GRADE_GUIDELINES[fase];
-  return `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima MATERI SISWA (yang sudah di-generate) dan menghasilkan ${count} soal PILIHAN GANDA yang SEMUA JAWABANNYA ADA di dalam materi tersebut.
-
-ATURAN COVERAGE (WAJIB — paling penting):
-1. BACA materi siswa dengan teliti sebelum membuat soal.
-2. Setiap soal HARUS bisa dijawab HANYA dengan membaca materi siswa.
-3. Kunci jawaban HARUS secara eksplisit atau implisit ada di dalam teks materi.
-4. JANGAN membuat soal yang jawabannya tidak ada di materi.
-5. Gunakan SEMUA bagian konten materi sebagai sumber soal secara merata.
-6. Cantumkan "sourceSection": "nama sub-bab" untuk setiap soal.
-
-ATURAN FORMAT:
-1. Output HARUS JSON valid.
-2. Struktur: { "soal": [{ "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D", "penjelasan": string, "sourceSection": string }] }
+export function buildSoalSystemPrompt(count: number, _tingkat?: number): string {
+  return `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan ${count} soal PILIHAN GANDA berkualitas untuk latihan siswa SMP/MTs. ATURAN:
+1. Output HARUS JSON valid dengan field "soal" (array ${count} item).
+2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
 3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
-4. Buat distraktor (opsi salah) yang masuk akal dan menantang.
+4. Buat distraktor (opsi salah) yang masuk akal dan menantang — jangan terlalu mudah.
 5. Variasikan tingkat kesulitan: ${Math.round(count * 0.3)} mudah, ${Math.round(count * 0.4)} sedang, ${Math.round(count * 0.3)} sulit.
-
-ATURAN KESULITAN (KHUSUS ${cfg.label}):
-- ${cfg.difficultyDistribution}
-- ${cfg.bloomDistribution}
-
-ATURAN BAHASA:
-- ${cfg.sentenceLength}
-- ${cfg.vocabulary}
-- ${cfg.cognitiveStyle}
-
-ATURAN KEAMANAN:
-- Tidak ada markup, tidak ada komentar di luar JSON.
-- JANGAN gunakan data siswa asli dalam soal.
-- Data dikirim HANYA untuk generasi konten.`;
+6. Bahasa Indonesia, sesuai materi, untuk siswa SMP/MTs.
+7. Tidak ada markup, tidak ada komentar di luar JSON.
+8. JANGAN gunakan data siswa asli dalam soal.
+9. Data dikirim HANYA untuk generasi konten.`;
 }
 
 export function buildQuizSystemPrompt(count: number): string {
