@@ -511,9 +511,21 @@ export async function runGeneration(
       soalRes = fb[2];
     }
 
-    const materiParsed = parseMateriSafe(materiRes.content);
-    const quizParsed = parseQuizSafe(quizRes.content);
+    let materiParsed = parseMateriSafe(materiRes.content);
+    let quizParsed = parseQuizSafe(quizRes.content);
     let soalParsed = parseSoalSafe(soalRes.content);
+
+    if (!materiParsed) {
+      console.warn("[ai-generator] materi parse failed, using fallback");
+      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+      materiParsed = parseMateriSafe(fb[0].content);
+    }
+
+    if (!quizParsed) {
+      console.warn("[ai-generator] quiz parse failed, using fallback");
+      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+      quizParsed = parseQuizSafe(fb[1].content);
+    }
 
     if (!soalParsed) {
       console.warn("[ai-generator] soal AI output invalid, menggunakan fallback lokal. Raw preview:", soalRes.content.slice(0, 500));
@@ -535,7 +547,7 @@ export async function runGeneration(
         .set({ status: "failed", errorMessage: `AI output tidak valid: ${missing}`, updatedAt: new Date() })
         .where(eq(aiGeneration.id, generationId));
       throw new GenerationSchemaError(
-        (!materiParsed ? "materi" : !quizParsed ? "quiz" : "soal") as "materi" | "quiz" | "soal",
+        (!materiParsed ? "materi" : "quiz") as "materi" | "quiz" | "soal",
       );
     }
 
@@ -708,9 +720,21 @@ export async function runGenerationFromText(
     soalRes = fb[2];
   }
 
-  const materiParsed = parseMateriSafe(materiRes.content);
-  const quizParsed = parseQuizSafe(quizRes.content);
+  let materiParsed = parseMateriSafe(materiRes.content);
+  let quizParsed = parseQuizSafe(quizRes.content);
   let soalParsed = parseSoalSafe(soalRes.content);
+
+  if (!materiParsed) {
+    console.warn("[ai-generator] materi parse failed, using fallback");
+    const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+    materiParsed = parseMateriSafe(fb[0].content);
+  }
+
+  if (!quizParsed) {
+    console.warn("[ai-generator] quiz parse failed, using fallback");
+    const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+    quizParsed = parseQuizSafe(fb[1].content);
+  }
 
   if (!soalParsed) {
     console.warn("[ai-generator] soal AI output invalid, menggunakan fallback lokal. Raw preview:", soalRes.content.slice(0, 500));
