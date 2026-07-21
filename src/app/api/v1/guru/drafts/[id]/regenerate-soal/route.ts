@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse, after } from "next/server";
-import { checkRateLimit, checkConcurrentLimit, releaseConcurrent } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
