@@ -64,7 +64,7 @@ export async function POST(
       const correct = jwb === s.kunci;
       if (correct) benar++;
       else salah++;
-      return { soalId: s.id, jawaban: jwb, kunci: s.kunci, benar: correct };
+      return { soalId: s.id, jawaban: jwb, benar: correct };
     });
 
     const nilai = soals.length > 0 ? Math.round((benar / soals.length) * 100) : 0;

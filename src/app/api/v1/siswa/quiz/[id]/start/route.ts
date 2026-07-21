@@ -6,6 +6,7 @@ import { cacheSet } from "@/lib/cache-layer";
 import { quizPublished, siswaKursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { validateCsrf } from "@/lib/csrf-server";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,9 @@ export async function POST(
   try {
     const session = await requireSiswa(request);
     const { id } = await params;
+
+    const csrfError = validateCsrf(request);
+    if (csrfError) return csrfError;
 
     const rl = await checkRateLimit(`quiz-start:${session.userId}`, 20, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

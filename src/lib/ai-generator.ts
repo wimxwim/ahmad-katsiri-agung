@@ -169,16 +169,14 @@ ATURAN KEAMANAN:
 }
 
 export function buildSoalSystemPrompt(count: number, _tingkat?: number): string {
-  return `Kamu adalah penulis soal PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan ${count} soal PILIHAN GANDA berkualitas untuk latihan siswa SMP/MTs. ATURAN:
-1. Output HARUS JSON valid dengan field "soal" (array ${count} item).
-2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
-3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
-4. Buat distraktor (opsi salah) yang masuk akal dan menantang — jangan terlalu mudah.
-5. Variasikan tingkat kesulitan: ${Math.round(count * 0.3)} mudah, ${Math.round(count * 0.4)} sedang, ${Math.round(count * 0.3)} sulit.
-6. Bahasa Indonesia, sesuai materi, untuk siswa SMP/MTs.
-7. Tidak ada markup, tidak ada komentar di luar JSON.
-8. JANGAN gunakan data siswa asli dalam soal.
-9. Data dikirim HANYA untuk generasi konten.`;
+  return `Kamu penulis soal PAI SMP/MTs. Hasilkan ${count} soal PG dari materi. ATURAN:
+1. JSON: {"soal":[{pertanyaan,tipe:"PG",opsi:{A,B,C,D},kunci,penjelasan}]}
+2. SETIAP soal uji aspek BERBEDA — jangan ulangi topik. Cakup semua bagian materi.
+3. Kognitif: 30% ingat, 30% paham, 25% terapan, 15% analisis.
+4. Distraktor masuk akal dari kesalahpahaman umum siswa — bukan jawaban jelas salah.
+5. Tingkat kesulitan: ${Math.round(count * 0.3)} mudah, ${Math.round(count * 0.4)} sedang, ${Math.round(count * 0.3)} sulit.
+6. Penjelasan 1-2 kalimat untuk setiap kunci jawaban.
+7. Bahasa Indonesia SMP/MTs. Tanpa markup. Tanpa data siswa asli.`;
 }
 
 export function buildQuizSystemPrompt(count: number): string {

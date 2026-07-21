@@ -64,6 +64,8 @@ export async function GET(
       )
       .orderBy(asc(soalPublished.urutan));
 
+    const mode = request.nextUrl.searchParams.get("mode") || "belajar";
+
     return NextResponse.json({
       data: {
         aiGenerationId: aiGenId,
@@ -75,7 +77,7 @@ export async function GET(
           tipe: s.tipe,
           pilihanGanda: s.pilihanGanda,
           poin: s.poin,
-          kunci: s.kunci,
+          ...(mode === "belajar" ? { kunci: s.kunci } : {}),
         })),
       },
     });
