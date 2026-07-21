@@ -25,8 +25,8 @@ export const MAX_TOPUP_PER_DAY = 5;
 
 /**
  * Free tier: setiap pengguna baru mendapatkan Rp2.000 (2000 token) gratis.
- * 1 token = Rp1. Biaya per generate AI = 85 token (Rp85).
- * ~23 generate gratis. Margin 1.000% — biaya API NaraRouter ~Rp7.76/generate.
+ * 1 token = Rp1. Biaya per generate AI bervariasi sesuai panjang dokumen.
+ * ~20+ generate gratis dengan saldo awal.
  */
 export const INITIAL_TOKEN_BALANCE = 2000;
 

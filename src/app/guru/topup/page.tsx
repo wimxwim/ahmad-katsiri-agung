@@ -14,7 +14,7 @@ import { EASE_CURVE } from "@/lib/constants";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { apiFetch } from "@/lib/api-helpers";
 import { cn } from "@/lib/utils";
-import { TOPUP_PLANS, MIN_TOPUP, MAX_TOPUP, GENERATE_COST } from "@/lib/token-constants";
+import { TOPUP_PLANS, MIN_TOPUP, MAX_TOPUP } from "@/lib/token-constants";
 
 interface PlansData {
   plans: typeof TOPUP_PLANS;
@@ -172,7 +172,7 @@ export default function GuruTopupPage() {
         </span>
         <h1 className="font-heading font-bold text-2xl text-on-surface">Top-Up Saldo</h1>
         <p className="text-sm text-on-surface-variant mt-1">
-          Isi saldo token untuk generate materi AI. Rp{GENERATE_COST}/generate.
+          Isi saldo token untuk generate materi AI. Biaya bervariasi sesuai panjang dokumen.
         </p>
       </motion.div>
 
@@ -268,7 +268,7 @@ export default function GuruTopupPage() {
                 >
                   <p className="font-heading font-bold text-lg">{plan.label}</p>
                   <p className="text-xs text-on-surface-variant mt-1">
-                    ≈{Math.round(plan.amount / GENERATE_COST)} generate
+                    ≈{Math.round(plan.amount / 100)} generate (estimasi)
                   </p>
                 </motion.button>
               ))}
