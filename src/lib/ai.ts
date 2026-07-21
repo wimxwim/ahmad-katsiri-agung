@@ -81,7 +81,7 @@ export async function chat(
           Authorization: `Bearer ${getApiKey()}`,
         },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(120_000),
+        signal: AbortSignal.timeout(180_000),
       });
 
       console.error("[ai] response:", { status: res.status, ok: res.ok, attempt });

@@ -237,6 +237,7 @@ function withTimeout<T>(p: Promise<T>, ms: number, stage: "extract" | "ai" | "ai
 
 const EXTRACT_TIMEOUT_MS = 60_000;
 const AI_TIMEOUT_MS = 90_000;
+const SOAL_TIMEOUT_MS = 180_000;
 const SAVE_TIMEOUT_MS = 15_000;
 
 function sentencePool(text: string): string[] {
@@ -539,7 +540,7 @@ export async function runGeneration(
           ],
           { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, soalCount * 200) },
         ),
-        AI_TIMEOUT_MS,
+        SOAL_TIMEOUT_MS,
         "ai-soal",
       );
       console.log("[ai-generator] soal done.");
@@ -738,7 +739,7 @@ export async function runGenerationFromText(
         ],
         { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, soalCount * 200) },
       ),
-      AI_TIMEOUT_MS,
+      SOAL_TIMEOUT_MS,
       "ai-soal",
     );
     console.log("[ai-generator] soal done.");
