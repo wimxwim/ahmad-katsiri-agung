@@ -1,10 +1,9 @@
 # AGENTS.md — AKAL Center v2
 
-> **Update:** 18 Juli 2026 — database cleaned, 13 bug fixes deployed, quiz flow repaired.
-> **Active plan:** `prd/TODO-FINAL-v2.md` — read before any feature work.
-> **Model:** `deepseek-v4-flash-bynara` via NaraRouter (`src/lib/ai.ts:getModelName()`).
-> **Token monetization:** Rp132/generate (200% margin), QRIS GoPay, Telegram notif.
-> **Database:** Cleared to 1 user (AKA CHANNEL). All other data deleted for clean testing.
+> **Update:** 22 Juli 2026 — dynamic pricing, grade adaptation, soal fix deployed.
+> **Active plan:** `prd/PRD-MATERI-SOAL-COVERAGE.md` — materi-soal pipeline + grade adaptation.
+> **Model:** `deepseek-v4-flash` via NaraRouter (`src/lib/ai.ts:getModelName()`).
+> **Pricing:** Dynamic (11.5× margin). `FREE_GENERATE_MODE=true` env var bypasses top-up requirement.
 
 ## Stack (locked)
 
@@ -41,58 +40,94 @@ npx vercel --prod --yes  # Deploy to Vercel production (akalcenter.my.id)
 src/middleware.ts        # CSP, auth guard, role-based routing. Next.js 16 warns about name.
                          # Root-level proxy.ts does NOT exist — middleware.ts IS the proxy.
 src/lib/auth.ts          # JWT sign/verify. Uses `crypto.randomUUID()` (Web Crypto, Edge-safe).
-src/lib/ai.ts            # NaraRouter client. Default model: deepseek-v4-flash-bynara.
+src/lib/ai.ts            # NaraRouter client. Default model: deepseek-v4-flash.
                          # Base URL: https://router.bynara.id/v1
                          # API key: AI_API_KEY || NARAROUTER_API_KEY
+                         # chatWithFallback: flash → mimo fallback chain. DO NOT remove Mimo fallback.
 src/lib/ai-generator.ts  # Orchestrates upload→extract→AI/fallback→save draft.
-                         # buildSoalSystemPrompt(n) + buildQuizSystemPrompt(n) both exist.
-                         # runGenerationFromText(id, text, guruId, soalCount?, quizCount?)
-src/lib/ai-sanitizer.ts  # Normalizes AI output. DO NOT DELETE — prevents schema invalid.
+                         # buildMateriSystemPrompt(tingkat?) — comprehensive materi with grade adaptation.
+                         # buildSoalSystemPrompt(count, tingkat?) — simple 9-rule prompt (flash model limit).
+                         # buildQuizSystemPrompt(count) — quiz prompt.
+                         # runGeneration(file) — used by regenerate route. No tingkat param.
+                         # runGenerationFromText(text, guruId, tingkat?) — used by generate route.
+                         # validateCoverage(materiKonten, soalItems) — checks soal coverage %.
+                         # Default soalCount: 20 (not 35 — flash model times out at 35).
+                         # SOAL_TIMEOUT_MS: 180s. Fetch timeout: 180s.
+                         # Source cap: 20_000 chars. Materi maxTokens: 2_500.
+                         # GRADE_GUIDELINES: 6 Fase (A-F), tingkatToFase() helper.
+                         # Soal generation uses source text, NOT materi content (flash model constraint).
+src/lib/ai-sanitizer.ts  # Normalizes AI output. DO NOT DELETE.
+                         # MateriResultSchema: judul, ringkasan, tujuanPembelajaran, pendahuluan,
+                         #   konten (with dalil, contoh, hikmah, poinSoal), istilahKunci, poinPenting, refleksi.
+                         # GeneratedSoalSchema: pertanyaan, tipe, opsi, kunci, penjelasan?, sourceSection?
+                         # CRITICAL: soal parse failure → falls back to local template (GARBAGE).
+                         #   When soalStatus=draft but questions are "Apa inti dari...", AI failed silently.
+src/lib/ai-regenerate.ts # Regenerate materi/quiz/soal individually. Uses buildMateriSystemPrompt from ai-generator.
+                         # Regenerate MATERI_SYSTEM constant removed — now imports from ai-generator.
 src/lib/session.ts       # roleToSessionRole(): DB uppercase → session lowercase.
                          # "GURU"/"ASISTEN_GURU" → "guru", "SISWA" → "murid".
                          # Cookie: __Host-akal_sesi (httpOnly, secure, sameSite=lax).
-src/lib/db/schema.ts     # ~30 tables. All v2 tables exist (token_balances, materi_sharing,
-                         # krabat_connections, fileMateri.kategori). Migration 0000-0038.
-src/lib/db/migrations/   # 39 SQL files (0000-0038). Applied manually to Supabase.
+src/lib/token-service.ts # Dynamic pricing: estimateGenerationCost(), calculateActualPrice(),
+                         #   settleGenerationCost(), deductGenerateCostDynamic().
+                         # requireUnlocked() — bypassed when FREE_GENERATE_MODE=true.
+                         # MIN_GENERATE_CHARGE=50, MAX_GENERATE_CHARGE=500, MARGIN_MULTIPLIER=11.5.
+src/lib/token-constants.ts # GENERATE_COST=85 (legacy flat rate). Dynamic pricing constants above.
+src/lib/db/schema.ts     # ~30 tables. aiGeneration has tingkat+fase columns (migration 0052).
+                         # fileMateri has kelasId column (migration 0052).
+src/lib/db/migrations/   # 54 SQL files (0000-0052). Applied manually to Supabase.
                          # drizzle/ folder exists at root with Drizzle meta.
 src/app/api/v1/          # 114 API route handlers (auth, guru, siswa, kursus, enroll, payment, etc.)
 src/app/api/             # Legacy routes (health, sesi, csp-report) — frozen.
 ```
 
-## Data flow: Siswa Quiz (critical path)
+## AI Generation Pipeline (critical path)
 
 ```
-Siswa klik kuis di /siswa/quiz
-  → /siswa/cbt/[id] → GET /api/v1/siswa/quiz/[id]  (ambil soal)
-  → QuizEngine.startQuiz() → POST /api/v1/siswa/quiz/[id]/start  (catat start)
-  → Siswa kerjakan soal
-  → Submit → POST /api/v1/siswa/quiz/[id]/submit  (nilai + jawabanBenar)
-  → QuizEngine tampilkan hasil
+Upload PDF → /api/v1/guru/uploads
+  → Extract text (inline, 60s timeout)
+  → Save to fileMateri + aiGeneration (status: extracted)
+  → User clicks "Buat AI" → POST /api/v1/guru/drafts/[id]/generate
+  → Pre-charge: estimateGenerationCost(sourceText.length)
+  → after() callback:
+    1. Generate MATERI: buildMateriSystemPrompt(tingkat) + source text → maxTokens 2500
+    2. Generate QUIZ: buildQuizSystemPrompt(5) + source text → maxTokens 800
+    3. Generate SOAL: buildSoalSystemPrompt(20) + source text → maxTokens 5000, timeout 180s
+    4. Parse all outputs (parseMateriSafe, parseQuizSafe, parseSoalSafe)
+    5. If parse fails → fallbackAiResults() → GARBAGE template (silent failure!)
+    6. settleGenerationCost(tokensIn, tokensOut, preCharged) → refund excess
 ```
 
-**Rules:**
+**Critical rules:**
+- Soal count default is 20, NOT 35. Flash model times out at 35 soal.
+- Soal prompt MUST stay simple (9 rules max). Complex coverage/sourceSection rules → flash model fails.
+- Do NOT change soal generation to use materi content. Flash model can't handle it. Use source text.
+- `chatWithFallback` has flash→mimo chain. Do NOT remove the Mimo fallback.
+- Regenerate route MUST use `after()` wrapper. Without it, Vercel kills the background job.
+- Concurrent limit TTL for regenerate: 3 minutes (not 30 min default).
+- `FREE_GENERATE_MODE=true` env var bypasses top-up requirement. Set in Vercel dashboard.
+- Upload NOW requires `kelasId` in FormData. Rejects with 400 if missing.
 - `kunci` jawaban dikirim ke client HANYA untuk mode `BELAJAR`. Mode `ULANGAN`/`CBT` tidak.
-- `POST /siswa/quiz/[id]/start` WAJIB dipanggil sebelum submit. Submit endpoint cek cache key ini.
-- QuizEngine feedback real-time (benar/salah) hanya bekerja di mode BELAJAR.
 
 ## Critical gotchas
 
-1. **CSRF token sent but NEVER validated server-side** — `x-csrf-token` header exists but no server-side check. Double-submit cookie pattern incomplete.
-2. **Migration journal desync** — `drizzle/meta/_journal.json` missing entries 0014-0023. Drizzle CLI may conflict.
-3. **DB role uppercase → session role lowercase** — `roleToSessionRole()` in `src/lib/session.ts`. "SISWA" → "murid", "GURU" → "guru".
-4. **Password with special chars in DATABASE_URL** — MUST `encodeURIComponent()` before using in connection string.
-5. **Migrations NOT auto-applied** — run SQL manually in Supabase SQL Editor. Check `information_schema.columns` before assuming migration exists.
-6. **Vercel production branch = `main`** (not `master`). Push to `main` to trigger deploy.
-7. **NEVER import `@animateicons/react/lucide`** — caused Vercel build failure. Use `lucide-react` only.
-8. **NEVER delete `vercel.json`**.
-9. **NEVER hardcode `NODE_ENV`** in any .env file.
-10. **NEVER commit credentials** — repo is PUBLIC. Use `.env.example` with placeholders.
-11. **Cron job is daily midnight** (`0 0 * * *`) — Vercel Hobby limit. Processes stuck `aiGeneration` queue. Normal flow: manual generate from Draft AI page.
-12. **Logout MUST be POST** — `<Link href="/api/v1/auth/logout">` is a security risk (browser prefetch). Use `<button>` + `fetch(POST)` + `router.push("/masuk")`.
-13. **Onboarding syncs server + localStorage** — `/guru/onboarding` fetches `GET /api/v1/guru/onboarding`, posts `POST /api/v1/guru/onboarding` on step completion. localStorage is fallback.
-14. **Draft polling only runs when processing drafts exist** — `setInterval` only active when `drafts.some(d => d.status === 'queued' || d.status === 'extracting' || d.status === 'generating')`. Stops automatically when no processing drafts.
-15. **Use `apiFetch()` from `@/lib/api-helpers`** — preferred over raw `fetch()` in guru pages. Raw `fetch` is still used in siswa pages (no standard yet).
+1. **Soal fallback is SILENT** — when AI fails, `fallbackAiResults()` produces valid JSON that parses successfully. Status shows `draft`, no errorMessage unless parse itself fails. Check soal content: if questions are "Apa inti dari pernyataan berikut..." or "Mengapa siswa perlu memahami materi tentang...", AI failed silently.
+2. **Flash model prompt limit** — keep soal prompt under ~500 chars. Complex rules (ATURAN COVERAGE, sourceSection, penjelasan, grade-specific rules) → flash model fails.
+3. **Migration journal desync** — `drizzle/meta/_journal.json` missing entries 0014-0023. Drizzle CLI may conflict.
+4. **DB role uppercase → session role lowercase** — `roleToSessionRole()` in `src/lib/session.ts`. "SISWA" → "murid", "GURU" → "guru".
+5. **Password with special chars in DATABASE_URL** — MUST `encodeURIComponent()` before using in connection string.
+6. **Migrations NOT auto-applied** — run SQL manually in Supabase SQL Editor. Check `information_schema.columns` before assuming migration exists.
+7. **Vercel production branch = `main`** (not `master`). Push to `main` to trigger deploy.
+8. **NEVER import `@animateicons/react/lucide`** — caused Vercel build failure. Use `lucide-react` only.
+9. **NEVER delete `vercel.json`**.
+10. **NEVER hardcode `NODE_ENV`** in any .env file.
+11. **NEVER commit credentials** — repo is PUBLIC. Use `.env.example` with placeholders.
+12. **Cron job is daily midnight** (`0 0 * * *`) — Vercel Hobby limit. Processes stuck `aiGeneration` queue. Normal flow: manual generate from Draft AI page.
+13. **Logout MUST be POST** — `<Link href="/api/v1/auth/logout">` is a security risk (browser prefetch). Use `<button>` + `fetch(POST)` + `router.push("/masuk")`.
+14. **Onboarding syncs server + localStorage** — `/guru/onboarding` fetches `GET /api/v1/guru/onboarding`, posts `POST /api/v1/guru/onboarding` on step completion. localStorage is fallback.
+15. **Draft polling only runs when processing drafts exist** — `setInterval` only active when `drafts.some(d => d.status === 'queued' || d.status === 'extracting' || d.status === 'generating')`. Stops automatically when no processing drafts.
 16. **Upload does NOT auto-trigger generate** — BY DESIGN. Upload only does upload + extraction. Guru manually clicks "Generate AI" in Draft AI page.
+17. **Dynamic pricing hides margin** — UI shows "Biaya bervariasi sesuai panjang dokumen". Never show Rp85/generate or margin percentage.
+18. **`git add -A` includes unrelated files** — the `skills/` directory has deleted files from other sessions. Only stage files you actually changed.
 
 ## Design system (immutable)
 
@@ -112,15 +147,6 @@ Siswa klik kuis di /siswa/quiz
 - All AI output = draft until guru approves
 - File upload = untrusted content
 
-## OpenCode Agent Rules
-
-- **Use sub-agents for execution** — Bash commands, file writes, and deploy go through `sidekick` agent via `task` tool.
-- **Use explore agent for research** — Reading files, searching code, and cross-referencing.
-- **Main agent handles:** git commit, git push, critical decisions, and review.
-- **Vercel deploy** — `npx vercel --prod --yes` via sidekick. Auto-deploys on push to `main`.
-- **Support page (`/support`)** — QRIS donation + Telegram notif. DO NOT touch. Took 1+ week to fix.
-- **Database is clean** — 1 user (AKA CHANNEL, katsiriagung99@gmail.com). All other data deleted. Create new test data as needed.
-
 ## Legacy (DELETED — do NOT recreate)
 
 - `src/data/materi.ts`, `src/data/soal.ts`, `src/lib/google-sheets.ts`
@@ -138,13 +164,13 @@ git diff --cached | grep -iE 'DATABASE_URL|SUPABASE_SERVICE_ROLE|JWT_SECRET|ENCR
 
 ## Active TODO
 
-Read `prd/TODO-FINAL-v2.md` for the full 80-task plan. Remaining priorities:
+Read `prd/PRD-MATERI-SOAL-COVERAGE.md` for the full plan. Remaining priorities:
 
-1. **CSRF validation** — server-side check missing (gotcha #1)
-2. **AI generate pipeline** — upload 42 sample files, test full flow (Fase 8)
-3. **Payment integration** — frontend wiring for `/siswa/payment` (placeholder)
-4. **Migration journal sync** — fix `_journal.json` desync (gotcha #2)
-5. **Katalog page** — public course browsing frontend for `/api/v1/katalog`
+1. **Soal from materi** — flash model currently can't handle it. Need model upgrade or batch approach.
+2. **Payment integration** — frontend wiring for `/siswa/payment` (placeholder)
+3. **Migration journal sync** — fix `_journal.json` desync (gotcha #3)
+4. **Katalog page** — public course browsing frontend for `/api/v1/katalog`
+5. **Readability post-check** — validate AI output readability per grade level (deferred per owner)
 
 ## ⚠️ LESSON LEARNED — JANGAN Kill/Restart Chrome
 
