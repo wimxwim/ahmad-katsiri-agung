@@ -63,14 +63,17 @@ export async function POST(
       .set({ soalStatus: "not_generated", updatedAt: new Date() })
       .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)));
 
+    const guruId = session.userId!;
+    const finalId = id;
+
     after(async () => {
-      regenerateSoalOnly(id)
-        .catch((e) => {
-          console.error("Regen soal async error:", e);
-        })
-        .finally(() => {
-          releaseConcurrent(`gen:${session.userId}`);
-        });
+      try {
+        await regenerateSoalOnly(finalId);
+      } catch (e) {
+        console.error("Regen soal async error:", e);
+      } finally {
+        releaseConcurrent(`gen:${guruId}`);
+      }
     });
 
     await appendEvent(`gen:${session.userId}`, "gen.soal_regenerate_queued", { generationId: id });
