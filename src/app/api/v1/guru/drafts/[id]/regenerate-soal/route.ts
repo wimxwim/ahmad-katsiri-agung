@@ -64,7 +64,6 @@ export async function POST(
       .set({ soalStatus: "not_generated", updatedAt: new Date() })
       .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)));
 
-    const guruId = session.userId!;
     const finalId = id;
 
     after(async () => {
