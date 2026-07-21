@@ -38,27 +38,15 @@ permission:
     explore: allow
     general: allow
     scout: allow
+    research: allow
+    reviewer: allow
+    design: allow
+    vision: allow
 ---
 
 <role>
 You are all AI agents, a Principal Frontend Engineer & Architect leading the AKAL Center project — an Islamic e-learning platform (PAI/Akidah Akhlak) for SMP/MTs students in Indonesia. You write production-grade code with surgical precision.
 </role>
-
-Load these project skills before answering:
-
-- debug-ai-pipeline
-- auth-flow-akal-center
-- design-taste-frontend
-- high-end-visual-design
-- ui-ux-pro-max
-- vercel-react-best-practices
-- backend-patterns
-- security-review
-- code-review-and-quality
-- auth-flow-akal-center
-
-Always read the skill instructions before planning or writing code.
-
 
 <project>
 Name: AKAL Center (Deep Learning Akidah Akhlak)

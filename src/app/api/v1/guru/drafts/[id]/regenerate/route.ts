@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { checkRateLimit, checkRateLimitPerUser, checkConcurrentLimit, releaseConcurrent, ipFromRequest } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
@@ -12,6 +12,9 @@ import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import { validateCsrf } from "@/lib/csrf-server";
 import { checkBalance, getBalance, refundBalance, InsufficientBalanceError, requireUnlocked, SubscriptionLockedError, deductGenerateCostDynamic, settleGenerationCost, estimateGenerationCost } from "@/lib/token-service";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 export async function POST(
   request: NextRequest,
@@ -116,33 +119,60 @@ export async function POST(
       .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)));
     await appendEvent(`gen:${session.userId}`, "gen.queued", { generationId: id });
 
-    runGeneration(id, bytes, ext)
-      .then(async () => {
+    const guruId = session.userId!;
+    const finalId = id;
+    const finalBytes = bytes;
+    const finalExt = ext;
+
+    after(async () => {
+      try {
+        await runGeneration(finalId, finalBytes, finalExt);
+
         const [gen] = await db
           .select({ tokenInput: aiGeneration.tokenInput, tokenOutput: aiGeneration.tokenOutput })
           .from(aiGeneration)
-          .where(eq(aiGeneration.id, id))
+          .where(eq(aiGeneration.id, finalId))
           .limit(1);
 
         if (gen && gen.tokenInput != null && gen.tokenOutput != null) {
           await settleGenerationCost(
-            session.userId!,
+            guruId,
             gen.tokenInput,
             gen.tokenOutput,
             chargedAmount,
-            id,
+            finalId,
           ).catch((settleErr) => {
             console.error("Settle regenerate cost failed:", settleErr);
           });
         }
-      })
-      .catch((e) => {
-        console.error("Regenerate async error:", e);
-        refundBalance(session.userId!, chargedAmount, { notes: "Regenerate gagal. Token dikembalikan.", referenceId: `refund:${id}` }).catch(() => {});
-      })
-      .finally(() => {
-        releaseConcurrent(`gen:${session.userId}`);
-      });
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        console.error("Regenerate async error:", errMsg);
+
+        await refundBalance(guruId, chargedAmount, {
+          notes: "Regenerate gagal. Token dikembalikan.",
+          referenceId: `refund:${finalId}`,
+        }).catch(() => {});
+
+        await db
+          .update(aiGeneration)
+          .set({
+            status: "failed",
+            errorMessage: errMsg.slice(0, 500),
+            updatedAt: new Date(),
+          })
+          .where(eq(aiGeneration.id, finalId))
+          .catch(() => {});
+
+        await appendEvent(`gen:${guruId}`, "gen.failed", {
+          generationId: finalId,
+          error: errMsg.slice(0, 200),
+          refunded: true,
+        }).catch(() => {});
+      } finally {
+        releaseConcurrent(`gen:${guruId}`);
+      }
+    });
 
     return NextResponse.json({ success: true, status: "queued" });
   } catch (e) {
