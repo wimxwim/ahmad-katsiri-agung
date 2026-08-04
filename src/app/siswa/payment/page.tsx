@@ -141,7 +141,7 @@ export default function SiswaPaymentPage() {
         </p>
         <div className="mt-4 flex items-center gap-3">
           <Link
-            href="/siswa/payment/topup"
+            href="https://wa.me/6285158795502?text=Halo%2C%20saya%20mau%20isi%20token%20AKAL%20Center"
             className="inline-flex items-center gap-2 bg-[#eec055] text-[#003d24] px-5 py-2.5 rounded-full text-sm font-bold hover:brightness-110 active:scale-[0.98] transition-all"
           >
             <Sparkles className="w-4 h-4" />
@@ -193,13 +193,9 @@ export default function SiswaPaymentPage() {
               Riwayat Transaksi
             </h2>
           </div>
-          <Link
-            href="/siswa/payment/history"
-            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-          >
-            Lihat Semua
-            <ArrowRight className="w-3 h-3" />
-          </Link>
+          <span className="text-xs text-on-surface-variant/60">
+            Hubungi admin untuk top-up
+          </span>
         </div>
 
         <div className="flex flex-col items-center justify-center py-8 text-center">

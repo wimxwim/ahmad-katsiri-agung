@@ -20,6 +20,7 @@ import { MathRenderer } from "@/components/ui/MathRenderer";
 import { cn } from "@/lib/utils";
 import { useQuizLock } from "@/hooks/useQuizLock";
 import { QuizLockOverlay } from "@/components/siswa/QuizLockOverlay";
+import { useToast } from "@/components/ui/Toast";
 
 type QuizState = "intro" | "playing" | "result";
 
@@ -104,6 +105,8 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
     onMaxViolations,
   });
 
+  const { toast } = useToast();
+
   const totalSeconds = quiz.durasiMenit * 60;
 
   useEffect(() => {
@@ -134,6 +137,11 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
     return () => clearInterval(id);
   }, [quizState, timeLeft, totalSeconds]);
 
+  useEffect(() => {
+    setSelected(null);
+    isianTextRef.current = "";
+  }, [currentIndex]);
+
   // Exit confirmation
   useEffect(() => {
     if (quizState !== "playing") return;
@@ -149,6 +157,14 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
   const totalSoal = shuffledSoal.length;
 
   const startQuiz = useCallback(async () => {
+    if (!quiz.soal || quiz.soal.length === 0) {
+      toast("error", "Kuis ini tidak memiliki soal.");
+      return;
+    }
+    if (quiz.durasiMenit <= 0) {
+      toast("error", "Durasi kuis tidak valid.");
+      return;
+    }
     setError(null);
     setShuffledSoal(shuffleArray(quiz.soal));
     try {
@@ -685,16 +701,22 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
           {shuffledSoal.map((s, i) => (
             <button
               key={s.nomor}
-              onClick={() => {
-                if (i === currentIndex) return;
-                if (showFeedback) {
-                  if (selected) setJawaban((prev) => ({ ...prev, [soal.id]: selected }));
-                  setSelected(null);
-                  setIsianText("");
-                  setShowFeedback(false);
-                }
-                setCurrentIndex(i);
-              }}
+onClick={() => {
+  if (i === currentIndex) return;
+  if (!showFeedback && soal && (soal.tipe === "ISIAN" || soal.tipe === "ESSAY")) {
+    const text = isianTextRef.current;
+    if (text) {
+      setJawaban((prev) => ({ ...prev, [soal.id]: text }));
+    }
+  }
+  if (showFeedback) {
+    if (selected) setJawaban((prev) => ({ ...prev, [soal.id]: selected }));
+    setSelected(null);
+    setIsianText("");
+    setShowFeedback(false);
+  }
+  setCurrentIndex(i);
+}}
               className={cn(
                 "w-10 h-10 min-w-[44px] min-h-[44px] rounded-full text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden",
                 i === currentIndex && "bg-primary text-white scale-110",

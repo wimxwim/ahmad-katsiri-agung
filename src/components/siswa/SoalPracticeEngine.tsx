@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
 import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, FileText, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { csrfHeaders } from "@/lib/csrf";
 import { useQuizLock } from "@/hooks/useQuizLock";
 import { QuizLockOverlay } from "@/components/siswa/QuizLockOverlay";
 
@@ -62,7 +63,7 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
     const controller = new AbortController();
     fetch(`/api/v1/siswa/soal/${batch.id}/submit`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...csrfHeaders() },
       credentials: "include",
       body: JSON.stringify({
         durasiDetik: elapsedSeconds,
@@ -169,13 +170,20 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
               Kembali
             </button>
             <button
-              onClick={() => setState("playing")}
-              className="inline-flex items-center gap-2 bg-tertiary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
+              onClick={() => {
+                if (!batch.soal || batch.soal.length === 0) return;
+                setState("playing");
+              }}
+              disabled={totalSoal === 0}
+              className="inline-flex items-center gap-2 bg-tertiary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-30"
             >
               <FileText className="w-4 h-4" />
               Mulai Latihan
             </button>
           </div>
+          {totalSoal === 0 && (
+            <p className="text-xs text-red-600 mt-2">Soal latihan belum tersedia.</p>
+          )}
         </div>
       </div>
     );
@@ -255,6 +263,23 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
             Ulangi Latihan
           </button>
         </div>
+      </div>
+    );
+  }
+
+  // Guard: empty batch
+  if (!batch.soal || batch.soal.length === 0) {
+    return (
+      <div className="bg-glass border border-border-precision rounded-2xl p-6 sm:p-8 shadow-glass-lg text-center">
+        <FileText className="w-12 h-12 text-on-surface-variant/30 mx-auto mb-4" />
+        <p className="text-sm text-on-surface-variant">Soal latihan belum tersedia.</p>
+        <button
+          onClick={onBack}
+          className="mt-4 inline-flex items-center gap-2 border border-border-precision text-on-surface-variant px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-surface active:scale-[0.98] transition-all"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Kembali
+        </button>
       </div>
     );
   }
