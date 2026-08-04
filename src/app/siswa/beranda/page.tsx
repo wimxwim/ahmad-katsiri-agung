@@ -18,6 +18,7 @@ import {
   Users,
   BarChart3,
   Clock,
+  PartyPopper,
 } from "lucide-react";
 import { SkeletonDashboardSiswa } from "@/components/ui/SkeletonBlocks";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -355,6 +356,28 @@ export default function SiswaBerandaPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Celebration Banner — 100% progress */}
+      {progressPct === 100 && stats.materi > 0 && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: EASE_CURVE, delay: 0.04 }}
+          className="bg-gradient-to-r from-emerald-50 via-primary/5 to-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3"
+        >
+          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+            <PartyPopper className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-heading font-bold text-emerald-800 text-sm">
+              🎉 Selamat! Semua materi selesai!
+            </p>
+            <p className="text-xs text-emerald-700 mt-0.5">
+              Kamu sudah menyelesaikan semua {stats.materi} materi. Pertahankan terus semangat belajarnya!
+            </p>
+          </div>
+        </motion.div>
+      )}
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}

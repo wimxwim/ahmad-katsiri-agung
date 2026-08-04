@@ -61,9 +61,11 @@ function shuffleArray<T>(arr: T[]): T[] {
 interface QuizEngineProps {
   quiz: QuizData;
   onBack: () => void;
+  materiHref?: string;
+  nextMateriHref?: string;
 }
 
-export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
+export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEngineProps) {
   const [quizState, setQuizState] = useState<QuizState>("intro");
   const [shuffledSoal, setShuffledSoal] = useState<SoalItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -437,9 +439,31 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
             })}
           </div>
           <div className="text-center mt-10 space-y-4">
-<button onClick={startQuiz} className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden">
+ <button onClick={startQuiz} className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden">
               <RotateCcw className="w-5 h-5" /> Ulangi Kuis
             </button>
+            {(materiHref || nextMateriHref) && (
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                {materiHref && (
+                  <button
+                    onClick={() => window.location.href = materiHref}
+                    className="inline-flex items-center gap-2 bg-white text-on-surface-variant border border-border-precision px-6 py-3 rounded-full text-sm font-semibold hover:bg-surface active:scale-[0.98] transition-all duration-200"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    Kembali ke Materi
+                  </button>
+                )}
+                {nextMateriHref && (
+                  <button
+                    onClick={() => window.location.href = nextMateriHref}
+                    className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-200"
+                  >
+                    Materi Selanjutnya
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )}
             <div>
               <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden">
                 <ArrowLeft className="w-4 h-4" /> Kembali ke Daftar Kuis
@@ -487,8 +511,30 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
             </button>
           )}
         </div>
+        {(materiHref || nextMateriHref) && (
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4 pt-4 border-t border-border-precision/40">
+            {materiHref && (
+              <button
+                onClick={() => window.location.href = materiHref}
+                className="inline-flex items-center gap-2 bg-white text-on-surface-variant border border-border-precision px-6 py-3 rounded-full text-sm font-semibold hover:bg-surface active:scale-[0.98] transition-all duration-200"
+              >
+                <BookOpen className="w-4 h-4" />
+                Kembali ke Materi
+              </button>
+            )}
+            {nextMateriHref && (
+              <button
+                onClick={() => window.location.href = nextMateriHref}
+                className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-200"
+              >
+                Materi Selanjutnya
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        )}
         <div className="mt-6">
-          <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary transition-colors">
+          <button onClick={onBack} className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden">
             <ArrowLeft className="w-4 h-4" /> Kembali ke Daftar Kuis
           </button>
         </div>

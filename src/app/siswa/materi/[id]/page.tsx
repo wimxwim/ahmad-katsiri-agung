@@ -123,6 +123,35 @@ export default function SiswaMateriPage() {
 
         <MateriRenderer konten={materi.konten} />
 
+        {/* Quiz & Soal Links — always visible */}
+        {(materi.quizId || materi.soalBatchId) && (
+          <div className="mt-8 pt-6 border-t border-border-precision/40">
+            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">
+              Lanjutkan Belajar
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {materi.quizId && (
+                <Link
+                  href={`/siswa/cbt/${materi.quizId}?dariMateri=${materi.id}${materi.nextId ? `&nextMateri=${materi.nextId}` : ''}`}
+                  className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  Kerjakan Quiz
+                </Link>
+              )}
+              {materi.soalBatchId && (
+                <Link
+                  href={`/siswa/soal/${materi.soalBatchId}`}
+                  className="inline-flex items-center gap-2 bg-tertiary text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
+                >
+                  <FileText className="w-4 h-4" />
+                  Soal Latihan{materi.soalBatchTotal ? ` (${materi.soalBatchTotal})` : ""}
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="mt-8 pt-6 border-t border-border-precision/40">
           {done ? (
             <div className="space-y-3">
@@ -130,34 +159,16 @@ export default function SiswaMateriPage() {
                 <CheckCircle2 className="w-5 h-5 shrink-0" />
                 <div className="flex-1">
                   <p className="font-semibold">Materi ditandai selesai</p>
-                  <p className="text-sm">Progresmu sudah tersimpan.</p>
+                  <p className="text-sm">Progresmu sudah tersimpan. Lanjutkan ke materi berikutnya atau kerjakan quiz di atas.</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
-                {materi.quizId && (
-                  <Link
-                    href={`/siswa/cbt/${materi.quizId}`}
-                    className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
-                  >
-                    <ClipboardList className="w-4 h-4" />
-                    Kerjakan Quiz
-                  </Link>
-                )}
-                {materi.soalBatchId && (
-                  <Link
-                    href={`/siswa/soal/${materi.soalBatchId}`}
-                    className="inline-flex items-center gap-2 bg-tertiary text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
-                  >
-                    <FileText className="w-4 h-4" />
-                    Soal Latihan{materi.soalBatchTotal ? ` (${materi.soalBatchTotal})` : ""}
-                  </Link>
-                )}
                 {materi.nextId ? (
                   <Link
                     href={`/siswa/materi/${materi.nextId}`}
                     className="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
                   >
-                    Lanjut
+                    Materi Selanjutnya
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 ) : (
@@ -199,17 +210,6 @@ export default function SiswaMateriPage() {
         </div>
       </article>
 
-      {materi.nextId && (
-        <div className="mt-6 flex justify-end">
-          <Link
-            href={`/siswa/materi/${materi.nextId}`}
-            className="inline-flex items-center gap-2 bg-primary text-white px-5 py-3 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
-          >
-            Materi Selanjutnya
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

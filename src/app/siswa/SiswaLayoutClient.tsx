@@ -79,7 +79,9 @@ export function SiswaLayoutClient({ children }: { children: React.ReactNode }) {
     >
       <KatalogKursusBar />
       <ToastProvider>{children}</ToastProvider>
-      <FloatingActionMenu />
+      <div className="hidden sm:block">
+        <FloatingActionMenu />
+      </div>
       {show && <OnboardingSiswa onClose={close} />}
     </DashboardLayoutClient>
   );

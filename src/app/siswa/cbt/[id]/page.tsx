@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import { QuizEngine } from "@/components/siswa/QuizEngine";
@@ -44,9 +44,12 @@ function mapToEngine(quiz: QuizDetail) {
 export default function SiswaCBTPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
+  const searchParams = useSearchParams();
   const [quiz, setQuiz] = useState<QuizDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [materiHref, setMateriHref] = useState<string | undefined>(undefined);
+  const [nextMateriHref, setNextMateriHref] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!id) return;
@@ -67,6 +70,17 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
         setLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    const dariMateri = searchParams.get("dariMateri");
+    const nextMateri = searchParams.get("nextMateri");
+    if (dariMateri) {
+      setMateriHref(`/siswa/materi/${dariMateri}`);
+    }
+    if (nextMateri) {
+      setNextMateriHref(`/siswa/materi/${nextMateri}`);
+    }
+  }, [searchParams]);
 
   if (loading) {
     return (
@@ -97,6 +111,8 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
     <QuizEngine
       quiz={mapToEngine(quiz)}
       onBack={() => router.push("/siswa/quiz")}
+      materiHref={materiHref}
+      nextMateriHref={nextMateriHref}
     />
   );
 }
