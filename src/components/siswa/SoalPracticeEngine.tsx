@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
-import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, FileText } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, FileText, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuizLock } from "@/hooks/useQuizLock";
 import { QuizLockOverlay } from "@/components/siswa/QuizLockOverlay";
@@ -34,11 +34,28 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
   const [results, setResults] = useState<{ benar: number; salah: number; detail: { nomor: number; jawaban: string; kunci: string; benar: boolean }[] } | null>(null);
 
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const startTimeRef = useRef<number>(0);
+
   const lock = useQuizLock({
     enabled: state === "playing",
     mode: "PRACTICE",
     maxViolations: 5,
   });
+
+  useEffect(() => {
+    if (state !== "playing") {
+      if (state === "result") return;
+      setElapsedSeconds(0);
+      return;
+    }
+    startTimeRef.current = Date.now();
+    const id = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      setElapsedSeconds(elapsed);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [state]);
 
   const currentSoal = batch.soal[currentIndex];
   const totalSoal = batch.soal.length;
@@ -102,7 +119,10 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
               <p className="text-xs text-on-surface-variant">Total Soal</p>
             </div>
             <div className="bg-surface rounded-2xl p-4">
-              <p className="text-2xl font-bold text-on-surface">∞</p>
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <Clock className="w-4 h-4 text-on-surface-variant" />
+                <p className="text-2xl font-bold text-on-surface">∞</p>
+              </div>
               <p className="text-xs text-on-surface-variant">Tanpa Batas Waktu</p>
             </div>
           </div>
@@ -154,7 +174,7 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
           <p className="text-sm text-on-surface-variant">{batch.judul}</p>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 mb-6 max-w-xs mx-auto">
+        <div className="grid grid-cols-4 gap-3 mb-6 max-w-sm mx-auto">
           <div className="bg-surface rounded-2xl p-3 text-center">
             <p className="text-lg font-bold text-on-surface">{totalSoal}</p>
             <p className="text-[10px] text-on-surface-variant">Total</p>
@@ -166,6 +186,10 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
           <div className="bg-red-50 rounded-2xl p-3 text-center">
             <p className="text-lg font-bold text-red-700">{results.salah}</p>
             <p className="text-[10px] text-red-600">Salah</p>
+          </div>
+          <div className="bg-surface rounded-2xl p-3 text-center">
+            <p className="text-lg font-bold text-on-surface">{Math.floor(elapsedSeconds / 60)}</p>
+            <p className="text-[10px] text-on-surface-variant">Menit</p>
           </div>
         </div>
 
@@ -235,7 +259,10 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
         <div className="text-center">
           <p className="text-xs font-semibold text-on-surface-variant">Soal {currentIndex + 1} dari {totalSoal}</p>
         </div>
-        <div className="w-16" />
+        <div className="flex items-center gap-1.5 text-xs tabular-nums text-on-surface-variant">
+          <Clock className="w-3.5 h-3.5" />
+          {Math.floor(elapsedSeconds / 60)}:{String(elapsedSeconds % 60).padStart(2, "0")}
+        </div>
       </div>
 
       <div className="w-full h-1.5 bg-surface rounded-full mb-6 overflow-hidden">

@@ -346,8 +346,11 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
               <p className="text-xs text-on-surface-variant mt-1">Total Soal</p>
             </div>
             <div className="bg-primary/5 rounded-2xl p-4 text-center">
-              <p className="font-heading text-2xl font-bold text-primary">{quiz.durasiMenit}</p>
-              <p className="text-xs text-on-surface-variant mt-1">Menit</p>
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <Clock className="w-4 h-4 text-primary" />
+                <p className="font-heading text-2xl font-bold text-primary">{quiz.durasiMenit}</p>
+              </div>
+              <p className="text-xs text-on-surface-variant">Menit</p>
             </div>
           </div>
         </div>
@@ -522,10 +525,17 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
           <ArrowLeft className="w-4 h-4" />
           Keluar
         </button>
-        <span className={cn("text-sm font-medium tabular-nums flex items-center gap-1", timeLeft < 60 ? "text-red-500" : "text-primary")}>
-          <Clock className="w-3.5 h-3.5" />
+        <div className={cn(
+          "flex items-center gap-2 px-3 py-1.5 rounded-full font-heading font-bold text-sm tabular-nums transition-colors duration-300",
+          timeLeft < 60
+            ? "bg-red-50 text-red-600 animate-pulse"
+            : timeLeft < 300
+              ? "bg-amber-50 text-amber-700"
+              : "bg-primary/10 text-primary"
+        )}>
+          <Clock className="w-4 h-4" />
           {minutes}:{seconds.toString().padStart(2, "0")}
-        </span>
+        </div>
       </div>
 
       <div className="mb-6">
@@ -538,6 +548,12 @@ export function QuizEngine({ quiz, onBack }: QuizEngineProps) {
           <motion.div initial={{ width: 0 }} animate={{ width: `${progress}%` }} transition={{ duration: 0.4, ease: EASE_CURVE }} className="h-full bg-primary rounded-full" />
         </div>
       </div>
+
+      {timeLeft < 60 && timeLeft > 0 && (
+        <div className="mb-3 px-4 py-2 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold text-center">
+          ⚠️ Waktu hampir habis! Segera selesaikan kuis.
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         <motion.div key={soal.nomor} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25, ease: EASE_CURVE }}>

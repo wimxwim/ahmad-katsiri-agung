@@ -16,7 +16,6 @@ import {
   AlertTriangle,
   RefreshCw,
   Users,
-  Library,
   BarChart3,
   Clock,
 } from "lucide-react";
@@ -284,7 +283,6 @@ export default function SiswaBerandaPage() {
   const completedQuiz = quizList.filter((q) => q.sudahDikerjakan);
 
   const statCards = [
-    { label: "Kursus", value: stats.kursus, icon: Library, color: "text-primary", bg: "bg-primary/10" },
     { label: "Materi", value: stats.materi, icon: BookOpen, color: "text-emerald-700", bg: "bg-emerald-50" },
     { label: "Selesai", value: stats.selesai, icon: CheckCircle2, color: "text-emerald-700", bg: "bg-emerald-50" },
     { label: "Kuis", value: stats.kuis, icon: BarChart3, color: "text-tertiary", bg: "bg-tertiary/10" },
@@ -314,7 +312,7 @@ export default function SiswaBerandaPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: EASE_CURVE }}
       >
-        <h1 className="font-heading font-bold text-xl sm:text-2xl text-on-surface">
+        <h1 className="font-heading font-bold text-xl sm:text-2xl text-on-surface shimmer-text">
           Halo, {firstName}!
         </h1>
         <p className="text-xs text-on-surface-variant mt-0.5">
@@ -322,11 +320,47 @@ export default function SiswaBerandaPage() {
         </p>
       </motion.div>
 
+      {/* Profile Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.02 }}
+        className="bg-glass border border-border-precision rounded-2xl p-4 shadow-glass mb-5"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <span className="font-heading font-bold text-lg text-primary">
+              {nama.charAt(0).toUpperCase()}
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-heading font-bold text-on-surface truncate">{nama}</p>
+            <p className="text-xs text-on-surface-variant">Siswa</p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="text-center">
+              <p className="font-heading font-bold text-sm text-primary tabular-nums">{stats.kursus}</p>
+              <p className="text-[10px] text-on-surface-variant">Kursus</p>
+            </div>
+            <div className="w-px h-8 bg-border-precision" />
+            <div className="text-center">
+              <p className="font-heading font-bold text-sm text-emerald-700 tabular-nums">{stats.selesai}</p>
+              <p className="text-[10px] text-on-surface-variant">Selesai</p>
+            </div>
+            <div className="w-px h-8 bg-border-precision" />
+            <div className="text-center">
+              <p className="font-heading font-bold text-sm text-tertiary tabular-nums">{stats.kuis}</p>
+              <p className="text-[10px] text-on-surface-variant">Kuis</p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.03 }}
-        className="grid grid-cols-2 sm:grid-cols-4 gap-2.5"
+        className="grid grid-cols-3 gap-2.5"
       >
         {statCards.map((card) => (
           <div
