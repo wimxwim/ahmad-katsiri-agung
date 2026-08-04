@@ -220,10 +220,14 @@ useEffect(() => {
   const isProcessing = ["queued", "extracting", "generating"].includes(draft.status);
   const isReady = draft.status === "ready";
   const allApproved =
-    draft.materiStatus === "approved" &&
-    draft.quizStatus === "approved" &&
+    (draft.materiStatus === "approved" || draft.materiStatus === "not_generated") &&
+    (draft.quizStatus === "approved" || draft.quizStatus === "not_generated") &&
+    (draft.soalStatus === "approved" || draft.soalStatus === "not_generated");
+  const hasApproved =
+    draft.materiStatus === "approved" ||
+    draft.quizStatus === "approved" ||
     draft.soalStatus === "approved";
-  const canClose = allApproved && isReady;
+  const canClose = allApproved && isReady && hasApproved;
 
   const materiKonten = draft.materiEditedKonten ?? draft.materiKonten ?? "";
   const structuredMateri = parseStructuredMateri(materiKonten);
@@ -360,23 +364,70 @@ useEffect(() => {
         </div>
       )}
 
-      {allApproved && isReady && (
-        <div className="mb-6 p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            <span className="text-sm font-semibold text-emerald-800">Semua sudah disetujui!</span>
-          </div>
-          <button
-            onClick={() => act("/close-review", "close-review")}
-            disabled={busy === "close-review"}
-            className="inline-flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
-          >
-            {busy === "close-review" ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Menerbitkan...</>
+      {isReady && (
+        <div className="mb-6 p-4 bg-glass rounded-2xl border border-border-precision">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-heading font-bold text-sm text-on-surface mb-2">
+                Status Review
+              </h3>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {[
+                  { key: "materi", label: "Materi", status: draft.materiStatus },
+                  { key: "quiz", label: "Kuis", status: draft.quizStatus },
+                  { key: "soal", label: "Soal", status: draft.soalStatus },
+                ].map(({ key, label, status }) => {
+                  const isApproved = status === "approved";
+                  const isNotGenerated = status === "not_generated";
+                  const isDone = isApproved || isNotGenerated;
+                  return (
+                    <span
+                      key={key}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
+                        isApproved
+                          ? "bg-emerald-100 text-emerald-700"
+                          : isNotGenerated
+                            ? "bg-surface text-on-surface-variant"
+                            : "bg-amber-100 text-amber-700"
+                      }`}
+                    >
+                      {isDone ? (
+                        <CheckCircle2 className="w-3 h-3" />
+                      ) : (
+                        <span className="w-3 h-3 rounded-full border-2 border-current" />
+                      )}
+                      {label}: {isApproved ? "Disetujui" : isNotGenerated ? "Tidak dibuat" : "Perlu review"}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+            {canClose ? (
+              <button
+                onClick={() => act("/close-review", "close-review")}
+                disabled={busy === "close-review"}
+                className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-full text-sm font-bold hover:brightness-110 active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-emerald-600/20"
+              >
+                {busy === "close-review" ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Menerbitkan...</>
+                ) : (
+                  <><Rocket className="w-4 h-4" /> Terbitkan ke Siswa</>
+                )}
+              </button>
             ) : (
-              <><Rocket className="w-4 h-4" /> Terbitkan ke Siswa</>
+              <div className="text-right">
+                <p className="text-xs text-amber-700 font-semibold">
+                  ⚠️ Approve semua bagian dulu
+                </p>
+                <p className="text-[10px] text-on-surface-variant">
+                  {draft.materiStatus !== "approved" && draft.materiStatus !== "not_generated" && "Materi "}
+                  {draft.quizStatus !== "approved" && draft.quizStatus !== "not_generated" && "Kuis "}
+                  {draft.soalStatus !== "approved" && draft.soalStatus !== "not_generated" && "Soal "}
+                  belum di-approve
+                </p>
+              </div>
             )}
-          </button>
+          </div>
         </div>
       )}
 
@@ -650,25 +701,7 @@ useEffect(() => {
             </div>
           )}
 
-          <div className="mt-6 p-4 rounded-2xl border border-border-precision bg-white/60">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="text-sm text-on-surface-variant">
-                Status approval:{" "}
-                <b className="text-on-surface">Materi {STATUS_META[draft.materiStatus]?.label}</b>,{" "}
-                <b className="text-on-surface">Kuis {STATUS_META[draft.quizStatus]?.label}</b>,{" "}
-                <b className="text-on-surface">Soal {STATUS_META[draft.soalStatus]?.label}</b>
-              </div>
-              <button
-                onClick={() => act("/close-review", "close-review")}
-                disabled={!canClose || busy === "close-review"}
-                className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50"
-              >
-                <CheckCircle2 className="w-4 h-4" />
-                {busy === "close-review" ? "Menyimpan..." : "Tutup Review & Teruskan"}
-              </button>
-            </div>
-          </div>
-        </>
+          </>
       )}
     </div>
   );
