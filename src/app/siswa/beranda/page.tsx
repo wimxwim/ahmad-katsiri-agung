@@ -217,7 +217,7 @@ export default function SiswaBerandaPage() {
     );
   }
 
-  if (feed && feed.terdaftar === false) {
+  if (feed && !feed.terdaftar) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4">
         <motion.div

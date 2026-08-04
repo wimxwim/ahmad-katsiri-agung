@@ -247,7 +247,7 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
         }
       }
     } catch (e) {
-      console.error("Submit hasil gagal:", e);
+      // silently handled
       if (quiz.modeEvaluasi === "BELAJAR") {
         setServerResult({
           nilai: Math.round((hitungSkor() / totalSoal) * 100),

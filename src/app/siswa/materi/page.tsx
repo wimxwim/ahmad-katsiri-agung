@@ -103,8 +103,8 @@ function MateriContent() {
           setKursusList(j.kursusList);
         }
       })
-      .catch((error) => {
-        console.error("[materi] fetch kursus list failed:", error);
+      .catch((_error) => {
+        // silently handled
       });
   }, []);
 

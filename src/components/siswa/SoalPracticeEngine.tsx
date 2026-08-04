@@ -57,12 +57,33 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
     return () => clearInterval(id);
   }, [state]);
 
+  useEffect(() => {
+    if (state !== "result" || !results) return;
+    const controller = new AbortController();
+    fetch(`/api/v1/siswa/soal/${batch.id}/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        durasiDetik: elapsedSeconds,
+        jawaban: batch.soal.reduce((acc, s) => {
+          acc[s.id] = jawaban[s.id] || "";
+          return acc;
+        }, {} as Record<string, string>),
+      }),
+      signal: controller.signal,
+    }).catch(() => {});
+    return () => controller.abort();
+  }, [state, results]);
+
   const currentSoal = batch.soal[currentIndex];
   const totalSoal = batch.soal.length;
 
   const handleSelect = useCallback((soalId: string, value: string) => {
     setJawaban((prev) => ({ ...prev, [soalId]: value }));
-    const correct = value === currentSoal.kunci;
+    const correct = currentSoal.tipe === "ISIAN"
+      ? value.toLowerCase().trim() === currentSoal.kunci.toLowerCase().trim()
+      : value === currentSoal.kunci;
     setLastCorrect(correct);
     setShowFeedback(true);
   }, [currentSoal]);
@@ -78,7 +99,9 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
       let salah = 0;
       const detail = batch.soal.map((s) => {
         const jwb = jawaban[s.id] || "";
-        const correct = jwb === s.kunci;
+        const correct = s.tipe === "ISIAN"
+          ? jwb.toLowerCase().trim() === s.kunci.toLowerCase().trim()
+          : jwb === s.kunci;
         if (correct) benar++;
         else salah++;
         return { nomor: s.nomor, jawaban: jwb, kunci: s.kunci, benar: correct };
@@ -325,6 +348,28 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
                   disabled={showFeedback}
                   placeholder="Tulis jawabanmu..."
                   className="w-full p-3.5 rounded-xl border border-border-precision bg-white text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:border-primary/40"
+                />
+                {!showFeedback && (
+                  <button
+                    onClick={() => handleSelect(currentSoal.id, jawaban[currentSoal.id] || "")}
+                    disabled={!jawaban[currentSoal.id]}
+                    className="mt-3 w-full py-2.5 rounded-xl bg-primary text-white text-sm font-semibold hover:brightness-110 disabled:opacity-30 transition-all"
+                  >
+                    Periksa Jawaban
+                  </button>
+                )}
+              </div>
+            )}
+
+            {currentSoal.tipe === "ESSAY" && (
+              <div>
+                <textarea
+                  value={jawaban[currentSoal.id] || ""}
+                  onChange={(e) => setJawaban((prev) => ({ ...prev, [currentSoal.id]: e.target.value }))}
+                  disabled={showFeedback}
+                  placeholder="Tulis jawaban essay kamu di sini..."
+                  className="w-full p-3.5 rounded-xl border border-border-precision bg-white text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-hidden focus:border-primary/40 min-h-[120px]"
+                  rows={5}
                 />
                 {!showFeedback && (
                   <button
