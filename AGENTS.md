@@ -164,23 +164,6 @@ git diff --cached | grep -iE 'DATABASE_URL|SUPABASE_SERVICE_ROLE|JWT_SECRET|ENCR
 
 ## Active TODO
 
-Read `prd/PRD-MATERI-SOAL-COVERAGE.md` for the full plan. Remaining priorities:
+Read `prd/PRD-MATERI-SOAL-COVERAGE.md` for the full plan. See `prd/TODO-MASTER.md` for task tracking.
 
-1. **Soal from materi** — flash model currently can't handle it. Need model upgrade or batch approach.
-2. **Payment integration** — frontend wiring for `/siswa/payment` (placeholder)
-3. **Migration journal sync** — fix `_journal.json` desync (gotcha #3)
-4. **Katalog page** — public course browsing frontend for `/api/v1/katalog`
-5. **Readability post-check** — validate AI output readability per grade level (deferred per owner)
-
-## ⚠️ LESSON LEARNED — JANGAN Kill/Restart Chrome
-
-**Kejadian (15 Jul 2026):** Chrome di-kill dan restart dengan `--remote-debugging-port=9222`
-untuk keperluan browser-act. Akibat: **semua Chrome profile hilang, semua akun logout**
-(GitHub, Vercel, Cloudflare, Supabase, Google, dll). Pemilik kehilangan semua sesi login.
-
-**ATURAN BARU:**
-- **JANGAN PERNAH kill Chrome** untuk alasan apapun
-- **JANGAN PERNAH restart Chrome** dengan flag `--remote-debugging-port`
-- Jika browser-act chrome-direct tidak bisa connect, **hentikan**, jangan dipaksa
-- Gunakan browser-act **chrome_local** (managed browser) atau minta user login manual
-- **Tidak ada pengecualian.** Kehilangan Chrome profile = bencana.
+## ⚠️ CRITICAL: NEVER kill/restart Chrome with --remote-debugging-port — will destroy all Chrome profiles and log out all accounts. Use chrome_local only.

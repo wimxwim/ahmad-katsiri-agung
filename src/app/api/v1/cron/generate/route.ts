@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { aiGeneration, fileMateri } from "@/lib/db/schema";
@@ -24,18 +25,18 @@ export async function POST(request: NextRequest) {
   }
   const tokenParam = request.nextUrl.searchParams.get("token");
   const authHeader = request.headers.get("Authorization");
-  const isAuthorized =
-    (tokenParam && tokenParam === cronSecret) ||
-    (authHeader && authHeader === `Bearer ${cronSecret}`);
+  const tokenCompare = tokenParam ? timingSafeEqual(Buffer.from(tokenParam), Buffer.from(cronSecret)) : false;
+  const authCompare = authHeader && timingSafeEqual(Buffer.from(authHeader.replace("Bearer ", "")), Buffer.from(cronSecret));
+  const isAuthorized = tokenCompare || authCompare;
   if (!isAuthorized) {
     return apiError("Unauthorized", 401);
   }
 
   const LEASE_MINUTES = 5;
 
-  const claimed = await db.execute<{ id: string; file_materi_id: string; guru_id: string }>(sql`
+  const claimed = await db.execute<{ id: string; file_materi_id: string; guru_id: string; tingkat: number | null }>(sql`
     WITH claimed AS (
-      SELECT id, file_materi_id, guru_id
+      SELECT id, file_materi_id, guru_id, tingkat
       FROM ai_generation
       WHERE (
         status = 'queued'
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
         attempt_count = attempt_count + 1
     FROM claimed
     WHERE ai_generation.id = claimed.id
-    RETURNING ai_generation.id, ai_generation.file_materi_id, ai_generation.guru_id
+    RETURNING ai_generation.id, ai_generation.file_materi_id, ai_generation.guru_id, ai_generation.tingkat
   `);
 
   const jobs = claimed.rows ?? [];
@@ -134,7 +135,7 @@ export async function POST(request: NextRequest) {
         .set({ status: "generating", leaseUntil: new Date(Date.now() + LEASE_MINUTES * 60_000), updatedAt: new Date() })
         .where(eq(aiGeneration.id, job.id));
 
-      await runGenerationFromText(job.id, sourceText, job.guru_id);
+      await runGenerationFromText(job.id, sourceText, job.guru_id, 20, 5, job.tingkat ?? undefined);
 
       await appendEvent(`gen:${job.guru_id}`, "gen.ready", {
         generationId: job.id,
@@ -184,6 +185,12 @@ export async function POST(request: NextRequest) {
       }
     }
   }
+
+  await appendEvent("gen:cron", "gen.completed", {
+    total,
+    processed: results.length,
+    resultsSummary: results.map(r => r.status).join(","),
+  }).catch(err => console.error("appendEvent cron failed:", err));
 
   return NextResponse.json({
     success: true,

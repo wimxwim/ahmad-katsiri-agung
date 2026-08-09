@@ -93,7 +93,7 @@ function tingkatToFase(tingkat: number): string {
   return "F";
 }
 
-function sanitizeUserText(text: string): string {
+export function sanitizeUserText(text: string): string {
   let sanitized = text;
   for (const pattern of PROMPT_INJECTION_PATTERNS) {
     sanitized = sanitized.replace(pattern, "[DIBLOKIR]");
@@ -396,6 +396,10 @@ async function generateSoalBatch(
     throw new Error(`Gagal generate soal: 0/${soalCount} soal berhasil setelah ${batches} batch`);
   }
 
+  if (allItems.length < soalCount) {
+    console.warn(`[ai-generator] soal partial: ${allItems.length}/${soalCount} soal berhasil`);
+  }
+
   const combinedJson = JSON.stringify({ soal: allItems });
   return {
     content: combinedJson,
@@ -483,7 +487,7 @@ export async function runGeneration(
       materiRes = await withTimeout(
         chatWithFallback(
           [
-            { role: "system", content: buildMateriSystemPrompt() },
+            { role: "system", content: buildMateriSystemPrompt(gen.tingkat ?? undefined) },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
           { model: getModelForTask("light"), temperature: 0.3, maxTokens: 2500 },
@@ -576,13 +580,6 @@ export async function runGeneration(
       console.error("[ai-generator] SOAL PARSE FAILED — RAW AI OUTPUT:", rawPreview);
       console.error("[ai-generator] SOAL MODEL:", soalRes.model, "TOKENS:", soalRes.tokensIn, soalRes.tokensOut);
       
-      const fallback = fallbackAiResults(truncatedSource, quizCount, soalCount);
-      const fallbackSoal = parseSoalSafe(fallback[2].content);
-      if (fallbackSoal) {
-        soalParsed = fallbackSoal;
-        console.log("[ai-generator] soal fallback berhasil —", fallbackSoal.soal.length, "item");
-      }
-      
       await db
         .update(aiGeneration)
         .set({ 
@@ -609,6 +606,20 @@ export async function runGeneration(
 
     const tokensIn = materiRes.tokensIn + quizRes.tokensIn + soalRes.tokensIn;
     const tokensOut = materiRes.tokensOut + quizRes.tokensOut + soalRes.tokensOut;
+
+    if (soalParsed && materiParsed) {
+      const materiStr = JSON.stringify({
+        ringkasan: materiParsed.ringkasan,
+        pendahuluan: materiParsed.pendahuluan,
+        konten: materiParsed.konten,
+        poinPenting: materiParsed.poinPenting,
+      });
+      const coverage = validateCoverage(materiStr, soalParsed.soal);
+      console.log(`[ai-generator] coverage: ${coverage.percentage}% (${coverage.covered}/${coverage.total})`);
+      if (coverage.percentage < 90) {
+        console.warn(`[ai-generator] LOW COVERAGE — ${coverage.uncoveredSoal.length} soal tidak tertutup materi`);
+      }
+    }
 
     const updated = await withTimeout(
       db
@@ -809,13 +820,6 @@ export async function runGenerationFromText(
     console.error("[ai-generator] SOAL PARSE FAILED — RAW AI OUTPUT:", rawPreview);
     console.error("[ai-generator] SOAL MODEL:", soalRes.model, "TOKENS:", soalRes.tokensIn, soalRes.tokensOut);
     
-    const fallback = fallbackAiResults(truncatedSource, quizCount, soalCount);
-    const fallbackSoal = parseSoalSafe(fallback[2].content);
-    if (fallbackSoal) {
-      soalParsed = fallbackSoal;
-      console.log("[ai-generator] soal fallback berhasil —", fallbackSoal.soal.length, "item");
-    }
-    
     await db
       .update(aiGeneration)
       .set({ 
@@ -836,6 +840,20 @@ export async function runGenerationFromText(
 
   const tokensIn = materiRes.tokensIn + quizRes.tokensIn + soalRes.tokensIn;
   const tokensOut = materiRes.tokensOut + quizRes.tokensOut + soalRes.tokensOut;
+
+  if (soalParsed && materiParsed) {
+    const materiStr = JSON.stringify({
+      ringkasan: materiParsed.ringkasan,
+      pendahuluan: materiParsed.pendahuluan,
+      konten: materiParsed.konten,
+      poinPenting: materiParsed.poinPenting,
+    });
+    const coverage = validateCoverage(materiStr, soalParsed.soal);
+    console.log(`[ai-generator] coverage: ${coverage.percentage}% (${coverage.covered}/${coverage.total})`);
+    if (coverage.percentage < 90) {
+      console.warn(`[ai-generator] LOW COVERAGE — ${coverage.uncoveredSoal.length} soal tidak tertutup materi`);
+    }
+  }
 
   await db
     .update(aiGeneration)

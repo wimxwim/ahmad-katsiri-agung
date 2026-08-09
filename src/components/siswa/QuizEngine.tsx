@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { useQuizLock } from "@/hooks/useQuizLock";
 import { QuizLockOverlay } from "@/components/siswa/QuizLockOverlay";
 import { useToast } from "@/components/ui/Toast";
+import { csrfHeaders } from "@/lib/csrf";
 
 type QuizState = "intro" | "playing" | "result";
 
@@ -154,7 +155,7 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
 
   const soal = shuffledSoal[currentIndex];
   soalRef.current = soal ?? null;
-  const totalSoal = shuffledSoal.length;
+  const totalSoal = quiz.soal.length;
 
   const startQuiz = useCallback(async () => {
     if (!quiz.soal || quiz.soal.length === 0) {
@@ -171,6 +172,7 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
       const startRes = await fetch(`/api/v1/siswa/quiz/${quiz.id}/start`, {
         method: "POST",
         credentials: "include",
+        headers: csrfHeaders(),
       });
       if (!startRes.ok) {
         setError("Gagal memulai quiz. Silakan coba lagi.");
@@ -246,7 +248,7 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
     try {
       const r = await fetch(`/api/v1/siswa/quiz/${quiz.id}/submit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         credentials: "include",
         body: JSON.stringify({ durasiDetik: quiz.durasiMenit * 60 - timeLeft, jawaban }),
       });

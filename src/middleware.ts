@@ -69,6 +69,10 @@ export default async function middleware(request: NextRequest) {
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
 
+  // CSRF protection for non-API routes (pages).
+  // NOTE: API routes are excluded from the middleware matcher (see config below).
+  // API CSRF is enforced per-route via validateCsrf() in csrf-server.ts.
+  // All new API route handlers MUST call validateCsrf() for state-changing methods.
   const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
   const CSRF_EXEMPT = ["/api/v1/auth", "/api/v1/payment/webhook", "/api/health", "/api/readyz", "/api/csp-report"];
   if (!SAFE_METHODS.has(request.method) && !CSRF_EXEMPT.some((p) => pathname.startsWith(p))) {

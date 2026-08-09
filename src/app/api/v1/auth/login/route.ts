@@ -24,7 +24,7 @@ const LoginSchema = z.object({
   portalIntent: z.enum(["guru", "siswa"]).optional(),
   redirectTo: z
     .string()
-    .refine((v) => v.startsWith("/") && !v.startsWith("//") && !v.includes("://"))
+    .refine((v) => v.startsWith("/") && !v.startsWith("//") && !v.includes("://") && !v.includes("\\"))
     .optional(),
 });
 

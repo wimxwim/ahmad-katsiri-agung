@@ -31,7 +31,7 @@ export default async function MasukPage({
   }
 
   const redirectTo =
-    typeof params.redirect === "string" && params.redirect.startsWith("/")
+    typeof params.redirect === "string" && params.redirect.startsWith("/") && !params.redirect.startsWith("//") && !params.redirect.includes("\\")
       ? params.redirect
       : undefined;
   const errorCode = typeof params.error === "string" ? params.error : undefined;

@@ -2,9 +2,9 @@ import { db } from "@/lib/db";
 import { aiGeneration, fileMateri, aiRequests, quotas, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { extractText } from "@/lib/text-extractor";
-import { chat, getModelName, getModelForTask, type ChatResult } from "@/lib/ai";
+import { chatWithFallback, getModelName, getModelForTask, type ChatResult } from "@/lib/ai";
 import { parseMateriSafe, parseQuizSafe, parseSoalSafe } from "@/lib/ai-sanitizer";
-import { buildQuizSystemPrompt, buildSoalSystemPrompt, buildMateriSystemPrompt } from "@/lib/ai-generator";
+import { buildQuizSystemPrompt, buildSoalSystemPrompt, buildMateriSystemPrompt, sanitizeUserText } from "@/lib/ai-generator";
 import { appendEvent } from "@/lib/event-store";
 import { incrementUsage } from "@/lib/quota-guard";
 
@@ -60,9 +60,9 @@ export async function regenerateMateriOnly(generationId: string): Promise<void> 
     return;
   }
 
-  const truncatedSource = sourceText.slice(0, 20_000);
+  const truncatedSource = sanitizeUserText(sourceText.slice(0, 20_000));
   const tingkat = gen.tingkat ?? undefined;
-  const materiRes = await chat(
+  const materiRes = await chatWithFallback(
     [
       { role: "system", content: buildMateriSystemPrompt(tingkat) },
       { role: "user", content: `Materi:\n\n${truncatedSource}` },
@@ -169,13 +169,13 @@ export async function regenerateQuizOnly(generationId: string): Promise<void> {
   }
 
   // 4. Truncate source text
-  const truncated = sourceText.slice(0, 20000);
+  const truncated = sanitizeUserText(sourceText.slice(0, 20000));
 
   // 5. Call AI for quiz generation
   const quizCount = 5; // default
   let quizRes: ChatResult;
   try {
-    quizRes = await chat(
+    quizRes = await chatWithFallback(
       [
         { role: "system", content: buildQuizSystemPrompt(quizCount) },
         { role: "user", content: `Buat ${quizCount} soal kuis dari teks berikut:\n\n${truncated}` },
@@ -316,13 +316,13 @@ export async function regenerateSoalOnly(generationId: string): Promise<void> {
   }
 
   // 4. Truncate source text
-  const truncated = sourceText.slice(0, 20000);
+  const truncated = sanitizeUserText(sourceText.slice(0, 20000));
 
   // 5. Call AI for soal generation
   const soalCount = 20;
   let soalRes: ChatResult;
   try {
-    soalRes = await chat(
+    soalRes = await chatWithFallback(
       [
         { role: "system", content: buildSoalSystemPrompt(soalCount) },
         { role: "user", content: `Buat ${soalCount} soal dari teks berikut:\n\n${truncated}` },

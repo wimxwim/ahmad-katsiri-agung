@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
+import { createHash } from "crypto";
 import { eq, and, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users, passwordResetTokens } from "@/lib/db/schema";
@@ -43,14 +44,15 @@ export async function POST(request: NextRequest) {
       return apiSuccess({ message: "Jika email terdaftar, link reset password telah dikirim." });
     }
 
-    const token = crypto.randomUUID();
+    const rawToken = crypto.randomUUID();
+    const tokenHash = createHash("sha256").update(rawToken).digest("hex");
     await db.insert(passwordResetTokens).values({
       userId: user.id,
-      token,
+      token: tokenHash,
       expiresAt: new Date(Date.now() + RESET_TOKEN_EXPIRY_MINUTES * 60 * 1000),
     });
 
-    const resetLink = `${BASE_URL}/reset-password?token=${token}`;
+    const resetLink = `${BASE_URL}/reset-password?token=${rawToken}`;
 
     const resendApiKey = process.env.RESEND_API_KEY;
     let emailSent = false;
@@ -89,7 +91,6 @@ export async function POST(request: NextRequest) {
 
     return apiSuccess({
       message: "Jika email terdaftar, link reset password telah dikirim.",
-      ...(emailSent ? {} : { devResetLink: resetLink }),
     });
   } catch (e) {
     console.error("Forgot password error:", e);

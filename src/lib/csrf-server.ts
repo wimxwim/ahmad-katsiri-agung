@@ -6,7 +6,14 @@ const CSRF_HEADER = "x-csrf-token";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 const EXEMPT_PREFIXES = [
-  "/api/v1/auth",
+  "/api/v1/auth/login",
+  "/api/v1/auth/register",
+  "/api/v1/auth/logout",
+  "/api/v1/auth/refresh",
+  "/api/v1/auth/forgot-password",
+  "/api/v1/auth/reset-password",
+  "/api/v1/auth/google",
+  "/api/v1/auth/callback/google",
   "/api/v1/payment/webhook",
   "/api/health",
   "/api/readyz",
@@ -17,7 +24,7 @@ export function validateCsrf(request: NextRequest): NextResponse | null {
   if (SAFE_METHODS.has(request.method)) return null;
 
   const pathname = request.nextUrl.pathname;
-  if (EXEMPT_PREFIXES.some((p) => pathname.startsWith(p))) return null;
+  if (EXEMPT_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p + "?"))) return null;
 
   const cookieToken = request.cookies.get(CSRF_COOKIE)?.value;
   const headerToken = request.headers.get(CSRF_HEADER);

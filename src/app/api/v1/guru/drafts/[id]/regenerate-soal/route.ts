@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse, after } from "next/server";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, checkConcurrentLimit } from "@/lib/rate-limit";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
@@ -37,11 +37,10 @@ export async function POST(
     const rl = await checkRateLimit(`draft-regen-soal:${session.userId}`, 5, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    // Temporarily disabled for debugging
-    // const conc = await checkConcurrentLimit(`gen:${session.userId}`, 2, 3 * 60 * 1000);
-    // if (!conc.allowed) {
-    //   return apiError("Terlalu banyak job aktif. Tunggu job sebelumnya selesai.", 429);
-    // }
+    const conc = await checkConcurrentLimit(`gen:${session.userId}`, 2, 3 * 60 * 1000);
+    if (!conc.allowed) {
+      return apiError("Terlalu banyak job aktif. Tunggu job sebelumnya selesai.", 429);
+    }
 
     try {
       await checkQuota(session.userId, session.role, "ai_generation");

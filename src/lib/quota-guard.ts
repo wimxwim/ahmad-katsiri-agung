@@ -49,9 +49,11 @@ export async function checkQuota(
 
 export async function incrementUsage(userId: string, quotaId: string): Promise<void> {
   if (!quotaId) return;
+  const now = new Date();
+  const windowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   await db
     .insert(quotaUsages)
-    .values({ userId, quotaId, currentUsage: 1, windowStart: new Date() })
+    .values({ userId, quotaId, currentUsage: 1, windowStart })
     .onConflictDoUpdate({
       target: [quotaUsages.userId, quotaUsages.quotaId, quotaUsages.windowStart],
       set: { currentUsage: sql`${quotaUsages.currentUsage} + 1`, updatedAt: new Date() },

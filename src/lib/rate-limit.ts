@@ -161,10 +161,5 @@ export function ipFromRequest(request: Request): string {
   if (cfIp) return cfIp;
   const realIp = request.headers.get("x-real-ip");
   if (realIp) return realIp;
-  const xff = request.headers.get("x-forwarded-for");
-  if (xff) {
-    const ips = xff.split(",");
-    return ips[ips.length - 1]?.trim() || "unknown";
-  }
-  return "unknown";
+  return "0.0.0.0";
 }

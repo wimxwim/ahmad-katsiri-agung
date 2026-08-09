@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         maxAge: 900,
       });
     }
-    if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) {
+    if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//") && !returnTo.includes("\\")) {
       response.cookies.set("akal_google_return", returnTo, {
         httpOnly: true,
         secure: true,

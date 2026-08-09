@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { checkRateLimit, checkConcurrentLimit, releaseConcurrent } from "@/lib/rate-limit";
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import { apiError, apiRateLimit } from "@/lib/api-response";
@@ -8,6 +8,9 @@ import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 export async function POST(
   request: NextRequest,
@@ -60,13 +63,18 @@ export async function POST(
       .set({ quizStatus: "not_generated", updatedAt: new Date() })
       .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)));
 
-    regenerateQuizOnly(id)
-      .catch((e) => {
+    const finalId = id;
+    const finalUserId = session.userId;
+
+    after(async () => {
+      try {
+        await regenerateQuizOnly(finalId);
+      } catch (e) {
         console.error("Regen quiz async error:", e);
-      })
-      .finally(() => {
-        releaseConcurrent(`gen:${session.userId}`);
-      });
+      } finally {
+        releaseConcurrent(`gen:${finalUserId}`);
+      }
+    });
 
     await appendEvent(`gen:${session.userId}`, "gen.quiz_regenerate_queued", { generationId: id });
 

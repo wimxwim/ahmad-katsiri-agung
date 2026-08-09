@@ -234,7 +234,7 @@ export async function GET(request: NextRequest) {
     });
     const { createRefreshToken } = await import("@/lib/refresh-token");
     const refreshToken = await createRefreshToken(user.id);
-    const target = (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//"))
+    const target = (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//") && !returnTo.includes("\\"))
       ? returnTo
       : ROLE_HOME_PATHS[sessionRole];
     logAuthEvent("auth.login.success", { userId: user.id, email: user.email, method: "google", portal: portal || "unknown", ip }).catch(err => console.error("logAuthEvent failed:", err));

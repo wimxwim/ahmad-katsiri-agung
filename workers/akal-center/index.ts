@@ -142,6 +142,20 @@ export default {
 
     // AI Generation Queue — enqueue job untuk diproses Worker
     if (url.pathname === '/v1/ai/generate' && request.method === 'POST') {
+      const workerAuthSecret = (process.env.WORKER_AUTH_SECRET as string) || (env?.WORKER_AUTH_SECRET as string);
+      if (!workerAuthSecret) {
+        return new Response(JSON.stringify({ error: 'Worker auth not configured' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      const authHeader = request.headers.get('Authorization') || '';
+      if (authHeader !== `Bearer ${workerAuthSecret}`) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
       const body = await request.text();
       const msg = JSON.parse(body);
       await (env as { AI_GENERATION: Queue }).AI_GENERATION.send(msg);

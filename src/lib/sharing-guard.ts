@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { materiSharing, krabatConnections } from "@/lib/db/schema";
+import { materiSharing, krabatConnections, materiPublished } from "@/lib/db/schema";
 import { and, eq, or } from "drizzle-orm";
 
 export type VisibilityCheckResult =
@@ -20,7 +20,15 @@ export async function checkMateriAccess(
   const visibility = sharing?.visibility ?? "PRIVAT";
 
   if (visibility === "PRIVAT") {
-    return { allowed: true };
+    const [materi] = await db
+      .select({ guruId: materiPublished.guruId })
+      .from(materiPublished)
+      .where(eq(materiPublished.id, materiPublishedId))
+      .limit(1);
+    if (materi?.guruId === userId) {
+      return { allowed: true };
+    }
+    return { allowed: false, reason: "Materi ini bersifat privat", status: 403 };
   }
 
   if (visibility === "ARSIP") {

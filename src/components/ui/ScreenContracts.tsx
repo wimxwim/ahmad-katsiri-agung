@@ -21,6 +21,8 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { motion } from "motion/react";
 
 const PIPELINE_STEPS = [
@@ -277,15 +279,46 @@ function RoleMismatchError({ currentPortal, actualRole }: RoleMismatchErrorProps
           <ArrowRight className="w-4 h-4" />
           Buka {roleLabel}
         </Link>
-        <Link
-          href="/api/auth/logout"
-          className="inline-flex items-center justify-center gap-2 text-sm text-on-surface-variant hover:text-red-600 transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          Logout & gunakan akun lain
-        </Link>
+        <RoleMismatchLogoutButton />
       </div>
     </div>
+  );
+}
+
+function RoleMismatchLogoutButton() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogout() {
+    setLoading(true);
+    try {
+      const csrfToken = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("__Host-psrf="))
+        ?.split("=")[1] || "";
+      await fetch("/api/v1/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
+        },
+      });
+    } catch {
+      // logout is best-effort
+    } finally {
+      router.push("/masuk");
+    }
+  }
+
+  return (
+    <button
+      onClick={handleLogout}
+      disabled={loading}
+      className="inline-flex items-center justify-center gap-2 text-sm text-on-surface-variant hover:text-red-600 transition-colors disabled:opacity-50"
+    >
+      <LogOut className="w-4 h-4" />
+      {loading ? "Keluar..." : "Logout & gunakan akun lain"}
+    </button>
   );
 }
 

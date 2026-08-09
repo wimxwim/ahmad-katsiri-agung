@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
+  try {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     return apiError("CRON_SECRET tidak dikonfigurasi", 500);
@@ -110,4 +111,8 @@ export async function POST(request: NextRequest) {
     timestamp: now.toISOString(),
     results,
   });
+  } catch (e) {
+    console.error("Cleanup cron error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
 }

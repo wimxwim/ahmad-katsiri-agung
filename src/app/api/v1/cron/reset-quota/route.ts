@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
+  try {
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     return apiError("CRON_SECRET tidak dikonfigurasi di environment variable", 500);
@@ -84,4 +85,8 @@ export async function POST(request: NextRequest) {
     resetCount: userIds.length,
     nextReset: nextMonth.toISOString(),
   });
+  } catch (e) {
+    console.error("Reset quota cron error:", e);
+    return apiError("Terjadi kesalahan server", 500);
+  }
 }

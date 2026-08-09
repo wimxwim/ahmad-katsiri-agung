@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
+import { createHash } from "crypto";
 import { eq, and, isNull } from "drizzle-orm";
 import { hashPassword } from "@/lib/auth-password";
 import { db } from "@/lib/db";
@@ -27,12 +28,14 @@ export async function POST(request: NextRequest) {
 
     const { token, newPassword } = parsed.data;
 
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+
     const [resetToken] = await db
       .select()
       .from(passwordResetTokens)
       .where(
         and(
-          eq(passwordResetTokens.token, token),
+          eq(passwordResetTokens.token, tokenHash),
           isNull(passwordResetTokens.usedAt),
         ),
       )

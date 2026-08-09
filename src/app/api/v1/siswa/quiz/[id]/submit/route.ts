@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
@@ -209,12 +209,14 @@ export async function POST(
       })
       .returning();
 
-    processQuizResults({
-      siswaId: session.userId!,
-      kursusId: quiz.kursusId,
-      quizSessionId: quizSessionRow.id,
-      answers: answersForProcessor,
-    }).catch(err => console.error("Quiz processor failed:", err));
+    after(() => {
+      processQuizResults({
+        siswaId: session.userId!,
+        kursusId: quiz.kursusId,
+        quizSessionId: quizSessionRow.id,
+        answers: answersForProcessor,
+      }).catch(err => console.error("Quiz processor failed:", err));
+    });
 
     await appendEvent(`quiz:${id}`, "quiz.attempt_submitted", {
       siswaId: session.userId,

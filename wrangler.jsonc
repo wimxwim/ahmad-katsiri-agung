@@ -1,4 +1,5 @@
 {
+  "_comment": "OpenNext Cloudflare Worker config — NOT ACTIVE. Points to .open-next/worker.js which is not built. The active worker is at workers/akal-center/wrangler.jsonc.",
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
   "name": "akal-center-cf",
