@@ -430,11 +430,11 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                Berpindah tab atau jendela dicatat sebagai pelanggaran.
+                Berpindah tab atau jendela akan tercatat dan dilaporkan ke gurumu.
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                3 pelanggaran = kuis otomatis dikumpulkan.
+                Setelah 3 pelanggaran, ujian diakhiri otomatis.
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />

@@ -28,6 +28,7 @@ export function useQuizLock({
   const enabledRef = useRef(enabled);
   const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastViolationAtRef = useRef(0);
 
   useEffect(() => {
     enabledRef.current = enabled;
@@ -53,6 +54,9 @@ export function useQuizLock({
   const recordViolation = useCallback(
     (jenis: string) => {
       if (!enabledRef.current) return;
+      const now = Date.now();
+      if (now - lastViolationAtRef.current < 5000) return;
+      lastViolationAtRef.current = now;
       violationsRef.current += 1;
       setViolations(violationsRef.current);
       onViolation?.(violationsRef.current, maxViolations, jenis);
