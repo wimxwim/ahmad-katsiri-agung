@@ -103,6 +103,15 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
     enabled: quizState === "playing",
     mode: quiz.modeEvaluasi,
     maxViolations: 3,
+    onViolation: (_count, _total, jenis) => {
+      if (quiz.modeEvaluasi === "BELAJAR") return;
+      fetch(`/api/v1/siswa/quiz/${quiz.id}/violation`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        body: JSON.stringify({ jenis }),
+      }).catch(() => {});
+    },
     onMaxViolations,
   });
 
@@ -150,8 +159,60 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
       e.preventDefault();
     };
     window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
+
+    // Back-button guard: duplicate history entry keeps Back on the exam page
+    const currentUrl = window.location.pathname + window.location.search;
+    history.pushState(null, "", currentUrl);
+
+    const popStateHandler = () => {
+      if (!submittedRef.current) {
+        history.pushState(null, "", currentUrl);
+        toast("info", "Gunakan tombol Keluar untuk meninggalkan kuis.");
+      }
+    };
+    window.addEventListener("popstate", popStateHandler);
+
+    return () => {
+      window.removeEventListener("beforeunload", handler);
+      window.removeEventListener("popstate", popStateHandler);
+    };
   }, [quizState]);
+
+  // Strict-mode hardening: block context menu, copy/save/print shortcuts
+  useEffect(() => {
+    if (quizState !== "playing") return;
+    if (quiz.modeEvaluasi === "BELAJAR") return;
+
+    const isEditable = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false;
+      const tag = target.tagName;
+      return tag === "TEXTAREA" || tag === "INPUT" || target.isContentEditable;
+    };
+
+    const handleContextMenu = (e: MouseEvent) => {
+      if (isEditable(e.target)) return;
+      e.preventDefault();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "F12") {
+        e.preventDefault();
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && !isEditable(e.target)) {
+        const k = e.key.toLowerCase();
+        if (["p", "s", "c", "u", "i", "j"].includes(k)) e.preventDefault();
+      }
+    };
+
+    document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [quizState, quiz.modeEvaluasi]);
 
   const soal = shuffledSoal[currentIndex];
   soalRef.current = soal ?? null;
@@ -359,6 +420,29 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
         </div>
         <h2 className="font-heading text-3xl md:text-4xl text-on-surface mb-3">{quiz.judul}</h2>
         <p className="text-on-surface-variant mb-6">Uji pemahamanmu dengan {totalSoal} soal.</p>
+        {(quiz.modeEvaluasi === "ULANGAN" || quiz.modeEvaluasi === "CBT") && (
+          <div className="bg-white/70 backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-6 shadow-glass mb-6 text-left">
+            <p className="font-heading font-bold text-sm text-tertiary mb-3">Aturan Ujian</p>
+            <ul className="space-y-2 text-xs text-on-surface-variant">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                Layar akan masuk mode fullscreen. Jangan keluar dari mode ini.
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                Berpindah tab atau jendela dicatat sebagai pelanggaran.
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                3 pelanggaran = kuis otomatis dikumpulkan.
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                Waktu berjalan dan tidak bisa dihentikan.
+              </li>
+            </ul>
+          </div>
+        )}
         <div className="bg-glass rounded-2xl sm:rounded-[32px] p-5 sm:p-6 shadow-glass mb-8">
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-primary/5 rounded-2xl p-4 text-center">

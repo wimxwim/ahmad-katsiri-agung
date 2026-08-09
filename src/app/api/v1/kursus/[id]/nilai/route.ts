@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { quizAttempt, quizPublished, users, kursus } from "@/lib/db/schema";
+import { quizAttempt, quizPublished, quizViolation, users, kursus } from "@/lib/db/schema";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { requireRole, GuardError } from "@/lib/route-guard-v2";
@@ -60,10 +60,24 @@ export async function GET(
       return NextResponse.json({ data: [], total: 0 });
     }
 
+    const violations = await db
+      .select({
+        siswaId: quizViolation.siswaId,
+        quizPublishedId: quizViolation.quizPublishedId,
+      })
+      .from(quizViolation)
+      .where(inArray(quizViolation.quizPublishedId, quizIds));
+    const violationMap = new Map<string, number>();
+    for (const v of violations) {
+      const key = `${v.siswaId}:${v.quizPublishedId}`;
+      violationMap.set(key, (violationMap.get(key) || 0) + 1);
+    }
+
     const attempts = await db
       .select({
         id: quizAttempt.id,
         siswaId: quizAttempt.siswaId,
+        quizPublishedId: quizAttempt.quizPublishedId,
         nilai: quizAttempt.nilai,
         jumlahBenar: quizAttempt.jumlahBenar,
         jumlahSalah: quizAttempt.jumlahSalah,
@@ -78,7 +92,12 @@ export async function GET(
       .leftJoin(users, and(eq(quizAttempt.siswaId, users.id), isNull(users.deletedAt)))
       .where(inArray(quizAttempt.quizPublishedId, quizIds));
 
-    return NextResponse.json({ data: attempts, total: attempts.length });
+    const attemptsWithViolations = attempts.map((a) => ({
+      ...a,
+      pelanggaran: violationMap.get(`${a.siswaId}:${a.quizPublishedId}`) || 0,
+    }));
+
+    return NextResponse.json({ data: attemptsWithViolations, total: attemptsWithViolations.length });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Nilai error:", e);

@@ -8,7 +8,7 @@ import { GradebookTable } from "@/components/dashboard/GradebookTable";
 
 export default function KursusNilaiPage() {
   const params = useParams();
-  const [siswaData, setSiswaData] = useState<{ siswaId: string; nama: string; skorRataRata: number }[]>([]);
+  const [siswaData, setSiswaData] = useState<{ siswaId: string; nama: string; skorRataRata: number; pelanggaran: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [kursusNama, setKursusNama] = useState("");
@@ -33,21 +33,22 @@ export default function KursusNilaiPage() {
       setKursusNama(kd.data?.judul || "");
 
       const nd = await nilaiRes.json().catch(() => ({ data: [] }));
-      const logEntries = (nd.data || []) as { siswaId: string; nama: string; nilai: number | null }[];
-      const aggregated = new Map<string, { nama: string; totalNilai: number; count: number }>();
+      const logEntries = (nd.data || []) as { siswaId: string; nama: string; nilai: number | null; pelanggaran?: number }[];
+      const aggregated = new Map<string, { nama: string; totalNilai: number; count: number; pelanggaran: number }>();
       for (const entry of logEntries) {
         const key = entry.siswaId;
-        const existing = aggregated.get(key) || { nama: entry.nama, totalNilai: 0, count: 0 };
+        const existing = aggregated.get(key) || { nama: entry.nama, totalNilai: 0, count: 0, pelanggaran: 0 };
         if (entry.nilai !== null && entry.nilai !== undefined) {
           existing.totalNilai += entry.nilai;
           existing.count++;
         }
+        existing.pelanggaran += entry.pelanggaran || 0;
         aggregated.set(key, existing);
       }
-      const list: { siswaId: string; nama: string; skorRataRata: number }[] = [];
+      const list: { siswaId: string; nama: string; skorRataRata: number; pelanggaran: number }[] = [];
       for (const [siswaId, v] of aggregated) {
         const avg = v.count > 0 ? Math.round(v.totalNilai / v.count) : 0;
-        list.push({ siswaId, nama: v.nama, skorRataRata: avg });
+        list.push({ siswaId, nama: v.nama, skorRataRata: avg, pelanggaran: v.pelanggaran });
       }
       list.sort((a, b) => a.nama.localeCompare(b.nama));
       setSiswaData(list);
@@ -100,6 +101,8 @@ export default function KursusNilaiPage() {
     siswaQuizMap.set(s.nama, new Map([["Kuis", s.skorRataRata]]));
   }
 
+  const pelanggaranSiswa = siswaData.filter((s) => s.pelanggaran > 0);
+
   return (
     <div>
       <Link
@@ -112,6 +115,21 @@ export default function KursusNilaiPage() {
 
       <h1 className="font-heading font-bold text-2xl text-on-surface mb-2">Nilai — {kursusNama}</h1>
       <p className="text-on-surface-variant text-sm mb-8">{siswaData.length} siswa tercatat</p>
+
+      {pelanggaranSiswa.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
+          <p className="font-heading font-bold text-sm text-amber-800 mb-2">⚠️ Pelanggaran ujian terdeteksi</p>
+          <ul className="space-y-1.5">
+            {pelanggaranSiswa.map((s) => (
+              <li key={s.siswaId} className="text-xs text-amber-800 flex items-center gap-2">
+                <span className="font-semibold">{s.nama}</span>
+                <span className="text-amber-600">· {s.pelanggaran}x keluar halaman</span>
+              </li>
+            ))}
+          </ul>
+          <p className="text-[11px] text-amber-700/70 mt-2">Pelanggaran tercatat otomatis saat siswa berpindah tab/keluar fullscreen.</p>
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl border border-border-precision overflow-hidden">
         <GradebookTable siswa={gradebookSiswa} quizzes={["Kuis"]} siswaQuizMap={siswaQuizMap} />

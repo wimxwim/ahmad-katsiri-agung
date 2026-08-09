@@ -1091,6 +1091,27 @@ export const quizAttemptRelations = relations(quizAttempt, ({ one }) => ({
   siswa: one(users, { fields: [quizAttempt.siswaId], references: [users.id] }),
 }));
 
+export const quizViolation = pgTable(
+  "quiz_violation",
+  {
+    id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+    siswaId: uuid("siswa_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    quizPublishedId: uuid("quiz_published_id").notNull().references(() => quizPublished.id, { onDelete: "cascade" }),
+    jenis: varchar("jenis", { length: 50 }).notNull(),
+    detail: jsonb("detail"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("quiz_violation_siswa_idx").on(t.siswaId, t.quizPublishedId, t.createdAt),
+    index("quiz_violation_quiz_idx").on(t.quizPublishedId),
+  ],
+);
+
+export const quizViolationRelations = relations(quizViolation, ({ one }) => ({
+  quiz: one(quizPublished, { fields: [quizViolation.quizPublishedId], references: [quizPublished.id] }),
+  siswa: one(users, { fields: [quizViolation.siswaId], references: [users.id] }),
+}));
+
 export const materiReadRelations = relations(materiRead, ({ one }) => ({
   siswa: one(users, { fields: [materiRead.siswaId], references: [users.id] }),
   materi: one(materiPublished, { fields: [materiRead.materiPublishedId], references: [materiPublished.id] }),
