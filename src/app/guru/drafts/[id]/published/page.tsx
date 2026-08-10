@@ -7,6 +7,7 @@ import { and, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, ArrowRight, BookOpen, ClipboardList, ListChecks, FileText } from "lucide-react";
+import DiskusiGuru from "@/components/guru/DiskusiGuru";
 
 export const metadata = {
   title: "Draft siap diterbitkan — AKAL Center",
@@ -138,6 +139,10 @@ export default async function DraftPublishedPage({
           untuk menerbitkan materi secara manual.
         </span>
       </div>
+
+      {row.publishedMateriId && (
+        <DiskusiGuru materiId={row.publishedMateriId} />
+      )}
     </div>
   );
 }

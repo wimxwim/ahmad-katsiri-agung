@@ -8,8 +8,8 @@ import {
   releaseConcurrent,
 } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { tutorChat } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { tutorChat, siswaKursus, kursus } from "@/lib/db/schema";
+import { and, eq } from "drizzle-orm";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { chatWithFallback } from "@/lib/ai";
 
@@ -18,6 +18,7 @@ export const maxDuration = 300;
 
 const TutorSchema = z.object({
   message: z.string().min(2, "Pertanyaan terlalu pendek").max(2000, "Pertanyaan terlalu panjang"),
+  kursusId: z.string().uuid({ message: "kursusId tidak valid" }).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -50,7 +51,26 @@ export async function POST(request: NextRequest) {
       return apiError("VALIDATION_ERROR", "Data tidak valid", parsed.error.flatten(), 400);
     }
 
-    const { message } = parsed.data;
+    const { message, kursusId } = parsed.data;
+
+    // find enrolled courses (scoped to kursusId when provided)
+    const whereKursus = [eq(siswaKursus.siswaId, session.userId!), eq(siswaKursus.status, "AKTIF")];
+    if (kursusId) whereKursus.push(eq(siswaKursus.kursusId, kursusId));
+
+    const enrollments = await db
+      .select({
+        judul: kursus.judul,
+        status: siswaKursus.status,
+      })
+      .from(siswaKursus)
+      .innerJoin(kursus, eq(kursus.id, siswaKursus.kursusId))
+      .where(and(...whereKursus))
+      .limit(5);
+
+    const ctxKursus =
+      enrollments.length > 0
+        ? "Kursus yang sedang diambil siswa: " + enrollments.map((e) => e.judul).join(", ")
+        : "";
 
     const [chat] = await db
       .insert(tutorChat)
@@ -65,16 +85,23 @@ export async function POST(request: NextRequest) {
     // Run AI in background via after() - matches generate route pattern
     after(async () => {
       try {
+        const systemPrompt = `Kamu adalah tutor belajar untuk siswa Indonesia (PAI/Akidah Akhlak SMP). ${ctxKursus || "Siswa belum mengambil kursus tertentu."} Jawab dalam bahasa Indonesia yang jelas, ramah, dan edukatif.
+
+ATURAN PENTING:
+1. Jawab SINGKAT DAN PADAT - maksimal 3-4 kalimat (atau 40-60 kata) untuk pertanyaan normal.
+2. Jawaban harus UTUH/SELF-CONTAINED - meskipun pertanyaannya pendek, jawabannya tetap menjelaskan inti dengan lengkap agar siswa paham tanpa konteks tambahan.
+3. Jika siswa menanyakan di luar materi PAI/Akidah Akhlak, arahkan kembali ke materi pelajaran dengan ramah.
+4. Bantu siswa memahami konsep, bukan sekadar memberi jawaban instan.`;
+
         const result = await chatWithFallback(
           [
             {
               role: "system",
-              content:
-                "Kamu adalah tutor belajar untuk siswa Indonesia (PAI/Akidah Akhlak SMP). Jawab dengan bahasa Indonesia yang jelas, ramah, dan edukatif. Bantu siswa memahami materi, bukan memberikan jawaban instan tanpa penjelasan.",
+              content: systemPrompt,
             },
             { role: "user", content: message },
           ],
-          { maxTokens: 1000, model: "mistral-medium-3-5" },
+          { maxTokens: 300, model: "mistral-medium-3-5" },
         );
 
         await db

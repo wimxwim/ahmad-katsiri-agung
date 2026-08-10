@@ -29,6 +29,7 @@ export function useQuizLock({
   const graceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warningTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastViolationAtRef = useRef(0);
+  const lastBlurAtRef = useRef(0);
 
   useEffect(() => {
     enabledRef.current = enabled;
@@ -100,7 +101,7 @@ export function useQuizLock({
     const handleFullscreenChange = () => {
       const fs = !!document.fullscreenElement;
       setIsFullscreen(fs);
-      if (!fs && enabledRef.current) {
+      if (!fs && enabledRef.current && (mode === "CBT" || mode === "ULANGAN")) {
         recordViolation("fullscreen_exit");
       }
     };
@@ -129,17 +130,17 @@ export function useQuizLock({
     };
 
     const handleBlur = () => {
-      if (enabledRef.current) {
-        flashWarning();
-      }
+      if (!enabledRef.current) return;
+      const now = Date.now();
+      if (now - lastBlurAtRef.current < 4000) return;
+      lastBlurAtRef.current = now;
+      flashWarning();
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("pagehide", handlePageHide);
     window.addEventListener("blur", handleBlur);
-
-    enterFullscreen();
 
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
@@ -149,7 +150,7 @@ export function useQuizLock({
       clearTimers();
       exitFullscreen();
     };
-  }, [enabled, enterFullscreen, exitFullscreen, recordViolation, flashWarning, clearTimers, graceMs]);
+  }, [enabled, exitFullscreen, recordViolation, flashWarning, clearTimers, graceMs, mode]);
 
   return {
     violations,

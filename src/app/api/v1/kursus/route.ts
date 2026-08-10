@@ -50,6 +50,8 @@ export async function GET(request: NextRequest) {
       slug: kursus.slug,
       deskripsi: kursus.deskripsi,
       statusPublikasi: kursus.statusPublikasi,
+      isPublic: kursus.isPublic,
+      harga: kursus.harga,
       guruId: kursus.guruId,
       createdAt: kursus.createdAt,
     }).from(kursus).where(isNull(kursus.deletedAt)).$dynamic();

@@ -105,11 +105,10 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
   }, []);
 
   const lock = useQuizLock({
-    enabled: quizState === "playing",
+    enabled: quizState === "playing" && quiz.modeEvaluasi !== "BELAJAR",
     mode: quiz.modeEvaluasi,
     maxViolations: 3,
     onViolation: (_count, _total, jenis) => {
-      if (quiz.modeEvaluasi === "BELAJAR") return;
       fetch(`/api/v1/siswa/quiz/${quiz.id}/violation`, {
         method: "POST",
         credentials: "include",
@@ -154,6 +153,7 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
 
   useEffect(() => {
     setSelected(null);
+    setIsianText("");
     isianTextRef.current = "";
   }, [currentIndex]);
 
@@ -265,6 +265,9 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
     startTimeRef.current = Date.now();
     timerExpiredRef.current = false;
     submittedRef.current = false;
+    if (quiz.modeEvaluasi !== "BELAJAR") {
+      lock.enterFullscreen();
+    }
     setRefleksiPaham("");
     setRefleksiSulit("");
     setAiPenjelasan(null);
@@ -339,6 +342,19 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
             jawabanBenar: j.data.jawabanBenar || {},
           });
         }
+      } else if (r.status === 409) {
+        setError("Evaluasi ini sudah dikerjakan sebelumnya. Skor tidak bisa diubah lagi.");
+        setQuizState("result");
+        return;
+      } else {
+        const j = await r.json().catch(() => ({}));
+        const msg =
+          typeof j.error === "object" && j.error !== null
+            ? String(j.error.message || j.error.code || "Gagal mengirim jawaban")
+            : String(j.error || "Gagal mengirim jawaban");
+        setError(msg);
+        setQuizState("result");
+        return;
       }
     } catch (e) {
       // silently handled
@@ -590,9 +606,15 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
             })}
           </div>
           <div className="text-center mt-10 space-y-4">
- <button onClick={startQuiz} className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden">
+ {quiz.modeEvaluasi === "BELAJAR" ? (
+            <button onClick={startQuiz} className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden">
               <RotateCcw className="w-5 h-5" /> Ulangi Kuis
             </button>
+          ) : (
+            <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-6 py-3 rounded-full text-sm font-semibold">
+              <CheckCircle2 className="w-4 h-4" /> Evaluasi telah selesai
+            </div>
+          )}
             {(materiHref || nextMateriHref) && (
               <div className="flex flex-wrap items-center justify-center gap-3">
                 {materiHref && (
@@ -711,9 +733,16 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
           </div>
         )}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <button onClick={startQuiz} className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300">
-            <RotateCcw className="w-5 h-5" /> Ulangi Kuis
-          </button>
+          {quiz.modeEvaluasi === "BELAJAR" ? (
+            <button onClick={startQuiz} className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300">
+              <RotateCcw className="w-5 h-5" /> Ulangi Kuis
+            </button>
+          ) : (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-5 py-3 text-sm text-emerald-800 font-semibold">
+              <CheckCircle2 className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+              Evaluasi selesai — skor sudah dikirim ke gurumu
+            </div>
+          )}
 {quiz.modeEvaluasi === "BELAJAR" && (
             <button onClick={() => setShowReview(true)} className="inline-flex items-center gap-2 bg-white text-primary border-2 border-primary/20 px-8 py-4 rounded-full font-semibold hover:bg-primary/5 active:scale-[0.98] transition-all duration-300">
               <BookOpen className="w-5 h-5" /> Review Jawaban
