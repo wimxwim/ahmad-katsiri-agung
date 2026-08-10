@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
             },
             { role: "user", content: message },
           ],
-          { maxTokens: 1000 },
+          { maxTokens: 1000, model: "mistral-medium-3-5" },
         );
 
         await db

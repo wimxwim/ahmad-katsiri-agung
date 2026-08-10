@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const MODEL = "deepseek-v4-flash-bynara";
+  const MODEL = "deepseek-v4-flash";
   const results: TestResult[] = [];
   const region = process.env.VERCEL_REGION || "unknown";
   const startTotal = performance.now();

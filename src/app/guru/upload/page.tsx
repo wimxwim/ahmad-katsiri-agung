@@ -9,6 +9,9 @@ import { csrfHeaders } from "@/lib/csrf";
 
 const ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx"];
 const MAX_SIZE = 10 * 1024 * 1024;
+// Di atas threshold ini, browser upload langsung ke ImageKit (upload.imagekit.io)
+// karena Vercel membatasi body request fungsi di 4.5MB.
+const DIRECT_UPLOAD_THRESHOLD = 4 * 1024 * 1024;
 
 interface KursusItem {
   id: string;
@@ -143,6 +146,76 @@ export default function GuruUploadPage() {
     }
     setError("");
     setSuccessFileName(null);
+
+    // Direct-upload untuk file besar (> 4MB): browser mengirim langsung ke
+    // upload.imagekit.io supaya lolos limit body request Vercel (4.5MB).
+    // Kalau gagal di tahap auth/upload ImageKit, fallback ke jalur multipart normal.
+    if (file.size > DIRECT_UPLOAD_THRESHOLD) {
+      try {
+        const authRes = await fetch("/api/v1/storage/auth", { credentials: "include" });
+        const authJson = await authRes.json().catch(() => ({}));
+        if (authRes.ok && authJson.success && authJson.data) {
+          const { publicKey, token, expire, signature, folder } = authJson.data;
+
+          const ikForm = new FormData();
+          ikForm.append("file", file);
+          ikForm.append("fileName", file.name);
+          ikForm.append("folder", folder);
+          ikForm.append("publicKey", publicKey);
+          ikForm.append("token", token);
+          ikForm.append("expire", String(expire));
+          ikForm.append("signature", signature);
+          ikForm.append("useUniqueFileName", "true");
+
+          setJob({ state: "uploading", progress: 30, message: "Mengupload file besar langsung ke penyimpanan..." });
+          const ikRes = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+            method: "POST",
+            body: ikForm,
+          });
+          const ikJson = await ikRes.json().catch(() => ({}));
+          if (!ikRes.ok) {
+            const ikErr = ikJson.error;
+            throw new Error(
+              (typeof ikErr === "string" ? ikErr : ikErr?.message) || "Upload ke ImageKit gagal",
+            );
+          }
+
+          setJob({ state: "uploading", progress: 70, message: "Menyimpan..." });
+          const res = await fetch("/api/v1/guru/uploads", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...csrfHeaders() },
+            body: JSON.stringify({
+              imagekitFileId: ikJson.fileId,
+              linkAkses: ikJson.url,
+              fileName: ikJson.name,
+              sizeBytes: ikJson.size,
+              kursusId: selectedKursus,
+              kelasId: selectedKelasId || "",
+            }),
+            credentials: "include",
+          });
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            const err = json.error;
+            const msg = (typeof err === "string" ? err : err?.message) || "Upload gagal";
+            setJob({ state: "failed", progress: 0, message: msg });
+            setError(msg);
+            toast("error", msg);
+            return;
+          }
+
+          setJob({ state: "ready", progress: 100, message: "Upload selesai!" });
+          setSuccessFileName(file.name);
+          toast("success", "Dokumen berhasil diupload. Teks sedang diekstrak otomatis — pantau progres di halaman Draft AI.");
+          await loadHistory();
+          return;
+        }
+      } catch (e) {
+        if (process.env.NODE_ENV !== "production") {
+          console.error("[guru/upload] direct upload failed, fallback ke multipart:", e);
+        }
+      }
+    }
 
     const fd = new FormData();
     fd.append("file", file);

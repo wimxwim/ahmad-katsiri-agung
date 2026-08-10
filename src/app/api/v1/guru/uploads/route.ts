@@ -61,6 +61,197 @@ function sha256(buf: Buffer): string {
   return crypto.createHash("sha256").update(buf).digest("hex");
 }
 
+const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+/**
+ * Path direct-upload: browser telah mengupload file besar langsung ke ImageKit
+ * (upload.imagekit.io) untuk menghindari limit body request Vercel (4.5MB).
+ * Route ini hanya memvalidasi metadata, menyimpan baris DB, lalu men-download
+ * file dari ImageKit secara server-to-server untuk ekstraksi teks.
+ */
+async function handleDirectUpload(
+  request: NextRequest,
+  session: Awaited<ReturnType<typeof requireGuru>>,
+): Promise<NextResponse> {
+  const body = (await request.json().catch(() => null)) as {
+    imagekitFileId?: unknown;
+    linkAkses?: unknown;
+    fileName?: unknown;
+    sizeBytes?: unknown;
+    kursusId?: unknown;
+    kelasId?: unknown;
+  } | null;
+
+  if (!body || typeof body !== "object") return apiError("Body JSON tidak valid", 400);
+
+  const { imagekitFileId, linkAkses, fileName, sizeBytes, kursusId, kelasId } = body;
+
+  if (typeof imagekitFileId !== "string" || !imagekitFileId) {
+    return apiError("imagekitFileId wajib diisi", 400);
+  }
+  if (typeof linkAkses !== "string" || !linkAkses) {
+    return apiError("linkAkses wajib diisi", 400);
+  }
+  if (typeof fileName !== "string" || !fileName) {
+    return apiError("fileName wajib diisi", 400);
+  }
+  if (typeof sizeBytes !== "number" || !Number.isFinite(sizeBytes) || sizeBytes <= 0) {
+    return apiError("sizeBytes wajib berupa angka positif", 400);
+  }
+  if (typeof kursusId !== "string" || !kursusId) return apiError("kursusId wajib diisi", 400);
+  if (typeof kelasId !== "string" || !kelasId) {
+    return apiError("kelasId wajib diisi. Pilih kelas tujuan sebelum upload.", 400);
+  }
+
+  if (sizeBytes > MAX_SIZE) {
+    return apiError(`File terlalu besar (maks 10MB)`, 413);
+  }
+
+  const originalName = fileName;
+  const lowerName = originalName.toLowerCase();
+  const extFromName = lowerName.split(".").pop() || "";
+  if (!ALLOWED_EXT.has(extFromName)) {
+    return apiError(`Ekstensi .${extFromName} tidak diizinkan. Gunakan PDF/DOCX.`, 415);
+  }
+  const detected = extFromName;
+  const tipeMime = detected === "docx" ? DOCX_MIME : "application/pdf";
+
+  const [ownedKursus] = await db
+    .select({ id: kursus.id })
+    .from(kursus)
+    .where(and(eq(kursus.id, kursusId), eq(kursus.guruId, session.userId)))
+    .limit(1);
+  if (!ownedKursus) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+
+  const [kelasRow] = await db
+    .select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId })
+    .from(kelas)
+    .where(and(eq(kelas.id, kelasId), eq(kelas.guruId, session.userId)))
+    .limit(1);
+  if (!kelasRow) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
+
+  const subStatus = await getSubscriptionStatus(session.userId);
+  if (!subStatus.canUpload) {
+    return apiError(
+      "SUBSCRIPTION_LOCKED",
+      `Batas upload gratis tercapai (${subStatus.uploadCount}/${subStatus.uploadLimit}). Top-up minimal Rp${MIN_TOPUP.toLocaleString("id-ID")} untuk upload unlimited.`,
+      undefined,
+      402,
+    );
+  }
+
+  const job = await db.transaction(async (tx) => {
+    const [fm] = await tx
+      .insert(fileMateri)
+      .values({
+        namaFile: originalName,
+        tipeMime,
+        ukuranBytes: sizeBytes,
+        lokasi: "IMAGEKIT",
+        imagekitFileId,
+        linkAkses,
+        kursusId,
+        kelasId,
+        guruId: session.userId,
+        status: "uploaded",
+        kategori: detectKategori(originalName, detected),
+      })
+      .returning({ id: fileMateri.id });
+
+    const [gen] = await tx
+      .insert(aiGeneration)
+      .values({
+        fileMateriId: fm.id,
+        guruId: session.userId,
+        kursusId,
+        sourceFileName: originalName,
+        status: "queued",
+        tingkat: kelasRow.tingkat,
+        fase: tingkatToFase(kelasRow.tingkat),
+      })
+      .returning({ id: aiGeneration.id });
+
+    return { fileId: fm.id, generationId: gen.id };
+  });
+
+  // Update status to "extracting" so frontend can show progress
+  await db.update(aiGeneration)
+    .set({ status: "extracting" })
+    .where(eq(aiGeneration.id, job.generationId));
+
+  // Download file dari ImageKit (server-to-server fetch, tidak kena limit body request),
+  // lalu ekstraksi teks dari bytes yang sudah di memori.
+  let extractionStatus: "extracted" | "queued" = "queued";
+  let downloadedBytes: Buffer | null = null;
+  try {
+    const res = await fetch(linkAkses, { signal: AbortSignal.timeout(90_000) });
+    if (!res.ok) throw new Error(`ImageKit download gagal (${res.status})`);
+    downloadedBytes = Buffer.from(await res.arrayBuffer());
+
+    const text = await extractText(downloadedBytes, detected);
+    if (text && text.length >= 50) {
+      await db.update(fileMateri)
+        .set({ extractionText: text, status: "extracted", updatedAt: new Date() })
+        .where(eq(fileMateri.id, job.fileId));
+      await db.update(aiGeneration)
+        .set({ status: "extracted", leaseUntil: null, updatedAt: new Date() })
+        .where(eq(aiGeneration.id, job.generationId));
+      extractionStatus = "extracted";
+      appendEvent(`gen:${session.userId}`, "gen.extracted", { generationId: job.generationId, textLength: text.length }).catch(() => {});
+    }
+  } catch (extractErr) {
+    console.error("Inline extraction failed (file will be retried via Buat AI):", extractErr);
+    // file tetap di ImageKit, user bisa retry lewat tombol Buat AI
+  }
+
+  incrementUploadCount(session.userId).catch(() => {});
+
+  const guru = await db.query.users.findFirst({
+    where: eq(users.id, session.userId),
+    columns: { nama: true },
+  });
+  const guruNama = guru?.nama ?? "Guru";
+
+  appendEvent(`upload:${session.userId}`, "doc.uploaded", {
+    jobId: job.fileId,
+    generationId: job.generationId,
+    guruId: session.userId,
+    kursusId,
+    fileName: originalName,
+    sizeBytes,
+    mime: tipeMime,
+    ext: detected,
+    fileHash: downloadedBytes ? sha256(downloadedBytes) : null,
+    imagekitFileId,
+    link: linkAkses,
+    at: new Date().toISOString(),
+  }).catch(() => {});
+
+  appendEvent("owner:notif", "upload.masuk", {
+    guruId: session.userId,
+    guruNama,
+    fileName: originalName,
+    fileId: job.fileId,
+    generationId: job.generationId,
+    kursusId,
+    sizeBytes,
+    ext: detected,
+    link: linkAkses,
+    at: new Date().toISOString(),
+  }).catch(() => {});
+
+  return NextResponse.json({
+    success: true,
+    fileId: job.fileId,
+    jobId: job.generationId,
+    fileName: originalName,
+    status: extractionStatus,
+    message: extractionStatus === "extracted"
+      ? "Dokumen diterima dan berhasil diekstrak. Buka halaman Draft AI untuk generate materi."
+      : "Dokumen diterima. Ekstraksi gagal — klik Buat AI di halaman Draft untuk mencoba lagi.",
+  }, { status: 202 });
+}
+
 export async function POST(request: NextRequest) {
   let imagekitFileId: string | null = null;
   let imagekitLink: string | null = null;
@@ -83,6 +274,13 @@ export async function POST(request: NextRequest) {
         `Anda terlalu banyak upload. Coba lagi dalam ${userRl.retryAfter} detik.`,
         429,
       );
+    }
+
+    // Direct-upload path: browser sudah upload file > 4MB langsung ke ImageKit,
+    // route ini hanya menerima metadata + ekstraksi teks via server-to-server fetch.
+    const contentType = request.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      return handleDirectUpload(request, session);
     }
 
     const fd = await request.formData();
