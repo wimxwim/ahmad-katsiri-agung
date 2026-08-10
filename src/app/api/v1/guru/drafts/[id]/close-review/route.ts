@@ -204,15 +204,44 @@ export async function POST(
         .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)))
         .returning();
 
-      if (allApproved && row.kursusId && (materiId || quizId)) {
+      // Fetch the kursus's current visibility so we never override the guru's
+      // explicit PRIVAT/ARSIP/KRABAT choice; auto-publish only from DRAFT.
+      const [currentKursus] = row.kursusId
+        ? await tx
+            .select({ statusPublikasi: kursus.statusPublikasi })
+            .from(kursus)
+            .where(eq(kursus.id, row.kursusId))
+            .limit(1)
+        : [];
+
+      if (
+        allApproved &&
+        row.kursusId &&
+        (materiId || quizId) &&
+        currentKursus?.statusPublikasi === "DRAFT"
+      ) {
+        const publishedAt = new Date();
         await tx
           .update(kursus)
           .set({
             statusPublikasi: "PUBLIK",
-            publishedAt: new Date(),
+            publishedAt,
             updatedAt: new Date(),
           })
-          .where(and(eq(kursus.id, row.kursusId), eq(kursus.guruId, session.userId)));
+          .where(eq(kursus.id, row.kursusId));
+
+        // Match the publish route's kursus.status_changed event pattern
+        try {
+          await appendEvent(`kursus:${row.kursusId}`, "kursus.status_changed", {
+            guruId: session.userId,
+            from: currentKursus.statusPublikasi,
+            to: "PUBLIK",
+            publishedAt: publishedAt.toISOString(),
+          });
+        } catch (err) {
+          console.error("Failed to append kursus event:", err);
+          // Non-blocking: kursus status update already succeeded
+        }
       }
 
       return updated;

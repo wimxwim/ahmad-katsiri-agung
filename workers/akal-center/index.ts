@@ -90,9 +90,12 @@ function hasSessionCookie(request: Request): boolean {
 
 function isCacheablePublicApi(pathname: string, method: string, request: Request): { cacheable: boolean; ttl: number } {
   if (method !== 'GET') return { cacheable: false, ttl: 0 };
-  if (pathname === '/api/v1/katalog') return { cacheable: true, ttl: 300 };
+  // Public course catalog: guru visibility changes (publish/private/archive) must
+  // propagate within seconds, so only a short edge/client TTL (10s) is allowed here.
+  // Never use long TTLs for dynamic catalog content.
+  if (pathname === '/api/v1/katalog') return { cacheable: true, ttl: 10 };
   if (pathname === '/api/v1/auth/jwks') return { cacheable: true, ttl: 3600 };
-  if (pathname.startsWith('/api/v1/kursus') && !hasSessionCookie(request)) return { cacheable: true, ttl: 120 };
+  if (pathname.startsWith('/api/v1/kursus') && !hasSessionCookie(request)) return { cacheable: true, ttl: 10 };
   if (pathname.startsWith('/api/v1/pengumuman') && !hasSessionCookie(request)) return { cacheable: true, ttl: 60 };
   return { cacheable: false, ttl: 0 };
 }
