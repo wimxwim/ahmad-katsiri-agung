@@ -57,6 +57,7 @@ export function DaftarPicker() {
           kelas: fd.get("kelas") || undefined,
           noAbsen: fd.get("noAbsen") || undefined,
           nis: fd.get("nis") || undefined,
+          ...(role === "GURU" ? { kodeUndangan: fd.get("kodeUndangan") || undefined } : {}),
           role,
           portal,
         }),
@@ -231,6 +232,19 @@ export function DaftarPicker() {
             />
           </div>
         </>
+      )}
+
+      {isGuru && (
+        <div>
+          <label className="block text-sm font-semibold text-on-surface mb-1.5">
+            Kode Undangan <span className="font-normal text-on-surface-variant">(opsional untuk founding member)</span>
+          </label>
+          <Input
+            name="kodeUndangan"
+            maxLength={24}
+            placeholder="Masukkan kode undangan jika ada"
+          />
+        </div>
       )}
 
       {error && (

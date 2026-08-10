@@ -46,9 +46,6 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://akalcenter.my.id"),
-  alternates: {
-    canonical: "https://akalcenter.my.id",
-  },
   title: {
     template: "%s | AKAL Center",
     default: "AKAL Center — Platform Guru-Siswa + AI Document Generator",
@@ -96,6 +93,8 @@ export const metadata: Metadata = {
     },
   },
   other: {
+    // TODO: Replace with actual Google Search Console verification token
+    "google-site-verification": "GSC_VERIFICATION_TOKEN_PLACEHOLDER",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
     "apple-mobile-web-app-title": "AKAL Center",

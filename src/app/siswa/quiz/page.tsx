@@ -8,6 +8,7 @@ import { ClipboardList, Clock, AlertCircle, RefreshCw, ArrowRight, CheckCircle2 
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 import { getCached, setCache } from "@/lib/data-cache";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 interface QuizItem {
   id: string;
@@ -133,6 +134,7 @@ export default function SiswaQuizListPage() {
 
   return (
     <div>
+      <Breadcrumb items={[{ label: "Beranda", href: "/siswa/beranda" }, { label: "Kuis" }]} />
       {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

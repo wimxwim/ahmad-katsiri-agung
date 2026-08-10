@@ -197,6 +197,18 @@ export const inviteTokens = pgTable(
   }),
 );
 
+export const guruInviteCodes = pgTable("guru_invite_codes", {
+  id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+  code: varchar("code", { length: 16 }).notNull().unique(),
+  issuingGuruId: uuid("issuing_guru_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  maxUses: integer("max_uses").notNull().default(3),
+  usedCount: integer("used_count").notNull().default(0),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  trialDays: integer("trial_days").notNull().default(30),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const soal = pgTable(
   "soal",
   {
@@ -1049,6 +1061,25 @@ export const materiRead = pgTable(
   }),
 );
 
+export const diskusiRoleEnum = pgEnum("diskusi_role", ["SISWA", "GURU"]);
+
+export const materiDiskusi = pgTable(
+  "materi_diskusi",
+  {
+    id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
+    materiId: uuid("materi_id").notNull().references(() => materiPublished.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    userName: varchar("user_name", { length: 255 }).notNull(),
+    role: diskusiRoleEnum("role").notNull().default("SISWA"),
+    pertanyaan: text("pertanyaan").notNull(),
+    jawaban: text("jawaban"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => ({
+    materiIdx: index("materi_diskusi_materi_idx").on(t.materiId, t.createdAt),
+  }),
+);
+
 export const refreshTokens = pgTable("refresh_tokens", {
   id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -1071,6 +1102,7 @@ export const materiPublishedRelations = relations(materiPublished, ({ one, many 
   guru: one(users, { fields: [materiPublished.guruId], references: [users.id] }),
   kursus: one(kursus, { fields: [materiPublished.kursusId], references: [kursus.id] }),
   reads: many(materiRead),
+  diskusi: many(materiDiskusi),
 }));
 
 export const quizPublishedRelations = relations(quizPublished, ({ one, many }) => ({
@@ -1115,6 +1147,11 @@ export const quizViolationRelations = relations(quizViolation, ({ one }) => ({
 export const materiReadRelations = relations(materiRead, ({ one }) => ({
   siswa: one(users, { fields: [materiRead.siswaId], references: [users.id] }),
   materi: one(materiPublished, { fields: [materiRead.materiPublishedId], references: [materiPublished.id] }),
+}));
+
+export const materiDiskusiRelations = relations(materiDiskusi, ({ one }) => ({
+  materi: one(materiPublished, { fields: [materiDiskusi.materiId], references: [materiPublished.id] }),
+  user: one(users, { fields: [materiDiskusi.userId], references: [users.id] }),
 }));
 
 export const googleDriveAuthRelations = relations(googleDriveAuth, ({ one }) => ({
@@ -1327,6 +1364,21 @@ export const aiRequests = pgTable("ai_requests", {
   userIdDateIdx: index("idx_ai_requests_user_date").on(t.userId, t.createdAt),
   dateIdx: index("idx_ai_requests_date").on(t.createdAt),
 }));
+
+export const tutorChat = pgTable("tutor_chat", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  role: varchar("role", { length: 20 }).notNull().default("murid"),
+  prompt: text("prompt").notNull(),
+  response: text("response"),
+  status: varchar("status", { length: 20 }).notNull().default("processing"),
+  modelName: varchar("model_name", { length: 100 }),
+  tokenInput: integer("token_input").notNull().default(0),
+  tokenOutput: integer("token_output").notNull().default(0),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 export const mataPelajaran = pgTable("mata_pelajaran", {
   id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),

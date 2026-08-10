@@ -81,6 +81,99 @@ export function sanitizeRichText(input: unknown): string {
   });
 }
 
+function levenshteinDistance(a: string, b: string): number {
+  const m = a.length;
+  const n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  let prev: number[] = Array.from({ length: n + 1 }, (_, j) => j);
+  let curr: number[] = new Array(n + 1);
+  for (let i = 1; i <= m; i++) {
+    curr[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost);
+    }
+    const swap = prev;
+    prev = curr;
+    curr = swap;
+  }
+  return prev[n];
+}
+
+export function validateDistractors(opsi: Record<string, string>, kunci: string): Record<string, string> {
+  const kunciKey = kunci.trim().toUpperCase();
+  const isKunci = (key: string): boolean => key.toUpperCase() === kunciKey;
+  const orderedKeys = Object.keys(opsi)
+    .filter((key) => /^[A-E]$/.test(key))
+    .sort((a, b) => a.charCodeAt(0) - b.charCodeAt(0));
+  const kept: Array<{ key: string; normalized: string; raw: string }> = [];
+  for (const key of orderedKeys) {
+    const raw = opsi[key];
+    const normalized = raw.trim().toLowerCase();
+    const dupIndex = kept.findIndex((entry) => entry.normalized === normalized);
+    if (dupIndex !== -1) {
+      if (isKunci(key)) {
+        kept.splice(dupIndex, 1);
+        kept.push({ key, normalized, raw });
+      }
+      continue;
+    }
+    const nearIndex = kept.findIndex((entry) => {
+      const distance = levenshteinDistance(normalized, entry.normalized);
+      const maxLen = Math.max(normalized.length, entry.normalized.length);
+      const lengthRatio = maxLen === 0 ? 0 : Math.abs(normalized.length - entry.normalized.length) / maxLen;
+      return distance <= 3 && lengthRatio <= 0.3;
+    });
+    if (nearIndex !== -1) {
+      if (isKunci(key)) {
+        kept.splice(nearIndex, 1);
+        kept.push({ key, normalized, raw });
+      }
+      continue;
+    }
+    kept.push({ key, normalized, raw });
+  }
+  if (kept.length > 0) {
+    const shortestLen = Math.min(...kept.map((entry) => entry.raw.length));
+    const cap = Math.max(shortestLen * 2.5, 10);
+    for (const entry of kept) {
+      if (entry.raw.length > cap) {
+        const hardCap = Math.floor(cap);
+        if (hardCap >= 1) {
+          const spaceIdx = entry.raw.lastIndexOf(" ", hardCap);
+          entry.raw = (spaceIdx > 0 ? entry.raw.slice(0, spaceIdx) : entry.raw.slice(0, hardCap)).trim();
+        }
+      }
+    }
+  }
+  const pool = ["Semua jawaban benar", "Tidak ada jawaban yang tepat", "Semua jawaban salah", "Tidak tahu"];
+  let poolIndex = 0;
+  if (kept.length < 4) {
+    for (const letter of ["A", "B", "C", "D"]) {
+      if (kept.length >= 4) break;
+      if (kept.some((entry) => entry.key === letter)) continue;
+      kept.push({ key: letter, normalized: pool[poolIndex].toLowerCase(), raw: pool[poolIndex] });
+      poolIndex += 1;
+    }
+  }
+  const result: Record<string, string> = {};
+  for (const letter of ["A", "B", "C", "D", "E"]) {
+    const entry = kept.find((candidate) => candidate.key === letter);
+    if (entry) result[letter] = entry.raw;
+  }
+  const answerText = opsi[kunci.trim().toUpperCase()] ? opsi[kunci.trim().toUpperCase()].trim().toLowerCase() : "";
+  if (answerText.length >= 4) {
+    for (const key of Object.keys(result)) {
+      if (key.toUpperCase() === kunciKey) continue;
+      if (result[key].trim().toLowerCase().includes(answerText)) {
+        result[key] = "Tidak ada jawaban yang tepat.";
+      }
+    }
+  }
+  return result;
+}
+
 const GeneratedSoalSchema = z.object({
   pertanyaan: z.string().transform((v) => cleanText(v, SAFE_TEXT_LIMITS.pertanyaan)).refine((v) => v.length > 5, {
     message: "pertanyaan terlalu pendek",
@@ -146,7 +239,7 @@ export const QuizResultSchema = z.object({
           const allowed = Object.keys(s.opsi).filter((k) => /^[A-E]$/.test(k));
           const filtered: Record<string, string> = {};
           for (const k of allowed) filtered[k] = s.opsi[k];
-          return { ...s, opsi: filtered };
+          return { ...s, opsi: validateDistractors(filtered, s.kunci) };
         }
         if (s.tipe === "PG" && (!s.opsi || Object.keys(s.opsi).length === 0)) {
           return { ...s, opsi: { A: "-", B: "-", C: "-", D: "-" } };
@@ -167,7 +260,7 @@ export const SoalResultSchema = z.object({
           const allowed = Object.keys(s.opsi).filter((k) => /^[A-E]$/.test(k));
           const filtered: Record<string, string> = {};
           for (const k of allowed) filtered[k] = s.opsi[k];
-          return { ...s, opsi: filtered };
+          return { ...s, opsi: validateDistractors(filtered, s.kunci) };
         }
         return s;
       }),

@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Harga | AKAL Center",
+  title: {
+    absolute: "Harga — AKAL Center",
+  },
+  alternates: {
+    canonical: "https://akalcenter.my.id/harga",
+  },
   description: "Guru gratis selamanya. Sekolah dan yayasan bisa berlangganan. Lihat paket harga AKAL Center.",
 };
 

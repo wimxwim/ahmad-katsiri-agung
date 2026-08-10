@@ -131,7 +131,7 @@ export default function GuruTopupPage() {
     setUploaded(true);
     setUploading(false);
     setNewBalance(result.data?.balance ?? null);
-    setSuccessMsg(`Top-up berhasil. Saldo Anda sudah bertambah Rp${effectiveAmount.toLocaleString("id-ID")}. Akses Generate AI sudah aktif.`);
+    setSuccessMsg(`Isi kuota berhasil. Kuota Anda sudah bertambah Rp${effectiveAmount.toLocaleString("id-ID")}. Akses Generate AI sudah aktif.`);
 
     if (balance && result.data?.balance) {
       setBalance({
@@ -168,11 +168,11 @@ export default function GuruTopupPage() {
         transition={{ duration: 0.5, ease: EASE_CURVE }}
       >
         <span className="inline-block text-[11px] font-bold uppercase tracking-[0.12em] text-primary mb-1">
-          Token & Saldo
+          Kuota
         </span>
-        <h1 className="font-heading font-bold text-2xl text-on-surface">Top-Up Saldo</h1>
+        <h1 className="font-heading font-bold text-2xl text-on-surface">Isi Kuota</h1>
         <p className="text-sm text-on-surface-variant mt-1">
-          Isi saldo token untuk generate materi AI. Biaya bervariasi sesuai panjang dokumen.
+          Isi kuota untuk generate materi AI. Biaya bervariasi sesuai panjang dokumen.
         </p>
       </motion.div>
 
@@ -188,7 +188,7 @@ export default function GuruTopupPage() {
               <Wallet className="w-6 h-6" />
             </span>
             <div>
-              <p className="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Saldo Saat Ini</p>
+              <p className="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Kuota Saat Ini</p>
               <p className="font-heading text-3xl font-bold text-on-surface tabular-nums">
                 Rp{newBalance !== null ? newBalance : balance.balance.toLocaleString("id-ID")}
               </p>
@@ -214,7 +214,7 @@ export default function GuruTopupPage() {
             Generate AI masih terkunci
           </p>
           <p className="text-xs text-amber-700 mt-1">
-            Top-up minimal Rp{MIN_TOPUP.toLocaleString("id-ID")} untuk membuka akses generate AI unlimited. 
+            Isi kuota minimal Rp{MIN_TOPUP.toLocaleString("id-ID")} untuk membuka akses generate AI unlimited. 
             {balance.subscription && (
               <> Upload: {balance.subscription.uploadCount}/{balance.subscription.uploadLimit === Infinity ? '∞' : balance.subscription.uploadLimit}.</>
             )}
@@ -234,7 +234,7 @@ export default function GuruTopupPage() {
             Generate AI sudah aktif — unlimited!
           </p>
           <p className="text-xs text-emerald-700 mt-1">
-            Upload dan generate tanpa batas. Terima kasih sudah top-up!
+            Upload dan generate tanpa batas. Terima kasih sudah isi kuota!
           </p>
         </motion.div>
       )}
@@ -370,7 +370,7 @@ export default function GuruTopupPage() {
                   className="mt-6 inline-flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
                 >
                   <Coins className="w-4 h-4" />
-                  Top-Up Lagi
+                  Isi Kuota Lagi
                 </button>
               </motion.div>
             ) : (
@@ -391,7 +391,7 @@ export default function GuruTopupPage() {
                     <li>Scan QRIS di atas menggunakan GoPay/e-wallet kamu</li>
                     <li>Pastikan nominal sesuai sebelum transfer</li>
                     <li>Setelah transfer berhasil, upload bukti pembayaran di bawah</li>
-                    <li>Saldo akan otomatis bertambah setelah bukti terupload</li>
+                    <li>Kuota akan otomatis bertambah setelah bukti terupload</li>
                   </ol>
                 </div>
 
@@ -434,7 +434,7 @@ export default function GuruTopupPage() {
                       >
                         <Coins className="w-5 h-5" />
                       </motion.div>
-                      Mengupload & menambah saldo...
+                      Mengupload & menambah kuota...
                     </>
                   ) : (
                     <>
@@ -445,7 +445,7 @@ export default function GuruTopupPage() {
                 </motion.button>
 
                 <p className="text-[10px] text-on-surface-variant/60 text-center mt-3">
-                  JPG, PNG, WebP, PDF, maks 5 MB. Setelah bukti berhasil disimpan, saldo akan langsung bertambah. Data top-up dan link bukti akan dikirim ke admin melalui Telegram.
+                  JPG, PNG, WebP, PDF, maks 5 MB. Setelah bukti berhasil disimpan, kuota akan langsung bertambah. Data isi kuota dan link bukti akan dikirim ke admin melalui Telegram.
                 </p>
               </>
             )}

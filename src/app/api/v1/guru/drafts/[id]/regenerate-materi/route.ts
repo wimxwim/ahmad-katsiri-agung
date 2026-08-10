@@ -8,6 +8,7 @@ import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
+import { getBalance } from "@/lib/token-service";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -21,6 +22,10 @@ export async function POST(
     if (csrfError) return csrfError;
 
     const session = await requireGuru(request);
+
+    const balance = await getBalance(session.userId);
+    const isPremium = balance.isUnlocked === true;
+    const CONCURRENT_TTL = isPremium ? 3 * 60 * 1000 : 30 * 60 * 1000;
 
     const { id } = await params;
 
@@ -37,7 +42,7 @@ export async function POST(
     const rl = await checkRateLimit(`draft-regen-materi:${session.userId}`, 5, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const conc = await checkConcurrentLimit(`gen:${session.userId}`, 2);
+    const conc = await checkConcurrentLimit(`gen:${session.userId}`, 1, CONCURRENT_TTL);
     if (!conc.allowed) {
       return apiError("Terlalu banyak job aktif. Tunggu job sebelumnya selesai.", 429);
     }
@@ -46,6 +51,7 @@ export async function POST(
       await checkQuota(session.userId, session.role, "ai_generation");
     } catch (e) {
       if (e instanceof QuotaExceededError) {
+        releaseConcurrent(`gen:${session.userId}`);
         return NextResponse.json({
           error: e.message,
           resourceType: e.resourceType,

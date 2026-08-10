@@ -28,6 +28,10 @@ export async function POST(
     const session = await requireGuru(request);
     sessionUserId = session.userId;
 
+    const balance = await getBalance(session.userId);
+    const isPremium = balance.isUnlocked === true;
+    const CONCURRENT_TTL = isPremium ? 3 * 60 * 1000 : 30 * 60 * 1000;
+
     try {
       await requireUnlocked(session.userId);
     } catch (e) {
@@ -80,9 +84,9 @@ export async function POST(
 
     const ext = (file.tipeMime.includes("pdf") ? "pdf" : file.tipeMime.includes("word") ? "docx" : "doc");
 
-    const concRl = await checkConcurrentLimit(`gen:${session.userId}`, 2, 3 * 60 * 1000);
+    const concRl = await checkConcurrentLimit(`gen:${session.userId}`, 1, CONCURRENT_TTL);
     if (!concRl.allowed) {
-      return apiError("Sudah ada 2 job AI aktif. Tunggu selesai sebelum regenerate.", 429);
+      return apiError("Masih ada job AI yang sedang berjalan. Tunggu selesai sebelum regenerate.", 429);
     }
 
     try {

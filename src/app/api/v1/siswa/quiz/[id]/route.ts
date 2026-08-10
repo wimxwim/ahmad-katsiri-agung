@@ -5,8 +5,18 @@ import { db } from "@/lib/db";
 import { quizPublished, soalPublished, siswaKursus } from "@/lib/db/schema";
 import { and, asc, eq } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
+import { randomInt } from "node:crypto";
 
 export const runtime = "nodejs";
+
+function shuffleArr<T>(arr: T[]): T[] {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = randomInt(0, i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
 export async function GET(
   request: NextRequest,
@@ -61,7 +71,9 @@ export async function GET(
       .where(eq(soalPublished.quizPublishedId, id))
       .orderBy(asc(soalPublished.urutan));
 
-    const safe = soals.map((s) => ({
+    const orderedSoals = quiz.modeEvaluasi !== "BELAJAR" ? shuffleArr(soals) : soals;
+
+    const safe = orderedSoals.map((s) => ({
       id: s.id,
       pertanyaan: s.pertanyaan,
       tipe: s.tipe,

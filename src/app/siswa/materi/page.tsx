@@ -19,6 +19,7 @@ import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 import { EASE_CURVE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { getCached, setCache } from "@/lib/data-cache";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 interface MateriItem {
   id: string;
@@ -167,6 +168,7 @@ function MateriContent() {
 
   return (
     <div>
+      <Breadcrumb items={[{ label: "Beranda", href: "/siswa/beranda" }, { label: "Materi" }]} />
       {/* Welcome Banner */}
       {showWelcome && (
         <motion.div

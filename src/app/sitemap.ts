@@ -6,15 +6,14 @@ const STATIC_PAGES = [
   { path: "", priority: 1, changeFreq: "weekly" as const },
   { path: "/kursus", priority: 0.9, changeFreq: "weekly" as const },
   { path: "/fitur", priority: 0.8, changeFreq: "monthly" as const },
+  { path: "/panduan-ai", priority: 0.7, changeFreq: "monthly" as const },
   { path: "/quran", priority: 0.6, changeFreq: "monthly" as const },
   { path: "/harga", priority: 0.6, changeFreq: "monthly" as const },
   { path: "/tentang", priority: 0.6, changeFreq: "monthly" as const },
-  { path: "/masuk", priority: 0.5, changeFreq: "monthly" as const },
-  { path: "/daftar", priority: 0.5, changeFreq: "monthly" as const },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
+  const now = new Date("2026-08-10");
 
   return STATIC_PAGES.map((page) => ({
     url: `${BASE_URL}${page.path}`,

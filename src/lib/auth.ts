@@ -55,17 +55,38 @@ export async function signSession(payload: Omit<SesiPayload, "iss" | "exp" | "ia
 export const verifySession = cache(async (token: string): Promise<AuthResult<SesiPayload>> => {
   if (hasES256Keys()) {
     try {
+      // 1. Try ES256 first (new sessions are ES256-signed)
       const key = await getVerifyingKey();
       const { payload } = await jwtVerify(token, key, { audience: "akal-center-api" });
       return { success: true, data: payload as SesiPayload };
     } catch (err) {
+      // jose validates the signature before checking exp, so JWTExpired here
+      // means a genuinely expired ES256 token. Expiration is algorithm-
+      // independent, so there is no point falling back - HS256 would reject
+      // it identically. Short-circuit to keep the "expired" error code.
       if (err instanceof errors.JWTExpired) {
         return { success: false, code: "expired" };
       }
-      if (!(err instanceof errors.JWSSignatureVerificationFailed)) {
-        console.error("[verifySession] ES256 verification error:", err);
+      // 2. Grace period fallback: ES256 verification failed (e.g. this is a
+      //    legacy HS256-signed session). Try HS256 so existing sessions keep
+      //    working while ES256 is rolled out.
+      try {
+        const { payload } = await jwtVerify<SesiPayload>(token, hs256Secret(), {
+          algorithms: ["HS256"],
+          audience: "akal-center-api",
+        });
+        return { success: true, data: payload };
+      } catch (fallbackErr) {
+        // 3. Both verifications failed: return invalid
+        if (fallbackErr instanceof errors.JWTExpired) {
+          return { success: false, code: "expired" };
+        }
+        if (!(err instanceof errors.JWSSignatureVerificationFailed)) {
+          console.error("[verifySession] ES256 verification error:", err);
+        }
+        console.error("[verifySession] HS256 fallback verification failed:", fallbackErr);
+        return { success: false, code: "invalid" };
       }
-      return { success: false, code: "invalid" };
     }
   }
   try {

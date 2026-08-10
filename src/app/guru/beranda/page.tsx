@@ -27,6 +27,7 @@ import { EASE_CURVE } from "@/lib/constants";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { apiFetch } from "@/lib/api-helpers";
 import { cn } from "@/lib/utils";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 interface DashboardData {
   totalKursus: number;
@@ -305,6 +306,7 @@ export default function GuruBerandaPage() {
 
   return (
     <div className="space-y-5">
+      <Breadcrumb items={[{ label: "Ringkasan" }]} />
       {onboarding && !onboarding.isComplete && nextStep && (
         <motion.div
           initial={{ opacity: 0, y: -8 }}

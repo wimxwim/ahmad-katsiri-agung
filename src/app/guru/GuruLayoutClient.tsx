@@ -33,7 +33,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/guru/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/guru/topup", label: "Top-Up Saldo", icon: Wallet },
   { href: "/guru/profil", label: "Profil", icon: User },
-  { href: "/guru/buat", label: "Buat Kursus", icon: PlusCircle, primary: true },
+  { href: "/guru/buat", label: "Buat Kursus", icon: PlusCircle },
 ];
 
 const BOTTOM_TABS: BottomNavTab[] = [

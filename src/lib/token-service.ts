@@ -165,7 +165,7 @@ export async function deductBalance(
 
     if (before.balance < amount) {
       throw new InsufficientBalanceError(
-        `Saldo tidak cukup. Butuh Rp${amount}, saldo sekarang Rp${before.balance}.`,
+        `Kuota tidak cukup. Butuh Rp${amount}, kuota sekarang Rp${before.balance}.`,
         before.balance,
         amount,
       );

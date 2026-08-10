@@ -15,6 +15,7 @@ import {
   BookOpen,
   ArrowLeft,
   Clock,
+  Loader2,
 } from "lucide-react";
 import { MathRenderer } from "@/components/ui/MathRenderer";
 import { cn } from "@/lib/utils";
@@ -88,6 +89,10 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
     jawabanBenar: Record<string, string>;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [refleksiPaham, setRefleksiPaham] = useState("");
+  const [refleksiSulit, setRefleksiSulit] = useState("");
+  const [aiPenjelasan, setAiPenjelasan] = useState<string | null>(null);
+  const [loadingRefleksi, setLoadingRefleksi] = useState(false);
 
   useEffect(() => {
     selectedRef.current = selected;
@@ -228,7 +233,13 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
       return;
     }
     setError(null);
-    setShuffledSoal(shuffleArray(quiz.soal));
+    // BELAJAR: client shuffle for practice variety. ULANGAN/CBT: server already
+    // randomized per student - use quiz.soal order exactly as received.
+    setShuffledSoal(
+      quiz.modeEvaluasi === "BELAJAR"
+        ? shuffleArray(quiz.soal)
+        : [...quiz.soal],
+    );
     try {
       const startRes = await fetch(`/api/v1/siswa/quiz/${quiz.id}/start`, {
         method: "POST",
@@ -254,7 +265,11 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
     startTimeRef.current = Date.now();
     timerExpiredRef.current = false;
     submittedRef.current = false;
-  }, [quiz.soal, quiz.durasiMenit, quiz.id]);
+    setRefleksiPaham("");
+    setRefleksiSulit("");
+    setAiPenjelasan(null);
+    setLoadingRefleksi(false);
+  }, [quiz.soal, quiz.modeEvaluasi, quiz.durasiMenit, quiz.id]);
 
   const handleSelect = (option: string) => {
     if (showFeedback || !soal) return;
@@ -345,6 +360,40 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
   useEffect(() => {
     if (quizState === "result") submitHasil();
   }, [quizState, submitHasil]);
+
+  const handleRefleksiSubmit = useCallback(async () => {
+    const refleksi = [
+      refleksiPaham.trim() ? `Apa yang sudah kamu pahami: ${refleksiPaham.trim()}` : "",
+      refleksiSulit.trim() ? `Apa yang masih sulit: ${refleksiSulit.trim()}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+    if (!refleksi) {
+      toast("error", "Tulis refleksimu terlebih dahulu.");
+      return;
+    }
+    if (loadingRefleksi) return;
+    setLoadingRefleksi(true);
+    setAiPenjelasan(null);
+    try {
+      const r = await fetch(`/api/v1/siswa/quiz/${quiz.id}/refleksi`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
+        credentials: "include",
+        body: JSON.stringify({ refleksi, jawaban }),
+      });
+      const j = await r.json();
+      if (r.ok && j.data?.penjelasan) {
+        setAiPenjelasan(j.data.penjelasan);
+      } else {
+        toast("error", j.error?.message || "Gagal mendapatkan penjelasan AI.");
+      }
+    } catch {
+      toast("error", "Gagal terhubung ke server. Silakan coba lagi.");
+    } finally {
+      setLoadingRefleksi(false);
+    }
+  }, [refleksiPaham, refleksiSulit, jawaban, quiz.id, loadingRefleksi, toast]);
 
   const hitungSkor = useCallback(() => {
     let benar = 0;
@@ -603,6 +652,64 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
             </div>
           </div>
         </div>
+        {quiz.modeEvaluasi === "BELAJAR" && (
+          <div className="bg-glass border border-border-precision rounded-2xl sm:rounded-[32px] p-5 sm:p-8 shadow-glass mb-8 text-left">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-5 h-5 text-primary" />
+              <h3 className="font-heading text-lg font-bold text-on-surface">Refleksi Pembelajaran</h3>
+            </div>
+            <p className="text-sm text-on-surface-variant mb-5">
+              Tulis apa yang sudah kamu pahami dan apa yang masih sulit. AI akan memberikan penjelasan khusus untukmu.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-on-surface mb-1.5" htmlFor="refleksi-paham">
+                  Apa yang sudah kamu pahami?
+                </label>
+                <textarea
+                  id="refleksi-paham"
+                  value={refleksiPaham}
+                  onChange={(e) => setRefleksiPaham(e.target.value)}
+                  disabled={loadingRefleksi}
+                  placeholder="Contoh: Saya paham tentang rukun iman dan maknanya..."
+                  rows={3}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-primary/10 bg-white text-sm resize-y focus:border-primary focus:outline-none disabled:opacity-50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-on-surface mb-1.5" htmlFor="refleksi-sulit">
+                  Apa yang masih sulit?
+                </label>
+                <textarea
+                  id="refleksi-sulit"
+                  value={refleksiSulit}
+                  onChange={(e) => setRefleksiSulit(e.target.value)}
+                  disabled={loadingRefleksi}
+                  placeholder="Contoh: Saya masih bingung dengan konsep tentang..."
+                  rows={3}
+                  className="w-full px-4 py-3 rounded-xl border-2 border-primary/10 bg-white text-sm resize-y focus:border-primary focus:outline-none disabled:opacity-50"
+                />
+              </div>
+              <button
+                onClick={handleRefleksiSubmit}
+                disabled={loadingRefleksi}
+                className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
+              >
+                {loadingRefleksi ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {loadingRefleksi ? "Menyusun Penjelasan..." : "Dapatkan Penjelasan AI"}
+              </button>
+              {aiPenjelasan && (
+                <div className="bg-primary/5 border border-primary/20 rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    <p className="text-sm font-bold text-on-surface">Penjelasan AI</p>
+                  </div>
+                  <p className="text-sm text-on-surface-variant leading-relaxed whitespace-pre-line">{aiPenjelasan}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button onClick={startQuiz} className="inline-flex items-center gap-2 bg-primary text-on-primary px-8 py-4 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300">
             <RotateCcw className="w-5 h-5" /> Ulangi Kuis
@@ -661,6 +768,7 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
 
   return (
     <div className="max-w-2xl mx-auto">
+      <h1 className="font-heading text-lg text-on-surface mb-3 text-center">{quiz.judul}</h1>
       <QuizLockOverlay
         show={lock.showWarning}
         violations={lock.violations}

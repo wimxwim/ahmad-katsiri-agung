@@ -3,7 +3,12 @@ import { Suspense } from "react";
 import { LandingClient } from "./_components/LandingClient";
 
 export const metadata: Metadata = {
-  title: "AKAL Center — Platform Guru-Siswa dengan AI",
+  title: {
+    absolute: "AKAL Center — Platform Guru-Siswa dengan AI",
+  },
+  alternates: {
+    canonical: "https://akalcenter.my.id",
+  },
   description:
     "Platform guru-siswa yang mengubah dokumen jadi pembelajaran siap pakai. Upload PDF/DOCX, AI buatkan draft materi, quiz, dan soal. Multi-guru, satu dashboard.",
   openGraph: {

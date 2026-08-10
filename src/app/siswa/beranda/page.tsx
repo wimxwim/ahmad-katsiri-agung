@@ -23,6 +23,7 @@ import {
 import { SkeletonDashboardSiswa } from "@/components/ui/SkeletonBlocks";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { WaIcon } from "@/components/ui/WaIcon";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 interface FeedItem {
   id: string;
@@ -291,6 +292,7 @@ export default function SiswaBerandaPage() {
 
   return (
     <div className="space-y-5">
+      <Breadcrumb items={[{ label: "Beranda" }]} />
       {inviteMessage && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}

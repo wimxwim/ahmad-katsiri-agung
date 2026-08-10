@@ -6,6 +6,7 @@ import { Search, Plus, BookOpen, Globe, Lock, Loader2, Share2, Copy, Check, Penc
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 import { csrfHeaders } from "@/lib/csrf";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
   DRAFT: { label: "Draft", color: "bg-amber-50 text-amber-700" },
@@ -195,6 +196,7 @@ export default function KursusListPage() {
 
   return (
     <div>
+      <Breadcrumb items={[{ label: "Ringkasan", href: "/guru/beranda" }, { label: "Kursus" }]} />
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-heading font-bold text-2xl text-on-surface">Kursus Saya</h1>
         <Link

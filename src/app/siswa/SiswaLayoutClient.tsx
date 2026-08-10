@@ -12,6 +12,7 @@ import {
   Library,
   Search,
   ArrowRight,
+  MessageSquare,
 } from "lucide-react";
 import { DashboardLayoutClient } from "@/components/dashboard/DashboardLayoutClient";
 import type { SidebarItem } from "@/components/dashboard/DashboardLayoutClient";
@@ -28,7 +29,10 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/siswa/kursus", label: "Kursus Saya", icon: Library },
   { href: "/siswa/quiz", label: "Kuis", icon: Sparkles },
   { href: "/siswa/soal", label: "Soal", icon: FileText },
+  { href: "/siswa/ai-tutor", label: "AI Tutor", icon: MessageSquare },
+  { href: "/siswa/diskusi", label: "Diskusi", icon: MessageSquare },
   { href: "/siswa/progres", label: "Progres", icon: BarChart3 },
+  { href: "/siswa/refleksi", label: "Refleksi", icon: BookOpen },
   { href: "/siswa/pengumuman", label: "Pengumuman", icon: Megaphone },
 ];
 
@@ -38,7 +42,7 @@ const BOTTOM_TABS: BottomNavTab[] = [
   { href: "/siswa/quiz", label: "Kuis", icon: Sparkles },
   { href: "/siswa/soal", label: "Soal", icon: FileText },
   { href: "/siswa/progres", label: "Progres", icon: BarChart3 },
-  { href: "/siswa/kursus", label: "Menu", icon: Library },
+  { href: "/siswa/refleksi", label: "Refleksi", icon: BookOpen },
 ];
 
 function KatalogKursusBar() {

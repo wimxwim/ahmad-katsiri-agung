@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import { Sparkles, Shield, AlertTriangle, CheckCircle2, BookOpen, Eye, FileCheck, Zap } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Panduan AI — AKAL Center",
+  title: {
+    absolute: "Panduan AI — AKAL Center",
+  },
+  alternates: {
+    canonical: "https://akalcenter.my.id/panduan-ai",
+  },
   description: "Panduan penggunaan AI secara bijak dan etis untuk guru di AKAL Center.",
 };
 

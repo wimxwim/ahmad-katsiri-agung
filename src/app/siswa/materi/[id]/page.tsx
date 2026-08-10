@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Loader2, AlertCircle, ClipboardList, FileText } from "lucide-react";
 import { MateriRenderer } from "@/components/siswa/MateriRenderer";
+import DiskusiMateri from "@/components/siswa/DiskusiMateri";
 import { csrfHeaders } from "@/lib/csrf";
 
 interface MateriDetail {
@@ -210,6 +211,7 @@ export default function SiswaMateriPage() {
         </div>
       </article>
 
+      <DiskusiMateri materiId={materi.id} />
     </div>
   );
 }

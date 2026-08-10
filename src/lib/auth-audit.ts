@@ -15,6 +15,7 @@ export type AuthEventType =
   | "auth.login.failed"
   | "auth.register.success"
   | "auth.register.duplicate"
+  | "auth.register.invite_required"
   | "auth.logout"
   | "auth.intent_mismatch"
   | "auth.google.linked"
