@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { aiGeneration, fileMateri } from "@/lib/db/schema";
 import { eq, inArray, sql } from "drizzle-orm";
 import { runGenerationFromText } from "@/lib/ai-generator";
-import { extractText } from "@/lib/text-extractor";
+import { extractText, sanitizeText } from "@/lib/text-extractor";
 import { appendEvent } from "@/lib/event-store";
 import { apiError } from "@/lib/api-response";
 
@@ -111,9 +111,10 @@ export async function POST(request: NextRequest) {
           } catch (extractErr) {
             const errMsg = extractErr instanceof Error ? extractErr.message : String(extractErr);
             console.error(`[cron] extraction failed for ${job.id}:`, errMsg);
+            const safeErrMsg = sanitizeText(`Ekstraksi gagal: ${errMsg}`).slice(0, 500);
             await db
               .update(aiGeneration)
-              .set({ status: "failed", errorMessage: `Ekstraksi gagal: ${errMsg.slice(0, 200)}`, leaseUntil: null, updatedAt: new Date() })
+              .set({ status: "failed", errorMessage: safeErrMsg, leaseUntil: null, updatedAt: new Date() })
               .where(eq(aiGeneration.id, job.id));
             results.push({ id: job.id, status: "failed", error: "Ekstraksi gagal" });
             continue;

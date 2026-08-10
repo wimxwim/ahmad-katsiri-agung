@@ -23,6 +23,11 @@ function truncate(text: string): string {
   return text.slice(0, MAX_TEXT_LENGTH) + "\n\n[...truncated, dokumen terlalu panjang]";
 }
 
+export function sanitizeText(text: string): string {
+  // Strip NUL bytes + control chars except \n \t \r (PostgreSQL rejects \u0000, control chars break rendering)
+  return text.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim();
+}
+
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return Promise.race([
     promise,
@@ -47,7 +52,7 @@ export async function extractPdfText(bytes: Buffer): Promise<string> {
   if (totalPages > MAX_PDF_PAGES) {
     throw new Error(`PDF memiliki ${totalPages} halaman (maks ${MAX_PDF_PAGES}), kemungkinan dokumen tidak wajar`);
   }
-  return truncate(text || "");
+  return truncate(sanitizeText(text || ""));
 }
 
 export async function extractDocxText(bytes: Buffer): Promise<string> {
@@ -105,7 +110,7 @@ export async function extractDocxText(bytes: Buffer): Promise<string> {
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 
-  return truncate(cleaned);
+  return truncate(sanitizeText(cleaned));
 }
 
 export async function extractText(

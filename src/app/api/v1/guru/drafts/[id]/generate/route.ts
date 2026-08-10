@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { aiGeneration, fileMateri, eventStore } from "@/lib/db/schema";
 import { eq, and, gte, sql } from "drizzle-orm";
 import { runGenerationFromText } from "@/lib/ai-generator";
-import { extractText } from "@/lib/text-extractor";
+import { extractText, sanitizeText } from "@/lib/text-extractor";
 import { invalidateGuruCache } from "@/lib/dashboard-cache";
 import {
   checkBalance,
@@ -228,11 +228,12 @@ export async function POST(
         releaseConcurrent(concKey);
         const errMsg = extractErr instanceof Error ? extractErr.message : String(extractErr);
         console.error("On-demand extraction failed:", errMsg);
+        const safeErrMsg = sanitizeText(`Ekstraksi gagal: ${errMsg}`).slice(0, 500);
         await db
           .update(aiGeneration)
-          .set({ status: "failed", errorMessage: `Ekstraksi gagal: ${errMsg.slice(0, 400)}`, updatedAt: new Date() })
+          .set({ status: "failed", errorMessage: safeErrMsg, updatedAt: new Date() })
           .where(eq(aiGeneration.id, id))
-          .catch(() => {});
+          .catch((dbErr) => console.error("Gagal menyimpan error_message ekstraksi:", dbErr));
         return NextResponse.json({
           success: false,
           error: "Gagal mengekstrak dokumen. Coba upload ulang.",
