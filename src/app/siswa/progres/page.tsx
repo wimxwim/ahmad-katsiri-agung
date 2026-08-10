@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Clock,
   Target,
+  Flame,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
@@ -32,12 +33,31 @@ interface AttemptItem {
   kursusJudul: string | null;
 }
 
+interface Konsistensi {
+  streakHari: number;
+  hariAktif7: number;
+  mingguAktif: number[];
+  totalHariAktif: number;
+}
+
+interface MasteryCp {
+  skillId: string;
+  nama: string;
+  pL: number;
+  repetitionNum: number;
+  nextReviewAt: string | null;
+  status: "Dikuasai" | "Dalam Proses" | "Perlu Remedial";
+  selesai: boolean;
+}
+
 interface ProgresResponse {
   attempts: AttemptItem[];
   totalKursus: number;
   totalAttempt: number;
   totalSelesai: number;
   rataNilai: number;
+  konsistensi?: Konsistensi;
+  masteryCps?: MasteryCp[];
 }
 
 interface GroupedCourse {
@@ -119,6 +139,28 @@ export default function SiswaProgresPage() {
       };
     });
   }, [data]);
+
+  const konsistensi: Konsistensi = data?.konsistensi ?? {
+    streakHari: 0,
+    hariAktif7: 0,
+    mingguAktif: [0, 0, 0, 0, 0, 0, 0],
+    totalHariAktif: 0,
+  };
+  const masteryCps: MasteryCp[] = data?.masteryCps ?? [];
+  const maxMingguAktif = Math.max(1, ...konsistensi.mingguAktif);
+  const weekdayInits = ["S", "S", "R", "K", "J", "S", "M"];
+  const masteryBarColor = (status: string) =>
+    status === "Dikuasai"
+      ? "bg-emerald-500"
+      : status === "Dalam Proses"
+        ? "bg-amber-500"
+        : "bg-red-400";
+  const masteryBadgeClass = (status: string) =>
+    status === "Dikuasai"
+      ? "bg-emerald-50 text-emerald-700"
+      : status === "Dalam Proses"
+        ? "bg-amber-50 text-amber-700"
+        : "bg-red-50 text-red-600";
 
   if (loading) {
     return (
@@ -206,6 +248,117 @@ export default function SiswaProgresPage() {
             </p>
           </div>
         ))}
+      </motion.div>
+
+      {/* Konsistensi Belajar */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.05 }}
+        className="bg-glass border border-border-precision rounded-2xl p-6 shadow-glass mb-5"
+      >
+        <div className="flex items-center gap-2">
+          <Flame className="w-5 h-5 text-orange-500" />
+          <h2 className="font-heading font-bold text-on-surface">
+            {konsistensi.streakHari > 0
+              ? `${konsistensi.streakHari} hari berturut-turut`
+              : "Mulai istiqomah hari ini!"}
+          </h2>
+        </div>
+        <p className="text-xs text-on-surface-variant mt-1">
+          Hari aktif 7 hari terakhir: {konsistensi.hariAktif7} hari
+        </p>
+        <div className="flex items-end gap-2.5 mt-4">
+          {konsistensi.mingguAktif.map((count, i) => {
+            const isActive = count > 0;
+            const barHeight = isActive
+              ? Math.max(8, (count / maxMingguAktif) * 56)
+              : 0;
+            return (
+              <div key={i} className="flex flex-col items-center gap-1">
+                <div
+                  className={cn(
+                    "w-6 rounded-full",
+                    isActive
+                      ? "h-16 bg-primary"
+                      : "h-2 bg-surface border border-border-precision",
+                  )}
+                  style={isActive ? { height: `${barHeight}px` } : undefined}
+                />
+                <span className="text-[10px] font-bold text-on-surface-variant">
+                  {weekdayInits[i]}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <p className="text-xs text-on-surface-variant mt-4">
+          Terus istiqomah! Belajar sedikit setiap hari lebih baik daripada
+          banyak sekaligus.
+        </p>
+      </motion.div>
+
+      {/* Penguasaan Materi */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.07 }}
+        className="mb-5"
+      >
+        <h2 className="font-heading text-xl text-on-surface">
+          Penguasaan Materi
+        </h2>
+        <p className="text-xs text-on-surface-variant mb-4">
+          Berdasarkan Capaian Pembelajaran
+        </p>
+        {masteryCps.length === 0 ? (
+          <div className="bg-glass border border-border-precision rounded-2xl p-6 text-center shadow-glass">
+            <p className="text-sm text-on-surface-variant">
+              Belum ada data penguasaan. Ayo kerjakan kuis untuk melihat
+              penguasaan materi kamu!
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {masteryCps.map((cp) => {
+              const pct = Math.round((cp.pL ?? 0) * 100);
+              return (
+                <div
+                  key={cp.skillId}
+                  className="bg-glass border border-border-precision rounded-2xl p-4 shadow-glass"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-semibold text-sm text-on-surface truncate">
+                      {cp.nama}
+                    </p>
+                    <span
+                      className={cn(
+                        "rounded-full px-2 py-0.5 text-[10px] font-medium shrink-0",
+                        masteryBadgeClass(cp.status),
+                      )}
+                    >
+                      {cp.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 mt-3">
+                    <div className="flex-1 h-2 rounded-full bg-surface overflow-hidden">
+                      <div
+                        className={cn(
+                          "h-full rounded-full",
+                          masteryBarColor(cp.status),
+                        )}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-semibold text-on-surface-variant tabular-nums">
+                      {pct}%
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </motion.div>
 
       {data && data.attempts.length === 0 ? (

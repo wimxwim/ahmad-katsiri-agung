@@ -2,11 +2,32 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { quizAttempt, quizPublished, siswaKursus, kursus } from "@/lib/db/schema";
+import {
+  quizAttempt,
+  quizPublished,
+  siswaKursus,
+  kursus,
+  jawabanLog,
+  materiRead,
+  skillMastery,
+  skill,
+} from "@/lib/db/schema";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 
 export const runtime = "nodejs";
+
+const JAKARTA_OFFSET_MS = 7 * 3600 * 1000;
+const DAY_MS = 24 * 3600 * 1000;
+
+// Asia/Jakarta (UTC+7) day bucket key: YYYY-MM-DD
+function dayKey(ts: Date): string {
+  return new Date(ts.getTime() + JAKARTA_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+function prevDayKey(key: string): string {
+  return dayKey(new Date(new Date(`${key}T00:00:00.000Z`).getTime() - DAY_MS));
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -63,6 +84,81 @@ export async function GET(request: NextRequest) {
       .from(siswaKursus)
       .where(and(eq(siswaKursus.siswaId, session.userId!), eq(siswaKursus.status, "AKTIF")));
 
+    const [attemptTimes, jawabanTimes, materiTimes, masteryRows] = await Promise.all([
+      db
+        .select({ waktuSelesai: quizAttempt.waktuSelesai })
+        .from(quizAttempt)
+        .where(eq(quizAttempt.siswaId, session.userId!)),
+      db
+        .select({ createdAt: jawabanLog.createdAt })
+        .from(jawabanLog)
+        .where(eq(jawabanLog.siswaId, session.userId!)),
+      db
+        .select({ readAt: materiRead.readAt })
+        .from(materiRead)
+        .where(eq(materiRead.siswaId, session.userId!)),
+      db
+        .select({
+          skillId: skillMastery.skillId,
+          nama: skill.nama,
+          pL: skillMastery.pL,
+          repetitionNum: skillMastery.repetitionNum,
+          nextReviewAt: skillMastery.nextReviewAt,
+          urutan: skill.urutan,
+        })
+        .from(skillMastery)
+        .innerJoin(skill, eq(skillMastery.skillId, skill.id))
+        .where(eq(skillMastery.siswaId, session.userId!))
+        .orderBy(skill.urutan),
+    ]);
+
+    // konsistensi: union all activity timestamps, bucket by Asia/Jakarta day
+    const activityTs: Date[] = [];
+    for (const a of attemptTimes) if (a.waktuSelesai) activityTs.push(a.waktuSelesai);
+    for (const j of jawabanTimes) activityTs.push(j.createdAt);
+    for (const m of materiTimes) activityTs.push(m.readAt);
+
+    const dayCounts = new Map<string, number>();
+    for (const ts of activityTs) {
+      const k = dayKey(ts);
+      dayCounts.set(k, (dayCounts.get(k) ?? 0) + 1);
+    }
+    const activeDays = new Set(dayCounts.keys());
+
+    const now = new Date();
+    const todayKey = dayKey(now);
+    const yesterdayKey = dayKey(new Date(now.getTime() - DAY_MS));
+
+    const mingguAktif: number[] = [];
+    for (let i = 6; i >= 0; i--) {
+      mingguAktif.push(dayCounts.get(dayKey(new Date(now.getTime() - i * DAY_MS))) ?? 0);
+    }
+    const hariAktif7 = mingguAktif.filter((c) => c > 0).length;
+    const totalHariAktif = activeDays.size;
+
+    let streakHari = 0;
+    if (activeDays.has(todayKey) || activeDays.has(yesterdayKey)) {
+      let cursor = activeDays.has(todayKey) ? todayKey : yesterdayKey;
+      while (activeDays.has(cursor)) {
+        streakHari += 1;
+        cursor = prevDayKey(cursor);
+      }
+    }
+
+    const masteryCps = masteryRows.map((m) => {
+      const status: "Dikuasai" | "Dalam Proses" | "Perlu Remedial" =
+        m.pL >= 0.7 ? "Dikuasai" : m.pL >= 0.5 ? "Dalam Proses" : "Perlu Remedial";
+      return {
+        skillId: m.skillId,
+        nama: m.nama,
+        pL: m.pL,
+        repetitionNum: m.repetitionNum,
+        nextReviewAt: m.nextReviewAt ? m.nextReviewAt.toISOString() : null,
+        status,
+        selesai: m.pL >= 0.7,
+      };
+    });
+
     const completedAttempts = attempts.filter((a) => a.status === "SELESAI" || a.status === "BELAJAR");
     const totalRata = completedAttempts.length > 0
       ? Math.round(
@@ -92,6 +188,13 @@ export async function GET(request: NextRequest) {
         totalAttempt: attempts.length,
         totalSelesai,
         rataNilai: totalRata,
+        konsistensi: {
+          streakHari,
+          hariAktif7,
+          mingguAktif,
+          totalHariAktif,
+        },
+        masteryCps,
       },
       limit,
       offset,

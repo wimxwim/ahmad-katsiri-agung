@@ -1,6 +1,11 @@
 import { KursusDetailClient } from "./KursusDetailClient";
+import { db } from "@/lib/db";
+import { kursus, statusPublikasiEnum } from "@/lib/db/schema";
+import { and, eq, isNull } from "drizzle-orm";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://akalcenter.my.id";
+export const dynamic = "force-dynamic";
+
+const PUBLIK: (typeof statusPublikasiEnum)["enumValues"][number] = "PUBLIK";
 
 interface KursusData {
   id: string;
@@ -14,17 +19,37 @@ interface KursusData {
 
 export default async function KursusDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  let kursus: KursusData | null = null;
+  let kursusData: KursusData | null = null;
   let error: string | null = null;
 
   try {
-    const res = await fetch(`${BASE_URL}/api/v1/kursus?slug=${encodeURIComponent(slug)}`, { next: { revalidate: 3600 } });
-    if (!res.ok) throw new Error("Failed");
-    const { data } = await res.json();
-    kursus = data?.[0] || null;
+    const [row] = await db
+      .select({
+        id: kursus.id,
+        judul: kursus.judul,
+        slug: kursus.slug,
+        deskripsi: kursus.deskripsi,
+        isPublic: kursus.isPublic,
+        harga: kursus.harga,
+        createdAt: kursus.createdAt,
+      })
+      .from(kursus)
+      .where(and(eq(kursus.slug, slug), isNull(kursus.deletedAt), eq(kursus.statusPublikasi, PUBLIK)))
+      .limit(1);
+    if (row) {
+      kursusData = {
+        id: row.id,
+        judul: row.judul,
+        slug: row.slug,
+        deskripsi: row.deskripsi,
+        isPublic: row.isPublic,
+        harga: row.harga ?? 0,
+        createdAt: row.createdAt.toISOString(),
+      };
+    }
   } catch (err) {
     error = "Gagal memuat data";
   }
 
-  return <KursusDetailClient slug={slug} initialKursus={kursus} initialError={error} />;
+  return <KursusDetailClient slug={slug} initialKursus={kursusData} initialError={error} />;
 }
