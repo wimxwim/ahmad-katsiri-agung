@@ -402,6 +402,7 @@ async function generateSoalBatch(
   isianCount: number,
   essayCount: number,
   tingkat?: number,
+  timeRemainingMs = SOAL_TIMEOUT_MS,
 ): Promise<ChatResult> {
   void tingkat;
   const BATCH_SIZE = 5;
@@ -423,7 +424,7 @@ async function generateSoalBatch(
           ],
           { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, batchSize * 200) },
         ),
-        SOAL_TIMEOUT_MS,
+        Math.min(SOAL_TIMEOUT_MS, timeRemainingMs),
         "ai-soal",
       );
       const batchParsed = parseSoalSafe(batchRes.content);
@@ -448,6 +449,10 @@ async function generateSoalBatch(
     if (tipe === "PG") {
       const batches = Math.ceil(count / BATCH_SIZE);
       for (let i = 0; i < batches; i++) {
+        if (timeRemainingMs <= 0) {
+          console.warn(`[ai-generator] waktu habis, batch ${tipe} di-skip`);
+          return;
+        }
         const batchSize = Math.min(BATCH_SIZE, count - i * BATCH_SIZE);
         const firstAttempt = await attemptBatch("PG", batchSize);
         if (firstAttempt.ok) {
@@ -469,6 +474,10 @@ async function generateSoalBatch(
         console.error(`[ai-generator] soal ${label} batch ${i + 1}/${batches} failed after retry, skipping: ${retryAttempt.errMsg}`);
       }
     } else {
+      if (timeRemainingMs <= 0) {
+        console.warn(`[ai-generator] waktu habis, ${tipe} di-skip`);
+        return;
+      }
       const attempt = await attemptBatch(tipe, count);
       if (attempt.ok) {
         allItems.push(...attempt.items);
@@ -885,12 +894,14 @@ export async function runGenerationFromText(
     .where(eq(aiGeneration.id, generationId));
 
   const truncatedSource = sanitizeUserText(sourceText.slice(0, 20_000));
+  const deadline = Date.now() + 240_000;
+  const timeLeft = (): number => Math.max(0, deadline - Date.now());
 
   let materiRes: ChatResult;
   try {
     materiRes = await withTimeout(
       chatMateri(truncatedSource, tingkat),
-      AI_TIMEOUT_MS,
+      Math.min(AI_TIMEOUT_MS, timeLeft()),
       "ai-materi",
     );
     console.log("[ai-generator] materi done, starting quiz...");
@@ -900,7 +911,7 @@ export async function runGenerationFromText(
     try {
       materiRes = await withTimeout(
         chatMateri(truncatedSource, tingkat),
-        AI_TIMEOUT_MS,
+        Math.min(AI_TIMEOUT_MS, timeLeft()),
         "ai-materi",
       );
       console.log("[ai-generator] materi done (retry 1/1), starting quiz...");
@@ -923,7 +934,7 @@ export async function runGenerationFromText(
         ],
         { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60), timeoutMs: AI_TIMEOUT_MS },
       ),
-      AI_TIMEOUT_MS,
+      Math.min(AI_TIMEOUT_MS, timeLeft()),
       "ai-quiz",
     );
     console.log("[ai-generator] quiz done, starting soal...");
@@ -939,7 +950,7 @@ export async function runGenerationFromText(
           ],
           { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60), timeoutMs: AI_TIMEOUT_MS },
         ),
-        AI_TIMEOUT_MS,
+        Math.min(AI_TIMEOUT_MS, timeLeft()),
         "ai-quiz",
       );
       console.log("[ai-generator] quiz done (retry 1/1), starting soal...");
@@ -954,7 +965,7 @@ export async function runGenerationFromText(
 
   let soalRes: ChatResult;
   try {
-    soalRes = await generateSoalBatch(truncatedSource, pgCount, isianCount, essayCount, tingkat);
+    soalRes = await generateSoalBatch(truncatedSource, pgCount, isianCount, essayCount, tingkat, timeLeft());
     console.log("[ai-generator] soal done (batch).");
   } catch (error) {
     console.error("[ai-generator] soal AI failed, using fallback:", error);
