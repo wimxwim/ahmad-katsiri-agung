@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { materiPublished, materiRead, siswaKursus, quizPublished, soalPublished } from "@/lib/db/schema";
-import { and, eq, gt, asc } from "drizzle-orm";
+import { materiPublished, materiRead, siswaKursus, quizPublished, soalPublished, aiGeneration, siswaKelas, kelas } from "@/lib/db/schema";
+import { and, eq, gt, asc, inArray } from "drizzle-orm";
 import { isNull, sql } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -26,6 +26,12 @@ export async function GET(
       .limit(1);
     if (!row) return apiError("Materi tidak ditemukan", 404);
 
+    const [aiGenRow] = await db
+      .select({ tingkat: aiGeneration.tingkat })
+      .from(aiGeneration)
+      .where(eq(aiGeneration.id, row.aiGenerationId))
+      .limit(1);
+
     const [enrolled] = await db
       .select({ id: siswaKursus.id })
       .from(siswaKursus)
@@ -38,6 +44,22 @@ export async function GET(
       )
       .limit(1);
     if (!enrolled) return apiError("Anda belum terdaftar di kursus ini", 403);
+
+    const siswaKelasRows = await db
+      .select({ kelasId: siswaKelas.kelasId })
+      .from(siswaKelas)
+      .where(eq(siswaKelas.siswaId, session.userId!));
+    const tingkatSiswa = new Set<number>();
+    if (siswaKelasRows.length > 0) {
+      const tingkatRows = await db
+        .select({ tingkat: kelas.tingkat })
+        .from(kelas)
+        .where(inArray(kelas.id, siswaKelasRows.map((sk) => sk.kelasId)));
+      for (const tr of tingkatRows) tingkatSiswa.add(tr.tingkat);
+    }
+    if (aiGenRow?.tingkat != null && tingkatSiswa.size > 0 && !tingkatSiswa.has(aiGenRow.tingkat)) {
+      return apiError("Materi ini untuk tingkat lain", 403);
+    }
 
     const [existing] = await db
       .select()
@@ -127,6 +149,12 @@ export async function POST(
       .limit(1);
     if (!row) return apiError("Materi tidak ditemukan", 404);
 
+    const [aiGenRow] = await db
+      .select({ tingkat: aiGeneration.tingkat })
+      .from(aiGeneration)
+      .where(eq(aiGeneration.id, row.aiGenerationId))
+      .limit(1);
+
     const [enrolled] = await db
       .select({ id: siswaKursus.id })
       .from(siswaKursus)
@@ -139,6 +167,22 @@ export async function POST(
       )
       .limit(1);
     if (!enrolled) return apiError("Anda belum terdaftar di kursus ini", 403);
+
+    const siswaKelasRows = await db
+      .select({ kelasId: siswaKelas.kelasId })
+      .from(siswaKelas)
+      .where(eq(siswaKelas.siswaId, session.userId!));
+    const tingkatSiswa = new Set<number>();
+    if (siswaKelasRows.length > 0) {
+      const tingkatRows = await db
+        .select({ tingkat: kelas.tingkat })
+        .from(kelas)
+        .where(inArray(kelas.id, siswaKelasRows.map((sk) => sk.kelasId)));
+      for (const tr of tingkatRows) tingkatSiswa.add(tr.tingkat);
+    }
+    if (aiGenRow?.tingkat != null && tingkatSiswa.size > 0 && !tingkatSiswa.has(aiGenRow.tingkat)) {
+      return apiError("Materi ini untuk tingkat lain", 403);
+    }
 
     const body = await request.json().catch(() => ({}));
     const progressPersen = Math.max(0, Math.min(100, Number(body?.progress ?? 100)));

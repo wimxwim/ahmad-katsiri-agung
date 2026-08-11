@@ -84,6 +84,7 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
   const soalRef = useRef<SoalItem | null>(null);
   const submittedRef = useRef(false);
   const isianTextRef = useRef(isianText);
+  const answerTimesRef = useRef<Record<string, number>>({});
   const [serverResult, setServerResult] = useState<{
     nilai: number; jumlahBenar: number; jumlahSalah: number; totalSoal: number;
     jawabanBenar: Record<string, string>;
@@ -134,10 +135,13 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
         const s = selectedRef.current;
         const q = soalRef.current;
         if (s && q) {
+          if (!answerTimesRef.current[q.id]) answerTimesRef.current[q.id] = Date.now();
           setJawaban((prev) => ({ ...prev, [q.id]: s }));
         }
         if (isianTextRef.current && soalRef.current) {
-          setJawaban((prev) => ({ ...prev, [soalRef.current!.id]: isianTextRef.current }));
+          const activeSoal = soalRef.current;
+          if (!answerTimesRef.current[activeSoal.id]) answerTimesRef.current[activeSoal.id] = Date.now();
+          setJawaban((prev) => ({ ...prev, [activeSoal.id]: isianTextRef.current }));
         }
         setQuizState("result");
       }
@@ -254,6 +258,7 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
       setError("Gagal memulai kuis. Periksa koneksi internet Anda.");
       return;
     }
+    answerTimesRef.current = {};
     setJawaban({});
     setCurrentIndex(0);
     setSelected(null);
@@ -277,6 +282,7 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
   const handleSelect = (option: string) => {
     if (showFeedback || !soal) return;
     setSelected(option);
+    if (!answerTimesRef.current[soal.id]) answerTimesRef.current[soal.id] = Date.now();
     if (quiz.modeEvaluasi === "BELAJAR") {
       setShowFeedback(true);
     } else {
@@ -292,6 +298,7 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
   const handleIsianSubmit = () => {
     if (!isianText.trim() || !soal) return;
     setSelected(isianText.trim());
+    if (!answerTimesRef.current[soal.id]) answerTimesRef.current[soal.id] = Date.now();
     if (quiz.modeEvaluasi === "BELAJAR") {
       setShowFeedback(true);
     } else {
@@ -308,6 +315,7 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
     if (soal) {
       const answer = soal.tipe === "PG" ? selected : isianText.trim();
       if (answer) {
+        if (!answerTimesRef.current[soal.id]) answerTimesRef.current[soal.id] = Date.now();
         setJawaban((prev) => ({ ...prev, [soal.id]: answer }));
       }
     }
@@ -329,7 +337,11 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
         method: "POST",
         headers: { "Content-Type": "application/json", ...csrfHeaders() },
         credentials: "include",
-        body: JSON.stringify({ durasiDetik: quiz.durasiMenit * 60 - timeLeft, jawaban }),
+        body: JSON.stringify({
+          durasiDetik: quiz.durasiMenit * 60 - timeLeft,
+          jawaban,
+          waktuJawabMs: { ...answerTimesRef.current },
+        }),
       });
       if (r.ok) {
         const j = await r.json();
@@ -933,7 +945,10 @@ onClick={() => {
     }
   }
   if (showFeedback) {
-    if (selected) setJawaban((prev) => ({ ...prev, [soal.id]: selected }));
+    if (selected) {
+      if (!answerTimesRef.current[soal.id]) answerTimesRef.current[soal.id] = Date.now();
+      setJawaban((prev) => ({ ...prev, [soal.id]: selected }));
+    }
     setSelected(null);
     setIsianText("");
     setShowFeedback(false);

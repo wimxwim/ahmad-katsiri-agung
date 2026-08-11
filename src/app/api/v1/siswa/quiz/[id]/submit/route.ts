@@ -21,7 +21,41 @@ const SubmitSchema = z.object({
     z.string(),
     z.union([z.string(), z.array(z.string())]).optional(),
   ),
+  waktuJawabMs: z.record(z.string(), z.number()).optional(),
 });
+
+function hitungWaktuJawabPerSoal(
+  soals: { id: string }[],
+  waktuJawabMs: Record<string, number> | undefined,
+  durasiDetik: number,
+): Record<string, number> {
+  const estimasi = Math.round(durasiDetik / Math.max(1, soals.length));
+  const fallback: Record<string, number> = {};
+  for (const s of soals) {
+    fallback[s.id] = Math.max(1, estimasi);
+  }
+  const entries = soals
+    .map((s) => ({ id: s.id, ts: waktuJawabMs?.[s.id] }))
+    .filter(
+      (e): e is { id: string; ts: number } =>
+        typeof e.ts === "number" && Number.isFinite(e.ts) && e.ts > 0,
+    );
+  if (entries.length === 0) return fallback;
+  entries.sort((a, b) => a.ts - b.ts);
+  const durasiMs = durasiDetik * 1000;
+  const hasil = { ...fallback };
+  if (entries.length === 1) {
+    hasil[entries[0].id] = Math.max(1, Math.round(durasiDetik));
+    return hasil;
+  }
+  for (let i = 0; i < entries.length; i++) {
+    const cur = entries[i];
+    const next = entries[i + 1];
+    const durasiMsSoal = next ? next.ts - cur.ts : durasiMs - cur.ts;
+    hasil[cur.id] = Math.max(1, Math.round(durasiMsSoal / 1000));
+  }
+  return hasil;
+}
 
 export async function POST(
   request: NextRequest,
@@ -171,6 +205,11 @@ export async function POST(
       .returning();
 
     // Fire-and-forget: process quiz results for analytics
+    const waktuJawabMap = hitungWaktuJawabPerSoal(
+      soals,
+      parsed.data.waktuJawabMs,
+      parsed.data.durasiDetik,
+    );
     const answersForProcessor = soals.map((s, i) => {
       const soalId = soalIds[i];
       const soalRecord = soalId ? soalMap.get(soalId) : null;
@@ -187,7 +226,7 @@ export async function POST(
         soalId: soalId || s.id,
         isCorrect,
         jawabanSiswa: typeof userAnswer === "string" ? userAnswer : JSON.stringify(userAnswer || ""),
-        waktuJawabDetik: Math.round(parsed.data.durasiDetik / soals.length),
+        waktuJawabDetik: waktuJawabMap[s.id],
         irtA: soalRecord?.irtA ?? 1.0,
         irtB: soalRecord?.irtB ?? 0.0,
         irtC: soalRecord?.irtC ?? 0.25,
@@ -215,6 +254,7 @@ export async function POST(
         kursusId: quiz.kursusId,
         quizSessionId: quizSessionRow.id,
         answers: answersForProcessor,
+        totalSoal: soals.length,
       }).catch(err => console.error("Quiz processor failed:", err));
     });
 

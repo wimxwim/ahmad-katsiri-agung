@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { jawabanLog, studentAbility, soal, skillMastery, riskSnapshot } from "@/lib/db/schema";
+import { jawabanLog, studentAbility, soal, skillMastery, riskSnapshot, users, remedialRecommendation } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { uuidv7 } from "@/lib/uuid";
 import { estimateTheta } from "@/lib/analytics/calculateIRT";
@@ -26,6 +26,7 @@ export async function processQuizResults(params: {
   kursusId: string;
   quizSessionId: string;
   answers: AnswerItem[];
+  totalSoal?: number;
 }): Promise<void> {
   try {
     // 1. Insert jawabanLog
@@ -148,6 +149,28 @@ export async function processQuizResults(params: {
           updatedAt: new Date(),
         });
       }
+
+      const isLemah =
+        pL < 0.6 ||
+        (stats.total >= 2 && stats.correct / stats.total < 0.6);
+      if (isLemah) {
+        const prioritasScore = Math.round((1 - pL) * 100);
+        try {
+          await db.insert(remedialRecommendation).values({
+            siswaId: params.siswaId,
+            skillId,
+            prioritasScore,
+            status: "tersedia",
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          }).onConflictDoUpdate({
+            target: [remedialRecommendation.siswaId, remedialRecommendation.skillId],
+            set: { prioritasScore, status: "tersedia", updatedAt: new Date() },
+          });
+        } catch (err) {
+          console.error("remedialRecommendation upsert failed:", err);
+        }
+      }
     }
 
     await appendEvent(`siswa:${params.siswaId}`, "quiz.processed", {
@@ -157,17 +180,36 @@ export async function processQuizResults(params: {
     });
 
     // 6. Risk snapshot
-    const totalSoal = params.answers.length;
     const totalBenar = params.answers.filter(a => a.isCorrect).length;
-    const quizPerformance = totalSoal > 0 ? totalBenar / totalSoal : 0;
+    const quizPerformance = params.answers.length > 0 ? totalBenar / params.answers.length : 0;
+
+    const completionRate =
+      params.totalSoal && params.totalSoal > 0
+        ? params.answers.length / params.totalSoal
+        : params.answers.length > 0
+          ? 1
+          : 0;
+
+    const [userRow] = await db
+      .select({ lastActiveAt: users.lastActiveAt })
+      .from(users)
+      .where(eq(users.id, params.siswaId))
+      .limit(1);
+    const loginGap = userRow?.lastActiveAt
+      ? Math.max(0, Math.floor((Date.now() - new Date(userRow.lastActiveAt).getTime()) / 86400000))
+      : 0;
+
+    const attendanceRate = 1.0;
+    const timelinessRate = 1.0;
+    const participationRate = 1.0;
 
     const riskScore = calculateRiskScore({
-      completionRate: 1.0,
+      completionRate,
       quizPerformance,
-      attendanceRate: 1.0,
-      loginGap: 0,
-      timelinessRate: 1.0,
-      participationRate: 1.0,
+      attendanceRate,
+      loginGap,
+      timelinessRate,
+      participationRate,
     });
 
     const riskStatus = getRiskLabel(riskScore);
@@ -178,12 +220,12 @@ export async function processQuizResults(params: {
       riskScore,
       status: riskStatus,
       komponen: {
-        completionRate: 1.0,
+        completionRate,
         quizPerformance,
-        attendanceRate: 1.0,
-        loginGap: 0,
-        timelinessRate: 1.0,
-        participationRate: 1.0,
+        attendanceRate,
+        loginGap,
+        timelinessRate,
+        participationRate,
       },
       snapshotDate: new Date(),
     });

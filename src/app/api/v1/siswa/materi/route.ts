@@ -3,7 +3,7 @@ import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { materiPublished, siswaKursus, materiRead } from "@/lib/db/schema";
+import { materiPublished, siswaKursus, materiRead, aiGeneration, siswaKelas, kelas } from "@/lib/db/schema";
 import { and, asc, eq, inArray } from "drizzle-orm";
 
 export const runtime = "nodejs";
@@ -30,6 +30,19 @@ export async function GET(request: NextRequest) {
       ? [filterKursusId]
       : enrolledIds;
 
+    const siswaKelasRows = await db
+      .select({ kelasId: siswaKelas.kelasId })
+      .from(siswaKelas)
+      .where(eq(siswaKelas.siswaId, session.userId!));
+    const tingkatSiswa = new Set<number>();
+    if (siswaKelasRows.length > 0) {
+      const kelasRows = await db
+        .select({ tingkat: kelas.tingkat })
+        .from(kelas)
+        .where(inArray(kelas.id, siswaKelasRows.map((sk) => sk.kelasId)));
+      for (const kr of kelasRows) tingkatSiswa.add(kr.tingkat);
+    }
+
     const materiList = await db
       .select({
         id: materiPublished.id,
@@ -40,12 +53,18 @@ export async function GET(request: NextRequest) {
         guruId: materiPublished.guruId,
         publishedAt: materiPublished.publishedAt,
         aiGenerationId: materiPublished.aiGenerationId,
+        tingkat: aiGeneration.tingkat,
       })
       .from(materiPublished)
+      .leftJoin(aiGeneration, eq(materiPublished.aiGenerationId, aiGeneration.id))
       .where(inArray(materiPublished.kursusId, targetIds))
       .orderBy(asc(materiPublished.urutan));
 
-    const materiIds = materiList.map((m) => m.id);
+    const visibleMateriList = materiList.filter(
+      (m) => tingkatSiswa.size === 0 || m.tingkat == null || tingkatSiswa.has(m.tingkat),
+    );
+
+    const materiIds = visibleMateriList.map((m) => m.id);
     const reads = await db
       .select()
       .from(materiRead)
@@ -57,7 +76,7 @@ export async function GET(request: NextRequest) {
       );
     const readMap = new Map(reads.map((r) => [r.materiPublishedId, r]));
 
-    const data = materiList.map((m) => ({
+    const data = visibleMateriList.map((m) => ({
       ...m,
       sudahDibaca: readMap.has(m.id),
       selesai: readMap.get(m.id)?.selesai ?? false,

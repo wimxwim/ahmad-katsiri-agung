@@ -62,6 +62,17 @@ interface SoalDifficultyItem {
   difficulty: string;
 }
 
+interface SkillMasteryItem {
+  siswaId: string;
+  nama: string;
+  skillId: string;
+  pL: number;
+  memoryStrength: number;
+  repetitionNum: number;
+  lastPracticedAt: string | null;
+  nextReviewAt: string | null;
+}
+
 interface AnalyticsResponse {
   totalKursus: number;
   totalSiswa: number;
@@ -78,6 +89,7 @@ interface AnalyticsResponse {
   weakTopics: WeakTopic[];
   studentAbilities: StudentAbility[];
   soalDifficulty: SoalDifficultyItem[];
+  skillMastery: SkillMasteryItem[];
 }
 
 export default function GuruAnalyticsPage() {
@@ -638,6 +650,77 @@ export default function GuruAnalyticsPage() {
               </div>
             </div>
           )}
+
+          {data.skillMastery && data.skillMastery.length > 0 && (() => {
+            const groups = new Map<string, SkillMasteryItem[]>();
+            data.skillMastery.forEach((item) => {
+              const key = item.siswaId;
+              if (!groups.has(key)) groups.set(key, []);
+              groups.get(key)!.push(item);
+            });
+            const groupList = Array.from(groups.values())
+              .map((items) => ({
+                siswaId: items[0].siswaId,
+                nama: items[0].nama,
+                items: [...items].sort((a, b) => a.pL - b.pL),
+              }))
+              .sort((a, b) => a.items[0].pL - b.items[0].pL);
+            const masteredCount = data.skillMastery.filter((x) => x.pL >= 0.8).length;
+            return (
+              <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-heading font-semibold text-on-surface flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-primary" />
+                    Penguasaan Skill Siswa
+                  </h2>
+                  <span className="text-xs text-on-surface-variant">
+                    {masteredCount} skill dikuasai
+                  </span>
+                </div>
+                <p className="text-sm text-on-surface-variant mb-4">
+                  Tingkat penguasaan materi tiap siswa (model BKT). Semakin tinggi probabilitas penguasaan, semakin siap siswa lanjut.
+                </p>
+                <div className="space-y-2">
+                  {groupList.map((g) => (
+                    <div key={g.siswaId} className="bg-white rounded-xl border border-border-precision p-3">
+                      <p className="font-semibold text-on-surface text-sm truncate mb-2">{g.nama}</p>
+                      <div className="space-y-1.5">
+                        {g.items.map((s) => (
+                          <div key={s.skillId} className="flex items-center gap-3">
+                            <span className="text-xs font-medium text-on-surface-variant w-24 shrink-0 truncate">
+                              {s.skillId.length > 10 ? `${s.skillId.slice(0, 10)}...` : s.skillId}
+                            </span>
+                            <div className="w-24 bg-gray-100 rounded-full h-2 overflow-hidden shrink-0">
+                              <div
+                                className={`h-full rounded-full ${
+                                  s.pL < 0.6 ? "bg-red-400" :
+                                  s.pL < 0.8 ? "bg-amber-400" :
+                                  "bg-emerald-400"
+                                }`}
+                                style={{ width: `${Math.min(Math.max(s.pL * 100, 5), 100)}%` }}
+                              />
+                            </div>
+                            <span className="text-xs font-semibold tabular-nums text-on-surface w-10 shrink-0">
+                              {Math.round(s.pL * 100)}%
+                            </span>
+                            <span className="text-xs text-on-surface-variant hidden sm:inline">
+                              Pengulangan: {s.repetitionNum}
+                            </span>
+                            {s.nextReviewAt && (
+                              <span className="text-xs text-on-surface-variant/60">
+                                Review{" "}
+                                {new Date(s.nextReviewAt).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass">
             <h2 className="font-heading font-semibold text-on-surface mb-3 flex items-center gap-2">
