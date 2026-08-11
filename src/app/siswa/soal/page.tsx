@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
-import { FileText, AlertCircle, RefreshCw, ArrowRight } from "lucide-react";
+import { FileText, AlertCircle, RefreshCw, ArrowRight, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 import { getCached, setCache } from "@/lib/data-cache";
@@ -15,6 +15,7 @@ interface SoalBatch {
   kursusJudul: string;
   totalSoal: number;
   sudahDikerjakan: number;
+  nilaiTerbaik: number;
   publishedAt: string;
 }
 
@@ -157,6 +158,16 @@ export default function SiswaSoalListPage() {
                     <span>·</span>
                     <span className="text-on-surface-variant/60">{b.kursusJudul}</span>
                   </div>
+                  {b.sudahDikerjakan > 0 ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full mt-1.5">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Selesai · Nilai {b.nilaiTerbaik}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-on-surface-variant bg-on-surface-variant/10 px-1.5 py-0.5 rounded-full mt-1.5">
+                      Belum dikerjakan
+                    </span>
+                  )}
                 </div>
                 <ArrowRight className="w-4 h-4 text-on-surface-variant/30 shrink-0" />
               </Link>

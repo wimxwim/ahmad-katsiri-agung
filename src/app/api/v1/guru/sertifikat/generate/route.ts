@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
           siswaId: siswaKursus.siswaId,
           nama: users.nama,
           quizCount: sql<number>`count(${quizAttempt.id})`.mapWith(Number),
-          nilaiRata: sql<number>`round(avg(${quizAttempt.nilai}))`.mapWith(Number),
+          nilaiTerbaik: sql<number>`round(max(${quizAttempt.nilai}))`.mapWith(Number),
         })
         .from(siswaKursus)
         .innerJoin(users, eq(users.id, siswaKursus.siswaId))
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
           and(
             eq(quizAttempt.siswaId, siswaKursus.siswaId),
             eq(quizAttempt.quizPublishedId, quizPublished.id),
-            eq(quizAttempt.status, "SELESAI"),
+            inArray(quizAttempt.status, ["SELESAI", "BELAJAR"]),
           ),
         )
         .where(eq(siswaKursus.kursusId, kursusId))
@@ -76,14 +76,14 @@ export async function POST(request: NextRequest) {
         .having(
           and(
             sql`count(${quizAttempt.id}) > 0`,
-            sql`round(avg(${quizAttempt.nilai})) >= ${KKM}`,
+            sql`round(max(${quizAttempt.nilai})) >= ${KKM}`,
           ),
         );
 
       if (eligible.length === 0) {
         return NextResponse.json({
           success: true,
-          message: "Belum ada siswa yang memenuhi syarat sertifikat. Siswa harus menyelesaikan quiz dengan nilai minimal 70.",
+          message: "Belum ada siswa yang memenuhi syarat sertifikat. Siswa harus mengerjakan quiz (mode Belajar/Ulangan) dengan nilai minimal 70.",
           data: { generated: 0, totalEligible: 0 },
         });
       }

@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { soalPublished, siswaKursus, kursus, aiGeneration } from "@/lib/db/schema";
-import { and, eq, isNull, count } from "drizzle-orm";
+import { soalPublished, siswaKursus, kursus, aiGeneration, jawabanLog } from "@/lib/db/schema";
+import { and, eq, isNull, count, inArray } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 
 export const runtime = "nodejs";
@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
 
     // Filter by enrolled courses
     const filtered = [];
+    const batchIds: string[] = [];
     for (const b of batches) {
       const [ag] = await db
         .select({ kursusId: aiGeneration.kursusId })
@@ -57,14 +58,52 @@ export async function GET(request: NextRequest) {
           .where(eq(aiGeneration.id, b.aiGenerationId))
           .limit(1);
 
+        batchIds.push(b.aiGenerationId);
         filtered.push({
           aiGenerationId: b.aiGenerationId,
           judul: materi?.judul ? `Soal: ${materi.judul}` : "Soal Latihan",
           kursusJudul: b.kursusJudul,
           totalSoal: Number(b.totalSoal),
           sudahDikerjakan: 0,
+          nilaiTerbaik: 0,
           publishedAt: new Date().toISOString(),
         });
+      }
+    }
+
+    // Aggregate student answers across all batches in one query
+    if (batchIds.length > 0) {
+      const answers = await db
+        .select({
+          aiGenerationId: soalPublished.aiGenerationId,
+          soalId: jawabanLog.soalId,
+          isBenar: jawabanLog.isBenar,
+        })
+        .from(jawabanLog)
+        .innerJoin(soalPublished, eq(soalPublished.id, jawabanLog.soalId))
+        .where(
+          and(
+            eq(jawabanLog.siswaId, session.userId!),
+            isNull(soalPublished.quizPublishedId),
+            inArray(soalPublished.aiGenerationId, batchIds),
+          ),
+        );
+
+      const stats = new Map<string, { answered: Set<string>; correct: Set<string> }>();
+      for (const a of answers) {
+        let s = stats.get(a.aiGenerationId);
+        if (!s) {
+          s = { answered: new Set<string>(), correct: new Set<string>() };
+          stats.set(a.aiGenerationId, s);
+        }
+        s.answered.add(a.soalId);
+        if (a.isBenar) s.correct.add(a.soalId);
+      }
+
+      for (const f of filtered) {
+        const s = stats.get(f.aiGenerationId);
+        f.sudahDikerjakan = s ? s.answered.size : 0;
+        f.nilaiTerbaik = s && s.answered.size > 0 ? Math.round((100 * s.correct.size) / s.answered.size) : 0;
       }
     }
 

@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { quizAttempt, quizPublished, quizViolation, users, kursus } from "@/lib/db/schema";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import {
+  quizAttempt,
+  quizPublished,
+  quizViolation,
+  users,
+  kursus,
+  jawabanLog,
+  soalPublished,
+  aiGeneration,
+} from "@/lib/db/schema";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { requireRole, GuardError } from "@/lib/route-guard-v2";
 
@@ -97,7 +106,25 @@ export async function GET(
       pelanggaran: violationMap.get(`${a.siswaId}:${a.quizPublishedId}`) || 0,
     }));
 
-    return NextResponse.json({ data: attemptsWithViolations, total: attemptsWithViolations.length });
+    const latihanRows = await db
+      .select({
+        siswaId: jawabanLog.siswaId,
+        nama: users.nama,
+        soalDikerjakan: sql<number>`count(distinct ${jawabanLog.soalId})`.mapWith(Number),
+        soalBenar: sql<number>`count(distinct case when ${jawabanLog.isBenar} then ${jawabanLog.soalId} end)`.mapWith(Number),
+      })
+      .from(jawabanLog)
+      .innerJoin(soalPublished, eq(jawabanLog.soalId, soalPublished.id))
+      .innerJoin(aiGeneration, eq(soalPublished.aiGenerationId, aiGeneration.id))
+      .leftJoin(users, and(eq(jawabanLog.siswaId, users.id), isNull(users.deletedAt)))
+      .where(and(eq(aiGeneration.kursusId, id), isNull(soalPublished.quizPublishedId)))
+      .groupBy(jawabanLog.siswaId);
+
+    return NextResponse.json({
+      data: attemptsWithViolations,
+      total: attemptsWithViolations.length,
+      latihan: latihanRows,
+    });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Nilai error:", e);

@@ -9,6 +9,7 @@ import { GradebookTable } from "@/components/dashboard/GradebookTable";
 export default function KursusNilaiPage() {
   const params = useParams();
   const [siswaData, setSiswaData] = useState<{ siswaId: string; nama: string; skorRataRata: number; pelanggaran: number }[]>([]);
+  const [latihanSiswa, setLatihanSiswa] = useState<{ siswaId: string; nama: string | null; soalDikerjakan: number; soalBenar: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [kursusNama, setKursusNama] = useState("");
@@ -52,6 +53,10 @@ export default function KursusNilaiPage() {
       }
       list.sort((a, b) => a.nama.localeCompare(b.nama));
       setSiswaData(list);
+
+      const latihanEntries = (nd.latihan || []) as { siswaId: string; nama: string | null; soalDikerjakan: number; soalBenar: number }[];
+      latihanEntries.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
+      setLatihanSiswa(latihanEntries);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Gagal memuat nilai");
     } finally {
@@ -134,6 +139,29 @@ export default function KursusNilaiPage() {
       <div className="bg-white rounded-2xl border border-border-precision overflow-hidden">
         <GradebookTable siswa={gradebookSiswa} quizzes={["Kuis"]} siswaQuizMap={siswaQuizMap} />
       </div>
+
+      {latihanSiswa.length > 0 && (
+        <div className="mt-8 bg-glass rounded-2xl border border-border-precision p-6">
+          <h2 className="font-heading font-bold text-lg text-on-surface mb-1">Progres Latihan (Formatif)</h2>
+          <p className="text-[11px] text-on-surface-variant mb-5">Nilai latihan mandiri ditampilkan terpisah dan tidak memengaruhi rata-rata nilai kuis.</p>
+          <div className="space-y-2">
+            {latihanSiswa.map((s) => {
+              const persen = s.soalDikerjakan > 0 ? Math.round((s.soalBenar / s.soalDikerjakan) * 100) : 0;
+              return (
+                <div key={s.siswaId} className="flex items-center justify-between gap-4 bg-white/60 border border-border-precision rounded-xl px-4 py-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm text-on-surface truncate">{s.nama || "Tanpa nama"}</p>
+                    <p className="text-[11px] text-on-surface-variant">
+                      {s.soalDikerjakan} soal dikerjakan · {s.soalBenar} benar
+                    </p>
+                  </div>
+                  <span className="shrink-0 font-heading font-bold text-sm text-primary">{persen}%</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
