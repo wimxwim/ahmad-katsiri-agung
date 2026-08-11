@@ -24,6 +24,7 @@ export interface SidebarItem {
   icon: LucideIcon;
   primary?: boolean;
   soon?: boolean;
+  badge?: React.ReactNode;
 }
 
 interface DashboardLayoutClientProps {
@@ -146,6 +147,7 @@ export function DashboardLayoutClient({
                 )}
                 <item.icon className="w-4 h-4 shrink-0" />
                 <span className="truncate flex-1">{item.label}</span>
+                {item.badge}
                 {item.soon && (
                   <span className="text-[10px] font-bold tracking-wider text-tertiary bg-tertiary/10 px-2 py-0.5 rounded-full shrink-0">
                     SEGERA

@@ -36,6 +36,14 @@ interface RemedialItem {
   kursus: string[];
 }
 
+interface RemedialDetailItem {
+  siswaId: string;
+  nama: string;
+  jumlahSoalSalah: number;
+  topMateri: string | null;
+  persenBenar: number;
+}
+
 interface StudentAbility {
   siswaId: string;
   nama: string;
@@ -67,6 +75,7 @@ interface AnalyticsResponse {
   trend: { minggu: string; total: number }[];
   kursusBreakdown: KursusBreakdown[];
   remedialList: RemedialItem[];
+  remedialDetail: RemedialDetailItem[];
   weakTopics: WeakTopic[];
   studentAbilities: StudentAbility[];
   soalDifficulty: SoalDifficultyItem[];
@@ -384,79 +393,105 @@ export default function GuruAnalyticsPage() {
             </div>
           )}
 
-          {data.remedialList.length > 0 && (
-            <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-heading font-semibold text-on-surface flex items-center gap-2">
-                  <GraduationCap className="w-4 h-4 text-amber-600" />
-                  Siswa Perlu Bimbingan Tambahan (Remedial)
-                </h2>
-              </div>
-              <p className="text-sm text-on-surface-variant mb-4">
-                {data.remedialList.length} siswa masih di bawah KKM ({KKM}).
-                {data.remedialList.length >= 5
-                  ? ` Cek detail masing-masing siswa untuk tahu topik mana yang perlu diperbaiki.`
-                  : ` Segera tindak lanjuti dengan bimbingan atau quiz ulang.`}
-              </p>
-              <div className="space-y-2 mb-4">
-                {data.remedialList.slice(0, 10).map((r) => (
-                  <div
-                    key={r.siswaId}
-                    className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border-precision hover:border-amber-200 transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-red-50 text-red-600 grid place-items-center font-heading font-bold text-sm shrink-0">
-                      {r.rataNilai}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-on-surface text-sm truncate">
-                        <Link href={`/guru/siswa/${r.siswaId}`} className="hover:underline">
-                          {r.nama}
-                        </Link>
-                      </p>
-                      <p className="text-xs text-on-surface-variant mt-0.5">
-                        {r.totalAttempt} kali quiz · {r.kursus.join(", ")}
-                      </p>
-                    </div>
-                    <Link
-                      href={`/guru/siswa/${r.siswaId}`}
-                      className="text-xs font-bold tracking-wider text-primary hover:underline shrink-0 flex items-center gap-1"
-                    >
-                      <Send className="w-3 h-3" />
-                      Detail
-                    </Link>
-                  </div>
-                ))}
-              </div>
-              {data.remedialList.length > 10 && (
-                <p className="text-xs text-on-surface-variant text-center mb-4">
-                  +{data.remedialList.length - 10} siswa lainnya
-                </p>
-              )}
-              <div className="flex flex-wrap gap-3 pt-2 border-t border-border-precision">
-                <Link
-                  href="/guru/siswa"
-                  className="inline-flex items-center gap-1.5 bg-primary text-on-primary px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 transition-all"
-                >
-                  <ListChecks className="w-3.5 h-3.5" />
-                  Tinjau Semua Siswa
-                </Link>
-                <Link
-                  href="/guru/drafts"
-                  className="inline-flex items-center gap-1.5 bg-amber-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 transition-all"
-                >
-                  <FileEdit className="w-3.5 h-3.5" />
-                  Buat Quiz Remedial
-                </Link>
-                <Link
-                  href="/guru/kursus"
-                  className="inline-flex items-center gap-1.5 bg-white border border-border-precision text-on-surface px-4 py-2 rounded-full text-xs font-semibold hover:bg-surface transition-all"
-                >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  Lihat Kursus
-                </Link>
-              </div>
+          <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading font-semibold text-on-surface flex items-center gap-2">
+                <GraduationCap className="w-4 h-4 text-amber-600" />
+                Siswa Perlu Bimbingan Tambahan (Remedial)
+              </h2>
             </div>
-          )}
+            <p className="text-sm text-on-surface-variant mb-4">
+              Siswa dengan rata-rata nilai di bawah KKM ({KKM}). Lihat detail untuk mengetahui soal/materi yang perlu dipelajari ulang.
+            </p>
+            {data.remedialList.length === 0 ? (
+              <div className="text-center py-6 rounded-2xl border border-dashed border-border-precision bg-surface/40">
+                <p className="font-heading font-semibold text-on-surface">Semua siswa di atas KKM 🎉</p>
+                <p className="text-sm text-on-surface-variant mt-1">
+                  Tidak ada siswa yang membutuhkan remedial saat ini.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-2 mb-4">
+                  {data.remedialList.slice(0, 10).map((r) => {
+                    const detail = data.remedialDetail?.find((d) => d.siswaId === r.siswaId);
+                    return (
+                      <div
+                        key={r.siswaId}
+                        className="flex items-center gap-3 p-3 bg-white rounded-xl border border-border-precision hover:border-amber-200 transition-colors"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-red-50 text-red-600 grid place-items-center font-heading font-bold text-sm shrink-0">
+                          {r.rataNilai}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-on-surface text-sm truncate">
+                            <Link href={`/guru/siswa/${r.siswaId}`} className="hover:underline">
+                              {r.nama}
+                            </Link>
+                          </p>
+                          <p className="text-xs text-on-surface-variant mt-0.5 truncate">
+                            {r.totalAttempt} kali quiz · {r.kursus.join(", ")}
+                          </p>
+                          {detail && (
+                            <p className="text-xs text-red-600 mt-0.5 truncate">
+                              {detail.jumlahSoalSalah > 0
+                                ? `Salah di ${detail.jumlahSoalSalah} soal · materi terbanyak: ${detail.topMateri ?? "—"}`
+                                : "Belum ada data per-soal"}
+                            </p>
+                          )}
+                        </div>
+                        <Link
+                          href={`/guru/siswa/${r.siswaId}`}
+                          className="text-xs font-bold tracking-wider text-primary hover:underline shrink-0 flex items-center gap-1"
+                        >
+                          <Send className="w-3 h-3" />
+                          Detail
+                        </Link>
+                      </div>
+                    );
+                  })}
+                </div>
+                {data.remedialList.length > 10 && (
+                  <p className="text-xs text-on-surface-variant text-center mb-4">
+                    +{data.remedialList.length - 10} siswa lainnya
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-3 pt-2 border-t border-border-precision">
+                  <Link
+                    href="/guru/siswa"
+                    className="inline-flex items-center gap-1.5 bg-primary text-on-primary px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 transition-all"
+                  >
+                    <ListChecks className="w-3.5 h-3.5" />
+                    Tinjau Semua Siswa
+                  </Link>
+                  <Link
+                    href={`/guru/siswa/${data.remedialList[0].siswaId}`}
+                    className="inline-flex items-center gap-1.5 bg-white border border-border-precision text-on-surface px-4 py-2 rounded-full text-xs font-semibold hover:bg-surface transition-all"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    Lihat Detail Siswa
+                  </Link>
+                  <Link
+                    href="/guru/drafts"
+                    className="inline-flex items-center gap-1.5 bg-amber-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 transition-all"
+                  >
+                    <FileEdit className="w-3.5 h-3.5" />
+                    Buat Kuis Remedial
+                  </Link>
+                  <Link
+                    href="/guru/kursus"
+                    className="inline-flex items-center gap-1.5 bg-white border border-border-precision text-on-surface px-4 py-2 rounded-full text-xs font-semibold hover:bg-surface transition-all"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    Lihat Kursus
+                  </Link>
+                </div>
+                <p className="text-xs text-on-surface-variant mt-3">
+                  Buat kuis dari materi yang dikuasai siswa — upload/generate draf kuis remedial di halaman Draft AI. Kematangan kuis remedial otomatis dari data di atas merupakan arahan lanjutan.
+                </p>
+              </>
+            )}
+          </div>
 
           {data.kursusBreakdown.length > 0 && (
             <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass mb-6">

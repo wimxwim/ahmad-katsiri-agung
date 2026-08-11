@@ -37,7 +37,7 @@ export default async function DraftPublishedPage({
   if (!row) {
     redirect("/guru/drafts");
   }
-  if (row.status !== "approved") {
+  if (row.status !== "approved" && !row.publishedMateriId) {
     redirect(`/guru/drafts/${id}`);
   }
 

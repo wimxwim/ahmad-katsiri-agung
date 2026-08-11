@@ -12,6 +12,7 @@ import {
   Sparkles,
   Upload,
   Layers,
+  PlusCircle,
   Zap,
   Eye,
   FileText,
@@ -24,7 +25,7 @@ import {
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, Fragment } from "react";
 import { apiFetch } from "@/lib/api-helpers";
 import { cn } from "@/lib/utils";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
@@ -57,6 +58,13 @@ const QUICK_ACTIONS = [
   { label: "Lihat Siswa", href: "/guru/siswa", icon: Users, desc: "Progres & nilai" },
   { label: "Buat Kuis", href: "/guru/buat", icon: ClipboardList, desc: "Kuis manual" },
 ] as { label: string; href: string; icon: React.ElementType; desc: string }[];
+
+const WORKFLOW_STEPS = [
+  { number: 1, label: "Buat Kursus", desc: "Kerangka kursus baru", href: "/guru/buat", icon: PlusCircle },
+  { number: 2, label: "Upload Dokumen", desc: "PDF/DOCX siap AI", href: "/guru/upload", icon: Upload },
+  { number: 3, label: "Draft AI", desc: "Generate & review", href: "/guru/drafts", icon: Sparkles },
+  { number: 4, label: "Terbitkan ke Siswa", desc: "Publikasi untuk siswa", href: "/guru/kursus", icon: Rocket },
+] as { number: number; label: string; desc: string; href: string; icon: React.ElementType }[];
 
 interface OnboardingData {
   completedSteps: number;
@@ -304,6 +312,22 @@ export default function GuruBerandaPage() {
   const hasStudentAlert = data.siswaBelumMengerjakan > 0 || data.siswaBerisiko > 0 || data.siswaKritis > 0;
   const nextStep = onboarding?.steps.find((s) => !s.done);
 
+  const publishedKursusCount = data.kursusList.filter((k) => k.statusPublikasi === "PUBLIK").length;
+  const stepBadges: ({ text: string; className: string } | null)[] = [
+    data.totalKursus > 0
+      ? { text: `${data.totalKursus} kursus`, className: "bg-primary/10 text-primary" }
+      : null,
+    data.totalMateriPublished > 0
+      ? { text: `${data.totalMateriPublished} materi`, className: "bg-primary/10 text-primary" }
+      : null,
+    data.draftMenunggu > 0
+      ? { text: `${data.draftMenunggu} draft menunggu review`, className: "bg-amber-50 text-amber-700" }
+      : { text: "Draft siap", className: "bg-surface text-on-surface-variant" },
+    publishedKursusCount > 0
+      ? { text: `${publishedKursusCount} kursus terbit`, className: "bg-emerald-50 text-emerald-700" }
+      : null,
+  ];
+
   return (
     <div className="space-y-5">
       <Breadcrumb items={[{ label: "Ringkasan" }]} />
@@ -461,6 +485,66 @@ export default function GuruBerandaPage() {
         <p className="text-xs text-on-surface-variant">
           Kelola kursus, siswa, dan draft AI dari satu tempat.
         </p>
+      </motion.div>
+
+      {/* Alur Kerja Guru */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: EASE_CURVE }}
+      >
+        <div className="relative overflow-hidden bg-glass border border-border-precision rounded-2xl p-5 shadow-glass">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-tertiary/[0.03] pointer-events-none" />
+          <div className="relative">
+            <div className="mb-4">
+              <h2 className="font-heading font-bold text-lg text-on-surface">Alur Kerja Guru</h2>
+              <p className="text-xs text-on-surface-variant mt-0.5">Dari dokumen hingga diterbitkan ke siswa.</p>
+            </div>
+            <div className="flex flex-col lg:flex-row lg:items-stretch gap-2.5">
+              {WORKFLOW_STEPS.map((step, i) => {
+                const badge = stepBadges[i];
+                return (
+                  <Fragment key={step.label}>
+                    {i > 0 && (
+                      <div
+                        aria-hidden="true"
+                        className="flex justify-center px-0.5 py-0.5 lg:py-0 lg:px-0 lg:items-center"
+                      >
+                        <ArrowRight className="w-4 h-4 text-primary/30 rotate-90 lg:rotate-0 shrink-0" />
+                      </div>
+                    )}
+                    <Link
+                      href={step.href}
+                      className="group relative flex items-center gap-3 lg:flex-col lg:text-center bg-white/40 border border-border-precision rounded-xl p-3 shadow-sm hover:bg-white/80 hover:border-primary/25 hover:shadow-glass-lg active:scale-[0.99] transition-all duration-200 lg:flex-1 lg:min-w-0"
+                    >
+                      <span className="relative w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                        <step.icon className="w-4 h-4" />
+                        <span className="absolute -top-1.5 -left-1.5 w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center leading-none shadow-sm">
+                          {step.number}
+                        </span>
+                      </span>
+                      <div className="flex-1 min-w-0 lg:w-full">
+                        <p className="text-xs font-semibold text-on-surface truncate">{step.label}</p>
+                        <p className="text-[10px] text-on-surface-variant truncate">{step.desc}</p>
+                        {badge && (
+                          <span
+                            className={cn(
+                              "mt-1 inline-block max-w-full truncate px-1.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide",
+                              badge.className,
+                            )}
+                          >
+                            {badge.text}
+                          </span>
+                        )}
+                      </div>
+                      <ChevronRight className="w-3 h-3 text-on-surface-variant/30 group-hover:text-on-surface-variant group-hover:translate-x-0.5 transition-all shrink-0 lg:hidden" />
+                    </Link>
+                  </Fragment>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </motion.div>
 
       <div className="overflow-x-auto -mx-3 px-3 scrollbar-none snap-x snap-mandatory">

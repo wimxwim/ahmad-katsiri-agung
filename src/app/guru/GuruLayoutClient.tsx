@@ -13,6 +13,7 @@ import {
   Award,
   Wallet,
   User,
+  MessageSquare,
 } from "lucide-react";
 import { DashboardLayoutClient } from "@/components/dashboard/DashboardLayoutClient";
 import type { SidebarItem } from "@/components/dashboard/DashboardLayoutClient";
@@ -20,6 +21,7 @@ import type { BottomNavTab } from "@/components/layout/BottomNavBar";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { ToastProvider } from "@/components/ui/Toast";
 import { TokenBalanceBadge } from "@/components/guru/TokenBalanceBadge";
+import { GuruDiskusiBadge } from "@/components/guru/GuruDiskusiBadge";
 
 const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/guru/beranda", label: "Ringkasan", icon: LayoutDashboard },
@@ -29,6 +31,12 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/guru/upload", label: "Upload Dokumen", icon: Upload },
   { href: "/guru/drafts", label: "Draft AI", icon: Sparkles },
   { href: "/guru/siswa", label: "Siswa", icon: Users },
+  {
+    href: "/guru/diskusi",
+    label: "Pertanyaan",
+    icon: MessageSquare,
+    badge: <GuruDiskusiBadge />,
+  },
   { href: "/guru/nilai", label: "Nilai", icon: ClipboardCheck },
   { href: "/guru/sertifikat", label: "Sertifikat", icon: Award },
   { href: "/guru/analytics", label: "Analytics", icon: BarChart3 },

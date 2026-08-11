@@ -9,6 +9,8 @@ import {
   users,
   jawabanLog,
   soal,
+  soalPublished,
+  aiGeneration,
   studentAbility,
   skill,
   skillMastery,
@@ -288,6 +290,91 @@ export async function GET(request: NextRequest) {
     })(),
   ]);
 
+  // Remedial detail per at-risk student: which soal/materi they got wrong.
+  // Aggregates jawabanLog joined to soalPublished + aiGeneration, scoped to this guru.
+  type RemedialDetailEntry = {
+    siswaId: string;
+    nama: string;
+    jumlahSoalSalah: number;
+    topMateri: string | null;
+    persenBenar: number;
+  };
+  const remedialDetail = await (async (): Promise<RemedialDetailEntry[]> => {
+    try {
+      if (remedialSiswaIds.size === 0) return [];
+      const logRows = await db
+        .select({
+          siswaId: jawabanLog.siswaId,
+          soalId: jawabanLog.soalId,
+          isBenar: jawabanLog.isBenar,
+          materiJudul: sql<string | null>`${aiGeneration.materiJudul}`,
+        })
+        .from(jawabanLog)
+        .innerJoin(soalPublished, eq(jawabanLog.soalId, soalPublished.id))
+        .innerJoin(aiGeneration, eq(soalPublished.aiGenerationId, aiGeneration.id))
+        .where(
+          and(
+            inArray(jawabanLog.siswaId, Array.from(remedialSiswaIds)),
+            eq(aiGeneration.guruId, guruId),
+          ),
+        );
+
+      if (logRows.length === 0) return [];
+
+      const siswaIdSet = new Set(Array.from(remedialSiswaIds));
+      const bySiswa = new Map<
+        string,
+        { total: number; benar: number; salahSoal: Set<string>; materiSalah: Map<string, number> }
+      >();
+      for (const row of logRows) {
+        if (!siswaIdSet.has(row.siswaId)) continue;
+        let agg = bySiswa.get(row.siswaId);
+        if (!agg) {
+          agg = { total: 0, benar: 0, salahSoal: new Set(), materiSalah: new Map() };
+          bySiswa.set(row.siswaId, agg);
+        }
+        agg.total += 1;
+        if (row.isBenar) {
+          agg.benar += 1;
+        } else {
+          agg.salahSoal.add(row.soalId);
+          if (row.materiJudul) {
+            agg.materiSalah.set(row.materiJudul, (agg.materiSalah.get(row.materiJudul) ?? 0) + 1);
+          }
+        }
+      }
+
+      const usersForRemedial = await db
+        .select({ id: users.id, nama: users.nama })
+        .from(users)
+        .where(inArray(users.id, Array.from(bySiswa.keys())));
+      const namaMap = new Map(usersForRemedial.map((u) => [u.id, u.nama]));
+
+      const detailList: RemedialDetailEntry[] = [];
+      for (const [siswaId, agg] of bySiswa) {
+        let topMateri: string | null = null;
+        let topCount = 0;
+        for (const [materi, count] of agg.materiSalah) {
+          if (count > topCount) {
+            topCount = count;
+            topMateri = materi;
+          }
+        }
+        detailList.push({
+          siswaId,
+          nama: namaMap.get(siswaId) ?? "Siswa",
+          jumlahSoalSalah: agg.salahSoal.size,
+          topMateri,
+          persenBenar: agg.total > 0 ? Math.round((agg.benar / agg.total) * 100) : 0,
+        });
+      }
+      detailList.sort((a, b) => a.persenBenar - b.persenBenar);
+      return detailList;
+    } catch {
+      return [];
+    }
+  })();
+
   // Query student abilities (IRT theta) for all students in guru's courses
   const studentAbilities = kursusIds.length > 0
     ? await db
@@ -360,6 +447,7 @@ export async function GET(request: NextRequest) {
       trend,
       kursusBreakdown,
       remedialList,
+      remedialDetail,
       weakTopics,
       studentAbilities: studentAbilities.map(s => ({
         siswaId: s.siswaId,

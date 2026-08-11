@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, CheckCircle2, AlertCircle, BarChart3, GraduationCap, Search, Lightbulb, Send } from "lucide-react";
+import { ArrowLeft, BookOpen, CheckCircle2, AlertCircle, BarChart3, GraduationCap, Search, Lightbulb, Send, XCircle } from "lucide-react";
 import { MasteryChart } from "@/components/guru/MasteryChart";
 
 interface SiswaProfil {
@@ -40,6 +40,18 @@ interface DetailResponse {
   rataNilai: number | null;
   tuntas: boolean | null;
   attempts: AttemptItem[];
+  seringSalah?: SeringSalahItem[];
+}
+
+interface SeringSalahItem {
+  soalId: string;
+  pertanyaan: string;
+  tipe: string;
+  materiJudul: string | null;
+  totalJawab: number;
+  totalBenar: number;
+  totalSalah: number;
+  errorRate: number;
 }
 
 export default function GuruSiswaDetailPage() {
@@ -216,6 +228,45 @@ export default function GuruSiswaDetailPage() {
                 </Link>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {data.seringSalah && data.seringSalah.length > 0 && (
+        <div className="bg-glass border border-border-precision rounded-2xl p-5 sm:p-6 shadow-glass mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <XCircle className="w-5 h-5 text-red-500" />
+            <h2 className="font-heading font-semibold text-on-surface">Analisis Latihan</h2>
+          </div>
+          <p className="text-sm text-on-surface-variant mb-4">
+            Soal yang paling sering dijawab salah oleh siswa. Fokuskan bimbingan remedial pada materi ini.
+          </p>
+          <div className="space-y-3">
+            {data.seringSalah.map((s) => (
+              <div key={s.soalId} className="p-3 bg-white rounded-xl border border-border-precision">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-medium text-on-surface line-clamp-2 flex-1 min-w-0">
+                    {s.pertanyaan}
+                  </p>
+                  <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-red-50 text-red-600 shrink-0">
+                    Sering Salah
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  {s.materiJudul && (
+                    <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-primary/5 text-primary">
+                      {s.materiJudul}
+                    </span>
+                  )}
+                  <span className="text-[11px] text-tertiary bg-tertiary/10 px-2 py-0.5 rounded font-bold">
+                    {s.tipe}
+                  </span>
+                  <span className="text-[11px] text-on-surface-variant">
+                    {s.totalSalah} salah / {s.totalJawab} jawaban ({s.errorRate}% error)
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

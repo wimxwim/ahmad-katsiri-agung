@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   BookOpen,
   BarChart3,
-  Sparkles,
   FileText,
   Megaphone,
   Library,
@@ -27,8 +26,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/siswa/beranda", label: "Beranda", icon: LayoutDashboard },
   { href: "/siswa/materi", label: "Materi", icon: BookOpen },
   { href: "/siswa/kursus", label: "Kursus Saya", icon: Library },
-  { href: "/siswa/quiz", label: "Kuis", icon: Sparkles },
-  { href: "/siswa/soal", label: "Soal", icon: FileText },
+  { href: "/siswa/evaluasi", label: "Evaluasi", icon: FileText },
   { href: "/siswa/ai-tutor", label: "AI Tutor", icon: MessageSquare },
   { href: "/siswa/diskusi", label: "Diskusi", icon: MessageSquare },
   { href: "/siswa/progres", label: "Progres", icon: BarChart3 },
@@ -38,8 +36,7 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
 const BOTTOM_TABS: BottomNavTab[] = [
   { href: "/siswa/beranda", label: "Beranda", icon: LayoutDashboard },
   { href: "/siswa/materi", label: "Materi", icon: BookOpen },
-  { href: "/siswa/quiz", label: "Kuis", icon: Sparkles },
-  { href: "/siswa/soal", label: "Soal", icon: FileText },
+  { href: "/siswa/evaluasi", label: "Evaluasi", icon: FileText },
   { href: "/siswa/progres", label: "Progres", icon: BarChart3 },
 ];
 

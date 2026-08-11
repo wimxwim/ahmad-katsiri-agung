@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { users, kursus, siswaKursus, quizPublished, quizAttempt } from "@/lib/db/schema";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { users, kursus, siswaKursus, quizPublished, quizAttempt, jawabanLog, soalPublished, aiGeneration } from "@/lib/db/schema";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { requireRole, GuardError } from "@/lib/route-guard-v2";
 import { KKM } from "@/lib/constants";
 
@@ -94,6 +94,40 @@ export async function GET(
       };
     });
 
+    // Soal paling sering salah siswa ini (hanya dari jawaban milik guru yang sama)
+    const seringSalah = quizPubIds.length
+      ? await db
+          .select({
+            soalId: jawabanLog.soalId,
+            pertanyaan: soalPublished.pertanyaan,
+            tipe: soalPublished.tipe,
+            materiJudul: aiGeneration.materiJudul,
+            totalJawab: sql<number>`cast(count(*) as integer)`,
+            totalBenar: sql<number>`cast(sum(case when ${jawabanLog.isBenar} then 1 else 0 end) as integer)`,
+            totalSalah: sql<number>`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as integer)`,
+          })
+          .from(jawabanLog)
+          .innerJoin(soalPublished, eq(jawabanLog.soalId, soalPublished.id))
+          .innerJoin(aiGeneration, eq(soalPublished.aiGenerationId, aiGeneration.id))
+          .where(
+            and(
+              eq(jawabanLog.siswaId, id),
+              eq(aiGeneration.guruId, session.userId!),
+            ),
+          )
+          .groupBy(
+            jawabanLog.soalId,
+            soalPublished.pertanyaan,
+            soalPublished.tipe,
+            aiGeneration.materiJudul,
+          )
+          .having(sql`sum(case when ${jawabanLog.isBenar} then 0 else 1 end) > 0`)
+          .orderBy(
+            desc(sql`cast(sum(case when ${jawabanLog.isBenar} then 0 else 1 end) as integer)`),
+          )
+          .limit(5)
+      : [];
+
     return NextResponse.json({
       data: {
         siswa: {
@@ -109,6 +143,16 @@ export async function GET(
         rataNilai,
         tuntas: rataNilai !== null ? rataNilai >= KKM : null,
         attempts: attemptsEnriched,
+        seringSalah: seringSalah.map((s) => ({
+          soalId: s.soalId,
+          pertanyaan: s.pertanyaan,
+          tipe: s.tipe,
+          materiJudul: s.materiJudul,
+          totalJawab: s.totalJawab,
+          totalBenar: s.totalBenar,
+          totalSalah: s.totalSalah,
+          errorRate: s.totalJawab > 0 ? Math.round((s.totalSalah / s.totalJawab) * 100) : 0,
+        })),
       },
     });
   } catch (e) {
