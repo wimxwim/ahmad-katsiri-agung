@@ -104,7 +104,7 @@ export default function SiswaSoalListPage() {
           <FileText className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h1 className="font-heading font-bold text-lg text-on-surface">Soal Latihan</h1>
+          <h1 className="font-heading font-bold text-lg text-on-surface">Latihan</h1>
           <p className="text-xs text-on-surface-variant">Latihan mandiri untuk menguasai materi</p>
         </div>
       </motion.div>
@@ -127,7 +127,7 @@ export default function SiswaSoalListPage() {
         <EmptyState
           icon={FileText}
           title="Belum ada soal latihan"
-          description="Gurumu belum menerbitkan soal latihan. Baca materi dan kerjakan quiz terlebih dahulu ya."
+          description="Gurumu belum menerbitkan soal latihan. Baca materi dan kerjakan kuis terlebih dahulu ya."
           action={{ label: "Lihat Materi", href: "/siswa/materi" }}
         />
       ) : (

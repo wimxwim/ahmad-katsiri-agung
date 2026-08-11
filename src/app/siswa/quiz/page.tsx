@@ -146,7 +146,7 @@ export default function SiswaQuizListPage() {
           <ClipboardList className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h1 className="font-heading font-bold text-lg text-on-surface">Kuis & Evaluasi</h1>
+          <h1 className="font-heading font-bold text-lg text-on-surface">Kuis</h1>
           <p className="text-xs text-on-surface-variant">Uji pemahamanmu</p>
         </div>
       </motion.div>
@@ -169,8 +169,8 @@ export default function SiswaQuizListPage() {
       {data.length === 0 ? (
         <EmptyState
           icon={ClipboardList}
-          title="Belum ada quiz"
-          description="Gurumu belum menerbitkan quiz. Kerjakan materi terlebih dahulu ya."
+          title="Belum ada kuis"
+          description="Gurumu belum menerbitkan kuis. Kerjakan materi terlebih dahulu ya."
           action={{ label: "Lihat Materi", href: "/siswa/materi" }}
         />
       ) : (

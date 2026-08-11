@@ -85,7 +85,7 @@ export default function SiswaSoalPracticePage({ params }: { params: Promise<{ ai
           className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-full text-sm font-semibold"
         >
           <ArrowLeft className="w-4 h-4" />
-          Kembali ke Soal Latihan
+          Kembali ke Latihan
         </Link>
       </div>
     );

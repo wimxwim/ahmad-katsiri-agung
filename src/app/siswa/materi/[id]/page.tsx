@@ -137,7 +137,7 @@ export default function SiswaMateriPage() {
                   className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
                 >
                   <ClipboardList className="w-4 h-4" />
-                  Kerjakan Quiz
+                  Kerjakan Kuis
                 </Link>
               )}
               {materi.soalBatchId && (
@@ -146,7 +146,7 @@ export default function SiswaMateriPage() {
                   className="inline-flex items-center gap-2 bg-tertiary text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all"
                 >
                   <FileText className="w-4 h-4" />
-                  Soal Latihan{materi.soalBatchTotal ? ` (${materi.soalBatchTotal})` : ""}
+                  Latihan{materi.soalBatchTotal ? ` (${materi.soalBatchTotal})` : ""}
                 </Link>
               )}
             </div>
@@ -160,7 +160,7 @@ export default function SiswaMateriPage() {
                 <CheckCircle2 className="w-5 h-5 shrink-0" />
                 <div className="flex-1">
                   <p className="font-semibold">Materi ditandai selesai</p>
-                  <p className="text-sm">Progresmu sudah tersimpan. Lanjutkan ke materi berikutnya atau kerjakan quiz di atas.</p>
+                  <p className="text-sm">Progresmu sudah tersimpan. Lanjutkan ke materi berikutnya atau kerjakan kuis di atas.</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">

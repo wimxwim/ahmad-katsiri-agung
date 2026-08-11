@@ -247,11 +247,11 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
         headers: csrfHeaders(),
       });
       if (!startRes.ok) {
-        setError("Gagal memulai quiz. Silakan coba lagi.");
+        setError("Gagal memulai kuis. Silakan coba lagi.");
         return;
       }
     } catch {
-      setError("Gagal memulai quiz. Periksa koneksi internet Anda.");
+      setError("Gagal memulai kuis. Periksa koneksi internet Anda.");
       return;
     }
     setJawaban({});

@@ -135,7 +135,7 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
             <FileText className="w-8 h-8 text-tertiary" />
           </div>
           <h1 className="font-heading font-bold text-xl text-on-surface mb-1">{batch.judul}</h1>
-          <p className="text-sm text-on-surface-variant mb-6">Soal Latihan</p>
+          <p className="text-sm text-on-surface-variant mb-6">Latihan</p>
 
           <div className="grid grid-cols-2 gap-4 mb-8 max-w-xs mx-auto">
             <div className="bg-surface rounded-2xl p-4">

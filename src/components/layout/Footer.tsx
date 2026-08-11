@@ -48,7 +48,7 @@ export function Footer({
             </Link>
             <Typography.Paragraph type="secondary" className="mt-3 !mb-0 max-w-xs">
               Platform multi-guru dengan AI Document Generator. Ubah dokumen jadi
-              materi, quiz, dan soal — guru tetap memegang kendali penuh.
+              materi, kuis, dan soal — guru tetap memegang kendali penuh.
             </Typography.Paragraph>
           </div>
 

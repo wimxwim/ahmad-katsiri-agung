@@ -18,9 +18,9 @@ export default function Error({
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="bg-glass border border-border-precision rounded-2xl p-8 sm:p-10 shadow-glass-lg max-w-md mx-auto text-center">
         <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-        <h1 className="font-heading text-xl font-bold text-on-surface mb-2">CBT tidak dapat dimuat</h1>
+        <h1 className="font-heading text-xl font-bold text-on-surface mb-2">Evaluasi tidak dapat dimuat</h1>
         <p className="text-sm text-on-surface-variant mb-6">
-          Terjadi kesalahan saat memuat sesi ujian. Coba lagi dalam beberapa saat.
+          Terjadi kesalahan saat memuat sesi evaluasi. Coba lagi dalam beberapa saat.
         </p>
         <button
           onClick={reset}
