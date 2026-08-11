@@ -378,8 +378,11 @@ async function generateSoalBatch(
   let totalTokensIn = 0;
   let totalTokensOut = 0;
 
-  for (let i = 0; i < batches; i++) {
-    const batchSize = Math.min(BATCH_SIZE, soalCount - i * BATCH_SIZE);
+  type SoalBatchAttempt =
+    | { ok: true; items: ValidatedSoalItem[]; tokensIn: number; tokensOut: number }
+    | { ok: false; errMsg: string };
+
+  const attemptBatch = async (batchSize: number): Promise<SoalBatchAttempt> => {
     try {
       const batchRes = await withTimeout(
         chatWithFallback(
@@ -394,16 +397,42 @@ async function generateSoalBatch(
       );
       const batchParsed = parseSoalSafe(batchRes.content);
       if (batchParsed && batchParsed.soal.length > 0) {
-        allItems.push(...batchParsed.soal);
-        totalTokensIn += batchRes.tokensIn;
-        totalTokensOut += batchRes.tokensOut;
-        console.log(`[ai-generator] soal batch ${i + 1}/${batches}: ${batchParsed.soal.length} soal OK`);
-      } else {
-        console.warn(`[ai-generator] soal batch ${i + 1}/${batches}: parse failed, skipping`);
+        return {
+          ok: true,
+          items: batchParsed.soal,
+          tokensIn: batchRes.tokensIn,
+          tokensOut: batchRes.tokensOut,
+        };
       }
+      return { ok: false, errMsg: "parse failed (invalid or empty JSON)" };
     } catch (error) {
-      console.error(`[ai-generator] soal batch ${i + 1}/${batches} failed:`, error);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      return { ok: false, errMsg };
     }
+  };
+
+  for (let i = 0; i < batches; i++) {
+    const batchSize = Math.min(BATCH_SIZE, soalCount - i * BATCH_SIZE);
+    const firstAttempt = await attemptBatch(batchSize);
+    if (firstAttempt.ok) {
+      allItems.push(...firstAttempt.items);
+      totalTokensIn += firstAttempt.tokensIn;
+      totalTokensOut += firstAttempt.tokensOut;
+      console.log(`[ai-generator] soal batch ${i + 1}/${batches}: ${firstAttempt.items.length} soal OK`);
+      continue;
+    }
+
+    console.warn(`[ai-generator] soal batch ${i + 1}/${batches} gagal, mencoba ulang (1/1): ${firstAttempt.errMsg}`);
+    const retryAttempt = await attemptBatch(batchSize);
+    if (retryAttempt.ok) {
+      allItems.push(...retryAttempt.items);
+      totalTokensIn += retryAttempt.tokensIn;
+      totalTokensOut += retryAttempt.tokensOut;
+      console.log(`[ai-generator] soal batch ${i + 1}/${batches}: ${retryAttempt.items.length} soal OK (retry 1/1)`);
+      continue;
+    }
+
+    console.error(`[ai-generator] soal batch ${i + 1}/${batches} failed after retry, skipping: ${retryAttempt.errMsg}`);
   }
 
   if (allItems.length === 0) {
