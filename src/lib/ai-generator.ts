@@ -372,7 +372,7 @@ async function generateSoalBatch(
   soalCount: number,
   tingkat?: number,
 ): Promise<ChatResult> {
-  const BATCH_SIZE = 10;
+  const BATCH_SIZE = 5;
   const batches = Math.ceil(soalCount / BATCH_SIZE);
   let allItems: ValidatedSoalItem[] = [];
   let totalTokensIn = 0;
@@ -443,7 +443,36 @@ async function generateSoalBatch(
     console.warn(`[ai-generator] soal partial: ${allItems.length}/${soalCount} soal berhasil`);
   }
 
-  const combinedJson = JSON.stringify({ soal: allItems });
+  // Cross-batch dedup: keep FIRST occurrence, drop later duplicates.
+  // Duplicate = same normalized pertanyaan OR same normalized option set.
+  const seenPertanyaan = new Set<string>();
+  const seenOpsi = new Set<string>();
+  const dedupedItems: ValidatedSoalItem[] = [];
+  let dedupRemoved = 0;
+  for (const item of allItems) {
+    const pertanyaanKey = (item.pertanyaan ?? "").toLowerCase().trim();
+    const opsiKey = item.opsi
+      ? Object.keys(item.opsi)
+          .sort()
+          .map((k) => (item.opsi?.[k] ?? "").toLowerCase().trim())
+          .filter((v) => v.length > 0)
+          .join("|")
+      : "";
+    const isPertanyaanDup = pertanyaanKey.length > 0 && seenPertanyaan.has(pertanyaanKey);
+    const isOpsiDup = opsiKey.length > 0 && seenOpsi.has(opsiKey);
+    if (isPertanyaanDup || isOpsiDup) {
+      dedupRemoved += 1;
+      continue;
+    }
+    if (pertanyaanKey.length > 0) seenPertanyaan.add(pertanyaanKey);
+    if (opsiKey.length > 0) seenOpsi.add(opsiKey);
+    dedupedItems.push(item);
+  }
+  if (dedupRemoved > 0) {
+    console.warn(`[ai-generator] soal dedup: ${dedupRemoved}/${allItems.length} duplikat dibuang`);
+  }
+
+  const combinedJson = JSON.stringify({ soal: dedupedItems });
   return {
     content: combinedJson,
     tokensIn: totalTokensIn,
@@ -568,10 +597,27 @@ export async function runGeneration(
       console.log("[ai-generator] quiz done, starting soal...");
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      console.error("[ai-generator] quiz AI failed, using fallback:", errMsg);
-      console.error("[ai-generator] error stack:", error instanceof Error ? (error.stack ?? "").slice(0, 500) : "");
-      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
-      quizRes = fb[1];
+      console.warn("[ai-generator] quiz AI gagal, mencoba ulang (1/1):", errMsg);
+      try {
+        quizRes = await withTimeout(
+          chatWithFallback(
+            [
+              { role: "system", content: buildQuizSystemPrompt(quizCount) },
+              { role: "user", content: `Materi:\n\n${truncatedSource}` },
+            ],
+            { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60), timeoutMs: AI_TIMEOUT_MS },
+          ),
+          AI_TIMEOUT_MS,
+          "ai-quiz",
+        );
+        console.log("[ai-generator] quiz done (retry 1/1), starting soal...");
+      } catch (retryError) {
+        const retryErrMsg = retryError instanceof Error ? retryError.message : String(retryError);
+        console.error("[ai-generator] quiz AI failed after retry, using fallback:", retryErrMsg);
+        console.error("[ai-generator] error stack:", retryError instanceof Error ? (retryError.stack ?? "").slice(0, 500) : "");
+        const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+        quizRes = fb[1];
+      }
     }
 
     let soalRes: ChatResult;
@@ -817,9 +863,28 @@ export async function runGenerationFromText(
     );
     console.log("[ai-generator] quiz done, starting soal...");
   } catch (error) {
-    console.error("[ai-generator] quiz AI failed, using fallback:", error);
-    const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
-    quizRes = fb[1];
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.warn("[ai-generator] quiz AI gagal, mencoba ulang (1/1):", errMsg);
+    try {
+      quizRes = await withTimeout(
+        chatWithFallback(
+          [
+            { role: "system", content: buildQuizSystemPrompt(quizCount) },
+            { role: "user", content: `Materi:\n\n${truncatedSource}` },
+          ],
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60), timeoutMs: AI_TIMEOUT_MS },
+        ),
+        AI_TIMEOUT_MS,
+        "ai-quiz",
+      );
+      console.log("[ai-generator] quiz done (retry 1/1), starting soal...");
+    } catch (retryError) {
+      const retryErrMsg = retryError instanceof Error ? retryError.message : String(retryError);
+      console.error("[ai-generator] quiz AI failed after retry, using fallback:", retryErrMsg);
+      console.error("[ai-generator] error stack:", retryError instanceof Error ? (retryError.stack ?? "").slice(0, 500) : "");
+      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+      quizRes = fb[1];
+    }
   }
 
   let soalRes: ChatResult;
