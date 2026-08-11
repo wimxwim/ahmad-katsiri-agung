@@ -91,6 +91,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
   const [pgCount, setPgCount] = useState(15);
   const [isianCount, setIsianCount] = useState(5);
   const [essayCount, setEssayCount] = useState(5);
+  const [quizCount, setQuizCount] = useState(10);
 
   async function load() {
     const { id } = await params;
@@ -295,7 +296,7 @@ useEffect(() => {
           <p className="text-sm text-on-surface-variant mb-4">
             Pilih jumlah soal yang ingin digenerate. AI akan membuat materi, kuis, dan soal sekaligus.
           </p>
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-4 gap-3 mb-4">
             <label className="flex flex-col gap-1">
               <span className="text-xs text-on-surface-variant">PG</span>
               <input
@@ -329,9 +330,20 @@ useEffect(() => {
                 className="px-3 py-2 rounded-xl border border-border-precision bg-white text-sm"
               />
             </label>
+            <label className="flex flex-col gap-1">
+              <span className="text-xs text-on-surface-variant">Jumlah Kuis</span>
+              <input
+                type="number"
+                min={5}
+                max={15}
+                value={quizCount}
+                onChange={(e) => setQuizCount(Number(e.target.value))}
+                className="px-3 py-2 rounded-xl border border-border-precision bg-white text-sm"
+              />
+            </label>
           </div>
           <button
-            onClick={() => act("/generate", "generate-all", { pgCount, isianCount, essayCount })}
+            onClick={() => act("/generate", "generate-all", { pgCount, isianCount, essayCount, quizCount })}
             disabled={busy === "generate-all"}
             className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50 w-full justify-center"
           >

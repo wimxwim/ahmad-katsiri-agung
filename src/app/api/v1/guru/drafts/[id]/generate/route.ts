@@ -174,8 +174,8 @@ export async function POST(
       throw e;
     }
 
-    let soalCount = 20;
-    let quizCount = 5;
+    let soalCount = 25;
+    let quizCount = 10;
     try {
       const body = await request.clone().json().catch(() => null);
       if (body && typeof body === "object") {

@@ -172,7 +172,7 @@ export async function regenerateQuizOnly(generationId: string): Promise<void> {
   const truncated = sanitizeUserText(sourceText.slice(0, 20000));
 
   // 5. Call AI for quiz generation
-  const quizCount = 5; // default
+  const quizCount = 10; // default
   let quizRes: ChatResult;
   try {
     quizRes = await chatWithFallback(
@@ -319,7 +319,7 @@ export async function regenerateSoalOnly(generationId: string): Promise<void> {
   const truncated = sanitizeUserText(sourceText.slice(0, 20000));
 
   // 5. Call AI for soal generation
-  const soalCount = 20;
+  const soalCount = 25;
   let soalRes: ChatResult;
   try {
     soalRes = await chatWithFallback(

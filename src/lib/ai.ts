@@ -7,6 +7,7 @@ export interface ChatOptions {
   model?: string;
   temperature?: number;
   maxTokens?: number;
+  timeoutMs?: number;
 }
 
 export interface ChatResult {
@@ -81,7 +82,7 @@ export async function chat(
           Authorization: `Bearer ${getApiKey()}`,
         },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(180_000),
+        signal: AbortSignal.timeout(options.timeoutMs ?? 180_000),
       });
 
       console.error("[ai] response:", { status: res.status, ok: res.ok, attempt });

@@ -135,8 +135,8 @@ ATURAN FORMAT (WAJIB):
 2. Struktur:
 {
   "judul": "string (maks 100 karakter)",
-  "ringkasan": "string (maks 250 karakter)",
-  "tujuanPembelajaran": ["string x 3-5"],
+  "ringkasan": "string (maks 300 karakter)",
+  "tujuanPembelajaran": ["string x 4-6"],
   "pendahuluan": "string (3-5 kalimat pengantar)",
   "konten": [
     {
@@ -144,7 +144,7 @@ ATURAN FORMAT (WAJIB):
       "isi": "string (4-8 kalimat, WAJIB detail dan informatif)",
       "dalil": "string | null (ayat/hadits + terjemahan jika ada)",
       "contoh": "string (2-3 kalimat contoh penerapan dalam kehidupan)",
-      "hikmah": "string (nilai atau pelajaran yang bisa dipetik)",
+      "hikmah": "string (2-3 kalimat yang menghubungkan materi dengan kehidupan sehari-hari siswa)",
       "poinSoal": ["string x 3-5 potensi soal dari bagian ini"]
     }
   ],
@@ -152,9 +152,10 @@ ATURAN FORMAT (WAJIB):
   "poinPenting": ["string x 5-8"],
   "refleksi": "string (pertanyaan refleksi untuk siswa, 2-3 kalimat)"
 }
-3. konten: 5-8 bagian, setiap bagian isi minimal 4 kalimat.
-4. istilahKunci: 5-10 item, setiap definisi 1-2 kalimat.
-5. poinPenting: 5-8 item, setiap poin 1 kalimat.
+3. konten: 5-8 bagian (IDEAL 7-8 bagian), setiap bagian isi minimal 6 kalimat (IDEAL 8-10 kalimat), detail dan kontekstual.
+4. dalil: WAJIB diisi untuk setiap bagian, berupa ayat Al-Qur'an/Hadits + terjemahan bahasa Indonesia yang benar. Contoh: kutipan ayat, artinya, dan maknanya.
+5. istilahKunci: 5-10 item, setiap definisi 1-2 kalimat.
+6. poinPenting: 5-8 item, setiap poin 1 kalimat.
 
 ATURAN BAHASA (KHUSUS ${cfg.label}):
 - ${cfg.sentenceLength}
@@ -205,9 +206,22 @@ function withTimeout<T>(p: Promise<T>, ms: number, stage: "extract" | "ai" | "ai
 }
 
 const EXTRACT_TIMEOUT_MS = 60_000;
-const AI_TIMEOUT_MS = 90_000;
+const AI_TIMEOUT_MS = 120_000;
 const SOAL_TIMEOUT_MS = 180_000;
 const SAVE_TIMEOUT_MS = 15_000;
+
+function chatMateri(
+  truncatedSource: string,
+  tingkat: number | undefined,
+): Promise<ChatResult> {
+  return chatWithFallback(
+    [
+      { role: "system", content: buildMateriSystemPrompt(tingkat) },
+      { role: "user", content: `Materi:\n\n${truncatedSource}` },
+    ],
+    { model: getModelForTask("light"), temperature: 0.3, maxTokens: 4000, timeoutMs: AI_TIMEOUT_MS },
+  );
+}
 
 function sentencePool(text: string): string[] {
   return text
@@ -412,8 +426,8 @@ export async function runGeneration(
   generationId: string,
   fileBytes: Buffer,
   ext: string,
-  soalCount = 20,
-  quizCount = 5,
+  soalCount = 25,
+  quizCount = 10,
 ): Promise<GenerationResult> {
   const [gen] = await db
     .select()
@@ -485,23 +499,28 @@ export async function runGeneration(
     let materiRes: ChatResult;
     try {
       materiRes = await withTimeout(
-        chatWithFallback(
-          [
-            { role: "system", content: buildMateriSystemPrompt(gen.tingkat ?? undefined) },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
-          ],
-          { model: getModelForTask("light"), temperature: 0.3, maxTokens: 2500 },
-        ),
+        chatMateri(truncatedSource, gen.tingkat ?? undefined),
         AI_TIMEOUT_MS,
         "ai-materi",
       );
       console.log("[ai-generator] materi done, starting quiz...");
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
-      console.error("[ai-generator] materi AI failed, using fallback:", errMsg);
-      console.error("[ai-generator] error stack:", error instanceof Error ? (error.stack ?? "").slice(0, 500) : "");
-      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
-      materiRes = fb[0];
+      console.warn("[ai-generator] materi AI gagal, mencoba ulang (1/1):", errMsg);
+      try {
+        materiRes = await withTimeout(
+          chatMateri(truncatedSource, gen.tingkat ?? undefined),
+          AI_TIMEOUT_MS,
+          "ai-materi",
+        );
+        console.log("[ai-generator] materi done (retry 1/1), starting quiz...");
+      } catch (retryError) {
+        const retryErrMsg = retryError instanceof Error ? retryError.message : String(retryError);
+        console.error("[ai-generator] materi AI failed after retry, using fallback:", retryErrMsg);
+        console.error("[ai-generator] error stack:", retryError instanceof Error ? (retryError.stack ?? "").slice(0, 500) : "");
+        const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+        materiRes = fb[0];
+      }
     }
 
     let quizRes: ChatResult;
@@ -512,7 +531,7 @@ export async function runGeneration(
             { role: "system", content: buildQuizSystemPrompt(quizCount) },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60) },
+          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60), timeoutMs: AI_TIMEOUT_MS },
         ),
         AI_TIMEOUT_MS,
         "ai-quiz",
@@ -709,8 +728,8 @@ export async function runGenerationFromText(
   generationId: string,
   sourceText: string,
   guruId: string,
-  soalCount = 20,
-  quizCount = 5,
+  soalCount = 25,
+  quizCount = 10,
   tingkat?: number,
 ): Promise<void> {
   const [gen] = await db
@@ -730,21 +749,28 @@ export async function runGenerationFromText(
   let materiRes: ChatResult;
   try {
     materiRes = await withTimeout(
-      chatWithFallback(
-        [
-          { role: "system", content: buildMateriSystemPrompt(tingkat) },
-          { role: "user", content: `Materi:\n\n${truncatedSource}` },
-        ],
-        { model: getModelForTask("light"), temperature: 0.3, maxTokens: 2500 },
-      ),
+      chatMateri(truncatedSource, tingkat),
       AI_TIMEOUT_MS,
       "ai-materi",
     );
     console.log("[ai-generator] materi done, starting quiz...");
   } catch (error) {
-    console.error("[ai-generator] materi AI failed, using fallback:", error);
-    const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
-    materiRes = fb[0];
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.warn("[ai-generator] materi AI gagal, mencoba ulang (1/1):", errMsg);
+    try {
+      materiRes = await withTimeout(
+        chatMateri(truncatedSource, tingkat),
+        AI_TIMEOUT_MS,
+        "ai-materi",
+      );
+      console.log("[ai-generator] materi done (retry 1/1), starting quiz...");
+    } catch (retryError) {
+      const retryErrMsg = retryError instanceof Error ? retryError.message : String(retryError);
+      console.error("[ai-generator] materi AI failed after retry, using fallback:", retryErrMsg);
+      console.error("[ai-generator] error stack:", retryError instanceof Error ? (retryError.stack ?? "").slice(0, 500) : "");
+      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+      materiRes = fb[0];
+    }
   }
 
   let quizRes: ChatResult;
@@ -755,7 +781,7 @@ export async function runGenerationFromText(
           { role: "system", content: buildQuizSystemPrompt(quizCount) },
           { role: "user", content: `Materi:\n\n${truncatedSource}` },
         ],
-        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60) },
+        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60), timeoutMs: AI_TIMEOUT_MS },
       ),
       AI_TIMEOUT_MS,
       "ai-quiz",
