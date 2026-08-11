@@ -237,7 +237,9 @@ export async function POST(
         essayCount,
         needsManualReview: essayCount > 0,
         tampilkanNilai: quiz.modeEvaluasi !== "CBT",
-        jawabanBenar: quiz.modeEvaluasi !== "CBT" ? jawabanBenar : undefined,
+        // PATCH: kunci jawaban HANYA untuk mode BELAJAR (formatif). ULANGAN/CBT = sumatif,
+        // kunci tidak boleh dibocorkan ke siswa.
+        jawabanBenar: quiz.modeEvaluasi === "BELAJAR" ? jawabanBenar : undefined,
         recommendation,
         weakAreas,
         timeSpent: parsed.data.durasiDetik,

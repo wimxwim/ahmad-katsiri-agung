@@ -39,9 +39,13 @@ function detectExtension(buf: Buffer): string | null {
   return null;
 }
 
-function buildIdempotencyKey(userId: string, amount: number, fileBuffer: Buffer): string {
+// PATCH: idempotency key TIDAK boleh mengandung `amount` (nilai bisnis yang bisa berubah).
+// Pola Stripe: key deterministik dari identitas request (user-attached object = file bukti),
+// bukan dari nominal. Kalau key memuat amount, file bukti yang sama dengan nominal beda
+// menghasilkan key beda → bisa double-credit. Sekarang key = `${userId}:${fileHash}`.
+function buildIdempotencyKey(userId: string, fileBuffer: Buffer): string {
   const fileHash = createHash("sha256").update(fileBuffer).digest("hex").slice(0, 16);
-  return `${userId}:${amount}:${fileHash}`;
+  return `${userId}:${fileHash}`;
 }
 
 export async function POST(request: NextRequest) {
@@ -98,7 +102,7 @@ export async function POST(request: NextRequest) {
       return apiError("VALIDATION_ERROR", `Ekstensi .${extFromName} tidak cocok dengan isi file (.${detected})`, undefined, 415);
     }
 
-    const idempotencyKey = buildIdempotencyKey(session.userId, amount, bytes);
+    const idempotencyKey = buildIdempotencyKey(session.userId, bytes);
 
     const [existingDuplicate] = await db
       .select({ id: tokenTransactions.id })

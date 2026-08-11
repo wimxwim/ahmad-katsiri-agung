@@ -79,6 +79,11 @@ export async function GET(
       console.error("enrolledStudents query failed:", e);
     }
 
+    const sanitizedStudents =
+      !isOwner && !isGuruPemilik
+        ? enrolledStudents.map(({ email: _email, ...rest }) => rest)
+        : enrolledStudents;
+
     let quizSelesaiCount = 0;
     try {
       const [count] = await db
@@ -92,7 +97,7 @@ export async function GET(
     }
 
     const cc = session ? "private, max-age=30, stale-while-revalidate=60" : "public, max-age=60, stale-while-revalidate=120";
-    return NextResponse.json({ data: { ...k, enrolledCount, enrolledStudents, quizSelesaiCount } }, { headers: { "Cache-Control": cc, "Vary": "Cookie" } });
+    return NextResponse.json({ data: { ...k, enrolledCount, enrolledStudents: sanitizedStudents, quizSelesaiCount } }, { headers: { "Cache-Control": cc, "Vary": "Cookie" } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Kursus detail error:", e);

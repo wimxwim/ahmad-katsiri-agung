@@ -30,13 +30,17 @@ export async function POST(request: NextRequest) {
     }
 
     const [course] = await db
-      .select({ id: kursus.id, statusPublikasi: kursus.statusPublikasi })
+      .select({ id: kursus.id, statusPublikasi: kursus.statusPublikasi, harga: kursus.harga })
       .from(kursus)
       .where(and(eq(kursus.id, parsed.data.kursusId), eq(kursus.statusPublikasi, "PUBLIK")))
       .limit(1);
 
     if (!course) {
       return apiError("Kursus tidak ditemukan atau belum tersedia untuk umum", 404);
+    }
+
+    if (course.harga != null && course.harga > 0) {
+      return apiError("Kursus ini berbayar. Hubungi guru pemilik untuk mendaftar.", 402);
     }
 
     const existing = await db

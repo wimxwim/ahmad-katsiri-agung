@@ -58,7 +58,6 @@ export function DaftarPicker() {
           noAbsen: fd.get("noAbsen") || undefined,
           nis: fd.get("nis") || undefined,
           ...(role === "GURU" ? { kodeUndangan: fd.get("kodeUndangan") || undefined } : {}),
-          role,
           portal,
         }),
       });

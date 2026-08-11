@@ -28,7 +28,7 @@ const RegisterSchema = z.object({
     .refine((val) => /[A-Z]/.test(val), "Password harus mengandung minimal 1 huruf besar")
     .refine((val) => /[a-z]/.test(val), "Password harus mengandung minimal 1 huruf kecil")
     .refine((val) => /[0-9]/.test(val), "Password harus mengandung minimal 1 angka"),
-  role: z.enum(["SISWA", "ORANG_TUA", "GURU", "ASISTEN_GURU", "OWNER", "ADMIN_SEKOLAH"]).optional().default("SISWA"),
+  role: z.enum(["SISWA", "ORANG_TUA"]).optional().default("SISWA"),
   kelas: z.string().max(10).optional(),
   noAbsen: z.string().max(5).optional(),
   nis: z.string().max(30).optional(),
@@ -60,8 +60,11 @@ export async function POST(request: NextRequest) {
       return apiError("VALIDATION_ERROR", "Data tidak valid", parsed.error.flatten(), 400);
     }
 
-    const { nama, password, kelas, noAbsen, nis, role, portal: portalRaw, redirectTo, kodeUndangan } = parsed.data;
-    const portal = portalRaw ?? "siswa";
+    const { nama, password, kelas, noAbsen, nis, kodeUndangan, redirectTo } = parsed.data;
+    const portal = parsed.data.portal ?? "siswa";
+
+    // Role is decided SERVER-SIDE only — client input can never escalate privileges.
+    const role = portal === "guru" ? "GURU" : "SISWA";
     const email = parsed.data.email.toLowerCase();
 
     const requireInvite = process.env.GURU_REGISTER_REQUIRE_INVITE === "1" && role === "GURU";

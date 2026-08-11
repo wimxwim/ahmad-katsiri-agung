@@ -43,10 +43,10 @@ describe("session", () => {
   });
 
   describe("INTENT_PORTAL", () => {
-    it("portal guru mencakup guru, owner, admin_sekolah", () => {
+    it("portal guru hanya berisi guru (owner/admin_sekolah TIDAK boleh daftar publik)", () => {
       expect(INTENT_PORTAL.guru).toContain("guru");
-      expect(INTENT_PORTAL.guru).toContain("owner");
-      expect(INTENT_PORTAL.guru).toContain("admin_sekolah");
+      expect(INTENT_PORTAL.guru).not.toContain("owner");
+      expect(INTENT_PORTAL.guru).not.toContain("admin_sekolah");
     });
 
     it("portal siswa mencakup murid, orang_tua", () => {

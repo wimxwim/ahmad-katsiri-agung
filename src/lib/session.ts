@@ -68,6 +68,6 @@ export const ROLE_LABEL: Record<SesiRole, string> = {
 };
 
 export const INTENT_PORTAL: Record<"guru" | "siswa", SesiRole[]> = {
-  guru: ["guru", "owner", "admin_sekolah"],
+  guru: ["guru"],
   siswa: ["murid", "orang_tua"],
 };
