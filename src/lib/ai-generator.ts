@@ -170,17 +170,32 @@ ATURAN KEAMANAN:
 }
 
 export function buildSoalSystemPrompt(count: number, _tingkat?: number): string {
-  return `Kamu penulis soal PAI. Hasilkan ${count} soal PG dari materi. JSON: {"soal":[{pertanyaan,tipe:"PG",opsi:{A,B,C,D},kunci,penjelasan}]}. Setiap soal uji aspek berbeda, jangan ulangi topik. Distraktor masuk akal. Penjelasan 1-2 kalimat. Bahasa Indonesia, tanpa markup.`;
+  return `Kamu penulis soal PAI untuk asesmen sumatif (ulangan harian/PTS/PAS). Hasilkan ${count} soal PILIHAN GANDA dari materi.
+
+ATURAN:
+1. JSON: {"soal":[{"pertanyaan":string,"tipe":"PG","opsi":{"A":string,"B":string,"C":string,"D":string},"kunci":"A"|"B"|"C"|"D","penjelasan":string,"levelKognitif":"L1"|"L2"|"L3"}]}.
+2. Distraktor = miskonsepsi PLAUSIBEL tentang konsep yang SAMA, panjang opsi SERAGAM. Kunci posisi bervariasi (jangan selalu A/B).
+3. DILARANG opsi "Semua jawaban benar" atau "Tidak ada jawaban yang tepat".
+4. Setiap item terhubung ke SATU tujuan pembelajaran materi. JANGAN membuat dua item dari kalimat sumber yang sama persis.
+5. Setiap item sertakan levelKognitif. Distribusi: L1 20-30%, L2 40-50%, L3 20-30%.
+6. penjelasan: 1-2 kalimat alasan kunci benar.
+7. Bahasa Indonesia, tanpa markup, tanpa komentar di luar JSON.`;
 }
 
-export function buildQuizSystemPrompt(count: number): string {
-  return `Kamu adalah penulis kuis PAI/Akidah Akhlak Indonesia. Tugasmu: menerima teks materi dan menghasilkan ${count} soal PILIHAN GANDA untuk kuis singkat. ATURAN:
+export function buildQuizSystemPrompt(count: number, soalQuestions: string[] = []): string {
+  const larangan = soalQuestions.length > 0
+    ? `JANGAN membuat pertanyaan yang sama atau mirip dengan daftar soal ujian berikut: ${soalQuestions.slice(0, 10).join(" | ")}`
+    : "Tidak ada batasan soal ujian.";
+  return `Kamu adalah penulis KUIS PAI/Akidah Akhlak Indonesia untuk ASESMEN FORMATIF (cek pemahaman singkat di akhir pelajaran, bukan ujian). Tugasmu: menerima teks materi dan menghasilkan ${count} soal PILIHAN GANDA. ATURAN:
 1. Output HARUS JSON valid dengan field "judul" (string) dan "soal" (array ${count} item).
-2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D" }.
+2. Tiap soal: { "pertanyaan": string, "tipe": "PG", "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."}, "kunci": "A"|"B"|"C"|"D", "penjelasan": string }.
 3. Kunci HARUS salah satu dari A/B/C/D yang ada di opsi.
-4. Buat distraktor yang masuk akal.
-5. Bahasa Indonesia, untuk siswa SMP/MTs.
-6. Tidak ada markup, tidak ada komentar di luar JSON.`;
+4. Fokus L1 (mengingat) dan L2 (memahami) — cek pemahaman dasar.
+5. penjelasan: 1 kalimat singkat MENGAPA kunci benar (untuk umpan balik instan siswa).
+6. ${larangan}
+7. Buat distraktor yang masuk akal dan seragam panjangnya.
+8. Bahasa Indonesia, untuk siswa SMP/MTs.
+9. Tidak ada markup, tidak ada komentar di luar JSON.`;
 }
 
 export class GenerationTimeoutError extends Error {
@@ -367,13 +382,29 @@ export function validateCoverage(
     uncoveredSoal,
   };
 }
+function buildSoalBatchPrompt(tipe: "PG" | "ISIAN" | "ESSAY", count: number): string {
+  if (tipe === "PG") return buildSoalSystemPrompt(count);
+  const spec =
+    tipe === "ISIAN"
+      ? `tipe:"ISIAN", kunci (jawaban singkat 1-4 kata, unambiguous)`
+      : `tipe:"ESSAY", kunci (jawaban acuan uraian)`;
+  return `Kamu penulis soal PAI untuk asesmen sumatif (ulangan harian/PTS/PAS). Hasilkan ${count} soal ${tipe === "ISIAN" ? "ISIAN SINGKAT" : "URAIAN"} dari materi.
+
+ATURAN:
+1. JSON: {"soal":[{"pertanyaan":string, ${spec}, "penjelasan":string, "levelKognitif":"L1"|"L2"|"L3"}]}.
+2. Setiap item terhubung ke SATU tujuan pembelajaran materi. JANGAN membuat dua item dari kalimat sumber yang sama persis.
+3. ${tipe === "ISIAN" ? "Jawaban harus dapat dinilai otomatis." : "Pertanyaan menguji pemahaman/analisis (L2-L3)."}
+4. Bahasa Indonesia, tanpa markup, tanpa komentar di luar JSON.`;
+}
 async function generateSoalBatch(
   sourceText: string,
-  soalCount: number,
+  pgCount: number,
+  isianCount: number,
+  essayCount: number,
   tingkat?: number,
 ): Promise<ChatResult> {
+  void tingkat;
   const BATCH_SIZE = 5;
-  const batches = Math.ceil(soalCount / BATCH_SIZE);
   let allItems: ValidatedSoalItem[] = [];
   let totalTokensIn = 0;
   let totalTokensOut = 0;
@@ -382,12 +413,12 @@ async function generateSoalBatch(
     | { ok: true; items: ValidatedSoalItem[]; tokensIn: number; tokensOut: number }
     | { ok: false; errMsg: string };
 
-  const attemptBatch = async (batchSize: number): Promise<SoalBatchAttempt> => {
+  const attemptBatch = async (tipe: "PG" | "ISIAN" | "ESSAY", batchSize: number): Promise<SoalBatchAttempt> => {
     try {
       const batchRes = await withTimeout(
         chatWithFallback(
           [
-            { role: "system", content: buildSoalSystemPrompt(batchSize, tingkat) },
+            { role: "system", content: buildSoalBatchPrompt(tipe, batchSize) },
             { role: "user", content: `Materi:\n\n${sourceText}` },
           ],
           { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, batchSize * 200) },
@@ -411,36 +442,64 @@ async function generateSoalBatch(
     }
   };
 
-  for (let i = 0; i < batches; i++) {
-    const batchSize = Math.min(BATCH_SIZE, soalCount - i * BATCH_SIZE);
-    const firstAttempt = await attemptBatch(batchSize);
-    if (firstAttempt.ok) {
-      allItems.push(...firstAttempt.items);
-      totalTokensIn += firstAttempt.tokensIn;
-      totalTokensOut += firstAttempt.tokensOut;
-      console.log(`[ai-generator] soal batch ${i + 1}/${batches}: ${firstAttempt.items.length} soal OK`);
-      continue;
+  const runSegment = async (tipe: "PG" | "ISIAN" | "ESSAY", count: number): Promise<void> => {
+    if (count <= 0) return;
+    const label = tipe === "PG" ? "PG" : tipe === "ISIAN" ? "ISIAN" : "ESSAY";
+    if (tipe === "PG") {
+      const batches = Math.ceil(count / BATCH_SIZE);
+      for (let i = 0; i < batches; i++) {
+        const batchSize = Math.min(BATCH_SIZE, count - i * BATCH_SIZE);
+        const firstAttempt = await attemptBatch("PG", batchSize);
+        if (firstAttempt.ok) {
+          allItems.push(...firstAttempt.items);
+          totalTokensIn += firstAttempt.tokensIn;
+          totalTokensOut += firstAttempt.tokensOut;
+          console.log(`[ai-generator] soal ${label} batch ${i + 1}/${batches}: ${firstAttempt.items.length} soal OK`);
+          continue;
+        }
+        console.warn(`[ai-generator] soal ${label} batch ${i + 1}/${batches} gagal, mencoba ulang (1/1): ${firstAttempt.errMsg}`);
+        const retryAttempt = await attemptBatch("PG", batchSize);
+        if (retryAttempt.ok) {
+          allItems.push(...retryAttempt.items);
+          totalTokensIn += retryAttempt.tokensIn;
+          totalTokensOut += retryAttempt.tokensOut;
+          console.log(`[ai-generator] soal ${label} batch ${i + 1}/${batches}: ${retryAttempt.items.length} soal OK (retry 1/1)`);
+          continue;
+        }
+        console.error(`[ai-generator] soal ${label} batch ${i + 1}/${batches} failed after retry, skipping: ${retryAttempt.errMsg}`);
+      }
+    } else {
+      const attempt = await attemptBatch(tipe, count);
+      if (attempt.ok) {
+        allItems.push(...attempt.items);
+        totalTokensIn += attempt.tokensIn;
+        totalTokensOut += attempt.tokensOut;
+        console.log(`[ai-generator] soal ${label}: ${attempt.items.length} soal OK`);
+        return;
+      }
+      console.warn(`[ai-generator] soal ${label} gagal, mencoba ulang (1/1): ${attempt.errMsg}`);
+      const retryAttempt = await attemptBatch(tipe, count);
+      if (retryAttempt.ok) {
+        allItems.push(...retryAttempt.items);
+        totalTokensIn += retryAttempt.tokensIn;
+        totalTokensOut += retryAttempt.tokensOut;
+        console.log(`[ai-generator] soal ${label}: ${retryAttempt.items.length} soal OK (retry 1/1)`);
+        return;
+      }
+      console.error(`[ai-generator] soal ${label} failed after retry, skipping: ${retryAttempt.errMsg}`);
     }
+  };
 
-    console.warn(`[ai-generator] soal batch ${i + 1}/${batches} gagal, mencoba ulang (1/1): ${firstAttempt.errMsg}`);
-    const retryAttempt = await attemptBatch(batchSize);
-    if (retryAttempt.ok) {
-      allItems.push(...retryAttempt.items);
-      totalTokensIn += retryAttempt.tokensIn;
-      totalTokensOut += retryAttempt.tokensOut;
-      console.log(`[ai-generator] soal batch ${i + 1}/${batches}: ${retryAttempt.items.length} soal OK (retry 1/1)`);
-      continue;
-    }
+  await runSegment("PG", pgCount);
+  await runSegment("ISIAN", isianCount);
+  await runSegment("ESSAY", essayCount);
 
-    console.error(`[ai-generator] soal batch ${i + 1}/${batches} failed after retry, skipping: ${retryAttempt.errMsg}`);
-  }
-
+  const totalTarget = pgCount + isianCount + essayCount;
   if (allItems.length === 0) {
-    throw new Error(`Gagal generate soal: 0/${soalCount} soal berhasil setelah ${batches} batch`);
+    throw new Error(`Gagal generate soal: 0/${totalTarget} soal berhasil`);
   }
-
-  if (allItems.length < soalCount) {
-    console.warn(`[ai-generator] soal partial: ${allItems.length}/${soalCount} soal berhasil`);
+  if (allItems.length < totalTarget) {
+    console.warn(`[ai-generator] soal partial: ${allItems.length}/${totalTarget} soal berhasil`);
   }
 
   // Cross-batch dedup: keep FIRST occurrence, drop later duplicates.
@@ -485,6 +544,9 @@ export async function runGeneration(
   fileBytes: Buffer,
   ext: string,
   soalCount = 25,
+  pgCount = 15,
+  isianCount = 5,
+  essayCount = 5,
   quizCount = 10,
 ): Promise<GenerationResult> {
   const [gen] = await db
@@ -622,7 +684,7 @@ export async function runGeneration(
 
     let soalRes: ChatResult;
     try {
-      soalRes = await generateSoalBatch(truncatedSource, soalCount);
+      soalRes = await generateSoalBatch(truncatedSource, pgCount, isianCount, essayCount);
       console.log("[ai-generator] soal done (batch).");
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
@@ -804,6 +866,9 @@ export async function runGenerationFromText(
   sourceText: string,
   guruId: string,
   soalCount = 25,
+  pgCount = 15,
+  isianCount = 5,
+  essayCount = 5,
   quizCount = 10,
   tingkat?: number,
 ): Promise<void> {
@@ -853,7 +918,7 @@ export async function runGenerationFromText(
     quizRes = await withTimeout(
       chatWithFallback(
         [
-          { role: "system", content: buildQuizSystemPrompt(quizCount) },
+          { role: "system", content: buildQuizSystemPrompt(quizCount, []) },
           { role: "user", content: `Materi:\n\n${truncatedSource}` },
         ],
         { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60), timeoutMs: AI_TIMEOUT_MS },
@@ -869,7 +934,7 @@ export async function runGenerationFromText(
       quizRes = await withTimeout(
         chatWithFallback(
           [
-            { role: "system", content: buildQuizSystemPrompt(quizCount) },
+            { role: "system", content: buildQuizSystemPrompt(quizCount, []) },
             { role: "user", content: `Materi:\n\n${truncatedSource}` },
           ],
           { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60), timeoutMs: AI_TIMEOUT_MS },
@@ -889,7 +954,7 @@ export async function runGenerationFromText(
 
   let soalRes: ChatResult;
   try {
-    soalRes = await generateSoalBatch(truncatedSource, soalCount, tingkat);
+    soalRes = await generateSoalBatch(truncatedSource, pgCount, isianCount, essayCount, tingkat);
     console.log("[ai-generator] soal done (batch).");
   } catch (error) {
     console.error("[ai-generator] soal AI failed, using fallback:", error);
@@ -908,6 +973,8 @@ export async function runGenerationFromText(
   let materiParsed = parseMateriSafe(materiRes.content);
   let quizParsed = parseQuizSafe(quizRes.content);
   let soalParsed = parseSoalSafe(soalRes.content);
+  const soalPertanyaan = soalParsed ? soalParsed.soal.map((s) => s.pertanyaan) : [];
+  void soalPertanyaan;
 
   if (soalParsed && isFallbackSoal(soalParsed.soal)) {
     console.warn("[ai-generator] FALLBACK DETECTED — soal contains template patterns");

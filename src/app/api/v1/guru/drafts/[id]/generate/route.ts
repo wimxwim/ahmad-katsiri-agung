@@ -175,6 +175,9 @@ export async function POST(
     }
 
     let soalCount = 25;
+    let pgCount = 15;
+    let isianCount = 5;
+    let essayCount = 5;
     let quizCount = 10;
     try {
       const body = await request.clone().json().catch(() => null);
@@ -185,6 +188,9 @@ export async function POST(
         const totalFromBody = pg + isian + essay;
         if (totalFromBody > 0) soalCount = Math.min(50, Math.max(5, totalFromBody));
         if (typeof body.quizCount === "number" && body.quizCount > 0) quizCount = Math.min(15, Math.max(5, body.quizCount));
+        if (typeof body.pgCount === "number" && body.pgCount > 0) pgCount = body.pgCount;
+        if (typeof body.isianCount === "number" && body.isianCount > 0) isianCount = body.isianCount;
+        if (typeof body.essayCount === "number" && body.essayCount > 0) essayCount = body.essayCount;
       }
     } catch {
       // fallback to defaults
@@ -312,7 +318,7 @@ export async function POST(
 
     after(async () => {
       try {
-        await runGenerationFromText(id, finalText, guruId, soalCount, quizCount, tingkat);
+        await runGenerationFromText(id, finalText, guruId, soalCount, pgCount, isianCount, essayCount, quizCount, tingkat);
         invalidateGuruCache(guruId).catch(() => {});
 
         const [gen] = await db

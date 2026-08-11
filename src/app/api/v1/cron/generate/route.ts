@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
         .set({ status: "generating", leaseUntil: new Date(Date.now() + LEASE_MINUTES * 60_000), updatedAt: new Date() })
         .where(eq(aiGeneration.id, job.id));
 
-      await runGenerationFromText(job.id, sourceText, job.guru_id, 25, 10, job.tingkat ?? undefined);
+      await runGenerationFromText(job.id, sourceText, job.guru_id, 25, 15, 5, 5, 10, job.tingkat ?? undefined);
 
       await appendEvent(`gen:${job.guru_id}`, "gen.ready", {
         generationId: job.id,
