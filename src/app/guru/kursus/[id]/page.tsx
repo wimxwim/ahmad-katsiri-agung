@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Users, FileText, ArrowLeft, BarChart3 } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
+import { KKM } from "@/lib/constants";
 
 interface KursusDetail {
   id: string;
@@ -18,49 +18,49 @@ interface KursusDetail {
 interface SiswaItem { siswaId: string; nama: string; skorRataRata: number }
 
 export default function KursusDetailPage() {
-  const router = useRouter();
   const params = useParams();
   const [kursus, setKursus] = useState<KursusDetail | null>(null);
   const [siswa, setSiswa] = useState<SiswaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [kursusRes, nilaiRes] = await Promise.all([
-          fetch(`/api/v1/kursus/${params.id}`, { credentials: "include" }),
-          fetch(`/api/v1/kursus/${params.id}/nilai`, { credentials: "include" }),
-        ]);
-        if (kursusRes.status === 404) { setKursus(null); setLoading(false); return; }
-        if (!kursusRes.ok) throw new Error("Gagal memuat kursus");
-        const kursusData = await kursusRes.json();
-        setKursus(kursusData.data);
-        const nilaiData = await nilaiRes.json().catch(() => ({ data: [] }));
-        const logEntries: { siswaId: string; nama: string; nilai: number | null }[] = nilaiData.data || [];
-        const skorMap = new Map<string, number[]>();
-        for (const entry of logEntries) {
-          if (entry.nilai !== null && entry.nilai !== undefined) {
-            const arr = skorMap.get(entry.siswaId) || [];
-            arr.push(entry.nilai);
-            skorMap.set(entry.siswaId, arr);
-          }
+  const load = useCallback(async () => {
+    try {
+      const [kursusRes, nilaiRes] = await Promise.all([
+        fetch(`/api/v1/kursus/${params.id}`, { credentials: "include" }),
+        fetch(`/api/v1/kursus/${params.id}/nilai`, { credentials: "include" }),
+      ]);
+      if (kursusRes.status === 404) { setKursus(null); setLoading(false); return; }
+      if (!kursusRes.ok) throw new Error("Gagal memuat kursus");
+      const kursusData = await kursusRes.json();
+      setKursus(kursusData.data);
+      const nilaiData = await nilaiRes.json().catch(() => ({ data: [] }));
+      const logEntries: { siswaId: string; nama: string; nilai: number | null }[] = nilaiData.data || [];
+      const skorMap = new Map<string, number[]>();
+      for (const entry of logEntries) {
+        if (entry.nilai !== null && entry.nilai !== undefined) {
+          const arr = skorMap.get(entry.siswaId) || [];
+          arr.push(entry.nilai);
+          skorMap.set(entry.siswaId, arr);
         }
-        const enrolledRaw = kursusData.data.enrolledStudents || [];
-        const siswaList: SiswaItem[] = enrolledRaw.map((e: { siswaId: string; nama: string | null }) => {
-          const scores = skorMap.get(e.siswaId);
-          const skorRataRata = scores && scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-          return { siswaId: e.siswaId, nama: e.nama || "Tanpa Nama", skorRataRata };
-        });
-        setSiswa(siswaList);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Gagal memuat data");
-      } finally {
-        setLoading(false);
       }
+      const enrolledRaw = kursusData.data.enrolledStudents || [];
+      const siswaList: SiswaItem[] = enrolledRaw.map((e: { siswaId: string; nama: string | null }) => {
+        const scores = skorMap.get(e.siswaId);
+        const skorRataRata = scores && scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+        return { siswaId: e.siswaId, nama: e.nama || "Tanpa Nama", skorRataRata };
+      });
+      setSiswa(siswaList);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gagal memuat data");
+    } finally {
+      setLoading(false);
     }
-    fetchData();
   }, [params.id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   if (loading) {
     return (
@@ -79,7 +79,8 @@ export default function KursusDetailPage() {
     return (
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline active:scale-[0.98]">Coba lagi</button>
+        {/* bug-fix: router dihapus saat refactor, ganti dengan load() */}
+        <button onClick={() => { setLoading(true); setError(""); load(); }} className="text-sm text-primary hover:underline active:scale-[0.98]">Coba lagi</button>
       </div>
     );
   }
@@ -152,7 +153,7 @@ export default function KursusDetailPage() {
                     <td className="px-4 py-3 text-on-surface-variant">{i + 1}</td>
                     <td className="px-4 py-3 font-medium text-on-surface">{s.nama}</td>
                     <td className="px-4 py-3 text-right">
-                      <span className={s.skorRataRata < 70 ? "text-red-600 font-medium" : "text-emerald-600 font-medium"}>
+                      <span className={s.skorRataRata < KKM ? "text-red-600 font-medium" : "text-emerald-600 font-medium"}>
                         {s.skorRataRata}%
                       </span>
                     </td>

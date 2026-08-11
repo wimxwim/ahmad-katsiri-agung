@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 import { csrfHeaders } from "@/lib/csrf";
 import { useToast } from "@/components/ui/Toast";
+import { MIN_TOPUP } from "@/lib/token-constants";
 
 interface DraftItem {
   id: string;
@@ -66,7 +67,7 @@ export default function GuruDraftsPage() {
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         if (res.status === 402 && j?.locked) {
-          setGenerateError("Fitur generate AI terkunci. Silakan top-up minimal Rp10.000 untuk membuka akses.");
+          setGenerateError(`Fitur generate AI terkunci. Silakan top-up minimal Rp${MIN_TOPUP.toLocaleString("id-ID")} untuk membuka akses.`);
           const timer = setTimeout(() => router.push("/guru/topup"), 2000);
           if (typeof window !== "undefined") {
             const cleanup = () => { clearTimeout(timer); window.removeEventListener("beforeunload", cleanup); };

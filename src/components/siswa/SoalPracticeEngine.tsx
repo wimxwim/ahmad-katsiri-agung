@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { EASE_CURVE } from "@/lib/constants";
+import { EASE_CURVE, KKM } from "@/lib/constants";
 import { ArrowLeft, CheckCircle2, XCircle, AlertTriangle, FileText, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { csrfHeaders } from "@/lib/csrf";
@@ -194,8 +194,8 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
     return (
       <div className="bg-glass border border-border-precision rounded-2xl p-6 sm:p-8 shadow-glass-lg">
         <div className="text-center mb-6">
-          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${persen >= 70 ? "bg-emerald-100" : "bg-amber-100"}`}>
-            {persen >= 70 ? (
+          <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${persen >= KKM ? "bg-emerald-100" : "bg-amber-100"}`}>
+            {persen >= KKM ? (
               <CheckCircle2 className="w-8 h-8 text-emerald-600" />
             ) : (
               <AlertTriangle className="w-8 h-8 text-amber-600" />
@@ -231,7 +231,7 @@ export function SoalPracticeEngine({ batch, onBack }: { batch: BatchData; onBack
           </div>
           <div className="w-full h-2 bg-surface rounded-full overflow-hidden">
             <div
-              className={cn("h-full rounded-full transition-all duration-700", persen >= 70 ? "bg-emerald-500" : "bg-amber-500")}
+              className={cn("h-full rounded-full transition-all duration-700", persen >= KKM ? "bg-emerald-500" : "bg-amber-500")}
               style={{ width: `${persen}%` }}
             />
           </div>

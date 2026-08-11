@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { Search, Users, Filter, ShieldAlert } from "lucide-react";
 import { apiFetch } from "@/lib/api-helpers";
@@ -21,7 +20,6 @@ interface KursusOption {
 }
 
 export default function SiswaListPage() {
-  const router = useRouter();
   const [siswa, setSiswa] = useState<SiswaItem[]>([]);
   const [kursusOptions, setKursusOptions] = useState<KursusOption[]>([]);
   const [search, setSearch] = useState("");
@@ -31,7 +29,7 @@ export default function SiswaListPage() {
   const [error, setError] = useState("");
   const abortRef = useRef<AbortController | null>(null);
 
-  async function fetchData(kursusId?: string) {
+  const load = useCallback(async (kursusId?: string) => {
     try {
       abortRef.current?.abort();
       const controller = new AbortController();
@@ -53,11 +51,11 @@ export default function SiswaListPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
-    fetchData(filterKursus);
-  }, [filterKursus]);
+    load(filterKursus);
+  }, [filterKursus, load]);
 
   const filtered = siswa.filter((s) => {
     const q = search.toLowerCase();
@@ -86,7 +84,7 @@ export default function SiswaListPage() {
     return (
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
-        <button onClick={() => router.refresh()} className="text-sm text-primary hover:underline active:scale-[0.98]">Coba lagi</button>
+        <button onClick={() => load(filterKursus)} className="text-sm text-primary hover:underline active:scale-[0.98]">Coba lagi</button>
       </div>
     );
   }

@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
+import { MIN_TOPUP } from "@/lib/token-constants";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { apiFetch } from "@/lib/api-helpers";
 import { cn } from "@/lib/utils";
@@ -395,7 +396,7 @@ export default function GuruProfilPage() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-on-surface-variant">
                   <Lock className="w-4 h-4 text-red-400" />
-                  Generate AI: terkunci (top-up Rp5.000)
+                  Generate AI: terkunci (top-up Rp{MIN_TOPUP.toLocaleString("id-ID")})
                 </div>
               </div>
               <Link

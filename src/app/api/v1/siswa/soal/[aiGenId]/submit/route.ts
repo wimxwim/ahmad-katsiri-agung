@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { soalPublished, siswaKursus, aiGeneration, quizSession, jawabanLog } from "@/lib/db/schema";
+import { soalPublished, siswaKursus, aiGeneration, quizSession } from "@/lib/db/schema";
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
@@ -82,25 +82,7 @@ export async function POST(
       })
       .returning();
 
-    // Step 2: INSERT jawaban_log (batch 50)
-    const jawabanLogEntries = soals.map((s) => {
-      const jwb = jawaban[s.id] || "";
-      return {
-        siswaId: session.userId!,
-        soalId: s.id,
-        jawabanSiswa: jwb,
-        isBenar: jwb === s.kunci,
-        waktuJawabDetik: 0,
-        quizSessionId: qs.id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-    });
-
-    for (let i = 0; i < jawabanLogEntries.length; i += 50) {
-      await db.insert(jawabanLog).values(jawabanLogEntries.slice(i, i + 50));
-    }
-
+    // bugfix(E4): hapus double-insert jawabanLog
     // Step 3: processQuizResults (fire-and-forget)
     const answersForProcessor = soals.map((s) => {
       const jwb = jawaban[s.id] || "";

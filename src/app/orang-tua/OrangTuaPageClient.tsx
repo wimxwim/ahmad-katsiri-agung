@@ -3,6 +3,7 @@
 import { Heart, BookOpen, TrendingUp, Megaphone, AlertCircle, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { KKM } from "@/lib/constants";
 
 interface OrangTuaData {
   namaAnak: string;
@@ -190,7 +191,7 @@ export function OrangTuaPageClient({ initialData }: { initialData: OrangTuaData 
             </div>
             <div className={cn(
               "px-4 py-2 rounded-xl font-heading font-bold text-lg",
-              data.quizTerakhir.nilai >= 70 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+              data.quizTerakhir.nilai >= KKM ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
             )}>
               {data.quizTerakhir.nilai}
             </div>

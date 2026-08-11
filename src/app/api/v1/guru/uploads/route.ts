@@ -16,6 +16,7 @@ import { extractText } from "@/lib/text-extractor";
 import { incrementUploadCount, getSubscriptionStatus, requireNotSuspended } from "@/lib/token-service";
 import { MIN_TOPUP } from "@/lib/token-constants";
 import crypto from "crypto";
+import JSZip from "jszip";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -37,9 +38,38 @@ const ALLOWED_MIME = new Set([
 const MAX_SIZE = 10 * 1024 * 1024;
 
 const MAGIC_BYTES: { ext: string; bytes: number[] }[] = [
-  { ext: "pdf", bytes: [0x25, 0x50, 0x44, 0x46] },
+  { ext: "pdf", bytes: [0x25, 0x50, 0x44, 0x46, 0x2d] },
   { ext: "docx", bytes: [0x50, 0x4b, 0x03, 0x04] },
 ];
+
+const IMAGEKIT_HOSTS = new Set(["ik.imagekit.io", "upload.imagekit.io"]);
+
+function isAllowedImageKitUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== "https:") return false;
+    if (IMAGEKIT_HOSTS.has(u.hostname)) return true;
+    return u.hostname.endsWith(".ik.imagekit.io");
+  } catch {
+    return false;
+  }
+}
+
+async function isValidDocxBytes(buf: Buffer): Promise<boolean> {
+  try {
+    const zip = await JSZip.loadAsync(buf, { checkCRC32: false });
+    return Boolean(zip.file("[Content_Types].xml") && zip.file("word/document.xml"));
+  } catch {
+    return false;
+  }
+}
+
+async function isFileContentValid(buf: Buffer, ext: string): Promise<boolean> {
+  const detected = detectExtension(buf);
+  if (!detected || detected !== ext) return false;
+  if (ext === "docx") return isValidDocxBytes(buf);
+  return true;
+}
 
 function detectKategori(fileName: string, ext: string): string {
   const lower = fileName.toLowerCase();
@@ -91,6 +121,9 @@ async function handleDirectUpload(
   }
   if (typeof linkAkses !== "string" || !linkAkses) {
     return apiError("linkAkses wajib diisi", 400);
+  }
+  if (!isAllowedImageKitUrl(linkAkses)) {
+    return apiError("linkAkses harus URL ImageKit yang valid", 400);
   }
   if (typeof fileName !== "string" || !fileName) {
     return apiError("fileName wajib diisi", 400);
@@ -184,9 +217,13 @@ async function handleDirectUpload(
   let extractionStatus: "extracted" | "queued" = "queued";
   let downloadedBytes: Buffer | null = null;
   try {
-    const res = await fetch(linkAkses, { signal: AbortSignal.timeout(90_000) });
+    const res = await fetch(linkAkses, { signal: AbortSignal.timeout(90_000), redirect: "error" });
     if (!res.ok) throw new Error(`ImageKit download gagal (${res.status})`);
     downloadedBytes = Buffer.from(await res.arrayBuffer());
+
+    if (!(await isFileContentValid(downloadedBytes, detected))) {
+      throw new Error("Isi file tidak sesuai dengan ekstensi yang dikirim");
+    }
 
     const text = await extractText(downloadedBytes, detected);
     if (text && text.length >= 50) {
@@ -318,6 +355,9 @@ export async function POST(request: NextRequest) {
     }
     if (detected !== extFromName) {
       return apiError(`Ekstensi .${extFromName} tidak cocok dengan isi file (.${detected})`, 415);
+    }
+    if (detected === "docx" && !(await isValidDocxBytes(bytes))) {
+      return apiError("DOCX tidak valid (struktur OOXML tidak ditemukan)", 415);
     }
 
     const fileHash = sha256(bytes);

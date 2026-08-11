@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { BookOpen, Users, TrendingUp, Award, AlertTriangle, Send, ChevronRight, BarChart3, XCircle, RefreshCw, Lightbulb, GraduationCap, FileEdit, ListChecks, Brain, Target } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
@@ -82,30 +81,33 @@ interface AnalyticsResponse {
 }
 
 export default function GuruAnalyticsPage() {
-  const router = useRouter();
   const [data, setData] = useState<AnalyticsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const aliveRef = useRef(true);
+
+  const load = useCallback(async () => {
+    try {
+      const result = await apiFetch<AnalyticsResponse>("/api/v1/guru/analytics");
+      if (!aliveRef.current) return;
+      if (!result.ok || !result.data) {
+        setError(result.error || "Gagal memuat data analytics");
+      } else {
+        setData(result.data);
+      }
+    } catch {
+      if (!aliveRef.current) return;
+      setError("Terjadi kesalahan saat memuat data. Coba lagi.");
+    } finally {
+      if (aliveRef.current) setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let alive = true;
-    apiFetch<AnalyticsResponse>("/api/v1/guru/analytics")
-      .then((result) => {
-        if (!alive) return;
-        if (!result.ok || !result.data) {
-          setError(result.error || "Gagal memuat data analytics");
-        } else {
-          setData(result.data);
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        if (!alive) return;
-        setError("Terjadi kesalahan saat memuat data. Coba lagi.");
-        setLoading(false);
-      });
-    return () => { alive = false; };
-  }, []);
+    aliveRef.current = true;
+    load();
+    return () => { aliveRef.current = false; };
+  }, [load]);
 
   if (loading) {
     return (
@@ -130,7 +132,7 @@ export default function GuruAnalyticsPage() {
         <h2 className="font-heading text-xl text-on-surface mb-2">Gagal Memuat Analytics</h2>
         <p className="text-on-surface-variant mb-6 max-w-md">{error}</p>
         <button
-          onClick={() => router.refresh()}
+          onClick={() => { setLoading(true); setError(""); load(); }}
           className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-300 cursor-pointer"
         >
           <RefreshCw className="w-4 h-4" />
@@ -176,7 +178,7 @@ export default function GuruAnalyticsPage() {
               label="Rata-rata Nilai"
               value={data.rataNilaiKeseluruhan}
               icon={Award}
-              color={data.rataNilaiKeseluruhan >= 70 ? "#005231" : "#b45309"}
+              color={data.rataNilaiKeseluruhan >= KKM ? "#005231" : "#b45309"}
             />
           </div>
 
@@ -196,7 +198,7 @@ export default function GuruAnalyticsPage() {
               </p>
               <p className="font-heading text-2xl font-bold text-emerald-700">{data.totalSiswaTuntas}</p>
               <p className="text-xs text-on-surface-variant mt-1">
-                Siswa dengan rata-rata nilai &ge; 70
+                Siswa dengan rata-rata nilai &ge; {KKM}
               </p>
             </div>
             <div className="bg-glass border border-border-precision rounded-2xl p-5 shadow-glass">
@@ -513,7 +515,7 @@ export default function GuruAnalyticsPage() {
                         </p>
                       </div>
                       <div className="text-right shrink-0 ml-3">
-                        <p className={`font-heading font-bold text-sm ${k.rataNilai >= 70 ? "text-emerald-700" : "text-red-600"}`}>
+                        <p className={`font-heading font-bold text-sm ${k.rataNilai >= KKM ? "text-emerald-700" : "text-red-600"}`}>
                           {k.rataNilai}
                         </p>
                         <p className="text-xs text-on-surface-variant">rata-rata</p>

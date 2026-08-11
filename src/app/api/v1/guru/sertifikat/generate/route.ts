@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       if (eligible.length === 0) {
         return NextResponse.json({
           success: true,
-          message: "Belum ada siswa yang memenuhi syarat sertifikat. Siswa harus mengerjakan quiz (mode Belajar/Ulangan) dengan nilai minimal 70.",
+          message: `Belum ada siswa yang memenuhi syarat sertifikat. Siswa harus mengerjakan quiz (mode Belajar/Ulangan) dengan nilai minimal ${KKM}.`,
           data: { generated: 0, totalEligible: 0 },
         });
       }

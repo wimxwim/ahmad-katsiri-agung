@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, BookOpen, CheckCircle2, AlertCircle, BarChart3, GraduationCap, Search, Lightbulb, Send, XCircle } from "lucide-react";
 import { MasteryChart } from "@/components/guru/MasteryChart";
+import { KKM } from "@/lib/constants";
 
 interface SiswaProfil {
   id: string;
@@ -182,7 +183,7 @@ export default function GuruSiswaDetailPage() {
           <p className="text-xs font-bold tracking-wider text-on-surface-variant">RATA-RATA</p>
           <p className={`font-heading text-2xl font-bold mt-1 ${
             data.rataNilai !== null
-              ? data.rataNilai >= 70 ? "text-emerald-700" : "text-red-600"
+              ? data.rataNilai >= KKM ? "text-emerald-700" : "text-red-600"
               : "text-on-surface-variant"
           }`}>
             {data.rataNilai !== null ? data.rataNilai : "—"}
@@ -203,13 +204,13 @@ export default function GuruSiswaDetailPage() {
         className="mb-6"
       />
 
-      {data.rataNilai !== null && data.rataNilai < 70 && (
+      {data.rataNilai !== null && data.rataNilai < KKM && (
         <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
           <Lightbulb className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
           <div className="flex-1">
             <p className="font-semibold text-amber-900 text-sm mb-1">Saran Remedial</p>
             <p className="text-xs text-amber-700">
-              Siswa ini memiliki rata-rata <b>{data.rataNilai}</b> (di bawah KKM 70).
+              Siswa ini memiliki rata-rata <b>{data.rataNilai}</b> (di bawah KKM {KKM}).
               Fokuskan remedial pada topik dengan nilai terendah di riwayat quiz.
             </p>
             <div className="flex gap-2 mt-3">

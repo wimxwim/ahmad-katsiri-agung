@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { EASE_CURVE } from "@/lib/constants";
+import { EASE_CURVE, WA_NUMBER } from "@/lib/constants";
 import { getCached, setCache } from "@/lib/data-cache";
 import { csrfHeaders } from "@/lib/csrf";
 import { cn } from "@/lib/utils";
@@ -248,7 +248,7 @@ export default function SiswaBerandaPage() {
           </Link>
           <p className="text-xs text-on-surface-variant/50 mt-6">
             Butuh bantuan?{" "}
-            <a href="https://wa.me/6285158795502" target="_blank" rel="noopener noreferrer" className="text-primary underline inline-flex items-center gap-1">
+            <a href={`https://wa.me/${WA_NUMBER}`} target="_blank" rel="noopener noreferrer" className="text-primary underline inline-flex items-center gap-1">
               <WaIcon className="w-4 h-4 text-[#25D366]" />
               Chat WhatsApp
             </a>

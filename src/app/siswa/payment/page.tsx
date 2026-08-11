@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { EASE_CURVE } from "@/lib/constants";
+import { EASE_CURVE, WA_NUMBER } from "@/lib/constants";
+import { MIN_TOPUP } from "@/lib/token-constants";
 import { cn } from "@/lib/utils";
 import {
   Coins,
@@ -141,14 +142,14 @@ export default function SiswaPaymentPage() {
         </p>
         <div className="mt-4 flex items-center gap-3">
           <Link
-            href="https://wa.me/6285158795502?text=Halo%2C%20saya%20mau%20isi%20token%20AKAL%20Center"
+            href={`https://wa.me/${WA_NUMBER}?text=Halo%2C%20saya%20mau%20isi%20token%20AKAL%20Center`}
             className="inline-flex items-center gap-2 bg-[#eec055] text-[#003d24] px-5 py-2.5 rounded-full text-sm font-bold hover:brightness-110 active:scale-[0.98] transition-all"
           >
             <Sparkles className="w-4 h-4" />
             Isi Token
           </Link>
           <p className="text-xs text-white/50">
-            Mulai dari Rp 10.000
+            Mulai dari Rp {MIN_TOPUP.toLocaleString("id-ID")}
           </p>
         </div>
       </motion.div>
@@ -219,7 +220,7 @@ export default function SiswaPaymentPage() {
         className="mt-5"
       >
         <Link
-          href="https://wa.me/6285158795502"
+          href={`https://wa.me/${WA_NUMBER}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 bg-glass border border-border-precision rounded-2xl p-4 hover:bg-white/80 hover:border-primary/25 active:scale-[0.99] transition-all duration-200"

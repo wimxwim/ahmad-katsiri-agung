@@ -1,3 +1,5 @@
+import { KKM } from "@/lib/constants";
+
 interface SiswaRow {
   nama: string;
   kelas: string;
@@ -63,7 +65,7 @@ export function GradebookTable({ siswa, quizzes, siswaQuizMap }: GradebookTableP
                   const scoreColor =
                     score === undefined
                       ? "text-on-surface-variant/40"
-                      : score >= 70
+                      : score >= KKM
                       ? "text-green-600"
                       : "text-red-600";
                   return (
@@ -74,7 +76,7 @@ export function GradebookTable({ siswa, quizzes, siswaQuizMap }: GradebookTableP
                 })}
                 <td
                   className={`py-3 px-4 text-center font-bold ${
-                    avg >= 70 ? "text-green-600" : "text-red-600"
+                    avg >= KKM ? "text-green-600" : "text-red-600"
                   }`}
                 >
                   {avg > 0 ? `${Math.round(avg)}%` : "-"}

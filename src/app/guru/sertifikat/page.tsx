@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import { Award, Users, Loader2, CheckCircle2 } from "lucide-react";
 import { EASE_CURVE } from "@/lib/constants";
@@ -17,14 +16,13 @@ interface KursusSertifikat {
 }
 
 export default function SertifikatPage() {
-  const router = useRouter();
   const [kursus, setKursus] = useState<KursusSertifikat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [generating, setGenerating] = useState<string | null>(null);
   const [generated, setGenerated] = useState<string | null>(null);
 
-  async function fetchData() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError("");
     const result = await apiFetch<KursusSertifikat[]>("/api/v1/guru/sertifikat/kursus");
@@ -34,11 +32,11 @@ export default function SertifikatPage() {
       setKursus(result.data ?? []);
     }
     setLoading(false);
-  }
+  }, []);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    load();
+  }, [load]);
 
   async function handleGenerate(kursusId: string) {
     setGenerating(kursusId);
@@ -50,7 +48,7 @@ export default function SertifikatPage() {
     if (result.ok) {
       setGenerated(kursusId);
       setTimeout(() => setGenerated(null), 3000);
-      await fetchData();
+      await load();
     } else {
       setError(result.error);
     }
@@ -72,7 +70,7 @@ export default function SertifikatPage() {
       <div className="text-center py-16">
         <p className="text-red-600 mb-2">{error}</p>
         <button
-          onClick={() => router.refresh()}
+          onClick={() => load()}
           className="text-sm text-primary hover:underline"
         >
           Coba lagi
