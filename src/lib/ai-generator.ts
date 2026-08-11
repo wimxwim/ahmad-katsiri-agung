@@ -901,27 +901,16 @@ export async function runGenerationFromText(
   try {
     materiRes = await withTimeout(
       chatMateri(truncatedSource, tingkat),
-      Math.min(AI_TIMEOUT_MS, timeLeft()),
+      Math.min(180_000, timeLeft()),
       "ai-materi",
     );
     console.log("[ai-generator] materi done, starting quiz...");
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.warn("[ai-generator] materi AI gagal, mencoba ulang (1/1):", errMsg);
-    try {
-      materiRes = await withTimeout(
-        chatMateri(truncatedSource, tingkat),
-        Math.min(AI_TIMEOUT_MS, timeLeft()),
-        "ai-materi",
-      );
-      console.log("[ai-generator] materi done (retry 1/1), starting quiz...");
-    } catch (retryError) {
-      const retryErrMsg = retryError instanceof Error ? retryError.message : String(retryError);
-      console.error("[ai-generator] materi AI failed after retry, using fallback:", retryErrMsg);
-      console.error("[ai-generator] error stack:", retryError instanceof Error ? (retryError.stack ?? "").slice(0, 500) : "");
-      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
-      materiRes = fb[0];
-    }
+    console.error("[ai-generator] materi AI failed (1 attempt), using fallback:", errMsg);
+    console.error("[ai-generator] error stack:", error instanceof Error ? (error.stack ?? "").slice(0, 500) : "");
+    const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+    materiRes = fb[0];
   }
 
   let quizRes: ChatResult;
@@ -932,7 +921,7 @@ export async function runGenerationFromText(
           { role: "system", content: buildQuizSystemPrompt(quizCount, []) },
           { role: "user", content: `Materi:\n\n${truncatedSource}` },
         ],
-        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60), timeoutMs: AI_TIMEOUT_MS },
+        { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60), timeoutMs: Math.min(AI_TIMEOUT_MS, timeLeft()) },
       ),
       Math.min(AI_TIMEOUT_MS, timeLeft()),
       "ai-quiz",
@@ -940,27 +929,10 @@ export async function runGenerationFromText(
     console.log("[ai-generator] quiz done, starting soal...");
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
-    console.warn("[ai-generator] quiz AI gagal, mencoba ulang (1/1):", errMsg);
-    try {
-      quizRes = await withTimeout(
-        chatWithFallback(
-          [
-            { role: "system", content: buildQuizSystemPrompt(quizCount, []) },
-            { role: "user", content: `Materi:\n\n${truncatedSource}` },
-          ],
-          { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(800, quizCount * 60), timeoutMs: AI_TIMEOUT_MS },
-        ),
-        Math.min(AI_TIMEOUT_MS, timeLeft()),
-        "ai-quiz",
-      );
-      console.log("[ai-generator] quiz done (retry 1/1), starting soal...");
-    } catch (retryError) {
-      const retryErrMsg = retryError instanceof Error ? retryError.message : String(retryError);
-      console.error("[ai-generator] quiz AI failed after retry, using fallback:", retryErrMsg);
-      console.error("[ai-generator] error stack:", retryError instanceof Error ? (retryError.stack ?? "").slice(0, 500) : "");
-      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
-      quizRes = fb[1];
-    }
+    console.error("[ai-generator] quiz AI failed (1 attempt), using fallback:", errMsg);
+    console.error("[ai-generator] error stack:", error instanceof Error ? (error.stack ?? "").slice(0, 500) : "");
+    const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
+    quizRes = fb[1];
   }
 
   let soalRes: ChatResult;
