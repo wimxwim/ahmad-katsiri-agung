@@ -144,6 +144,14 @@ export default function GuruUploadPage() {
       setError("Pilih kursus dulu");
       return;
     }
+    if (!selectedKelasId) {
+      setError(
+        kelasList.length === 0
+          ? "Buat kelas dulu sebelum upload dokumen."
+          : "Pilih kelas untuk melanjutkan",
+      );
+      return;
+    }
     setError("");
     setSuccessFileName(null);
 
@@ -190,7 +198,7 @@ export default function GuruUploadPage() {
               fileName: ikJson.name,
               sizeBytes: ikJson.size,
               kursusId: selectedKursus,
-              kelasId: selectedKelasId || "",
+              kelasId: selectedKelasId,
             }),
             credentials: "include",
           });
@@ -220,9 +228,7 @@ export default function GuruUploadPage() {
     const fd = new FormData();
     fd.append("file", file);
     fd.append("kursusId", selectedKursus);
-    if (selectedKelasId) {
-      fd.append("kelasId", selectedKelasId);
-    }
+    fd.append("kelasId", selectedKelasId);
 
     setJob({ state: "uploading", progress: 40, message: "Mengupload ke server..." });
     try {
@@ -298,7 +304,7 @@ export default function GuruUploadPage() {
         </div>
         <div>
           <label className="block text-sm font-semibold text-on-surface mb-1.5">
-            Kelas tujuan <span className="font-normal text-on-surface-variant">(opsional)</span>
+            Kelas tujuan <span className="font-normal text-primary">(wajib)</span>
           </label>
           {kelasList.length === 0 ? (
             <Link
@@ -312,9 +318,10 @@ export default function GuruUploadPage() {
             <select
               value={selectedKelasId}
               onChange={(e) => setSelectedKelasId(e.target.value)}
+              required
               className="w-full px-4 py-2.5 rounded-xl border border-border-precision bg-white text-sm outline-hidden focus:border-primary/40"
             >
-              <option value="">Tanpa kelas</option>
+              <option value="" disabled>Pilih kelas...</option>
               {kelasList.map((k) => (
                 <option key={k.id} value={k.id}>
                   {k.nama} (Tingkat {k.tingkat})

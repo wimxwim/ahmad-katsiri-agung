@@ -8,21 +8,25 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
-const STEPS = [
-  "registration",
-  "profile",
-  "tour",
-  "first_course",
-  "first_upload",
-  "first_ai",
-  "first_publish",
-] as const;
+const STEPS = ["kursus", "upload", "kelas"] as const;
 
 const OnboardingStepSchema = z.object({
   step: z.enum(STEPS),
 });
 
 type Step = (typeof STEPS)[number];
+
+const STEP_LABELS: Record<Step, string> = {
+  kursus: "Buat kursus pertamamu",
+  upload: "Upload dokumen",
+  kelas: "Buat kelas dan undang siswa",
+};
+
+const FIELD_MAP: Record<Step, string> = {
+  kursus: "firstCourseCreated",
+  upload: "firstMaterialUploaded",
+  kelas: "firstCoursePublished",
+};
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,34 +48,25 @@ export async function GET(request: NextRequest) {
       progress = created;
     }
 
-    const completedSteps = [
-      progress.emailVerified,
-      progress.profileCompleted,
-      progress.tourCompleted,
+    const doneFlags = [
       progress.firstCourseCreated,
       progress.firstMaterialUploaded,
-      progress.firstAiGenerated,
       progress.firstCoursePublished,
-    ].filter(Boolean).length;
+    ] as const;
+    const completedStepKeys = STEPS.filter((_, i) => doneFlags[i]);
+    const completedSteps = completedStepKeys.length;
 
     return NextResponse.json({
       data: {
         ...progress,
         completedSteps,
+        completedStepKeys,
         totalSteps: STEPS.length,
         isComplete: progress.completedAt !== null,
         steps: STEPS.map((s, i) => ({
           key: s,
           label: STEP_LABELS[s],
-          done: [
-            progress.emailVerified,
-            progress.profileCompleted,
-            progress.tourCompleted,
-            progress.firstCourseCreated,
-            progress.firstMaterialUploaded,
-            progress.firstAiGenerated,
-            progress.firstCoursePublished,
-          ][i],
+          done: doneFlags[i],
         })),
       },
     });
@@ -94,17 +89,7 @@ export async function POST(request: NextRequest) {
     const { step } = OnboardingStepSchema.parse(await request.json());
 
     const stepIndex = STEPS.indexOf(step);
-    const fieldMap: Record<Step, string> = {
-      registration: "emailVerified",
-      profile: "profileCompleted",
-      tour: "tourCompleted",
-      first_course: "firstCourseCreated",
-      first_upload: "firstMaterialUploaded",
-      first_ai: "firstAiGenerated",
-      first_publish: "firstCoursePublished",
-    };
-
-    const field = fieldMap[step];
+    const field = FIELD_MAP[step];
     const isLastStep = stepIndex === STEPS.length - 1;
 
     const [updated] = await db
@@ -132,13 +117,3 @@ export async function POST(request: NextRequest) {
     return apiError("Terjadi kesalahan server", 500);
   }
 }
-
-const STEP_LABELS: Record<Step, string> = {
-  registration: "Verifikasi email",
-  profile: "Lengkapi profil",
-  tour: "Tur dashboard",
-  first_course: "Buat kursus pertama",
-  first_upload: "Upload materi pertama",
-  first_ai: "Coba AI generator",
-  first_publish: "Publikasi kursus",
-};

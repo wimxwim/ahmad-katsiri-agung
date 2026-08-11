@@ -32,7 +32,6 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
   { href: "/siswa/ai-tutor", label: "AI Tutor", icon: MessageSquare },
   { href: "/siswa/diskusi", label: "Diskusi", icon: MessageSquare },
   { href: "/siswa/progres", label: "Progres", icon: BarChart3 },
-  { href: "/siswa/refleksi", label: "Refleksi", icon: BookOpen },
   { href: "/siswa/pengumuman", label: "Pengumuman", icon: Megaphone },
 ];
 
@@ -42,7 +41,6 @@ const BOTTOM_TABS: BottomNavTab[] = [
   { href: "/siswa/quiz", label: "Kuis", icon: Sparkles },
   { href: "/siswa/soal", label: "Soal", icon: FileText },
   { href: "/siswa/progres", label: "Progres", icon: BarChart3 },
-  { href: "/siswa/refleksi", label: "Refleksi", icon: BookOpen },
 ];
 
 function KatalogKursusBar() {

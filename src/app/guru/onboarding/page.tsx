@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, Sparkles, Upload, Users, ArrowRight, X } from "lucide-react";
+import { csrfHeaders } from "@/lib/csrf";
 
 const STEPS = [
   {
@@ -40,7 +41,7 @@ export default function OnboardingPage() {
       const res = await fetch("/api/v1/guru/onboarding", { credentials: "include" });
       if (res.ok) {
         const body = await res.json();
-        const steps: string[] = body?.data?.completedSteps ?? body?.completedSteps ?? [];
+        const steps: string[] = body?.data?.completedStepKeys ?? body?.completedStepKeys ?? [];
         if (Array.isArray(steps) && steps.length > 0) {
           setCompleted(new Set(steps));
           try { window.localStorage.setItem("akal_onboarding_done", JSON.stringify(steps)); }
@@ -87,7 +88,7 @@ export default function OnboardingPage() {
       fetch("/api/v1/guru/onboarding", {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         body: JSON.stringify({ step: id }),
       }).catch((e) => { console.error("Onboarding sync failed:", e); });
       return next;

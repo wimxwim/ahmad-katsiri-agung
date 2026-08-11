@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
@@ -18,6 +19,11 @@ import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
 import { invalidateGuruCache } from "@/lib/dashboard-cache";
 
+const modeEvaluasiSchema = z
+  .enum(["BELAJAR", "ULANGAN", "CBT"])
+  .optional()
+  .default("BELAJAR");
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -27,6 +33,11 @@ export async function POST(
     if (csrfError) return csrfError;
 
     const session = await requireGuru(request);
+
+    const body = await request.json().catch(() => ({}));
+    const { modeEvaluasi } = z
+      .object({ modeEvaluasi: modeEvaluasiSchema })
+      .parse(body);
 
     const { id } = await params;
 
@@ -132,7 +143,7 @@ export async function POST(
             guruId: session.userId,
             kursusId: row.kursusId,
             judul: row.quizJudul || "Kuis tanpa judul",
-            modeEvaluasi: "BELAJAR",
+            modeEvaluasi,
             durasiMenit: 20,
           })
           .returning({ id: quizPublished.id });

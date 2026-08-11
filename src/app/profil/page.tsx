@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { csrfHeaders } from "@/lib/csrf";
 import { Save, Loader2, Eye, EyeOff, CheckCircle2, AlertCircle, ShieldCheck, KeyRound } from "lucide-react";
 
 interface MeResponse {
@@ -63,7 +64,7 @@ export default function ProfilPage() {
     try {
       const res = await fetch("/api/v1/auth/set-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         credentials: "include",
         body: JSON.stringify({ newPassword }),
       });

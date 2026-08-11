@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
+import { csrfHeaders } from "@/lib/csrf";
 import { Search, BookOpen, ArrowRight, Library, UserPlus, Loader2, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -75,7 +76,7 @@ export function KursusListClient({ initialKursus, initialError }: KursusListClie
     try {
       const res = await fetch("/api/v1/enroll", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...csrfHeaders() },
         credentials: "include",
         body: JSON.stringify({ kursusId }),
       });

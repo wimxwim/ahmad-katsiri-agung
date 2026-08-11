@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, RefreshCw, XCircle, Loader2, FileText, BookOpen, ClipboardList, Edit3, Save, Check, ListChecks, Zap, Rocket } from "lucide-react";
+import { ArrowLeft, CheckCircle2, RefreshCw, XCircle, Loader2, FileText, BookOpen, ClipboardList, Edit3, Save, Check, ListChecks, Zap, Rocket, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/Toast";
 import { csrfHeaders } from "@/lib/csrf";
+import { cn } from "@/lib/utils";
 
 interface GeneratedSoal {
   pertanyaan: string;
@@ -70,6 +71,17 @@ const STATUS_META: Record<string, { label: string; color: string }> = {
   edited: { label: "Diubah", color: "bg-blue-50 text-blue-700" },
 };
 
+const MODE_OPTIONS: ReadonlyArray<{
+  value: "BELAJAR" | "ULANGAN" | "CBT";
+  icon: typeof BookOpen;
+  title: string;
+  desc: string;
+}> = [
+  { value: "BELAJAR", icon: BookOpen, title: "Latihan", desc: "Siswa dapat melihat kunci & mengulang" },
+  { value: "ULANGAN", icon: ClipboardList, title: "Ulangan", desc: "Sekali submit, kunci disembunyikan" },
+  { value: "CBT", icon: ShieldCheck, title: "CBT", desc: "Ujian resmi — anti-cheat aktif, nilai disembunyikan" },
+];
+
 export default function DraftReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -92,6 +104,7 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
   const [isianCount, setIsianCount] = useState(5);
   const [essayCount, setEssayCount] = useState(5);
   const [quizCount, setQuizCount] = useState(10);
+  const [modeEvaluasi, setModeEvaluasi] = useState<"BELAJAR" | "ULANGAN" | "CBT">("BELAJAR");
 
   async function load() {
     const { id } = await params;
@@ -416,7 +429,7 @@ useEffect(() => {
             </div>
             {canClose ? (
               <button
-                onClick={() => act("/close-review", "close-review")}
+                onClick={() => act("/close-review", "close-review", { modeEvaluasi })}
                 disabled={busy === "close-review"}
                 className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-full text-sm font-bold hover:brightness-110 active:scale-[0.98] disabled:opacity-50 shadow-lg shadow-emerald-600/20"
               >
@@ -616,6 +629,34 @@ useEffect(() => {
                       {draft.quizJudul}
                     </h2>
                   )}
+                  <div className="mb-5 p-4 rounded-xl bg-white/40 border border-border-precision">
+                    <p className="text-xs font-semibold text-on-surface uppercase tracking-wider mb-2.5">
+                      Mode evaluasi
+                    </p>
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                      {MODE_OPTIONS.map(({ value, icon: Icon, title, desc }) => (
+                        <label
+                          key={value}
+                          className={cn(
+                            "bg-white border border-border-precision rounded-xl px-3 py-2 flex items-center gap-2 text-xs cursor-pointer transition-colors active:scale-[0.98]",
+                            modeEvaluasi === value && "border-primary bg-primary/5",
+                          )}
+                        >
+                          <input
+                            type="radio"
+                            name="modeEvaluasi"
+                            value={value}
+                            checked={modeEvaluasi === value}
+                            onChange={() => setModeEvaluasi(value)}
+                            className="accent-primary shrink-0"
+                          />
+                          <Icon className="w-4 h-4 shrink-0 text-primary" />
+                          <span className="font-semibold text-on-surface shrink-0">{title}</span>
+                          <span className="text-on-surface-variant leading-snug">— {desc}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                   <ol className="text-sm text-on-surface-variant space-y-3 list-decimal pl-4">
                     {quizSoal.map((s, i) => (
                       <li key={i}>
