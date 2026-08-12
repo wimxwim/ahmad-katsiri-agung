@@ -879,6 +879,8 @@ export const aiGeneration = pgTable("ai_generation", {
   statusIdx: index("ai_generation_status_idx").on(t.status),
   fileIdx: index("ai_generation_file_idx").on(t.fileMateriId),
   kursusIdx: index("ai_generation_kursus_id_idx").on(t.kursusId),
+  guruCreatedIdx: index("ai_generation_guru_created_idx").on(t.guruId, t.createdAt),
+  statusCreatedIdx: index("ai_generation_status_created_idx").on(t.status, t.createdAt),
 }));
 
 export const aiGenerationRelations = relations(aiGeneration, ({ one, many }) => ({
