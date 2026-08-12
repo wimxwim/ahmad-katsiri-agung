@@ -8,6 +8,7 @@ import {
   parseMateriSafe,
   parseQuizSafe,
   parseSoalSafe,
+  type ValidatedMateri,
   type ValidatedSoal,
   type ValidatedSoalItem,
 } from "@/lib/ai-sanitizer";
@@ -169,7 +170,7 @@ ATURAN KEAMANAN:
 - Data dikirim HANYA untuk generasi konten.`;
 }
 
-export function buildSoalSystemPrompt(count: number, _tingkat?: number): string {
+export function buildSoalSystemPrompt(count: number): string {
   return `Kamu penulis soal PAI untuk asesmen sumatif (ulangan harian/PTS/PAS). Hasilkan ${count} soal PILIHAN GANDA dari materi.
 
 ATURAN:
@@ -180,6 +181,31 @@ ATURAN:
 5. Setiap item sertakan levelKognitif. Distribusi: L1 20-30%, L2 40-50%, L3 20-30%.
 6. penjelasan: 1-2 kalimat alasan kunci benar.
 7. Bahasa Indonesia, tanpa markup, tanpa komentar di luar JSON.`;
+}
+
+/**
+ * Build a compact content string from parsed materi for soal generation.
+ * This is more structured and relevant than raw source text,
+ * helping the AI generate soal that directly test the materi content.
+ */
+function buildMateriContentForSoal(materi: ValidatedMateri): string {
+  const parts: string[] = [];
+  
+  parts.push(`RINGKASAN:\n${materi.ringkasan}`);
+  parts.push(`\nPENDAHULUAN:\n${materi.pendahuluan}`);
+  
+  for (const section of materi.konten) {
+    parts.push(`\n${section.judul}:\n${section.isi}`);
+    if (section.dalil) parts.push(`Dalil: ${section.dalil}`);
+    if (section.contoh) parts.push(`Contoh: ${section.contoh}`);
+    if (section.hikmah) parts.push(`Hikmah: ${section.hikmah}`);
+  }
+  
+  if (materi.poinPenting.length > 0) {
+    parts.push(`\nPOIN PENTING:\n${materi.poinPenting.join('\n')}`);
+  }
+  
+  return parts.join('\n\n');
 }
 
 export function buildQuizSystemPrompt(count: number, soalQuestions: string[] = []): string {
@@ -266,12 +292,49 @@ const FALLBACK_PATTERNS = [
   /^Mengapa siswa perlu memahami materi tentang/i,
 ];
 
+const MATERI_FALLBACK_PATTERNS = [
+  /^Bagian \d+$/i,
+  /Terapkan dalam kehidupan sehari-hari/i,
+  /Memahami materi ini membantu/i,
+  /Pokok pembahasan yang dipelajari/i,
+  /Apa yang sudah kamu pahami/i,
+];
+
+const QUIZ_FALLBACK_PATTERNS = [
+  /^Apa inti dari pernyataan berikut/i,
+  /^Mengapa siswa perlu memahami/i,
+  /^Memahami inti materi/i,
+  /^Mengabaikan pesan utama/i,
+  /^Menghafal tanpa memahami/i,
+  /^Menunda penerapan materi/i,
+];
+
 function isFallbackSoal(soalItems: unknown[]): boolean {
   if (!Array.isArray(soalItems) || soalItems.length === 0) return false;
   const sample = soalItems.slice(0, 3);
   return sample.every((s: any) => {
     const q = s?.pertanyaan || "";
     return FALLBACK_PATTERNS.some((p) => p.test(q));
+  });
+}
+
+function isFallbackMateri(materi: Record<string, unknown> | null | undefined): boolean {
+  if (!materi || !materi.konten || !Array.isArray(materi.konten)) return false;
+  const sample = materi.konten.slice(0, 2);
+  return sample.every((k: unknown) => {
+    const kontenItem = k as Record<string, unknown> | null | undefined;
+    const judul = typeof kontenItem?.judul === "string" ? kontenItem.judul : "";
+    return MATERI_FALLBACK_PATTERNS.some((p) => p.test(judul));
+  });
+}
+
+function isFallbackQuiz(quizItems: unknown[]): boolean {
+  if (!Array.isArray(quizItems) || quizItems.length === 0) return false;
+  const sample = quizItems.slice(0, 3);
+  return sample.every((s: unknown) => {
+    const item = s as Record<string, unknown> | null | undefined;
+    const q = typeof item?.pertanyaan === "string" ? item.pertanyaan : "";
+    return QUIZ_FALLBACK_PATTERNS.some((p) => p.test(q));
   });
 }
 
@@ -403,10 +466,11 @@ async function generateSoalBatch(
   essayCount: number,
   tingkat?: number,
   timeRemainingMs = SOAL_TIMEOUT_MS,
+  materiContent?: string,
 ): Promise<ChatResult> {
   void tingkat;
   const BATCH_SIZE = 5;
-  let allItems: ValidatedSoalItem[] = [];
+  const allItems: ValidatedSoalItem[] = [];
   let totalTokensIn = 0;
   let totalTokensOut = 0;
 
@@ -420,7 +484,7 @@ async function generateSoalBatch(
         chatWithFallback(
           [
             { role: "system", content: buildSoalBatchPrompt(tipe, batchSize) },
-            { role: "user", content: `Materi:\n\n${sourceText}` },
+            { role: "user", content: `Materi:\n\n${materiContent || sourceText}` },
           ],
           { model: getModelForTask("light"), temperature: 0.5, maxTokens: Math.max(2500, batchSize * 200) },
         ),
@@ -626,6 +690,7 @@ export async function runGeneration(
     }
 
     let materiRes: ChatResult;
+    let materiForSoal: string | undefined;
     try {
       materiRes = await withTimeout(
         chatMateri(truncatedSource, gen.tingkat ?? undefined),
@@ -633,6 +698,11 @@ export async function runGeneration(
         "ai-materi",
       );
       console.log("[ai-generator] materi done, starting quiz...");
+      // Parse materi early to check if we can use it for soal generation
+      const earlyMateriParsed = parseMateriSafe(materiRes.content);
+      materiForSoal = earlyMateriParsed
+        ? buildMateriContentForSoal(earlyMateriParsed)
+        : undefined;
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
       console.warn("[ai-generator] materi AI gagal, mencoba ulang (1/1):", errMsg);
@@ -643,6 +713,11 @@ export async function runGeneration(
           "ai-materi",
         );
         console.log("[ai-generator] materi done (retry 1/1), starting quiz...");
+        // Parse materi early to check if we can use it for soal generation
+        const earlyMateriParsed = parseMateriSafe(materiRes.content);
+        materiForSoal = earlyMateriParsed
+          ? buildMateriContentForSoal(earlyMateriParsed)
+          : undefined;
       } catch (retryError) {
         const retryErrMsg = retryError instanceof Error ? retryError.message : String(retryError);
         console.error("[ai-generator] materi AI failed after retry, using fallback:", retryErrMsg);
@@ -693,7 +768,7 @@ export async function runGeneration(
 
     let soalRes: ChatResult;
     try {
-      soalRes = await generateSoalBatch(truncatedSource, pgCount, isianCount, essayCount);
+      soalRes = await generateSoalBatch(truncatedSource, pgCount, isianCount, essayCount, undefined, undefined, materiForSoal);
       console.log("[ai-generator] soal done (batch).");
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : String(error);
@@ -728,29 +803,90 @@ export async function runGeneration(
       soalParsed = null;
     }
 
+    // Check for garbage content in materi
+    if (materiParsed && isFallbackMateri(materiParsed)) {
+      console.warn("[ai-generator] FALLBACK DETECTED — materi contains template patterns");
+      await db
+        .update(aiGeneration)
+        .set({
+          materiStatus: "not_generated",
+          errorMessage: "AI gagal menghasilkan materi berkualitas. Silakan regenerate.",
+          updatedAt: new Date()
+        })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
+      materiParsed = null;
+    }
+
+    // Check for garbage content in quiz
+    if (quizParsed && isFallbackQuiz(quizParsed.soal)) {
+      console.warn("[ai-generator] FALLBACK DETECTED — quiz contains template patterns");
+      await db
+        .update(aiGeneration)
+        .set({
+          quizStatus: "not_generated",
+          errorMessage: "AI gagal menghasilkan kuis berkualitas. Silakan regenerate.",
+          updatedAt: new Date()
+        })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
+      quizParsed = null;
+    }
+
+    // If all generations failed, mark as failed — do NOT return garbage
+    if (!materiParsed && !quizParsed && !soalParsed) {
+      console.error("[ai-generator] ALL GENERATIONS FAILED — marking as failed");
+      await db
+        .update(aiGeneration)
+        .set({
+          status: "failed",
+          errorMessage: "AI gagal menghasilkan konten. Silakan coba lagi.",
+          updatedAt: new Date()
+        })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
+      throw new GenerationSchemaError("materi");
+    }
+
+    // If individual parse failed, mark that component as not_generated
     if (!materiParsed) {
-      console.warn("[ai-generator] materi parse failed, using fallback");
-      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
-      materiParsed = parseMateriSafe(fb[0].content);
+      console.warn("[ai-generator] materi parse failed, marking as not_generated");
+      await db
+        .update(aiGeneration)
+        .set({
+          materiStatus: "not_generated",
+          errorMessage: "AI gagal menghasilkan materi. Silakan regenerate.",
+          updatedAt: new Date()
+        })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
     }
 
     if (!quizParsed) {
-      console.warn("[ai-generator] quiz parse failed, using fallback");
-      const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
-      quizParsed = parseQuizSafe(fb[1].content);
-    }
-
-    if (!soalParsed) {
-      const rawPreview = soalRes.content.slice(0, 2000);
-      console.error("[ai-generator] SOAL PARSE FAILED — RAW AI OUTPUT:", rawPreview);
-      console.error("[ai-generator] SOAL MODEL:", soalRes.model, "TOKENS:", soalRes.tokensIn, soalRes.tokensOut);
-      
+      console.warn("[ai-generator] quiz parse failed, marking as not_generated");
       await db
         .update(aiGeneration)
-        .set({ 
-          errorMessage: `SOAL_PARSE_FAILED|model=${soalRes.model}|tokens=${soalRes.tokensIn}+${soalRes.tokensOut}|raw=${rawPreview}`,
-          updatedAt: new Date() 
+        .set({
+          quizStatus: "not_generated",
+          errorMessage: "AI gagal menghasilkan kuis. Silakan regenerate.",
+          updatedAt: new Date()
         })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
+    }
+
+     if (!soalParsed) {
+       const rawPreview = soalRes.content.slice(0, 2000);
+       console.error("[ai-generator] SOAL PARSE FAILED — RAW AI OUTPUT:", rawPreview);
+       console.error("[ai-generator] SOAL MODEL:", soalRes.model, "TOKENS:", soalRes.tokensIn, soalRes.tokensOut);
+       
+       await db
+         .update(aiGeneration)
+         .set({ 
+           soalStatus: "not_generated",
+           errorMessage: `SOAL_PARSE_FAILED|model=${soalRes.model}|tokens=${soalRes.tokensIn}+${soalRes.tokensOut}|raw=${rawPreview}`,
+           updatedAt: new Date() 
+         })
         .where(eq(aiGeneration.id, generationId))
         .catch(() => {});
     }
@@ -898,6 +1034,7 @@ export async function runGenerationFromText(
   const timeLeft = (): number => Math.max(0, deadline - Date.now());
 
   let materiRes: ChatResult;
+  let materiForSoal: string | undefined;
   try {
     materiRes = await withTimeout(
       chatMateri(truncatedSource, tingkat),
@@ -905,12 +1042,22 @@ export async function runGenerationFromText(
       "ai-materi",
     );
     console.log("[ai-generator] materi done, starting quiz...");
+    // Parse materi early to check if we can use it for soal generation
+    const earlyMateriParsed = parseMateriSafe(materiRes.content);
+    materiForSoal = earlyMateriParsed
+      ? buildMateriContentForSoal(earlyMateriParsed)
+      : undefined;
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error);
     console.error("[ai-generator] materi AI failed (1 attempt), using fallback:", errMsg);
     console.error("[ai-generator] error stack:", error instanceof Error ? (error.stack ?? "").slice(0, 500) : "");
     const fb = fallbackAiResults(truncatedSource, quizCount, soalCount);
     materiRes = fb[0];
+    // Parse fallback materi for soal generation
+    const earlyMateriParsed = parseMateriSafe(materiRes.content);
+    materiForSoal = earlyMateriParsed
+      ? buildMateriContentForSoal(earlyMateriParsed)
+      : undefined;
   }
 
   let quizRes: ChatResult;
@@ -937,7 +1084,7 @@ export async function runGenerationFromText(
 
   let soalRes: ChatResult;
   try {
-    soalRes = await generateSoalBatch(truncatedSource, pgCount, isianCount, essayCount, tingkat, timeLeft());
+    soalRes = await generateSoalBatch(truncatedSource, pgCount, isianCount, essayCount, tingkat, timeLeft(), materiForSoal);
     console.log("[ai-generator] soal done (batch).");
   } catch (error) {
     console.error("[ai-generator] soal AI failed, using fallback:", error);
@@ -985,20 +1132,93 @@ export async function runGenerationFromText(
     quizParsed = parseQuizSafe(fb[1].content);
   }
 
-  if (!soalParsed) {
-    const rawPreview = soalRes.content.slice(0, 2000);
-    console.error("[ai-generator] SOAL PARSE FAILED — RAW AI OUTPUT:", rawPreview);
-    console.error("[ai-generator] SOAL MODEL:", soalRes.model, "TOKENS:", soalRes.tokensIn, soalRes.tokensOut);
-    
-    await db
-      .update(aiGeneration)
-      .set({ 
-        errorMessage: `SOAL_PARSE_FAILED|model=${soalRes.model}|tokens=${soalRes.tokensIn}+${soalRes.tokensOut}|raw=${rawPreview}`,
-        updatedAt: new Date() 
-      })
-      .where(eq(aiGeneration.id, generationId))
-      .catch(() => {});
-  }
+   if (!soalParsed) {
+     const rawPreview = soalRes.content.slice(0, 2000);
+     console.error("[ai-generator] SOAL PARSE FAILED — RAW AI OUTPUT:", rawPreview);
+     console.error("[ai-generator] SOAL MODEL:", soalRes.model, "TOKENS:", soalRes.tokensIn, soalRes.tokensOut);
+     
+     await db
+       .update(aiGeneration)
+       .set({ 
+         soalStatus: "not_generated",
+         errorMessage: `SOAL_PARSE_FAILED|model=${soalRes.model}|tokens=${soalRes.tokensIn}+${soalRes.tokensOut}|raw=${rawPreview}`,
+         updatedAt: new Date() 
+       })
+       .where(eq(aiGeneration.id, generationId))
+       .catch(() => {});
+   }
+
+    // Check for garbage content in materi
+    if (materiParsed && isFallbackMateri(materiParsed)) {
+      console.warn("[ai-generator] FALLBACK DETECTED — materi contains template patterns");
+      await db
+        .update(aiGeneration)
+        .set({
+          materiStatus: "not_generated",
+          errorMessage: "AI gagal menghasilkan materi berkualitas. Silakan regenerate.",
+          updatedAt: new Date()
+        })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
+      materiParsed = null;
+    }
+
+    // Check for garbage content in quiz
+    if (quizParsed && isFallbackQuiz(quizParsed.soal)) {
+      console.warn("[ai-generator] FALLBACK DETECTED — quiz contains template patterns");
+      await db
+        .update(aiGeneration)
+        .set({
+          quizStatus: "not_generated",
+          errorMessage: "AI gagal menghasilkan kuis berkualitas. Silakan regenerate.",
+          updatedAt: new Date()
+        })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
+      quizParsed = null;
+    }
+
+    // If all generations failed, mark as failed — do NOT return garbage
+    if (!materiParsed && !quizParsed && !soalParsed) {
+      console.error("[ai-generator] ALL GENERATIONS FAILED — marking as failed");
+      await db
+        .update(aiGeneration)
+        .set({
+          status: "failed",
+          errorMessage: "AI gagal menghasilkan konten. Silakan coba lagi.",
+          updatedAt: new Date()
+        })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
+      return;
+    }
+
+    // If individual parse failed, mark that component as not_generated
+    if (!materiParsed) {
+      console.warn("[ai-generator] materi parse failed, marking as not_generated");
+      await db
+        .update(aiGeneration)
+        .set({
+          materiStatus: "not_generated",
+          errorMessage: "AI gagal menghasilkan materi. Silakan regenerate.",
+          updatedAt: new Date()
+        })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
+    }
+
+    if (!quizParsed) {
+      console.warn("[ai-generator] quiz parse failed, marking as not_generated");
+      await db
+        .update(aiGeneration)
+        .set({
+          quizStatus: "not_generated",
+          errorMessage: "AI gagal menghasilkan kuis. Silakan regenerate.",
+          updatedAt: new Date()
+        })
+        .where(eq(aiGeneration.id, generationId))
+        .catch(() => {});
+    }
 
   if (!materiParsed || !quizParsed) {
     await db

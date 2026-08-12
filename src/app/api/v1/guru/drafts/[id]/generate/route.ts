@@ -321,6 +321,42 @@ export async function POST(
         await runGenerationFromText(id, finalText, guruId, soalCount, pgCount, isianCount, essayCount, quizCount, tingkat);
         invalidateGuruCache(guruId).catch(() => {});
 
+        // Check if generation failed and refund if so
+        const [genStatus] = await db
+          .select({
+            status: aiGeneration.status,
+            errorMessage: aiGeneration.errorMessage,
+            materiStatus: aiGeneration.materiStatus,
+            quizStatus: aiGeneration.quizStatus,
+            soalStatus: aiGeneration.soalStatus,
+            tokenInput: aiGeneration.tokenInput,
+            tokenOutput: aiGeneration.tokenOutput,
+          })
+          .from(aiGeneration)
+          .where(eq(aiGeneration.id, id))
+          .limit(1);
+
+        if (genStatus) {
+          const hasFailed = genStatus.status === "failed";
+          const hasGarbage = genStatus.materiStatus === "not_generated"
+            && genStatus.quizStatus === "not_generated"
+            && genStatus.soalStatus === "not_generated";
+
+          if (hasFailed || hasGarbage) {
+            // Refund full amount - generation failed or produced garbage
+            await refundBalance(guruId, chargedAmount, {
+              notes: hasFailed
+                ? "Generate gagal. Token dikembalikan otomatis."
+                : "Generate menghasilkan konten tidak valid. Token dikembalikan otomatis.",
+              referenceId: `refund:${id}`,
+            }).catch((refundErr) => {
+              console.error("Refund failed for failed generation:", refundErr);
+            });
+            return; // Skip settlement for failed generations
+          }
+        }
+
+        // Normal settlement (only reached if generation succeeded)
         const [gen] = await db
           .select({ tokenInput: aiGeneration.tokenInput, tokenOutput: aiGeneration.tokenOutput })
           .from(aiGeneration)
