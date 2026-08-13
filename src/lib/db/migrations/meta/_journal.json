@@ -400,6 +400,13 @@
       "when": "2026-07-20T15:00:00.000Z",
       "tag": "0056_add_materi_diskusi",
       "breakpoints": false
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1786580913923,
+      "tag": "0057_sync_snapshot",
+      "breakpoints": true
     }
   ]
 }
