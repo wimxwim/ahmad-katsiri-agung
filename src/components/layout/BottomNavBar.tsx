@@ -32,7 +32,7 @@ export function BottomNavBar({ tabs, homeHref }: BottomNavBarProps) {
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       <div className="pointer-events-auto flex items-center bg-white/70 backdrop-blur-xl border-t border-border-precision w-full px-1 py-1">
-        {tabs.map((tab) => {
+        {tabs.slice(0, 5).map((tab) => {
           const active = isActive(tab.href);
           return (
             <Link

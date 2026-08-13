@@ -125,6 +125,13 @@
   --button-height-lg: 48px;
   --input-height: 44px;
   --card-padding: 24px;
+
+  /* oklch alternates — additive only, hex existing unchanged */
+  --primary-oklch: oklch(0.31 0.08 155);
+  --surface-oklch: oklch(0.985 0.012 160);
+  --border-precision-oklch: oklch(0.85 0.02 160 / 0.15);
+  --primary-8: color-mix(in oklch, var(--color-primary) 8%, transparent);
+  --primary-10: color-mix(in oklch, var(--color-primary) 10%, transparent);
 }
 
 body {
@@ -265,5 +272,24 @@ section {
   }
   body {
     filter: brightness(0.97);
+  }
+}
+
+/* Container query support for StatCard (P1-5) */
+.stat-card-container {
+  container-type: inline-size;
+}
+
+@container (min-width: 300px) {
+  .stat-card-value {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+}
+
+@container (max-width: 299px) {
+  .stat-card-value {
+    font-size: 1.5rem;
+    line-height: 2rem;
   }
 }
