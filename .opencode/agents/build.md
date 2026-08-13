@@ -14,6 +14,10 @@ permission:
     "npm run build*": allow
     "npx next build*": allow
     "npx tsc --noEmit*": allow
+    "npx drizzle-kit generate*": allow
+    "npx drizzle-kit pull*": allow
+    "npx drizzle-kit check*": allow
+    "npx drizzle-kit migrate*": ask
     "git diff*": allow
     "git status*": allow
     "git log*": allow
