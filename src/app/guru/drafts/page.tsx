@@ -166,11 +166,23 @@ export default function GuruDraftsPage() {
   }, []);
 
   useEffect(() => {
-    const hasProcessing = drafts.some((d) => ["queued", "extracting", "generating"].includes(d.status));
-    if (!hasProcessing) return;
-    const interval = setInterval(load, 5000);
-    return () => clearInterval(interval);
-  }, [drafts]);
+    const hasPending = drafts.some((d) => d.status === "queued" || d.status === "extracting" || d.status === "generating");
+    if (!hasPending) return;
+    let delay = 5000;
+    let timer: ReturnType<typeof setTimeout>;
+    const poll = () => {
+      if (document.hidden) {
+        timer = setTimeout(poll, 5000);
+        return;
+      }
+      load().finally(() => {
+        delay = Math.min(delay * 1.5, 15000);
+        timer = setTimeout(poll, delay);
+      });
+    };
+    timer = setTimeout(poll, delay);
+    return () => clearTimeout(timer);
+  }, [drafts, load]);
 
   return (
     <div>

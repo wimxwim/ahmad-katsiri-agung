@@ -35,3 +35,18 @@ export function validateCsrf(request: NextRequest): NextResponse | null {
 
   return null;
 }
+
+/**
+ * Wraps a route handler with CSRF validation. Use for all state-changing routes.
+ * @example
+ * export const POST = withCsrf(async (request) => { ... });
+ */
+export function withCsrf<T extends unknown[]>(
+  handler: (request: NextRequest, ...args: T) => Promise<NextResponse>,
+): (request: NextRequest, ...args: T) => Promise<NextResponse> {
+  return async (request: NextRequest, ...args: T) => {
+    const error = validateCsrf(request);
+    if (error) return error;
+    return handler(request, ...args);
+  };
+}

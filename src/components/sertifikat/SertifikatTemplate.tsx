@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 interface SertifikatData {
   nomor: string;
   namaSiswa: string;
@@ -75,7 +77,7 @@ export function SertifikatTemplate({
 
         {qrCodeUrl && (
           <div className="text-center">
-            <img src={qrCodeUrl} alt="QR Verifikasi" className="w-20 h-20 border-2 border-[#005231]/20 rounded-lg p-1" />
+            <Image src={qrCodeUrl} alt="QR Verifikasi" width={80} height={80} className="border-2 border-[#005231]/20 rounded-lg p-1" style={{ imageRendering: "pixelated" }} unoptimized />
             <p className="text-[10px] text-[#5a4200]/40 mt-1">Scan untuk verifikasi</p>
           </div>
         )}

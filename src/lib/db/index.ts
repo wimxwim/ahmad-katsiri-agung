@@ -11,6 +11,9 @@ function createDb(): DrizzleDb {
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     max: 3,
+    // Supavisor transaction mode: prepared statements must be disabled
+    // @ts-expect-error - pg PoolConfig types lag behind runtime `prepare` option
+    prepare: false,
     allowExitOnIdle: true,
     application_name: "akal-center",
     idleTimeoutMillis: 15000,

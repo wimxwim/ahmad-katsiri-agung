@@ -6,7 +6,6 @@ import { MotionConfig } from "motion/react";
 import { QueryProvider } from "./QueryProvider";
 import { CmsProvider, type CmsData } from "./CmsProvider";
 import { SessionProvider } from "./SessionProvider";
-import { ServiceWorkerRegister } from "./ServiceWorkerRegister";
 import { antdTheme } from "@/lib/antd-theme";
 
 export function Providers({
@@ -24,7 +23,6 @@ export function Providers({
             <QueryProvider>
               <CmsProvider data={cmsData}>
                 <SessionProvider>
-                  <ServiceWorkerRegister />
                   {children}
                 </SessionProvider>
               </CmsProvider>

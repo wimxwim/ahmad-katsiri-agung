@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { WA_NUMBER, EASE_CURVE } from "@/lib/constants";
 import { motion } from "motion/react";
 import { Button, Card, Tag, Steps, Collapse, Typography } from "antd";
@@ -30,13 +31,13 @@ function WaIcon({ className = "w-5 h-5" }: { className?: string }) {
 }
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 64, filter: "blur(12px)" },
+  hidden: { opacity: 0, y: 16, filter: "blur(4px)" },
   visible: (i = 0) => ({
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
     transition: {
-      duration: 0.7,
+      duration: 0.5,
       delay: i * 0.1,
       ease: EASE_CURVE,
     },
@@ -157,6 +158,8 @@ const tigaDunia = [
 ];
 
 export function LandingClient() {
+  const searchParams = useSearchParams();
+  const isSiswaPortal = searchParams?.get("portal") === "siswa";
   return (
     <div className="bg-surface relative overflow-hidden">
       <div className="pointer-events-none fixed inset-0 z-0">
@@ -184,8 +187,11 @@ export function LandingClient() {
               </span>
 
               <h1 className="mt-8 font-heading text-4xl font-bold leading-hero tracking-tight text-on-surface sm:text-5xl lg:text-7xl">
-                Platform guru-siswa yang mengubah dokumen jadi pembelajaran
-                <span className="shimmer-text"> siap pakai</span>.
+                {isSiswaPortal ? (
+                  <>Belajar PAI SMP/MTs - <span className="text-primary">materi, kuis, progres</span> dalam satu tempat</>
+                ) : (
+                  <>Platform <span className="shimmer-text">siap pakai</span> untuk guru</>
+                )}
               </h1>
 
               <p className="mt-6 max-w-xl text-sm leading-relaxed text-on-surface-variant sm:text-base lg:text-lg">
@@ -196,7 +202,7 @@ export function LandingClient() {
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link href="/masuk">
                   <Button type="primary" size="large" icon={<ArrowRight className="h-3.5 w-3.5" />} iconPosition="end">
-                    Masuk
+                    {isSiswaPortal ? "Masuk Kelas ->" : "Masuk ->"}
                   </Button>
                 </Link>
                 <Link href="/daftar">

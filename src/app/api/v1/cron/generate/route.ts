@@ -2,7 +2,7 @@ import { timingSafeEqual } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { aiGeneration, fileMateri } from "@/lib/db/schema";
-import { eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, lt, sql } from "drizzle-orm";
 import { runGenerationFromText } from "@/lib/ai-generator";
 import { extractText, sanitizeText } from "@/lib/text-extractor";
 import { appendEvent } from "@/lib/event-store";
@@ -30,6 +30,26 @@ export async function POST(request: NextRequest) {
   const isAuthorized = tokenCompare || authCompare;
   if (!isAuthorized) {
     return apiError("Unauthorized", 401);
+  }
+
+  // Recover stuck generating rows (after() callback was killed by Vercel timeout)
+  const stuck = await db
+    .select({ id: aiGeneration.id, guruId: aiGeneration.guruId })
+    .from(aiGeneration)
+    .where(
+      and(
+        eq(aiGeneration.status, "generating"),
+        lt(aiGeneration.updatedAt, new Date(Date.now() - 10 * 60 * 1000)),
+      ),
+    )
+    .limit(10);
+  for (const row of stuck) {
+    await db
+      .update(aiGeneration)
+      .set({ status: "failed", errorMessage: "Timeout recovery: generation stuck", updatedAt: new Date() })
+      .where(eq(aiGeneration.id, row.id));
+    // refund if there was a pre-charge — use chargedAmount if stored, otherwise skip
+    console.warn(`[cron/generate] recovered stuck row ${row.id}`);
   }
 
   const LEASE_MINUTES = 5;

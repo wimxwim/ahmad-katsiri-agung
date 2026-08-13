@@ -12,6 +12,7 @@ import {
   Search,
   ArrowRight,
   MessageSquare,
+  GraduationCap,
 } from "lucide-react";
 import { DashboardLayoutClient } from "@/components/dashboard/DashboardLayoutClient";
 import type { SidebarItem } from "@/components/dashboard/DashboardLayoutClient";
@@ -38,6 +39,7 @@ const BOTTOM_TABS: BottomNavTab[] = [
   { href: "/siswa/materi", label: "Materi", icon: BookOpen },
   { href: "/siswa/evaluasi", label: "Evaluasi", icon: FileText },
   { href: "/siswa/progres", label: "Progres", icon: BarChart3 },
+  { href: "/siswa/kursus", label: "Kursus", icon: GraduationCap },
 ];
 
 function KatalogKursusBar() {

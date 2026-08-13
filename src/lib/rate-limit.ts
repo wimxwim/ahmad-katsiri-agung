@@ -112,7 +112,7 @@ export async function checkConcurrentLimit(
   userKey: string,
   maxConcurrent: number,
   ttlMs = 30 * 60 * 1000,
-): Promise<{ allowed: boolean; current: number }> {
+): Promise<{ allowed: boolean; current: number; reason?: string }> {
   try {
     const cacheKey = `conc:${userKey}`;
     const r = getRedis();
@@ -127,6 +127,9 @@ export async function checkConcurrentLimit(
     }
   } catch {
     // ignore
+  }
+  if (!getRedis() && process.env.NODE_ENV === "production") {
+    return { allowed: false, current: 0, reason: "rate_limit_unavailable" as const };
   }
   const current = (perUserConcurrent.get(userKey) || 0) + 1;
   perUserConcurrent.set(userKey, current);
@@ -157,9 +160,9 @@ export async function releaseConcurrent(userKey: string): Promise<void> {
 }
 
 export function ipFromRequest(request: Request): string {
-  const cfIp = request.headers.get("cf-connecting-ip");
-  if (cfIp) return cfIp;
-  const realIp = request.headers.get("x-real-ip");
-  if (realIp) return realIp;
-  return "0.0.0.0";
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
+  return request.headers.get("cf-connecting-ip") || request.headers.get("x-real-ip") || "0.0.0.0";
 }

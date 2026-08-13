@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
+import Image from "next/image";
 import { EASE_CURVE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -291,9 +292,13 @@ export default function GuruLanggananPage() {
             </div>
 
             <div className="relative rounded-2xl overflow-hidden bg-white border border-border-precision mb-6">
-              <img
+              <Image
                 src="/qris-gopay.png"
                 alt="QRIS GoPay"
+                width={280}
+                height={280}
+                sizes="(max-width:640px) 100vw, 50vw"
+                loading="lazy"
                 className="w-full max-w-[280px] mx-auto p-4"
               />
             </div>

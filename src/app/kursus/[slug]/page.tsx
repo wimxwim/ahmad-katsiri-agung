@@ -3,7 +3,19 @@ import { db } from "@/lib/db";
 import { kursus, statusPublikasiEnum } from "@/lib/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  const { db } = await import("@/lib/db");
+  const { kursus } = await import("@/lib/db/schema");
+  const { eq } = await import("drizzle-orm");
+  const rows = await db
+    .select({ slug: kursus.slug })
+    .from(kursus)
+    .where(eq(kursus.statusPublikasi, "PUBLIK"))
+    .limit(100);
+  return rows.map((r) => ({ slug: r.slug }));
+}
 
 const PUBLIK: (typeof statusPublikasiEnum)["enumValues"][number] = "PUBLIK";
 

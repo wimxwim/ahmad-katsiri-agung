@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     viewTransition: true,
-    optimizePackageImports: ["lucide-react"],
+    optimizePackageImports: ["lucide-react", "antd", "motion"],
   },
   env: {
     BUILD_TIMESTAMP: new Date().toISOString(),

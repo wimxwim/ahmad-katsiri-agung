@@ -43,7 +43,9 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     mountedRef.current = true;
     fetchSession();
 
-    const interval = setInterval(fetchSession, 5 * 60 * 1000);
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchSession();
+    }, 5 * 60 * 1000);
 
     const onFocus = () => fetchSession();
     window.addEventListener("focus", onFocus);

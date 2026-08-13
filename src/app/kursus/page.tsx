@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { kursus, statusPublikasiEnum } from "@/lib/db/schema";
 import { and, eq, isNull, sql } from "drizzle-orm";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const PUBLIK: (typeof statusPublikasiEnum)["enumValues"][number] = "PUBLIK";
 

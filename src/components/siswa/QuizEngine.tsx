@@ -750,10 +750,18 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
               <RotateCcw className="w-5 h-5" /> Ulangi Kuis
             </button>
           ) : (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-5 py-3 text-sm text-emerald-800 font-semibold">
-              <CheckCircle2 className="w-4 h-4 inline mr-1.5 -mt-0.5" />
-              Evaluasi selesai — skor sudah dikirim ke gurumu
-            </div>
+            <>
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-5 py-3 text-sm text-emerald-800 font-semibold">
+                <CheckCircle2 className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+                Evaluasi selesai — skor sudah dikirim ke gurumu
+              </div>
+              <button
+                onClick={() => setShowReview(true)}
+                className="mt-3 rounded-full border border-border-precision bg-glass px-6 py-3 text-sm font-bold text-primary shadow-glass"
+              >
+                Lihat Jawaban
+              </button>
+            </>
           )}
 {quiz.modeEvaluasi === "BELAJAR" && (
             <button onClick={() => setShowReview(true)} className="inline-flex items-center gap-2 bg-white text-primary border-2 border-primary/20 px-8 py-4 rounded-full font-semibold hover:bg-primary/5 active:scale-[0.98] transition-all duration-300">
@@ -825,7 +833,7 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
         <div className={cn(
           "flex items-center gap-2 px-3 py-1.5 rounded-full font-heading font-bold text-sm tabular-nums transition-colors duration-300",
           timeLeft < 60
-            ? "bg-red-50 text-red-600 animate-pulse"
+            ? "bg-red-50 text-red-600"
             : timeLeft < 300
               ? "bg-amber-50 text-amber-700"
               : "bg-primary/10 text-primary"
@@ -847,8 +855,8 @@ export function QuizEngine({ quiz, onBack, materiHref, nextMateriHref }: QuizEng
       </div>
 
       {timeLeft < 60 && timeLeft > 0 && (
-        <div className="mb-3 px-4 py-2 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-semibold text-center">
-          ⚠️ Waktu hampir habis! Segera selesaikan kuis.
+        <div className="mb-3 px-4 py-2 bg-red-500/90 border border-red-200 rounded-xl text-white text-xs font-semibold text-center">
+          Semangat, sisa 1 menit lagi! 💪
         </div>
       )}
 

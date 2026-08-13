@@ -260,7 +260,7 @@ function chatMateri(
       { role: "system", content: buildMateriSystemPrompt(tingkat) },
       { role: "user", content: `Materi:\n\n${truncatedSource}` },
     ],
-    { model: getModelForTask("light"), temperature: 0.3, maxTokens: 4000, timeoutMs: AI_TIMEOUT_MS },
+    { model: getModelForTask("light"), temperature: 0.3, maxTokens: 7000, timeoutMs: AI_TIMEOUT_MS },
   );
 }
 

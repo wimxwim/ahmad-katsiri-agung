@@ -146,8 +146,8 @@ export async function GET(request: NextRequest) {
     }
 
     const masteryCps = masteryRows.map((m) => {
-      const status: "Dikuasai" | "Dalam Proses" | "Perlu Remedial" =
-        m.pL >= 0.7 ? "Dikuasai" : m.pL >= 0.5 ? "Dalam Proses" : "Perlu Remedial";
+      const status: "Sudah Mahir" | "Sedang Belajar" | "Perlu Latihan Lagi" =
+        m.pL >= 0.7 ? "Sudah Mahir" : m.pL >= 0.5 ? "Sedang Belajar" : "Perlu Latihan Lagi";
       return {
         skillId: m.skillId,
         nama: m.nama,

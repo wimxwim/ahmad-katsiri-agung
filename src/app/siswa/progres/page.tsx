@@ -46,7 +46,7 @@ interface MasteryCp {
   pL: number;
   repetitionNum: number;
   nextReviewAt: string | null;
-  status: "Dikuasai" | "Dalam Proses" | "Perlu Remedial";
+  status: "Sudah Mahir" | "Sedang Belajar" | "Perlu Latihan Lagi";
   selesai: boolean;
 }
 
@@ -150,15 +150,15 @@ export default function SiswaProgresPage() {
   const maxMingguAktif = Math.max(1, ...konsistensi.mingguAktif);
   const weekdayInits = ["S", "S", "R", "K", "J", "S", "M"];
   const masteryBarColor = (status: string) =>
-    status === "Dikuasai"
+    status === "Sudah Mahir"
       ? "bg-emerald-500"
-      : status === "Dalam Proses"
+      : status === "Sedang Belajar"
         ? "bg-amber-500"
         : "bg-red-400";
   const masteryBadgeClass = (status: string) =>
-    status === "Dikuasai"
+    status === "Sudah Mahir"
       ? "bg-emerald-50 text-emerald-700"
-      : status === "Dalam Proses"
+      : status === "Sedang Belajar"
         ? "bg-amber-50 text-amber-700"
         : "bg-red-50 text-red-600";
 
@@ -308,9 +308,6 @@ export default function SiswaProgresPage() {
         <h2 className="font-heading text-xl text-on-surface">
           Penguasaan Materi
         </h2>
-        <p className="text-xs text-on-surface-variant mb-4">
-          Berdasarkan Capaian Pembelajaran
-        </p>
         {masteryCps.length === 0 ? (
           <div className="bg-glass border border-border-precision rounded-2xl p-6 text-center shadow-glass">
             <p className="text-sm text-on-surface-variant">

@@ -140,7 +140,15 @@ async function handleDirectUpload(
     return apiError(`File terlalu besar (maks 10MB)`, 413);
   }
 
-  const originalName = fileName;
+  const originalName = fileName
+    .normalize("NFKC")
+    .replace(/[\x00-\x1f\x7f]/g, "")
+    .replace(/\.\./g, "")
+    .slice(0, 255)
+    .trim();
+  if (!originalName) {
+    return NextResponse.json({ success: false, error: "Nama file tidak valid." }, { status: 400 });
+  }
   const lowerName = originalName.toLowerCase();
   const extFromName = lowerName.split(".").pop() || "";
   if (!ALLOWED_EXT.has(extFromName)) {
@@ -338,7 +346,15 @@ export async function POST(request: NextRequest) {
       return apiError("File kosong", 400);
     }
 
-    const originalName = file.name;
+    const originalName = file.name
+      .normalize("NFKC")
+      .replace(/[\x00-\x1f\x7f]/g, "")
+      .replace(/\.\./g, "")
+      .slice(0, 255)
+      .trim();
+    if (!originalName) {
+      return NextResponse.json({ success: false, error: "Nama file tidak valid." }, { status: 400 });
+    }
     const lowerName = originalName.toLowerCase();
     const extFromName = lowerName.split(".").pop() || "";
     if (!ALLOWED_EXT.has(extFromName)) {

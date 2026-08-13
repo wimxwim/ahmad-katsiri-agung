@@ -316,6 +316,10 @@ export async function POST(
     const finalText = sourceText;
     const tingkat = gen.tingkat ?? undefined;
 
+    // NOTE: aiGeneration has no chargedAmount column; chargedAmount lives only in-memory
+    // for the after() callback. Cron recovery in /api/v1/cron/generate can only set
+    // status=failed for stuck generating rows — refund requires chargedAmount tracking
+    // (add integer charged_amount column + persist it here before after()).
     after(async () => {
       try {
         await runGenerationFromText(id, finalText, guruId, soalCount, pgCount, isianCount, essayCount, quizCount, tingkat);

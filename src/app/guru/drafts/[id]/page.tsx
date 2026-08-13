@@ -138,14 +138,27 @@ export default function DraftReviewPage({ params }: { params: Promise<{ id: stri
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
     if (!draft) return;
-    const interval = setInterval(() => {
-      if (["queued", "extracting", "generating"].includes(draft.status) && !busyRef.current) {
-        loadRef.current();
+    if (!["queued", "extracting", "generating"].includes(draft.status)) return;
+    let delay = 4000;
+    let timer: ReturnType<typeof setTimeout>;
+    const poll = () => {
+      if (document.hidden) {
+        timer = setTimeout(poll, 4000);
+        return;
       }
-    }, 4000);
-    return () => clearInterval(interval);
+      if (busyRef.current) {
+        timer = setTimeout(poll, delay);
+        return;
+      }
+      Promise.resolve(loadRef.current()).finally(() => {
+        delay = Math.min(delay * 1.5, 12000);
+        timer = setTimeout(poll, delay);
+      });
+    };
+    timer = setTimeout(poll, delay);
+    return () => clearTimeout(timer);
   }, [draft]);
 
   async function act(path: string, label: string, body?: Record<string, unknown>) {

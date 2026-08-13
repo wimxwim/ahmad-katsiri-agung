@@ -18,14 +18,14 @@ import "./globals.css";
 const bricolageGrotesque = Bricolage_Grotesque({
   variable: "--font-bricolage-grotesque",
   subsets: ["latin"],
-  display: "optional",
+  display: "swap",
   preload: true,
 });
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-  display: "fallback",
+  display: "swap",
   preload: true,
 });
 

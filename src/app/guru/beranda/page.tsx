@@ -1,5 +1,6 @@
 "use client";
 
+// NOTE: per-user dashboard - keep dynamic; server cache is getCachedDashboard (90s) + private max-age 30s; loading.tsx dead until Server Component conversion
 import {
   BookOpen,
   Clock,
@@ -130,7 +131,7 @@ function StatRailCard({
           >
             <Icon className="w-4 h-4" style={{ color }} />
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+          <span className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">
             {label}
           </span>
         </div>
@@ -710,6 +711,7 @@ export default function GuruBerandaPage() {
             <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary">Insight Siswa</span>
             <Link
               href="/guru/analytics"
+              prefetch={false}
               className="text-xs font-semibold text-tertiary hover:underline flex items-center gap-1"
             >
               Analytics

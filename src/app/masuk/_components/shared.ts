@@ -2,7 +2,7 @@ export type Mode = "pilih" | "murid" | "guru";
 export type TabMurid = "daftar" | "masuk";
 
 export const ERROR_MESSAGES: Record<string, string> = {
-  intent_mismatch: "Akun ini tidak cocok dengan portal yang dipilih. Gunakan portal sesuai peran Anda.",
+  intent_mismatch: "Akun ini untuk portal lain. Coba pilih portal yang sesuai ya.",
   terlalu_banyak_percobaan: "Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.",
   login_google_dibatalkan: "Login Google dibatalkan.",
   sesi_google_tidak_valid: "Sesi Google tidak valid. Coba lagi.",

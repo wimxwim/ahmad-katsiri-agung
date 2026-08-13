@@ -27,28 +27,16 @@ export function roleToSessionRole(role: string): SesiRole {
   return "murid";
 }
 
-export async function getRequestSession(
-  request: NextRequest,
-): Promise<SesiPayload | null> {
-  // Prefer forwarded identity from middleware
-  const userId = request.headers.get("x-user-id");
-  const userRole = request.headers.get("x-user-role");
-  const userNama = request.headers.get("x-user-nama");
-  const userEmail = request.headers.get("x-user-email");
-  if (userId && userRole) {
-    return {
-      userId,
-      role: userRole as SesiRole,
-      nama: userNama || "",
-      email: userEmail || undefined,
-    } as SesiPayload;
-  }
-  // Fallback: verify cookie
+export async function getRequestSession(request: NextRequest): Promise<SesiPayload | null> {
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
-  const { verifySession } = await import("./auth");
-  const result = await verifySession(token);
-  return result.success ? result.data : null;
+  try {
+    const { verifySession } = await import("./auth");
+    const result = await verifySession(token);
+    return result.success ? result.data : null;
+  } catch {
+    return null;
+  }
 }
 
 export const ROLE_HOME_PATHS: Record<SesiRole, string> = {

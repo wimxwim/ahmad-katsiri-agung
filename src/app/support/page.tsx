@@ -1,6 +1,7 @@
 "use client";
 
 import { Heart, Users, BookOpen, Zap, Upload, CheckCircle, AlertCircle } from "lucide-react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
 import { useEffect, useState, useRef } from "react";
@@ -122,9 +123,13 @@ export default function SupportPage() {
           </div>
 
           <div className="bg-white/80 rounded-2xl p-4 border border-border-precision max-w-xs mx-auto">
-            <img
+            <Image
               src="/qris-gopay.png"
               alt="QRIS GoPay"
+              width={320}
+              height={320}
+              sizes="(max-width:640px) 100vw, 50vw"
+              loading="lazy"
               className="w-full h-auto rounded-xl"
             />
             <p className="text-[10px] text-on-surface-variant/60 mt-2">

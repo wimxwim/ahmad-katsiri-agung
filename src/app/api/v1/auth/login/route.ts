@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
         ip,
         portal: portalIntent || "unknown",
       }).catch(err => console.error("logAuthEvent failed:", err));
-      return apiError("Email atau kata sandi salah", 401);
+      return apiError("Email atau kata sandi belum benar, coba lagi ya.", 401);
     }
 
     const user = rows[0];
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
       } catch {
         // Columns not yet in DB — skip
       }
-      return apiError("Email atau kata sandi salah", 401);
+      return apiError("Email atau kata sandi belum benar, coba lagi ya.", 401);
     }
 
     // Reset failed attempts

@@ -40,21 +40,21 @@ export function MateriRenderer({ konten }: { konten: string }) {
             <Lightbulb className="w-4 h-4 text-primary" />
             <p className="text-xs font-bold text-primary uppercase tracking-wider">Ringkasan</p>
           </div>
-          <p className="text-sm text-on-surface leading-relaxed">{structured.ringkasan}</p>
+          <p className="text-[15px] sm:text-base leading-[1.75] text-on-surface">{structured.ringkasan}</p>
         </div>
       )}
 
       {structured.pendahuluan && (
         <div>
           <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2">Pendahuluan</p>
-          <p className="text-sm text-on-surface-variant leading-relaxed">{structured.pendahuluan}</p>
+          <p className="text-[15px] sm:text-base leading-[1.75] text-on-surface-variant">{structured.pendahuluan}</p>
         </div>
       )}
 
       {structured.konten?.map((section, i) => (
         <div key={i} className="p-4 rounded-2xl bg-white/50 border border-border-precision">
-          <h3 className="text-sm font-bold text-on-surface mb-2">{section.judul}</h3>
-          <p className="text-sm text-on-surface-variant leading-relaxed">{section.isi}</p>
+          <h3 className="text-base sm:text-lg font-bold text-on-surface mb-2">{section.judul}</h3>
+          <p className="text-[15px] sm:text-base leading-[1.75] max-w-[65ch] mx-auto text-on-surface-variant">{section.isi}</p>
         </div>
       ))}
 

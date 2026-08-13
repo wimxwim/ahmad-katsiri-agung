@@ -24,12 +24,13 @@ export function FormMasuk({
   errorCode,
   inviteKode,
 }: FormMasukProps) {
+  // Default ke murid - mayoritas traffic adalah siswa, dan "pilih" render blank
   const [mode, setMode] = useState<Mode>(
     initialPortal === "guru"
       ? "guru"
       : initialPortal === "siswa"
       ? "murid"
-      : "pilih"
+      : "murid"
   );
   const [tabMurid, setTabMurid] = useState<TabMurid>(initialTab);
   const [error, setError] = useState(
@@ -256,6 +257,31 @@ export function FormMasuk({
                 loading={loading}
                 noPassword={noPassword}
               />
+            </div>
+          )}
+
+          {mode === "pilih" && (
+            <div className="space-y-6">
+              <div className="text-center space-y-2">
+                <h2 className="text-lg font-bold text-on-surface">Selamat datang di AKAL Center</h2>
+                <p className="text-sm text-on-surface-variant">Pilih ruang kamu untuk masuk</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setMode("murid")}
+                  className="flex flex-col items-center gap-2 rounded-2xl border border-border-precision bg-glass p-6 shadow-glass transition hover:bg-white/80"
+                >
+                  <span className="text-2xl">🎓</span>
+                  <span className="font-bold text-primary">Saya Siswa</span>
+                </button>
+                <button
+                  onClick={() => setMode("guru")}
+                  className="flex flex-col items-center gap-2 rounded-2xl border border-border-precision bg-glass p-6 shadow-glass transition hover:bg-white/80"
+                >
+                  <span className="text-2xl">👨🏫</span>
+                  <span className="font-bold text-primary">Saya Guru</span>
+                </button>
+              </div>
             </div>
           )}
         </div>

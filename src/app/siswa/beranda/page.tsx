@@ -315,7 +315,7 @@ export default function SiswaBerandaPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: EASE_CURVE }}
       >
-        <h1 className="font-heading font-bold text-xl sm:text-2xl text-on-surface shimmer-text">
+        <h1 className="font-heading font-bold text-xl sm:text-2xl text-primary">
           Halo, {firstName}!
         </h1>
         <p className="text-xs text-on-surface-variant mt-0.5">
@@ -411,7 +411,7 @@ export default function SiswaBerandaPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.05 }}
         >
-          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary mb-2 block">
+          <span className="text-xs font-bold uppercase tracking-wide text-primary mb-2 block">
             Lanjutkan Belajar
           </span>
           <Link
@@ -455,7 +455,7 @@ export default function SiswaBerandaPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.08 }}
         >
-          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-tertiary mb-2 block">
+          <span className="text-xs font-bold uppercase tracking-wide text-tertiary mb-2 block">
             Perlu Dikerjakan
           </span>
           <Link
@@ -492,7 +492,7 @@ export default function SiswaBerandaPage() {
           transition={{ duration: 0.4, ease: EASE_CURVE, delay: 0.1 }}
         >
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">
+            <span className="text-xs font-bold uppercase tracking-wide text-on-surface-variant">
               Hasil Kuis Terbaru
             </span>
             <Link

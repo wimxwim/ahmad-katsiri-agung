@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import Image from "next/image";
 import { EASE_CURVE } from "@/lib/constants";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { apiFetch } from "@/lib/api-helpers";
@@ -376,9 +377,13 @@ export default function GuruTopupPage() {
             ) : (
               <>
                 <div className="relative rounded-2xl overflow-hidden bg-white border border-border-precision mb-4">
-                  <img
+                  <Image
                     src={plans?.qrisImageUrl ?? "/qris-gopay.png"}
                     alt="QRIS GoPay"
+                    width={280}
+                    height={280}
+                    sizes="(max-width:640px) 100vw, 50vw"
+                    loading="lazy"
                     className="w-full max-w-[280px] mx-auto p-4"
                   />
                 </div>
