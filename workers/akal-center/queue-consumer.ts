@@ -49,7 +49,7 @@ export default {
         const apiKey = env.AI_API_KEY || "";
         const baseUrl = env.AI_BASE_URL || "https://router.bynara.id/v1";
 
-        const aiModel = env.AI_MODEL || "deepseek-v4-flash-bynara";
+        const aiModel = env.AI_MODEL || "deepseek-v4-flash";
         const [materiRes, quizRes, soalRes] = await Promise.all([
           aiChat(baseUrl, apiKey, aiModel, MATERI_SYSTEM_PROMPT, truncated, 1500),
           aiChat(baseUrl, apiKey, aiModel, QUIZ_SYSTEM_PROMPT, truncated, 1500),

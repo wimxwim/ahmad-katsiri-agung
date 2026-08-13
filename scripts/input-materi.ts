@@ -224,8 +224,8 @@ function getAiConfig() {
   return {
     baseUrl: process.env.AI_BASE_URL || "https://router.bynara.id/v1",
     apiKey: process.env.AI_API_KEY || process.env.NARAROUTER_API_KEY || "",
-    model: process.env.AI_MODEL || "deepseek-v4-flash-bynara",
-    flashModel: process.env.AI_FLASH_MODEL || "deepseek-v4-flash-bynara",
+    model: process.env.AI_MODEL || "deepseek-v4-flash",
+    flashModel: process.env.AI_FLASH_MODEL || "deepseek-v4-flash",
   };
 }
 

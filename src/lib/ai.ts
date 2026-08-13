@@ -131,16 +131,27 @@ export async function chatWithFallback(
     const heavyModel = getModelForTask("heavy");
     const flashModel = getFlashModel();
     const currentModel = options.model || getModelName();
+
+    // Preserve existing heavy -> flash logic (only meaningful when models differ)
+    const fallbackChain: string[] = [];
     if (currentModel === heavyModel && flashModel !== heavyModel) {
-      console.warn("Heavy model failed, falling back to flash:", (e as Error).message);
+      fallbackChain.push(flashModel);
+    }
+    // Separate DeepSeek capacity pool - likely up when the primary pool is overloaded
+    fallbackChain.push("deepseek-v4-flash-alibaba");
+    // Last resort
+    fallbackChain.push("mimo-v2.5");
+
+    let lastError: unknown = e;
+    for (const model of fallbackChain) {
+      if (model === currentModel) continue;
       try {
-        return await chat(messages, { ...options, model: flashModel });
-      } catch (e2) {
-        console.warn("Flash model also failed, falling back to mimo:", (e2 as Error).message);
-        return await chat(messages, { ...options, model: "mimo-v2.5" });
+        console.warn(`Model ${currentModel} failed, falling back to ${model}:`, (lastError as Error).message);
+        return await chat(messages, { ...options, model });
+      } catch (err) {
+        lastError = err;
       }
     }
-    console.warn("Model failed, falling back to mimo:", (e as Error).message);
-    return await chat(messages, { ...options, model: "mimo-v2.5" });
+    throw lastError;
   }
 }
