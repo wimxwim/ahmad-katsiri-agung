@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { aiGeneration } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
+import { aiGeneration, soalPublished } from "@/lib/db/schema";
+import { and, eq, isNull } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
 import { isFallbackSoal } from "@/lib/ai-generator";
+import { sanitizeText } from "@/lib/sanitize";
 
 export async function POST(
   request: NextRequest,
@@ -46,6 +47,44 @@ export async function POST(
       })
       .where(and(eq(aiGeneration.id, id), eq(aiGeneration.guruId, session.userId)))
       .returning();
+
+    // Idempotent publish: insert standalone soalPublished rows (quizPublishedId = null) on first approve
+    if (updated) {
+      try {
+        const rawItems = ((row as { soalEditedItems?: unknown }).soalEditedItems ?? row.soalItems) as Array<{ pertanyaan: string; tipe: string; opsi?: Record<string, string>; kunci: string }> | null;
+        const items = Array.isArray(rawItems) ? rawItems : [];
+        if (items.length > 0) {
+          const [existing] = await db
+            .select({ id: soalPublished.id })
+            .from(soalPublished)
+            .where(and(eq(soalPublished.aiGenerationId, id), isNull(soalPublished.quizPublishedId)))
+            .limit(1);
+          if (!existing) {
+            const validTypes = ["PG", "ISIAN", "ESSAY"] as const;
+            const inserted = await db
+              .insert(soalPublished)
+              .values(
+                items.map((s, i) => ({
+                  aiGenerationId: id,
+                  quizPublishedId: null,
+                  urutan: i,
+                  pertanyaan: sanitizeText(s.pertanyaan ?? "Soal", 2000) || "Soal",
+                  tipe: (validTypes.includes(s.tipe as typeof validTypes[number]) ? s.tipe : "PG") as "PG" | "ISIAN" | "ESSAY",
+                  pilihanGanda: s.opsi ?? null,
+                  kunci: sanitizeText(s.kunci ?? "A", 500) || "A",
+                  poin: 1,
+                })),
+              )
+              .returning({ id: soalPublished.id });
+            if (inserted.length > 0 && !row.publishedSoalId) {
+              await db.update(aiGeneration).set({ publishedSoalId: inserted[0].id, updatedAt: new Date() }).where(eq(aiGeneration.id, id));
+            }
+          }
+        }
+      } catch (err) {
+        console.error("approve-soal publish error:", err);
+      }
+    }
 
     await appendEvent(`gen:${session.userId}`, "gen.soal_approved", { generationId: id });
 

@@ -12,7 +12,11 @@ import { validateCsrf } from "@/lib/csrf-server";
 export const dynamic = "force-dynamic";
 
 function generateKode(): string {
-  return crypto.randomBytes(6).toString("base64url").slice(0, 8);
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const bytes = crypto.randomBytes(8);
+  let out = "";
+  for (let i = 0; i < 8; i++) out += chars[bytes[i] % chars.length];
+  return out;
 }
 
 export async function POST(
@@ -47,13 +51,19 @@ export async function POST(
     const kode = !kodeExpired ? k.kodeInvite || generateKode() : generateKode();
 
     if (!k.kodeInvite || kodeExpired) {
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
       await db
         .update(kelas)
-        .set({ kodeInvite: kode, inviteExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) })
+        .set({ kodeInvite: kode, inviteExpiresAt: expiresAt })
         .where(eq(kelas.id, id));
+      const base = (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
+      const inviteLink = base ? `${base}/undang?kode=${kode}` : `/undang?kode=${kode}`;
+      return NextResponse.json({ success: true, data: { kode, expiresAt: expiresAt.toISOString(), inviteLink } });
     }
 
-    return NextResponse.json({ success: true, data: { kode } });
+    const base2 = (process.env.NEXT_PUBLIC_APP_URL || "").replace(/\/$/, "");
+    const inviteLink2 = base2 ? `${base2}/undang?kode=${kode}` : `/undang?kode=${kode}`;
+    return NextResponse.json({ success: true, data: { kode, expiresAt: k.inviteExpiresAt ? new Date(k.inviteExpiresAt).toISOString() : null, inviteLink: inviteLink2 } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     if (e instanceof SubscriptionLockedError) return apiError(e.message, 403);

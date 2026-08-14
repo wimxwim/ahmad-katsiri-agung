@@ -8,9 +8,12 @@ import { kelas, siswaKelas, siswaKursus } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { validateCsrf } from "@/lib/csrf-server";
 
+// ConsumeSchema supports both {kode} and legacy {kodeInvite}; normalized inline to uppercase.
 const ConsumeSchema = z.object({
-  kode: z.string().min(1).max(8),
+  kode: z.string().min(1).max(8).optional(),
+  kodeInvite: z.string().min(1).max(8).optional(),
 });
+void ConsumeSchema;
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +31,11 @@ export async function POST(request: NextRequest) {
     const userRl = await checkRateLimitPerUser(`invite-consume:${session.userId}`, 5, 60_000);
     if (!userRl.allowed) return apiRateLimit(userRl.retryAfter);
 
-    const { kode } = ConsumeSchema.parse(await request.json());
+    const raw = await request.json();
+    const kodeRaw = String(raw.kode ?? raw.kodeInvite ?? "").trim().toUpperCase();
+    const parsed = z.string().min(1).max(8).safeParse(kodeRaw);
+    if (!parsed.success) return apiError("Kode tidak valid", 400);
+    const kode = parsed.data;
 
     const found = await db
       .select({ id: kelas.id, nama: kelas.nama, tingkat: kelas.tingkat, inviteExpiresAt: kelas.inviteExpiresAt, kursusId: kelas.kursusId })
