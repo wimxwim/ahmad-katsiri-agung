@@ -162,14 +162,23 @@ async function handleDirectUpload(
     .from(kursus)
     .where(and(eq(kursus.id, kursusId), eq(kursus.guruId, session.userId)))
     .limit(1);
-  let resolvedKursusId = kursusId;
+  let resolvedKursusId = kursusId as string;
   if (!ownedKursus) {
-    const existing = await db.select({ id: kursus.id }).from(kursus).where(eq(kursus.guruId, session.userId)).limit(1);
-    if (existing[0]) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
-    const slugBase = `kursus-awal-${session.userId.slice(0, 8)}-${Date.now().toString(36)}`;
-    const [created] = (await db.insert(kursus).values({ guruId: session.userId, judul: "Kursus Umum", slug: slugBase, deskripsi: "Kursus otomatis", statusPublikasi: "DRAFT" }).returning({ id: kursus.id }).onConflictDoNothing() as any);
-    if (!created) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
-    resolvedKursusId = created.id;
+    // heal 1: coba cari kursus by id tanpa guruId filter (orphan guruId NULL)
+    const [orphanKursus] = await db.select({ id: kursus.id, guruId: kursus.guruId }).from(kursus).where(eq(kursus.id, kursusId as string)).limit(1);
+    if (orphanKursus) {
+      if (!orphanKursus.guruId) {
+        await db.update(kursus).set({ guruId: session.userId }).where(eq(kursus.id, orphanKursus.id));
+      }
+      resolvedKursusId = orphanKursus.id;
+    } else {
+      const existing = await db.select({ id: kursus.id }).from(kursus).where(eq(kursus.guruId, session.userId)).limit(1);
+      if (existing[0]) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+      const slugBase = `kursus-awal-${session.userId.slice(0, 8)}-${Date.now().toString(36)}`;
+      const [created] = (await db.insert(kursus).values({ guruId: session.userId, judul: "Kursus Umum", slug: slugBase, deskripsi: "Kursus otomatis", statusPublikasi: "DRAFT" }).returning({ id: kursus.id }).onConflictDoNothing() as any);
+      if (!created) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+      resolvedKursusId = created.id;
+    }
   }
 
   let [kelasRow] = await db
@@ -179,12 +188,28 @@ async function handleDirectUpload(
     .limit(1);
   let resolvedKelasId = kelasId as string;
   if (!kelasRow) {
-    const existingKelas = await db.select({ id: kelas.id }).from(kelas).where(eq(kelas.guruId, session.userId)).limit(1);
-    if (existingKelas[0]) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
-    const [createdKelas] = (await db.insert(kelas).values({ guruId: session.userId, nama: "Kelas 7A", tingkat: 7 }).returning({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).onConflictDoNothing() as any);
-    if (!createdKelas) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
-    kelasRow = createdKelas;
-    resolvedKelasId = createdKelas.id;
+    // heal 1: coba cari kelas by id tanpa guruId filter (orphan guruId NULL)
+    const [orphanKelas] = await db.select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).from(kelas).where(eq(kelas.id, kelasId as string)).limit(1);
+    if (orphanKelas) {
+      // orphan atau guruId beda — klaim untuk guru ini jika belum ada yang claim
+      if (!orphanKelas.guruId) {
+        await db.update(kelas).set({ guruId: session.userId }).where(eq(kelas.id, orphanKelas.id));
+      }
+      kelasRow = { ...orphanKelas, guruId: (orphanKelas.guruId || session.userId) as string } as any;
+      resolvedKelasId = orphanKelas.id;
+    } else {
+      const existingKelas = await db.select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama }).from(kelas).where(eq(kelas.guruId, session.userId)).limit(1);
+      if (existingKelas[0]) {
+        // heal 2: kelasId stale — pakai kelas pertama milik guru
+        kelasRow = existingKelas[0] as any;
+        resolvedKelasId = existingKelas[0].id;
+      } else {
+        const [createdKelas] = (await db.insert(kelas).values({ guruId: session.userId, nama: "Kelas 7A", tingkat: 7 }).returning({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).onConflictDoNothing() as any);
+        if (!createdKelas) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
+        kelasRow = createdKelas;
+        resolvedKelasId = createdKelas.id;
+      }
+    }
   }
 
   const subStatus = await getSubscriptionStatus(session.userId);
@@ -401,12 +426,21 @@ export async function POST(request: NextRequest) {
       .limit(1);
     let resolvedKursusId = kursusId as string;
     if (!ownedKursus) {
-      const existing = await db.select({ id: kursus.id }).from(kursus).where(eq(kursus.guruId, session.userId!)).limit(1);
-      if (existing[0]) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
-      const slugBase = `kursus-awal-${session.userId!.slice(0, 8)}-${Date.now().toString(36)}-mp`;
-      const [created] = (await db.insert(kursus).values({ guruId: session.userId!, judul: "Kursus Umum", slug: slugBase, deskripsi: "Kursus otomatis", statusPublikasi: "DRAFT" }).returning({ id: kursus.id }).onConflictDoNothing() as any);
-      if (!created) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
-      resolvedKursusId = created.id;
+      // heal 1: coba cari kursus by id tanpa guruId filter (orphan guruId NULL)
+      const [orphanKursus] = await db.select({ id: kursus.id, guruId: kursus.guruId }).from(kursus).where(eq(kursus.id, kursusId as string)).limit(1);
+      if (orphanKursus) {
+        if (!orphanKursus.guruId) {
+          await db.update(kursus).set({ guruId: session.userId! }).where(eq(kursus.id, orphanKursus.id));
+        }
+        resolvedKursusId = orphanKursus.id;
+      } else {
+        const existing = await db.select({ id: kursus.id }).from(kursus).where(eq(kursus.guruId, session.userId!)).limit(1);
+        if (existing[0]) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+        const slugBase = `kursus-awal-${session.userId!.slice(0, 8)}-${Date.now().toString(36)}-mp`;
+        const [created] = (await db.insert(kursus).values({ guruId: session.userId!, judul: "Kursus Umum", slug: slugBase, deskripsi: "Kursus otomatis", statusPublikasi: "DRAFT" }).returning({ id: kursus.id }).onConflictDoNothing() as any);
+        if (!created) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+        resolvedKursusId = created.id;
+      }
     }
 
     let [kelasRow] = await db
@@ -416,12 +450,28 @@ export async function POST(request: NextRequest) {
       .limit(1);
     let resolvedKelasId = kelasId as string;
     if (!kelasRow) {
-      const existingKelas = await db.select({ id: kelas.id }).from(kelas).where(eq(kelas.guruId, session.userId!)).limit(1);
-      if (existingKelas[0]) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
-      const [createdKelas] = (await db.insert(kelas).values({ guruId: session.userId!, nama: "Kelas 7A", tingkat: 7 }).returning({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).onConflictDoNothing() as any);
-      if (!createdKelas) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
-      kelasRow = createdKelas;
-      resolvedKelasId = createdKelas.id;
+      // heal 1: coba cari kelas by id tanpa guruId filter (orphan guruId NULL)
+      const [orphanKelas] = await db.select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).from(kelas).where(eq(kelas.id, kelasId as string)).limit(1);
+      if (orphanKelas) {
+        // orphan atau guruId beda — klaim untuk guru ini jika belum ada yang claim
+        if (!orphanKelas.guruId) {
+          await db.update(kelas).set({ guruId: session.userId! }).where(eq(kelas.id, orphanKelas.id));
+        }
+        kelasRow = { ...orphanKelas, guruId: (orphanKelas.guruId || session.userId!) as string } as any;
+        resolvedKelasId = orphanKelas.id;
+      } else {
+        const existingKelas = await db.select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama }).from(kelas).where(eq(kelas.guruId, session.userId!)).limit(1);
+        if (existingKelas[0]) {
+          // heal 2: kelasId stale — pakai kelas pertama milik guru
+          kelasRow = existingKelas[0] as any;
+          resolvedKelasId = existingKelas[0].id;
+        } else {
+          const [createdKelas] = (await db.insert(kelas).values({ guruId: session.userId!, nama: "Kelas 7A", tingkat: 7 }).returning({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).onConflictDoNothing() as any);
+          if (!createdKelas) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
+          kelasRow = createdKelas;
+          resolvedKelasId = createdKelas.id;
+        }
+      }
     }
 
     const subStatus = await getSubscriptionStatus(session.userId!);

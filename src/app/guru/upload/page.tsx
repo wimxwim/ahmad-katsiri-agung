@@ -94,7 +94,14 @@ function GuruUploadContent() {
     const c1 = new AbortController();
     fetch("/api/v1/kursus", { credentials: "include", signal: c1.signal })
       .then((r) => (r.ok ? r.json() : { data: [] }))
-      .then((j) => { setKursus(j.data || []); if (j.data?.[0]) setSelectedKursus((prev) => prev || j.data[0].id); })
+      .then((j) => {
+        const list = j.data || [];
+        setKursus(list);
+        setSelectedKursus((prev) => {
+          if (prev && list.some((k: any) => k.id === prev)) return prev;
+          return list[0]?.id || prev;
+        });
+      })
       .catch(() => setKursusError("Gagal memuat daftar kursus"));
     const c2 = new AbortController();
     fetch("/api/v1/guru/kelas", { credentials: "include", signal: c2.signal })
@@ -106,6 +113,11 @@ function GuruUploadContent() {
   }, []);
 
   useEffect(() => { if (kursus.length > 0 && !selectedKursus) setSelectedKursus(kursus[0].id); }, [kursus, selectedKursus]);
+
+  useEffect(() => {
+    if (kelasList.length === 0) return;
+    if (selectedKelasId && !kelasList.some((k) => k.id === selectedKelasId)) setSelectedKelasId("");
+  }, [kelasList]);
 
   function validate(f: File): { ok: boolean; reason?: string } {
     // F11-5 magic bytes check (basic: extension + size + 0 bytes)
