@@ -222,37 +222,82 @@ async function handleDirectUpload(
     );
   }
 
-  const job = await db.transaction(async (tx) => {
-    const [fm] = await tx
-      .insert(fileMateri)
-      .values({
-        namaFile: originalName,
-        tipeMime,
-        ukuranBytes: sizeBytes,
-        lokasi: "IMAGEKIT",
-        imagekitFileId,
-        linkAkses,
-        kursusId: resolvedKursusId,
-        kelasId: resolvedKelasId,
-        guruId: session.userId,
-        status: "uploaded",
-        kategori: detectKategori(originalName, detected),
-      })
-      .returning({ id: fileMateri.id });
+  let job: { fileId: string; generationId: string };
+  try {
+    job = await db.transaction(async (tx) => {
+      const [fm] = await tx
+        .insert(fileMateri)
+        .values({
+          namaFile: originalName,
+          tipeMime,
+          ukuranBytes: sizeBytes,
+          lokasi: "IMAGEKIT",
+          imagekitFileId,
+          linkAkses,
+          kursusId: resolvedKursusId,
+          kelasId: resolvedKelasId,
+          guruId: session.userId,
+          status: "uploaded",
+          kategori: detectKategori(originalName, detected),
+        })
+        .returning({ id: fileMateri.id });
 
-    let gen;
-    try {
-      [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued", tingkat: kelasRow.tingkat, fase: tingkatToFase(kelasRow.tingkat) }).returning({ id: aiGeneration.id });
-    } catch (insErr: any) {
-      const c = insErr?.cause ?? insErr;
-      if (c?.code === "42703") {
-        console.warn("[upload] tingkat/fase column missing, retry without");
-        [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
-      } else throw insErr;
-    }
+      const [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued", tingkat: kelasRow.tingkat, fase: tingkatToFase(kelasRow.tingkat) }).returning({ id: aiGeneration.id });
 
-    return { fileId: fm.id, generationId: gen.id };
-  });
+      return { fileId: fm.id, generationId: gen.id };
+    });
+  } catch (e: any) {
+    const c = e?.cause ?? e;
+    const msg = String(e.message ?? "") + " " + String(c?.message ?? "") + " " + String(c?.detail ?? "");
+    if ((c?.code === "42703" || (e as any)?.code === "42703") && (msg.includes("tingkat") || msg.includes("fase"))) {
+      console.warn("[upload] tingkat/fase missing, retry tx without");
+      job = await db.transaction(async (tx) => {
+        const [fm] = await tx
+          .insert(fileMateri)
+          .values({
+            namaFile: originalName,
+            tipeMime,
+            ukuranBytes: sizeBytes,
+            lokasi: "IMAGEKIT",
+            imagekitFileId,
+            linkAkses,
+            kursusId: resolvedKursusId,
+            kelasId: resolvedKelasId,
+            guruId: session.userId,
+            status: "uploaded",
+            kategori: detectKategori(originalName, detected),
+          })
+          .returning({ id: fileMateri.id });
+
+        const [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
+
+        return { fileId: fm.id, generationId: gen.id };
+      });
+    } else if ((c?.code === "42703" || (e as any)?.code === "42703") && msg.includes("kelas_id")) {
+      console.warn("[upload] kelas_id missing, retry tx without kelasId");
+      job = await db.transaction(async (tx) => {
+        const [fm] = await tx
+          .insert(fileMateri)
+          .values({
+            namaFile: originalName,
+            tipeMime,
+            ukuranBytes: sizeBytes,
+            lokasi: "IMAGEKIT",
+            imagekitFileId,
+            linkAkses,
+            kursusId: resolvedKursusId,
+            guruId: session.userId,
+            status: "uploaded",
+            kategori: detectKategori(originalName, detected),
+          })
+          .returning({ id: fileMateri.id });
+
+        const [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
+
+        return { fileId: fm.id, generationId: gen.id };
+      });
+    } else throw e;
+  }
 
   // Update status to "extracting" so frontend can show progress
   await db.update(aiGeneration)
@@ -494,37 +539,82 @@ export async function POST(request: NextRequest) {
     imagekitFileId = uploadResult.fileId;
     imagekitLink = uploadResult.link;
 
-    const job = await db.transaction(async (tx) => {
-      const [fm] = await tx
-        .insert(fileMateri)
-        .values({
-          namaFile: originalName,
-          tipeMime: file.type || `application/${detected}`,
-          ukuranBytes: file.size,
-          lokasi: "IMAGEKIT",
-          imagekitFileId: uploadResult.fileId,
-          linkAkses: uploadResult.link,
-          kursusId: resolvedKursusId,
-          kelasId: resolvedKelasId,
-          guruId: session.userId!,
-          status: "uploaded",
-          kategori: detectKategori(originalName, detected),
-        })
-        .returning({ id: fileMateri.id });
+    let job: { fileId: string; generationId: string };
+    try {
+      job = await db.transaction(async (tx) => {
+        const [fm] = await tx
+          .insert(fileMateri)
+          .values({
+            namaFile: originalName,
+            tipeMime: file.type || `application/${detected}`,
+            ukuranBytes: file.size,
+            lokasi: "IMAGEKIT",
+            imagekitFileId: uploadResult.fileId,
+            linkAkses: uploadResult.link,
+            kursusId: resolvedKursusId,
+            kelasId: resolvedKelasId,
+            guruId: session.userId!,
+            status: "uploaded",
+            kategori: detectKategori(originalName, detected),
+          })
+          .returning({ id: fileMateri.id });
 
-      let gen;
-      try {
-        [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId!, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued", tingkat: kelasRow.tingkat, fase: tingkatToFase(kelasRow.tingkat) }).returning({ id: aiGeneration.id });
-      } catch (insErr: any) {
-        const c = insErr?.cause ?? insErr;
-        if (c?.code === "42703") {
-          console.warn("[upload] tingkat/fase column missing, retry without");
-          [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId!, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
-        } else throw insErr;
-      }
+        const [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId!, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued", tingkat: kelasRow.tingkat, fase: tingkatToFase(kelasRow.tingkat) }).returning({ id: aiGeneration.id });
 
-      return { fileId: fm.id, generationId: gen.id };
-    });
+        return { fileId: fm.id, generationId: gen.id };
+      });
+    } catch (e: any) {
+      const c = e?.cause ?? e;
+      const msg = String(e.message ?? "") + " " + String(c?.message ?? "") + " " + String(c?.detail ?? "");
+      if ((c?.code === "42703" || (e as any)?.code === "42703") && (msg.includes("tingkat") || msg.includes("fase"))) {
+        console.warn("[upload] tingkat/fase missing, retry tx without");
+        job = await db.transaction(async (tx) => {
+          const [fm] = await tx
+            .insert(fileMateri)
+            .values({
+              namaFile: originalName,
+              tipeMime: file.type || `application/${detected}`,
+              ukuranBytes: file.size,
+              lokasi: "IMAGEKIT",
+              imagekitFileId: uploadResult.fileId,
+              linkAkses: uploadResult.link,
+              kursusId: resolvedKursusId,
+              kelasId: resolvedKelasId,
+              guruId: session.userId!,
+              status: "uploaded",
+              kategori: detectKategori(originalName, detected),
+            })
+            .returning({ id: fileMateri.id });
+
+          const [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId!, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
+
+          return { fileId: fm.id, generationId: gen.id };
+        });
+      } else if ((c?.code === "42703" || (e as any)?.code === "42703") && msg.includes("kelas_id")) {
+        console.warn("[upload] kelas_id missing, retry tx without kelasId");
+        job = await db.transaction(async (tx) => {
+          const [fm] = await tx
+            .insert(fileMateri)
+            .values({
+              namaFile: originalName,
+              tipeMime: file.type || `application/${detected}`,
+              ukuranBytes: file.size,
+              lokasi: "IMAGEKIT",
+              imagekitFileId: uploadResult.fileId,
+              linkAkses: uploadResult.link,
+              kursusId: resolvedKursusId,
+              guruId: session.userId!,
+              status: "uploaded",
+              kategori: detectKategori(originalName, detected),
+            })
+            .returning({ id: fileMateri.id });
+
+          const [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId!, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
+
+          return { fileId: fm.id, generationId: gen.id };
+        });
+      } else throw e;
+    }
 
     // Update status to "extracting" so frontend can show progress
     await db.update(aiGeneration)
