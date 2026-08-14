@@ -475,7 +475,8 @@ export default function GuruProfilPage() {
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-on-surface-variant hover:text-on-surface"
+                  aria-label={showPw ? "Sembunyikan password" : "Lihat password"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 min-w-11 min-h-11 w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface"
                 >
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>

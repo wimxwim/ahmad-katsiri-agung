@@ -15,8 +15,9 @@ import {
   quotaUsages,
   users,
   teacherReadinessSnapshot,
+  materiRead,
 } from "@/lib/db/schema";
-import { and, eq, sql, desc, inArray, isNull } from "drizzle-orm";
+import { and, eq, sql, desc, inArray, isNull, countDistinct } from "drizzle-orm";
 import { calculateRiskScore, getRiskLabel } from "@/lib/analytics/calculateRiskScore";
 import { getTRILabel } from "@/lib/analytics/calculateTRI";
 import { KKM } from "@/lib/constants";
@@ -39,6 +40,8 @@ export interface DashboardAnalytics {
   siswaBerisiko: number;
   siswaKritis: number;
   computedAt: string;
+  isEstimated?: boolean;
+  estimatedFields?: string[];
 }
 
 export interface DashboardData extends DashboardSummary {
@@ -49,6 +52,8 @@ export interface DashboardData extends DashboardSummary {
   triLabel?: string;
   triKomponen?: Record<string, number>;
   triSnapshotDate?: string;
+  isEstimated?: boolean;
+  estimatedFields?: string[];
 }
 
 export async function getCachedDashboard(guruId: string): Promise<DashboardData> {
@@ -201,6 +206,9 @@ export async function computeAnalytics(guruId: string): Promise<DashboardAnalyti
 
   let siswaBerisiko = 0;
   let siswaKritis = 0;
+  // F1-4: flag estimated when attendance/timeliness use fallback 0.5 (absensi belum tersedia)
+  let isEstimated = false;
+  let estimatedFields: string[] = [];
   try {
     const enrolledRows = await db
       .selectDistinct({ siswaId: siswaKursus.siswaId })
@@ -210,6 +218,30 @@ export async function computeAnalytics(guruId: string): Promise<DashboardAnalyti
 
     const enrolledSiswaIds = enrolledRows.map((r) => r.siswaId);
     if (enrolledSiswaIds.length > 0) {
+      // Try to estimate attendanceRate from materiRead / totalMateriPublished (best-effort)
+      let totalMateriPublished = 0;
+      let materiReadAgg: Map<string, number> = new Map();
+      try {
+        const [materiCountRow] = await db
+          .select({ cnt: countDistinct(materiPublished.id) })
+          .from(materiPublished)
+          .innerJoin(kursus, eq(materiPublished.kursusId, kursus.id))
+          .where(eq(kursus.guruId, guruId));
+        totalMateriPublished = Number(materiCountRow?.cnt ?? 0);
+        if (totalMateriPublished > 0) {
+          const readRows = await db
+            .select({ siswaId: materiRead.siswaId, cnt: sql<number>`cast(count(distinct ${materiRead.materiPublishedId}) as integer)` })
+            .from(materiRead)
+            .innerJoin(materiPublished, eq(materiRead.materiPublishedId, materiPublished.id))
+            .innerJoin(kursus, eq(materiPublished.kursusId, kursus.id))
+            .where(and(eq(kursus.guruId, guruId), inArray(materiRead.siswaId, enrolledSiswaIds)))
+            .groupBy(materiRead.siswaId);
+          for (const r of readRows as unknown as { siswaId: string; cnt: number }[]) {
+            materiReadAgg.set(r.siswaId, Number(r.cnt));
+          }
+        }
+      } catch { /* best-effort: fallback to 0.5 estimated */ }
+
       const [quizStats, userRows] = await Promise.all([
         db
           .select({
@@ -230,17 +262,37 @@ export async function computeAnalytics(guruId: string): Promise<DashboardAnalyti
       const now = Date.now();
       const DAY_MS = 86_400_000;
 
+      // Determine if attendance is estimated (fallback 0.5) — if no materiRead data
+      const hasMateriData = totalMateriPublished > 0 && materiReadAgg.size > 0;
+      if (!hasMateriData) {
+        isEstimated = true;
+        estimatedFields = ["attendanceRate", "timelinessRate"];
+      } else {
+        // Check if any siswa still falls back to 0.5 (no reads)
+        const anyFallback = enrolledSiswaIds.some((id) => !materiReadAgg.has(id));
+        if (anyFallback) {
+          isEstimated = true;
+          estimatedFields = ["attendanceRate (partial)", "timelinessRate"];
+        }
+      }
+
       for (const siswaId of enrolledSiswaIds) {
         const qs = quizMap.get(siswaId);
         const quizPerf = qs && qs.total > 0 ? qs.benar / qs.total : 0;
         const lastLogin = loginMap.get(siswaId);
         const loginGap = lastLogin ? Math.max(0, (now - new Date(lastLogin).getTime()) / DAY_MS) : 30;
+        // attendanceRate: estimated from materiReadCount / totalMateriPublished, fallback 0.5 (estimated) if no data
+        const materiReadCount = materiReadAgg.get(siswaId) ?? 0;
+        const attendanceRate = totalMateriPublished > 0 && materiReadAgg.has(siswaId)
+          ? Math.min(1, materiReadCount / totalMateriPublished)
+          : 0.5; // estimated (absensi belum tersedia)
+        const timelinessRate = 0.5; // estimated (absensi belum tersedia)
         const risk = calculateRiskScore({
           completionRate: qs && qs.total > 0 ? 1 : 0,
           quizPerformance: quizPerf,
-          attendanceRate: 0.5,
+          attendanceRate,
           loginGap,
-          timelinessRate: 0.5,
+          timelinessRate,
           participationRate: qs && qs.total > 0 ? 1 : 0,
         });
         const label = getRiskLabel(risk);
@@ -255,6 +307,8 @@ export async function computeAnalytics(guruId: string): Promise<DashboardAnalyti
     siswaBerisiko,
     siswaKritis,
     computedAt: new Date().toISOString(),
+    isEstimated,
+    estimatedFields,
   };
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 // NOTE: per-user dashboard - keep dynamic; server cache is getCachedDashboard (90s) + private max-age 30s; loading.tsx dead until Server Component conversion
+// TODO F4-3: migrasi ke useQuery - contoh sudah di kelas/diskusi, beranda masih apiFetch+aliveRef untuk demo bertahap
 import {
   BookOpen,
   Clock,
@@ -22,14 +23,21 @@ import {
   CheckCircle2,
   Circle,
   Rocket,
+  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE } from "@/lib/constants";
-import { useEffect, useState, useRef, useCallback, Fragment } from "react";
+import { useEffect, useState, useRef, useCallback, Fragment, Suspense } from "react";
 import { apiFetch } from "@/lib/api-helpers";
 import { cn } from "@/lib/utils";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
+import { useTabFocus } from "@/hooks/useTabFocus";
+import { CompletionDonut } from "@/components/analytics/CompletionDonut";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonDashboardGuru } from "@/components/ui/SkeletonBlocks";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { FREE_TIER_UPLOAD_LIMIT } from "@/lib/token-constants";
 
 interface DashboardData {
   totalKursus: number;
@@ -45,6 +53,25 @@ interface DashboardData {
   aiQuotaLimit: number;
   siswaBerisiko: number;
   siswaKritis: number;
+  isEstimated?: boolean;
+  estimatedFields?: string[];
+}
+
+interface BalanceData {
+  userId: string;
+  balance: number;
+  totalTopup: number;
+  totalSpent: number;
+  lastTopupAt: string | null;
+  isUnlocked: boolean;
+  unlockedAt: string | null;
+  subscription?: {
+    isUnlocked: boolean;
+    uploadCount: number;
+    uploadLimit: number;
+    canGenerate: boolean;
+    canUpload: boolean;
+  };
 }
 
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
@@ -76,6 +103,17 @@ interface OnboardingData {
 }
 
 const SPRING_CONFIG = { type: "spring" as const, stiffness: 100, damping: 20 };
+
+function Countdown({ seconds, onDone }: { seconds: number; onDone?: () => void }) {
+  const [left, setLeft] = useState(seconds);
+  useEffect(() => {
+    if (left <= 0) { onDone?.(); return; }
+    const t = setTimeout(() => setLeft((v) => v - 1), 1000);
+    return () => clearTimeout(t);
+  }, [left, onDone]);
+  if (left <= 0) return null;
+  return <span className="ml-1 font-mono text-xs">{left}s</span>;
+}
 
 function AnimatedNumber({ value, duration }: { value: number; duration?: number }) {
   const [display, setDisplay] = useState(0);
@@ -123,11 +161,11 @@ function StatRailCard({
 }) {
   return (
     <div className="shrink-0 w-[70vw] max-w-[200px] snap-start">
-      <div className="bg-glass border border-border-precision rounded-2xl p-4 shadow-glass">
+      <div className="bg-glass border border-border-precision rounded-[32px] p-4 shadow-glass hover:shadow-glass-lg transition-shadow duration-300">
         <div className="flex items-center gap-2.5 mb-2">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: `${color}14` }}
+            style={{ backgroundColor: `color-mix(in oklch, ${color} 8%, transparent)` }}
           >
             <Icon className="w-4 h-4" style={{ color }} />
           </div>
@@ -151,8 +189,8 @@ function WelcomeEmptyState() {
       transition={{ duration: 0.6, ease: EASE_CURVE }}
       className="relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-tertiary/[0.03] rounded-[40px]" />
-      <div className="relative bg-glass border border-border-precision rounded-[40px] p-8 sm:p-10 shadow-glass text-center">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-tertiary/[0.03] rounded-[32px]" />
+      <div className="relative bg-glass border border-border-precision rounded-[32px] p-8 sm:p-10 shadow-glass-xl text-center">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -207,45 +245,49 @@ function WelcomeEmptyState() {
   );
 }
 
+// F11-5 Loading & ErrorBoundary + aria-busy + Suspense: ganti inline pulse tanpa aria-busy -> SkeletonBlocks konsisten
 function AnimatedSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <div className="h-4 w-20 bg-primary/5 rounded-lg animate-pulse" />
-        <div className="h-7 w-48 bg-primary/5 rounded-lg animate-pulse" />
-      </div>
-      <div className="flex gap-3 overflow-hidden">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="shrink-0 w-[70vw] max-w-[200px] bg-glass rounded-2xl p-4 h-24 animate-pulse border border-border-precision" />
-        ))}
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-glass rounded-2xl p-3.5 h-16 animate-pulse border border-border-precision" />
-        ))}
-      </div>
-      <div className="bg-glass rounded-card p-5 h-44 animate-pulse border border-border-precision" />
-      <div className="bg-glass rounded-card p-5 h-44 animate-pulse border border-border-precision" />
+    <div aria-busy="true" role="status" aria-label="Memuat dashboard">
+      <SkeletonDashboardGuru />
     </div>
   );
 }
 
-export default function GuruBerandaPage() {
+function BerandaContent() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [onboarding, setOnboarding] = useState<OnboardingData | null>(null);
+  const [balance, setBalance] = useState<BalanceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const [retryAfter, setRetryAfter] = useState<string | null>(null);
   const [onboardExpanded, setOnboardExpanded] = useState(false);
   const aliveRef = useRef(true);
   const retryCount = useRef(0);
 
   const fetchData = useCallback(async () => {
-    const [dashResult, onboardResult] = await Promise.all([
+    const [dashResult, onboardResult, balanceResult] = await Promise.all([
       apiFetch<DashboardData>("/api/v1/guru/dashboard"),
       apiFetch<OnboardingData>("/api/v1/guru/onboarding"),
+      apiFetch<BalanceData>("/api/v1/token/balance"),
     ]);
     if (!aliveRef.current) return;
     if (!dashResult.ok) {
+      // F11-3 Status terdiferensiasi 429/402/403/404
+      setErrorStatus(dashResult.status);
+      setRetryAfter(dashResult.retryAfter ?? null);
+      if (dashResult.status === 404) {
+        setData(null);
+        setError("");
+        setLoading(false);
+        return;
+      }
+      if (dashResult.status === 429 || dashResult.status === 402 || dashResult.status === 403) {
+        setError(dashResult.error);
+        setLoading(false);
+        return;
+      }
       if (retryCount.current < 2 && (dashResult.status === 401 || dashResult.status >= 500)) {
         retryCount.current++;
         await new Promise((r) => setTimeout(r, 400 * retryCount.current));
@@ -254,22 +296,37 @@ export default function GuruBerandaPage() {
       setError(dashResult.error);
     } else {
       setData(dashResult.data ?? null);
+      setError("");
+      setErrorStatus(null);
     }
     if (onboardResult.ok && onboardResult.data) {
       setOnboarding(onboardResult.data);
     } else {
       console.error("[guru/beranda] onboarding fetch failed:", onboardResult.error);
     }
+    if (balanceResult.ok && balanceResult.data) {
+      setBalance(balanceResult.data);
+    }
     setLoading(false);
   }, []);
+
+  const onTabFocus = useCallback(() => {
+    fetchData();
+  }, [fetchData]);
+  useTabFocus(onTabFocus);
 
   useEffect(() => {
     aliveRef.current = true;
     fetchData();
     return () => { aliveRef.current = false; };
-  }, []);
+  }, [fetchData]);
 
   if (loading) return <AnimatedSkeleton />;
+
+  // F11-3 404 -> EmptyState bukan error page
+  if (errorStatus === 404) {
+    return <EmptyState icon={BookOpen} title="Data tidak ditemukan" description="Dashboard belum tersedia. Mulai dengan membuat kursus pertama." action={{ label: "Buat Kursus", href: "/guru/buat" }} />;
+  }
 
   if (error) {
     return (
@@ -283,11 +340,15 @@ export default function GuruBerandaPage() {
           <AlertCircle className="w-7 h-7" />
         </span>
         <p className="text-red-600 font-semibold mb-2">Gagal memuat data</p>
-        <p className="text-sm text-on-surface-variant mb-4">{error}</p>
+        <p className="text-sm text-on-surface-variant mb-2">{error}</p>
+        {errorStatus === 429 && retryAfter && <p className="text-xs text-on-surface-variant mb-2">Coba lagi dalam <Countdown seconds={parseInt(retryAfter, 10) || 30} onDone={() => { setLoading(true); setError(""); retryCount.current = 0; fetchData(); }} /> detik</p>}
+        {errorStatus === 402 && <Link href="/guru/topup" className="inline-flex items-center gap-2 bg-amber-500 text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 mb-3">Topup Rp10.000</Link>}
+        {errorStatus === 403 && <p className="text-xs text-on-surface-variant mb-3">Sesi habis, muat ulang halaman untuk login kembali.</p>}
         <button
           onClick={() => {
             setLoading(true);
             setError("");
+            setErrorStatus(null);
             retryCount.current = 0;
             fetchData();
           }}
@@ -329,8 +390,16 @@ export default function GuruBerandaPage() {
       : null,
   ];
 
+  const isFreeMode = process.env.NEXT_PUBLIC_FREE_GENERATE_MODE === "true";
+  const canGenerate = balance?.subscription?.canGenerate ?? balance?.isUnlocked ?? false;
+  const isFree = isFreeMode || canGenerate || !!data.isEstimated;
+  const uploadCount = balance?.subscription?.uploadCount ?? 0;
+  const uploadLimit = balance?.subscription?.uploadLimit ?? FREE_TIER_UPLOAD_LIMIT;
+  const remainingUploads = Math.max(0, (uploadLimit === Infinity ? 15 : uploadLimit) - uploadCount);
+  const uploadProgress = uploadLimit === Infinity ? 100 : Math.min(100, (uploadCount / uploadLimit) * 100);
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 isolate">
       <Breadcrumb items={[{ label: "Ringkasan" }]} />
       {onboarding && !onboarding.isComplete && nextStep && (
         <motion.div
@@ -459,20 +528,35 @@ export default function GuruBerandaPage() {
             <h1 className="font-heading font-bold text-xl text-on-surface">Ringkasan</h1>
           </div>
           <div className="flex items-center gap-2">
-            {data.aiQuotaLimit > 0 && (
-              <div
-                className={cn(
-                  "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold",
-                  data.aiQuotaUsed >= data.aiQuotaLimit
-                    ? "bg-red-50 text-red-700"
-                    : data.aiQuotaUsed >= data.aiQuotaLimit * 0.8
-                      ? "bg-amber-50 text-amber-700"
-                      : "bg-emerald-50 text-emerald-700",
-                )}
-              >
+            {isFree ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <Zap className="w-3 h-3" />
-                AI {data.aiQuotaUsed}/{data.aiQuotaLimit}
-              </div>
+                Gratis — Generate Unlimited (Promo)
+              </span>
+            ) : (
+              <>
+                {data.aiQuotaLimit > 0 && (
+                  <div
+                    className={cn(
+                      "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold",
+                      data.aiQuotaUsed >= data.aiQuotaLimit
+                        ? "bg-red-50 text-red-700"
+                        : data.aiQuotaUsed >= data.aiQuotaLimit * 0.8
+                          ? "bg-amber-50 text-amber-700"
+                          : "bg-emerald-50 text-emerald-700",
+                    )}
+                  >
+                    <Zap className="w-3 h-3" />
+                    AI {data.aiQuotaUsed}/{data.aiQuotaLimit}
+                  </div>
+                )}
+                <Link
+                  href="/guru/topup"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors"
+                >
+                  Top-Up 5k untuk unlock
+                </Link>
+              </>
             )}
             <Link
               href="/guru/buat"
@@ -486,67 +570,164 @@ export default function GuruBerandaPage() {
         <p className="text-xs text-on-surface-variant">
           Kelola kursus, siswa, dan draft AI dari satu tempat.
         </p>
+        {!isFree && balance && (
+          <div className="mt-3 p-3 rounded-2xl border border-amber-200 bg-amber-50/60">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-semibold text-amber-800">Sisa gratis {remainingUploads} upload</span>
+              <span className="text-xs text-amber-700">{uploadCount}/{uploadLimit === Infinity ? "∞" : uploadLimit}</span>
+            </div>
+            <div className="h-2 bg-black/5 rounded-full overflow-hidden">
+              <div className="h-full bg-amber-500 rounded-full transition-all" style={{ width: `${uploadProgress}%` }} />
+            </div>
+            <p className="text-[11px] text-amber-700 mt-1">Top-up untuk upload unlimited dan generate tanpa batas.</p>
+          </div>
+        )}
+        {isFree && balance && !balance.isUnlocked && (
+          <div className="mt-3 p-3 rounded-2xl border border-emerald-200 bg-emerald-50/60">
+            <p className="text-xs font-semibold text-emerald-800">Gratis — Generate Unlimited (Promo) aktif</p>
+            <p className="text-[11px] text-emerald-700 mt-1">Sisa gratis {remainingUploads} upload — nikmati promo generate tanpa batas.</p>
+          </div>
+        )}
+        {data.isEstimated && (
+          <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-xs font-medium text-amber-700">
+            <AlertCircle className="w-3.5 h-3.5" />
+            Estimasi (absensi belum tersedia){data.estimatedFields?.length ? ` - ${data.estimatedFields.join(", ")}` : ""}
+          </div>
+        )}
       </motion.div>
 
-      {/* Alur Kerja Guru */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: EASE_CURVE }}
-      >
-        <div className="relative overflow-hidden bg-glass border border-border-precision rounded-2xl p-5 shadow-glass">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-tertiary/[0.03] pointer-events-none" />
-          <div className="relative">
-            <div className="mb-4">
-              <h2 className="font-heading font-bold text-lg text-on-surface">Alur Kerja Guru</h2>
-              <p className="text-xs text-on-surface-variant mt-0.5">Dari dokumen hingga diterbitkan ke siswa.</p>
-            </div>
-            <div className="flex flex-col lg:flex-row lg:items-stretch gap-2.5">
-              {WORKFLOW_STEPS.map((step, i) => {
-                const badge = stepBadges[i];
-                return (
-                  <Fragment key={step.label}>
-                    {i > 0 && (
-                      <div
-                        aria-hidden="true"
-                        className="flex justify-center px-0.5 py-0.5 lg:py-0 lg:px-0 lg:items-center"
-                      >
-                        <ArrowRight className="w-4 h-4 text-primary/30 rotate-90 lg:rotate-0 shrink-0" />
-                      </div>
-                    )}
-                    <Link
-                      href={step.href}
-                      className="group relative flex items-center gap-3 lg:flex-col lg:text-center bg-white/40 border border-border-precision rounded-xl p-3 shadow-sm hover:bg-white/80 hover:border-primary/25 hover:shadow-glass-lg active:scale-[0.99] transition-all duration-200 lg:flex-1 lg:min-w-0"
-                    >
-                      <span className="relative w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                        <step.icon className="w-4 h-4" />
-                        <span className="absolute -top-1.5 -left-1.5 w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center leading-none shadow-sm">
-                          {step.number}
-                        </span>
-                      </span>
-                      <div className="flex-1 min-w-0 lg:w-full">
-                        <p className="text-xs font-semibold text-on-surface truncate">{step.label}</p>
-                        <p className="text-[10px] text-on-surface-variant truncate">{step.desc}</p>
-                        {badge && (
-                          <span
-                            className={cn(
-                              "mt-1 inline-block max-w-full truncate px-1.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide",
-                              badge.className,
-                            )}
+      <div className="grid grid-cols-12 gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: EASE_CURVE }}
+          className="col-span-12 lg:col-span-8"
+        >
+          <div className="@container h-full">
+            <div className="relative overflow-hidden bg-glass border border-border-precision rounded-[32px] p-5 shadow-glass hover:shadow-glass-lg transition-shadow duration-300 bento-card @container isolate h-full">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-tertiary/[0.03] pointer-events-none" />
+              <div className="relative">
+                <div className="mb-4">
+                  <h2 className="font-heading font-bold text-lg text-on-surface">Alur Kerja Guru</h2>
+                  <p className="text-xs text-on-surface-variant mt-0.5">Dari dokumen hingga diterbitkan ke siswa.</p>
+                </div>
+                <div className="flex flex-col lg:flex-row lg:items-stretch gap-2.5">
+                  {WORKFLOW_STEPS.map((step, i) => {
+                    const badge = stepBadges[i];
+                    return (
+                      <Fragment key={step.label}>
+                        {i > 0 && (
+                          <div
+                            aria-hidden="true"
+                            className="flex justify-center px-0.5 py-0.5 lg:py-0 lg:px-0 lg:items-center"
                           >
-                            {badge.text}
-                          </span>
+                            <ArrowRight className="w-4 h-4 text-primary/30 rotate-90 lg:rotate-0 shrink-0" />
+                          </div>
                         )}
-                      </div>
-                      <ChevronRight className="w-3 h-3 text-on-surface-variant/30 group-hover:text-on-surface-variant group-hover:translate-x-0.5 transition-all shrink-0 lg:hidden" />
-                    </Link>
-                  </Fragment>
+                        <Link
+                          href={step.href}
+                          className="group relative flex items-center gap-3 lg:flex-col lg:text-center bg-white/40 border border-border-precision rounded-xl p-3 shadow-sm hover:bg-white/80 hover:border-primary/25 hover:shadow-glass-lg active:scale-[0.99] transition-all duration-200 lg:flex-1 lg:min-w-0 motion-card"
+                        >
+                          <span className="relative w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                            <step.icon className="w-4 h-4" />
+                            <span className="absolute -top-1.5 -left-1.5 w-4 h-4 rounded-full bg-primary text-white text-[9px] font-bold flex items-center justify-center leading-none shadow-sm">
+                              {step.number}
+                            </span>
+                          </span>
+                          <div className="flex-1 min-w-0 lg:w-full">
+                            <p className="text-xs font-semibold text-on-surface truncate">{step.label}</p>
+                            <p className="text-[10px] text-on-surface-variant truncate">{step.desc}</p>
+                            {badge && (
+                              <span
+                                className={cn(
+                                  "mt-1 inline-block max-w-full truncate px-1.5 py-0.5 rounded-full text-[9px] font-bold tracking-wide",
+                                  badge.className,
+                                )}
+                              >
+                                {badge.text}
+                              </span>
+                            )}
+                          </div>
+                          <ChevronRight className="w-3 h-3 text-on-surface-variant/30 group-hover:text-on-surface-variant group-hover:translate-x-0.5 transition-all shrink-0 lg:hidden" />
+                        </Link>
+                      </Fragment>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...SPRING_CONFIG, delay: 0.08 }}
+          className="col-span-12 lg:col-span-4"
+        >
+          <div className="bg-glass border border-border-precision rounded-[32px] p-4 shadow-glass hover:shadow-glass-lg transition-shadow duration-300 isolate h-full flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-heading font-semibold text-on-surface text-sm">
+                {data.draftMenunggu} draft menunggu review
+              </h3>
+              <Link
+                href="/guru/drafts"
+                className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+              >
+                Lihat
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+            <div className="h-2 bg-black/5 rounded-full overflow-hidden mb-3">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${data.draftMenunggu > 0 ? Math.min((data.draftMenunggu / Math.max(data.draftMenunggu, 5)) * 100, 100) : 0}%` }}
+                transition={{ duration: 1, ease: EASE_CURVE }}
+                className="h-full bg-gradient-to-r from-primary/60 to-primary rounded-full"
+              />
+            </div>
+            <div className="grid grid-cols-4 gap-1.5 mb-3">
+              {[
+                { key: "upload", label: "Diunggah", icon: Upload },
+                { key: "extract", label: "Ekstraksi", icon: FileText },
+                { key: "generate", label: "AI", icon: Sparkles },
+                { key: "review", label: "Review", icon: Eye },
+              ].map((stage, i) => {
+                const isActive = i < Math.min(data.draftMenunggu, 4);
+                return (
+                  <div
+                    key={stage.key}
+                    className={cn(
+                      "flex flex-col items-center gap-1 p-2 rounded-xl",
+                      isActive ? "bg-primary/5" : "bg-black/[0.02]",
+                    )}
+                  >
+                    <stage.icon
+                      className={cn(
+                        "w-3.5 h-3.5",
+                        isActive ? "text-primary" : "text-on-surface-variant/30",
+                      )}
+                    />
+                    <span className={cn(
+                      "text-[9px] font-semibold",
+                      isActive ? "text-primary" : "text-on-surface-variant/30",
+                    )}>
+                      {stage.label}
+                    </span>
+                  </div>
                 );
               })}
             </div>
+            <Link
+              href="/guru/drafts"
+              className="inline-flex items-center gap-1 mt-auto text-xs font-semibold text-primary hover:underline"
+            >
+              Review Draft
+              <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
 
       <div className="overflow-x-auto -mx-3 px-3 scrollbar-none snap-x snap-mandatory">
         <div className="flex gap-3">
@@ -561,17 +742,68 @@ export default function GuruBerandaPage() {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SPRING_CONFIG, delay: 0.12 }}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-on-surface-variant">Trend Mingguan</span>
+          <span className="text-xs text-on-surface-variant flex items-center gap-1">
+            <BarChart3 className="w-3 h-3" /> 4 minggu
+          </span>
+        </div>
+        {data.totalKursus > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <CompletionDonut
+              tuntas={data.totalMateriPublished}
+              belumTuntas={Math.max(0, data.totalKursus - data.totalMateriPublished + data.draftMenunggu) || 1}
+              ariaLabel="Ketuntasan materi mingguan"
+            />
+            <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] p-4 sm:p-5 hover:shadow-glass-lg transition-shadow duration-300">
+              <h3 className="font-heading font-semibold text-sm text-on-surface mb-3">Aktivitas 4 Minggu</h3>
+              <div className="flex items-end gap-2 h-[180px] px-2">
+                {[1, 2, 3, 4].map((w, i) => {
+                  const base = data.totalKuisDikerjakan > 0 ? Math.round((data.totalKuisDikerjakan / 4) * (0.6 + i * 0.15)) : 0;
+                  const h = data.totalKuisDikerjakan > 0 ? Math.min(100, Math.max(12, (base / Math.max(1, data.totalKuisDikerjakan)) * 160)) : 12;
+                  return (
+                    <div key={w} className="flex-1 flex flex-col items-center gap-2">
+                      <div
+                        className="w-full rounded-t-lg bg-primary/80 transition-all"
+                        style={{ height: `${h}px` }}
+                        role="progressbar"
+                        aria-valuenow={base}
+                        aria-valuemin={0}
+                        aria-valuemax={data.totalKuisDikerjakan || 1}
+                        aria-label={`Minggu ${w}: ${base} aktivitas`}
+                      />
+                      <span className="text-xs font-medium text-on-surface-variant">M{w}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-on-surface-variant mt-3 text-center">Data mingguan segera — placeholder proporsional dari total kuis dikerjakan</p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] p-6 hover:shadow-glass-lg transition-shadow duration-300">
+            <EmptyState icon={BarChart3} title="Data mingguan segera" description="Tren 4 minggu akan tampil setelah ada aktivitas kursus." />
+          </div>
+        )}
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ ...SPRING_CONFIG, delay: 0.1 }}
+        className="@container"
       >
         <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-on-surface-variant mb-2 block">
           Aksi Cepat
         </span>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 bento-card @container">
           {QUICK_ACTIONS.map((qa) => (
             <Link
               key={qa.label}
               href={qa.href}
-              className="group flex items-center gap-2.5 bg-glass border border-border-precision rounded-2xl p-3 shadow-glass hover:bg-white/80 hover:border-primary/25 hover:shadow-glass-lg active:scale-[0.99] transition-all duration-200"
+              className="group flex items-center gap-2.5 bg-glass border border-border-precision rounded-[32px] p-3 shadow-glass hover:shadow-glass-lg hover:bg-white/80 hover:border-primary/25 hover:shadow-glass-lg active:scale-[0.99] transition-all duration-200 isolate motion-card"
             >
               <span className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
                 <qa.icon className="w-4 h-4" />
@@ -589,78 +821,8 @@ export default function GuruBerandaPage() {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ ...SPRING_CONFIG, delay: 0.15 }}
-      >
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary">Draft AI</span>
-          <Link
-            href="/guru/drafts"
-            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-          >
-            Lihat semua
-            <ArrowRight className="w-3 h-3" />
-          </Link>
-        </div>
-        <div className="bg-glass border border-border-precision rounded-2xl p-4 shadow-glass">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-heading font-semibold text-on-surface">
-              {data.draftMenunggu} draft menunggu review
-            </h3>
-          </div>
-          <div className="h-2 bg-black/5 rounded-full overflow-hidden mb-3">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${data.draftMenunggu > 0 ? Math.min((data.draftMenunggu / Math.max(data.draftMenunggu, 5)) * 100, 100) : 0}%` }}
-              transition={{ duration: 1, ease: EASE_CURVE }}
-              className="h-full bg-gradient-to-r from-primary/60 to-primary rounded-full"
-            />
-          </div>
-          <div className="grid grid-cols-4 gap-1.5">
-            {[
-              { key: "upload", label: "Diunggah", icon: Upload },
-              { key: "extract", label: "Ekstraksi", icon: FileText },
-              { key: "generate", label: "AI", icon: Sparkles },
-              { key: "review", label: "Review", icon: Eye },
-            ].map((stage, i) => {
-              const isActive = i < Math.min(data.draftMenunggu, 4);
-              return (
-                <div
-                  key={stage.key}
-                  className={cn(
-                    "flex flex-col items-center gap-1 p-2 rounded-xl",
-                    isActive ? "bg-primary/5" : "bg-black/[0.02]",
-                  )}
-                >
-                  <stage.icon
-                    className={cn(
-                      "w-3.5 h-3.5",
-                      isActive ? "text-primary" : "text-on-surface-variant/30",
-                    )}
-                  />
-                  <span className={cn(
-                    "text-[9px] font-semibold",
-                    isActive ? "text-primary" : "text-on-surface-variant/30",
-                  )}>
-                    {stage.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          <Link
-            href="/guru/drafts"
-            className="inline-flex items-center gap-1 mt-3 text-xs font-semibold text-primary hover:underline"
-          >
-            Review Draft
-            <ArrowRight className="w-3 h-3" />
-          </Link>
-        </div>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
         transition={{ ...SPRING_CONFIG, delay: 0.2 }}
+        className="@container"
       >
         <div className="flex items-center justify-between mb-2">
           <div>
@@ -675,14 +837,14 @@ export default function GuruBerandaPage() {
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 bento-card @container">
           {data.kursusList.slice(0, 3).map((k) => {
             const badge = STATUS_BADGE[k.statusPublikasi] || STATUS_BADGE.DRAFT;
             return (
               <Link
                 key={k.id}
                 href={`/guru/kursus/${k.id}`}
-                className="bg-glass border border-border-precision rounded-2xl p-3.5 shadow-glass hover:bg-white/80 hover:border-primary/25 active:scale-[0.99] transition-all duration-200"
+                className="bg-glass border border-border-precision rounded-[32px] p-3.5 shadow-glass hover:shadow-glass-lg hover:bg-white/80 hover:border-primary/25 active:scale-[0.99] transition-all duration-200 isolate"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
@@ -718,7 +880,7 @@ export default function GuruBerandaPage() {
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
-          <div className="bg-glass border border-border-precision rounded-2xl p-4 shadow-glass space-y-2">
+          <div className="bg-glass border border-border-precision rounded-[32px] p-4 shadow-glass hover:shadow-glass-lg transition-shadow duration-300 space-y-2 isolate">
             {data.siswaBelumMengerjakan > 0 && (
               <div className="flex items-center gap-3 bg-blue-50/60 rounded-xl px-3 py-2.5">
                 <span className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
@@ -763,5 +925,15 @@ export default function GuruBerandaPage() {
         </motion.div>
       )}
     </div>
+  );
+}
+
+export default function GuruBerandaPage() {
+  return (
+    <ErrorBoundary>
+      <Suspense fallback={<div aria-busy="true" role="status"><SkeletonDashboardGuru /></div>}>
+        <BerandaContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }

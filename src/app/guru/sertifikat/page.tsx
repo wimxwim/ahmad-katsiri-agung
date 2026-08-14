@@ -59,7 +59,7 @@ export default function SertifikatPage() {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-glass rounded-2xl p-6 h-32 animate-pulse" />
+          <div key={i} className="bg-glass rounded-[32px] p-6 h-32 animate-pulse" />
         ))}
       </div>
     );
@@ -92,7 +92,7 @@ export default function SertifikatPage() {
       </div>
 
       {kursus.length === 0 ? (
-        <div className="text-center py-16 bg-glass rounded-2xl border border-border-precision">
+        <div className="text-center py-16 bg-glass rounded-[32px] border border-border-precision">
           <Award className="w-12 h-12 text-on-surface-variant/30 mx-auto mb-3" />
           <p className="text-on-surface-variant mb-1">Belum ada kursus</p>
           <p className="text-sm text-on-surface-variant/70">
@@ -107,7 +107,7 @@ export default function SertifikatPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, ease: EASE_CURVE, delay: i * 0.08 }}
-              className="bg-glass border border-border-precision rounded-2xl p-6 shadow-glass"
+              className="bg-glass border border-border-precision rounded-[32px] p-6 shadow-glass"
             >
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 <div className="flex-1 min-w-0">

@@ -16,30 +16,57 @@ export interface BottomNavTab {
 interface BottomNavBarProps {
   tabs: BottomNavTab[];
   homeHref: string;
+  onLainnyaClick?: () => void;
 }
 
-export function BottomNavBar({ tabs, homeHref }: BottomNavBarProps) {
+export function BottomNavBar({ tabs, homeHref, onLainnyaClick }: BottomNavBarProps) {
   const pathname = usePathname();
 
   const isActive = (href: string) => {
+    if (href === "#lainnya") return false;
     if (href === homeHref) return pathname === href;
     return pathname === href || pathname.startsWith(href + "/");
   };
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 inset-x-0 z-40 flex justify-center pointer-events-none"
-      style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+      aria-label="Navigasi bawah"
+      className="lg:hidden fixed bottom-3 inset-x-3 z-40 flex justify-center pointer-events-none isolate will-change-transform rounded-[32px] border shadow-glass-lg pb-safe"
+      style={{ transform: "translateZ(0)", willChange: "transform", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
-      <div className="pointer-events-auto flex items-center bg-white/70 backdrop-blur-xl border-t border-border-precision w-full px-1 py-1">
+      <div className="pointer-events-auto flex items-center bg-glass backdrop-blur-2xl border border-border-precision w-full rounded-[32px] overflow-hidden px-1 py-1 gap-2 shadow-glass">
         {tabs.slice(0, 5).map((tab) => {
           const active = isActive(tab.href);
+          if (tab.href === "#lainnya") {
+            return (
+              <button
+                key={tab.href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  onLainnyaClick?.();
+                }}
+                className="relative flex flex-col items-center justify-center gap-1 flex-1 min-h-11 min-w-11 rounded-tab transition-colors duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden text-on-surface-variant hover:text-primary"
+                aria-label="Menu lainnya"
+              >
+                <span className="relative z-10">
+                  <tab.icon
+                    className="w-5 h-5 min-w-5 min-h-5 transition-all duration-200 text-on-surface-variant"
+                    strokeWidth={2}
+                  />
+                </span>
+                <span className="relative z-10 text-xs font-semibold leading-none transition-colors duration-200 text-on-surface-variant">
+                  {tab.label}
+                </span>
+              </button>
+            );
+          }
           return (
             <Link
               key={tab.href}
               href={tab.href}
+              aria-current={active ? "page" : undefined}
               className={cn(
-                "relative flex flex-col items-center justify-center gap-0.5 flex-1 min-h-12 rounded-tab transition-colors duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden",
+                "relative flex flex-col items-center justify-center gap-1 flex-1 min-h-11 min-w-11 rounded-tab transition-colors duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden",
                 tab.primary && !active && "text-primary",
               )}
             >
@@ -56,7 +83,7 @@ export function BottomNavBar({ tabs, homeHref }: BottomNavBarProps) {
               <span className="relative z-10">
                 <tab.icon
                   className={cn(
-                    "w-5 h-5 transition-all duration-200",
+                    "w-5 h-5 min-w-5 min-h-5 transition-all duration-200",
                     active
                       ? tab.primary
                         ? "text-on-primary"
@@ -68,7 +95,7 @@ export function BottomNavBar({ tabs, homeHref }: BottomNavBarProps) {
               </span>
               <span
                 className={cn(
-                  "relative z-10 text-[10px] font-semibold leading-none transition-colors duration-200",
+                  "relative z-10 text-xs font-semibold leading-none transition-colors duration-200",
                   active
                     ? tab.primary
                       ? "text-on-primary"

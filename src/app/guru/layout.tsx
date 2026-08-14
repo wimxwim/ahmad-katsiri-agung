@@ -9,5 +9,7 @@ export const metadata: Metadata = {
 
 export default async function GuruLayout({ children }: { children: React.ReactNode }) {
   await requireDashboardSession(["guru", "owner", "admin_sekolah"], "guru", "/guru/beranda");
+  // F11-5 ErrorBoundary global + Suspense wrapper ada di GuruLayoutClient (client component)
+  // F11-2 OfflineBanner dirender di GuruLayoutClient
   return <GuruLayoutClient>{children}</GuruLayoutClient>;
 }

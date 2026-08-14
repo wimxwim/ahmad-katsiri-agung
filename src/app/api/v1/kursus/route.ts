@@ -8,9 +8,11 @@ import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
 import { db } from "@/lib/db";
 import { kursus } from "@/lib/db/schema";
-import { desc, eq, isNull } from "drizzle-orm";
+import { desc, eq, isNull, lt, and, or, sql } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
+import { isUserUnlocked } from "@/lib/token-service";
+import { FREE_TIER_COURSE_LIMIT } from "@/lib/token-constants";
 
 export const runtime = "nodejs";
 
@@ -22,8 +24,36 @@ const KursusSchema = z.object({
   slug: z.string().min(1).max(100),
 });
 
+const KursusQuerySchema = z.object({
+  slug: z.string().optional(),
+  scope: z.string().optional(),
+  limit: z.coerce.number().min(1).max(100).default(50),
+  offset: z.coerce.number().min(0).default(0),
+  cursor: z.string().optional(),
+});
+
 function slugify(text: string): string {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function encodeKursusCursor(row: { createdAt: Date; id: string }): string {
+  return Buffer.from(JSON.stringify({ createdAt: row.createdAt.toISOString(), id: row.id })).toString("base64url");
+}
+
+function decodeKursusCursor(raw: string): { createdAt: Date; id: string } | null {
+  try {
+    const json = Buffer.from(raw, "base64url").toString("utf-8");
+    const parsed = JSON.parse(json);
+    if (parsed && typeof parsed.createdAt === "string" && typeof parsed.id === "string") {
+      const d = new Date(parsed.createdAt);
+      if (!isNaN(d.getTime())) return { createdAt: d, id: parsed.id };
+    }
+  } catch {}
+  try {
+    const d = new Date(raw);
+    if (!isNaN(d.getTime())) return { createdAt: d, id: "" };
+  } catch {}
+  return null;
 }
 
 export async function GET(request: NextRequest) {
@@ -40,10 +70,11 @@ export async function GET(request: NextRequest) {
     const isOwner = session?.role === "owner";
     const isGuruLike = session?.role === "guru" || isOwner || session?.role === "admin_sekolah";
 
-    const slug = request.nextUrl.searchParams.get("slug");
-    const scope = request.nextUrl.searchParams.get("scope");
-    const limit = Math.min(parseInt(request.nextUrl.searchParams.get("limit") || "50", 10), 100);
-    const offset = Math.max(parseInt(request.nextUrl.searchParams.get("offset") || "0", 10), 0);
+    const rawParams = Object.fromEntries(request.nextUrl.searchParams.entries());
+    const parsed = KursusQuerySchema.safeParse(rawParams);
+    if (!parsed.success) return apiError(parsed.error.issues[0]?.message || "Parameter tidak valid", 400);
+    const { slug, scope, limit, offset, cursor } = parsed.data;
+
     let query = db.select({
       id: kursus.id,
       judul: kursus.judul,
@@ -68,8 +99,28 @@ export async function GET(request: NextRequest) {
     if (slug) {
       query = query.where(eq(kursus.slug, slug));
     }
-    const data = await query.orderBy(desc(kursus.createdAt)).limit(limit).offset(offset);
-    return NextResponse.json({ data, limit, offset }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60", "Vary": "Cookie" } });
+
+    // Cursor tie-breaker: (createdAt < cursorDate) OR (createdAt = cursorDate AND id < cursorId)
+    if (cursor) {
+      const decoded = decodeKursusCursor(cursor);
+      if (decoded) {
+        if (decoded.id) {
+          query = query.where(
+            or(
+              lt(kursus.createdAt, decoded.createdAt),
+              and(eq(kursus.createdAt, decoded.createdAt), lt(kursus.id, decoded.id)),
+            )!,
+          );
+        } else {
+          query = query.where(lt(kursus.createdAt, decoded.createdAt));
+        }
+      }
+    }
+
+    const data = await query.orderBy(desc(kursus.createdAt), desc(kursus.id)).limit(limit).offset(cursor ? 0 : offset);
+    const hasMore = data.length === limit;
+    const nextCursor = hasMore && data.length > 0 ? encodeKursusCursor({ createdAt: data[data.length - 1].createdAt, id: data[data.length - 1].id }) : null;
+    return NextResponse.json({ data, limit, offset: cursor ? 0 : offset, nextCursor, hasMore }, { headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=60", "Vary": "Cookie" } });
   } catch (e) {
     console.error("Kursus GET error:", e);
     return NextResponse.json({ success: true, data: [] });
@@ -91,6 +142,19 @@ export async function POST(request: NextRequest) {
     const parsed = KursusSchema.safeParse(body);
     if (!parsed.success) {
       return apiError("VALIDATION_ERROR", "Data tidak valid", parsed.error.flatten(), 400);
+    }
+
+    // F10-4: enforce FREE_TIER_COURSE_LIMIT — jika belum unlock dan kursus sudah >=15, block 403
+    const isUnlocked = await isUserUnlocked(session.userId);
+    if (!isUnlocked) {
+      const [countRow] = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(kursus)
+        .where(and(eq(kursus.guruId, session.userId), isNull(kursus.deletedAt)));
+      const kursusCount = countRow?.count ?? 0;
+      if (kursusCount >= FREE_TIER_COURSE_LIMIT) {
+        return apiError("FREE_TIER_LIMIT", `Batas kursus gratis ${FREE_TIER_COURSE_LIMIT}, topup untuk unlimited`, undefined, 403);
+      }
     }
 
     const generatedSlug = parsed.data.slug || slugify(parsed.data.judul);

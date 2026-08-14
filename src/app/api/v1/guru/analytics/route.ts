@@ -312,21 +312,23 @@ export async function GET(request: NextRequest) {
           total: Number(x.total),
         }));
         if (performaPerMateri.length === 0) {
+          // F1-5: fallback leftJoin skill.nama, jangan coalesce quizId sebagai nama
           const fallback = await db
             .select({
-              skillId: soalPublished.quizPublishedId,
-              nama: sql<string>`coalesce(${quizPublished.judul}, ${soalPublished.quizPublishedId}::text)`.as("nama"),
+              skillId: soalPublished.skillId,
+              nama: skill.nama,
               avgBenar: sql<number>`coalesce(avg(case when ${jawabanLog.isBenar} then 1 else 0 end), 0)`.as("avgBenar"),
               total: count(sql`1`).as("total"),
             })
             .from(jawabanLog)
             .innerJoin(soalPublished, eq(jawabanLog.soalId, soalPublished.id))
+            .leftJoin(skill, eq(soalPublished.skillId, skill.id))
             .innerJoin(quizPublished, eq(soalPublished.quizPublishedId, quizPublished.id))
             .where(inArray(quizPublished.kursusId, kursusIds))
-            .groupBy(soalPublished.quizPublishedId, quizPublished.judul);
+            .groupBy(soalPublished.skillId, skill.nama);
           performaPerMateri = (fallback as unknown as PerMateriRow[]).map((x) => ({
-            skillId: x.skillId,
-            nama: x.nama ?? x.skillId,
+            skillId: (x.skillId as unknown as string) ?? "",
+            nama: (x.nama as unknown as string) ?? "",
             avgBenar: Number(x.avgBenar),
             total: Number(x.total),
           }));
@@ -365,9 +367,6 @@ export async function GET(request: NextRequest) {
           remedialSiswaIds.add(row.siswaId);
           remedialScores.set(row.siswaId, { total: Number(row.avgNilai) * Number(row.totalAttempt), count: Number(row.totalAttempt) });
         }
-        // Also populate scores for accurate rata
-        // Re-query to get exact avg for those siswa
-        // Already have avg; store as total/count via avg*count
       } catch {
         // fallback empty
       }
@@ -482,65 +481,67 @@ export async function GET(request: NextRequest) {
     const remedialDetail = await (async (): Promise<RemedialDetailEntry[]> => {
       try {
         if (remedialSiswaIds.size === 0) return [];
-        const logRows = await db
-          .select({
-            siswaId: jawabanLog.siswaId,
-            soalId: jawabanLog.soalId,
-            isBenar: jawabanLog.isBenar,
-            materiJudul: sql<string | null>`${aiGeneration.materiJudul}`.as("materiJudul"),
-          })
-          .from(jawabanLog)
-          .innerJoin(soalPublished, eq(jawabanLog.soalId, soalPublished.id))
-          .innerJoin(aiGeneration, eq(soalPublished.aiGenerationId, aiGeneration.id))
-          .where(
-            and(
-              inArray(jawabanLog.siswaId, Array.from(remedialSiswaIds)),
-              eq(aiGeneration.guruId, guruId),
-            ),
-          )
-          .limit(2000);
-
-        if (logRows.length === 0) return [];
-
-        const bySiswa = new Map<string, { total: number; benar: number; salahSoal: Set<string>; materiSalah: Map<string, number> }>();
-        for (const row of logRows as unknown as { siswaId: string; soalId: string; isBenar: boolean; materiJudul: string | null }[]) {
-          let agg = bySiswa.get(row.siswaId);
-          if (!agg) {
-            agg = { total: 0, benar: 0, salahSoal: new Set(), materiSalah: new Map() };
-            bySiswa.set(row.siswaId, agg);
-          }
-          agg.total += 1;
-          if (row.isBenar) agg.benar += 1;
-          else {
-            agg.salahSoal.add(row.soalId);
-            if (row.materiJudul) agg.materiSalah.set(row.materiJudul, (agg.materiSalah.get(row.materiJudul) ?? 0) + 1);
+        // F2-1: GROUP BY di DB, bukan LIMIT 2000 raw + JS Map
+        // Gunakan MODE() WITHIN GROUP untuk topMateri, fallback ke max() jika tidak support
+        let rows: { siswaId: string; nama: string | null; jumlahSoalSalah: number; topMateri: string | null; persenBenar: number }[] = [];
+        try {
+          const grouped = await db
+            .select({
+              siswaId: jawabanLog.siswaId,
+              nama: users.nama,
+              jumlahSoalSalah: sql<number>`count(distinct case when ${jawabanLog.isBenar} = false then ${jawabanLog.soalId} end)`.as("jumlahSoalSalah"),
+              topMateri: sql<string | null>`mode() within group (order by ${aiGeneration.materiJudul})`.as("topMateri"),
+              persenBenar: sql<number>`coalesce(avg(case when ${jawabanLog.isBenar} then 1 else 0 end), 0)`.as("persenBenar"),
+            })
+            .from(jawabanLog)
+            .innerJoin(soalPublished, eq(jawabanLog.soalId, soalPublished.id))
+            .innerJoin(aiGeneration, eq(soalPublished.aiGenerationId, aiGeneration.id))
+            .leftJoin(users, eq(jawabanLog.siswaId, users.id))
+            .where(
+              and(
+                inArray(jawabanLog.siswaId, Array.from(remedialSiswaIds)),
+                eq(aiGeneration.guruId, guruId),
+              ),
+            )
+            .groupBy(jawabanLog.siswaId, users.nama)
+            .limit(50);
+          rows = grouped as unknown as typeof rows;
+        } catch {
+          // Fallback jika MODE() tidak support: gunakan max() atau string_agg first value
+          try {
+            const fallbackRows = await db
+              .select({
+                siswaId: jawabanLog.siswaId,
+                nama: users.nama,
+                jumlahSoalSalah: sql<number>`count(distinct case when ${jawabanLog.isBenar} = false then ${jawabanLog.soalId} end)`.as("jumlahSoalSalah"),
+                topMateri: sql<string | null>`max(${aiGeneration.materiJudul})`.as("topMateri"),
+                persenBenar: sql<number>`coalesce(avg(case when ${jawabanLog.isBenar} then 1 else 0 end), 0)`.as("persenBenar"),
+              })
+              .from(jawabanLog)
+              .innerJoin(soalPublished, eq(jawabanLog.soalId, soalPublished.id))
+              .innerJoin(aiGeneration, eq(soalPublished.aiGenerationId, aiGeneration.id))
+              .leftJoin(users, eq(jawabanLog.siswaId, users.id))
+              .where(
+                and(
+                  inArray(jawabanLog.siswaId, Array.from(remedialSiswaIds)),
+                  eq(aiGeneration.guruId, guruId),
+                ),
+              )
+              .groupBy(jawabanLog.siswaId, users.nama)
+              .limit(50);
+            rows = fallbackRows as unknown as typeof rows;
+          } catch {
+            return [];
           }
         }
 
-        const usersForRemedial = await db
-          .select({ id: users.id, nama: users.nama })
-          .from(users)
-          .where(inArray(users.id, Array.from(bySiswa.keys())));
-        const namaMap = new Map(usersForRemedial.map((u) => [u.id, u.nama]));
-
-        const detailList: RemedialDetailEntry[] = [];
-        for (const [siswaId, agg] of bySiswa) {
-          let topMateri: string | null = null;
-          let topCount = 0;
-          for (const [materi, count] of agg.materiSalah) {
-            if (count > topCount) {
-              topCount = count;
-              topMateri = materi;
-            }
-          }
-          detailList.push({
-            siswaId,
-            nama: namaMap.get(siswaId) ?? "Siswa",
-            jumlahSoalSalah: agg.salahSoal.size,
-            topMateri,
-            persenBenar: agg.total > 0 ? Math.round((agg.benar / agg.total) * 100) : 0,
-          });
-        }
+        const detailList: RemedialDetailEntry[] = rows.map((r) => ({
+          siswaId: r.siswaId,
+          nama: r.nama ?? "Siswa",
+          jumlahSoalSalah: Number(r.jumlahSoalSalah ?? 0),
+          topMateri: r.topMateri ?? null,
+          persenBenar: Math.round(Number(r.persenBenar ?? 0) * 100),
+        }));
         detailList.sort((a, b) => a.persenBenar - b.persenBenar);
         return detailList.slice(0, 50);
       } catch {
@@ -582,12 +583,14 @@ export async function GET(request: NextRequest) {
       : [];
 
     const allSiswaIds = siswaList.map((s) => s.siswaId);
+    // F2-1: skillMasteryRaw tambah WHERE pL < 0.8 di DB + LIMIT 50 sebelum select, jangan filter JS
     const skillMasteryRaw = allSiswaIds.length > 0
       ? await db
           .select({
             siswaId: skillMastery.siswaId,
             nama: users.nama,
             skillId: skillMastery.skillId,
+            skillNama: skill.nama,
             pL: skillMastery.pL,
             memoryStrength: skillMastery.memoryStrength,
             repetitionNum: skillMastery.repetitionNum,
@@ -596,12 +599,12 @@ export async function GET(request: NextRequest) {
           })
           .from(skillMastery)
           .leftJoin(users, eq(skillMastery.siswaId, users.id))
-          .where(inArray(skillMastery.siswaId, allSiswaIds))
+          .leftJoin(skill, eq(skillMastery.skillId, skill.id))
+          .where(and(inArray(skillMastery.siswaId, allSiswaIds), sql`${skillMastery.pL} < 0.8`))
+          .limit(50)
       : [];
 
-    // filter pL < 0.8 or limit 50
-    const filteredMastery = skillMasteryRaw.filter((r) => Number((r as unknown as { pL: number }).pL) < 0.8);
-    const skillMasteryData = (filteredMastery.length > 0 ? filteredMastery : skillMasteryRaw).slice(0, 50);
+    const skillMasteryData = skillMasteryRaw.slice(0, 50);
 
     // ringkasan Hybrid C
     let ringkasanHybrid: { levelCounts: Record<string, number>; soalSulitCount: number; skillMahirCount: number } = {

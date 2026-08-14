@@ -56,7 +56,7 @@ function isDeepSeekModel(model: string): boolean {
 export async function chat(
   messages: ChatMessage[],
   options: ChatOptions = {},
-  retries = 2,
+  retries = 3,
 ): Promise<ChatResult> {
   const url = `${getBaseUrl()}/chat/completions`;
   const model = options.model || getModelName();
@@ -89,13 +89,16 @@ export async function chat(
 
       if (!res.ok) {
         const text = await res.text().catch(() => "");
-        const isRetryable = [429, 500, 502, 503, 504].includes(res.status);
+        const isEngineCanceled = text.toLowerCase().includes("engine invoke canceled") || text.toLowerCase().includes("service unavailable");
+        const isRetryable = [429, 500, 502, 503, 504].includes(res.status) || isEngineCanceled;
         if (isRetryable && attempt < retries) {
-          lastError = new Error(`NaraRouter ${res.status} (attempt ${attempt + 1}/${retries + 1})`);
-          await new Promise((r) => setTimeout(r, 1500 * Math.pow(2, attempt)));
+          lastError = new Error(`NaraRouter ${res.status} engine-canceled=${isEngineCanceled} (attempt ${attempt + 1}/${retries + 1}): ${text.slice(0, 120)}`);
+          const backoff = 1500 * Math.pow(2, attempt) + Math.floor(Math.random() * 500);
+          console.warn(`[ai] retryable ${res.status} attempt ${attempt + 1}/${retries + 1} backoff ${backoff}ms: ${text.slice(0, 120)}`);
+          await new Promise((r) => setTimeout(r, backoff));
           continue;
         }
-        throw new Error(`NaraRouter error ${res.status}: ${text.slice(0, 300)}`);
+        throw new Error(`NaraRouter error ${res.status}: ${text.slice(0, 400)}`);
       }
 
       const json = (await res.json()) as NaraRouterResponse;
@@ -108,9 +111,12 @@ export async function chat(
       };
     } catch (e: unknown) {
       if (e instanceof Error && e.message.startsWith("NaraRouter error")) throw e;
+      const msg = e instanceof Error ? e.message : String(e);
       if (attempt < retries) {
         lastError = e;
-        await new Promise((r) => setTimeout(r, 1500 * Math.pow(2, attempt)));
+        const backoff = 1500 * Math.pow(2, attempt) + Math.floor(Math.random() * 500);
+        console.warn(`[ai] network/abort retry ${attempt + 1}/${retries + 1} backoff ${backoff}ms: ${msg.slice(0, 120)}`);
+        await new Promise((r) => setTimeout(r, backoff));
         continue;
       }
       throw e;
@@ -125,31 +131,38 @@ export async function chatWithFallback(
   messages: ChatMessage[],
   options: ChatOptions = {},
 ): Promise<ChatResult> {
+  const userText = messages.find((m) => m.role === "user")?.content ?? "";
+  if (userText.trim().length < 100) {
+    console.error(`[ai] chatWithFallback blocked: user prompt too short (${userText.length} chars) — likely empty extractionText`);
+    throw new Error(`Prompt terlalu pendek (${userText.length} chars). Dokumen mungkin scan gambar tanpa teks — upload PDF text-based atau DOCX.`);
+  }
   try {
     return await chat(messages, options);
   } catch (e) {
     const heavyModel = getModelForTask("heavy");
     const flashModel = getFlashModel();
     const currentModel = options.model || getModelName();
+    const errMsg = e instanceof Error ? e.message : String(e);
+    const isEngineCanceled = errMsg.toLowerCase().includes("engine invoke canceled") || errMsg.includes("503");
+    console.warn(`[ai] primary ${currentModel} failed (engineCanceled=${isEngineCanceled}): ${errMsg.slice(0, 200)} — trying fallback chain`);
 
-    // Preserve existing heavy -> flash logic (only meaningful when models differ)
     const fallbackChain: string[] = [];
     if (currentModel === heavyModel && flashModel !== heavyModel) {
       fallbackChain.push(flashModel);
     }
-    // Separate DeepSeek capacity pool - likely up when the primary pool is overloaded
     fallbackChain.push("deepseek-v4-flash-alibaba");
-    // Last resort
     fallbackChain.push("mimo-v2.5");
 
     let lastError: unknown = e;
     for (const model of fallbackChain) {
       if (model === currentModel) continue;
       try {
-        console.warn(`Model ${currentModel} failed, falling back to ${model}:`, (lastError as Error).message);
+        console.warn(`Model ${currentModel} failed, falling back to ${model}:`, (lastError as Error).message.slice(0, 150));
+        await new Promise((r) => setTimeout(r, 800 + Math.floor(Math.random() * 400)));
         return await chat(messages, { ...options, model });
       } catch (err) {
         lastError = err;
+        console.warn(`[ai] fallback ${model} also failed: ${(err as Error).message.slice(0, 150)}`);
       }
     }
     throw lastError;

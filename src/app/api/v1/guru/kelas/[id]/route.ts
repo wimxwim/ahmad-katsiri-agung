@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { and, eq, isNull } from "drizzle-orm";
-import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { sanitizeText } from "@/lib/sanitize";
 import { db } from "@/lib/db";
 import { kelas } from "@/lib/db/schema";
@@ -35,8 +35,7 @@ export async function PATCH(
       return apiError("Anda tidak punya akses ke kelas ini", 403);
     }
 
-    const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`kelas-update:${ip}`, 10, 60_000);
+    const rl = await checkRateLimitPerUser(`kelas-update:${session.userId}`, 10, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const body = await request.json();
@@ -86,8 +85,7 @@ export async function DELETE(
       return apiError("Anda tidak punya akses ke kelas ini", 403);
     }
 
-    const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`kelas-delete:${ip}`, 5, 60_000);
+    const rl = await checkRateLimitPerUser(`kelas-delete:${session.userId}`, 5, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const where = session.role === "owner"

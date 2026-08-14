@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useSession, useSessionLoading } from "@/components/providers/SessionProvider";
 import { handleLogout } from "@/lib/logout";
+import { InstallPWAButton } from "@/components/layout/InstallPWAButton";
 
 const SHEET_ITEMS_PUBLIC: { href: string; label: string; icon: LucideIcon; desc: string }[] = [
   { href: "/fitur", label: "Fitur", icon: Sparkles, desc: "Lihat semua fitur platform" },
@@ -114,6 +115,10 @@ export function BottomTabBar() {
             aria-label="Tutup menu"
             className="text-gray-400 hover:text-gray-600"
           />
+        </div>
+
+        <div className="px-6 pb-3">
+          <InstallPWAButton className="w-full justify-center" />
         </div>
 
         <div className="px-6 pb-6 overflow-y-auto max-h-[70dvh]">

@@ -7,6 +7,7 @@ import { kursus } from "@/lib/db/schema";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
+import { requireNotSuspended, SubscriptionLockedError } from "@/lib/token-service";
 import { validateCsrf } from "@/lib/csrf-server";
 
 const PublishSchema = z.object({
@@ -21,6 +22,7 @@ export async function PATCH(
     const csrfError = validateCsrf(request);
     if (csrfError) return csrfError;
     const session = await requireGuru(request);
+    await requireNotSuspended(session.userId);
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`kursus-publish:${ip}`, 30, 60_000);
@@ -73,6 +75,7 @@ export async function PATCH(
     return NextResponse.json({ data: updated });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
+    if (e instanceof SubscriptionLockedError) return apiError(e.message, 403);
     console.error("Publish error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

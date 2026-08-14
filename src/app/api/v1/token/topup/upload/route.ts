@@ -1,15 +1,15 @@
 import { NextRequest, after } from "next/server";
-import { createHash } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiSuccess, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
-import { topUpBalance, requireNotSuspended, SubscriptionLockedError, InsufficientBalanceError } from "@/lib/token-service";
+import { requireNotSuspended, SubscriptionLockedError, InsufficientBalanceError, getBalance } from "@/lib/token-service";
 import { MIN_TOPUP, MAX_TOPUP, MAX_TOPUP_PER_DAY } from "@/lib/token-constants";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { sendTopupNotification } from "@/lib/telegram-notif";
 import { db } from "@/lib/db";
-import { tokenTransactions, users } from "@/lib/db/schema";
-import { and, eq } from "drizzle-orm";
+import { tokenTransactions, payments, users } from "@/lib/db/schema";
+import { and, eq, desc } from "drizzle-orm";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +42,7 @@ function detectExtension(buf: Buffer): string | null {
 // PATCH: idempotency key TIDAK boleh mengandung `amount` (nilai bisnis yang bisa berubah).
 // Pola Stripe: key deterministik dari identitas request (user-attached object = file bukti),
 // bukan dari nominal. Kalau key memuat amount, file bukti yang sama dengan nominal beda
-// menghasilkan key beda → bisa double-credit. Sekarang key = `${userId}:${fileHash}`.
+// menghasilkan key beda -> bisa double-credit. Sekarang key = `${userId}:${fileHash}`.
 function buildIdempotencyKey(userId: string, fileBuffer: Buffer): string {
   const fileHash = createHash("sha256").update(fileBuffer).digest("hex").slice(0, 16);
   return `${userId}:${fileHash}`;
@@ -120,6 +120,8 @@ export async function POST(request: NextRequest) {
       return apiError("DUPLICATE_PROOF", "Bukti ini sudah pernah diproses. Tidak dapat digunakan lagi.", undefined, 409);
     }
 
+    // Also check payments duplicate via proof? optional
+
     adapter = await getStorageAdapter(session.userId);
     const folder = `/akal/bukti/guru-${session.userId}`;
 
@@ -131,19 +133,57 @@ export async function POST(request: NextRequest) {
 
     imageKitFileId = uploadResult.fileId;
 
-    const { balance, transaction } = await topUpBalance(session.userId, amount, {
-      paymentMethod: "QRIS_GOPAY",
-      proofFileId: uploadResult.fileId,
-      proofLink: uploadResult.link,
-      notes: `Top-up Rp${amount.toLocaleString("id-ID")} via QRIS GoPay`,
-      referenceId: idempotencyKey,
-    });
+    // F10-1: Topup verify pending + chainHash — JANGAN langsung credit balance.
+    // TODO: credit hanya setelah verifiedBy admin atau Midtrans webhook.
+    // Flow pending: create payments status pending + tokenTransactions PENDING dengan chainHash.
+    // Admin akan verifikasi via dashboard admin atau webhook, baru update balance += amount dan status COMPLETED.
+    const currentBalance = await getBalance(session.userId);
 
-    await db
-      .update(tokenTransactions)
-      .set({ referenceId: idempotencyKey })
-      .where(eq(tokenTransactions.id, transaction.id))
-      .catch(() => {});
+    // chainHash = sha256(prevHash + amount + nonce), prevHash dari last transaction chainHash
+    const [lastTx] = await db
+      .select({ chainHash: tokenTransactions.chainHash })
+      .from(tokenTransactions)
+      .where(eq(tokenTransactions.userId, session.userId))
+      .orderBy(desc(tokenTransactions.createdAt))
+      .limit(1);
+
+    const prevHash = lastTx?.chainHash ?? "GENESIS";
+    const nonce = randomUUID().replace(/-/g, "").slice(0, 16);
+    const chainHash = createHash("sha256").update(`${prevHash}:${amount}:${nonce}`).digest("hex");
+
+    // Create payments record pending
+    const [payment] = await db
+      .insert(payments)
+      .values({
+        userId: session.userId,
+        amount,
+        paymentType: "qris_static",
+        status: "pending",
+        proofImageUrl: uploadResult.link,
+        notes: `Top-up Rp${amount.toLocaleString("id-ID")} via QRIS GoPay — menunggu verifikasi admin`,
+      })
+      .returning({ id: payments.id });
+
+    // Create tokenTransactions PENDING (no balance credit yet)
+    const [pendingTx] = await db
+      .insert(tokenTransactions)
+      .values({
+        userId: session.userId,
+        type: "TOPUP",
+        status: "PENDING",
+        amount,
+        balanceBefore: currentBalance.balance,
+        balanceAfter: currentBalance.balance, // no credit yet, sama dengan before
+        paymentMethod: "QRIS_GOPAY",
+        proofFileId: uploadResult.fileId,
+        proofLink: uploadResult.link,
+        referenceId: idempotencyKey,
+        chainHash,
+        prevHash,
+        nonce,
+        notes: `Menunggu verifikasi admin — payment ${payment.id}`,
+      })
+      .returning({ id: tokenTransactions.id });
 
     const guru = await db.query.users.findFirst({
       where: eq(users.id, session.userId),
@@ -154,12 +194,12 @@ export async function POST(request: NextRequest) {
       try {
         await sendTopupNotification({
           userId: session.userId,
-          transactionId: transaction.id,
+          transactionId: pendingTx.id,
           nama: guru?.nama ?? "Guru",
           email: guru?.email ?? session.email ?? "",
           amount,
           proofUrl: uploadResult.link,
-          newBalance: balance.balance,
+          newBalance: currentBalance.balance,
           loginTerakhir: guru?.lastActiveAt
             ? new Date(guru.lastActiveAt).toLocaleString("id-ID", { timeZone: "Asia/Jakarta" })
             : undefined,
@@ -170,11 +210,14 @@ export async function POST(request: NextRequest) {
     });
 
     return apiSuccess({
-      transactionId: transaction.id,
+      transactionId: pendingTx.id,
+      paymentId: payment.id,
       proofUrl: uploadResult.link,
-      balance: balance.balance,
-      isUnlocked: balance.isUnlocked,
-      message: "Top-up berhasil! Saldo kamu sudah bertambah.",
+      balance: currentBalance.balance,
+      isUnlocked: currentBalance.isUnlocked,
+      status: "PENDING",
+      chainHash,
+      message: "Menunggu verifikasi admin — bukti berhasil diupload, saldo akan bertambah setelah diverifikasi (1x24 jam).",
     });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);

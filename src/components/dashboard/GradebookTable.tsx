@@ -25,19 +25,20 @@ export function GradebookTable({ siswa, quizzes, siswaQuizMap }: GradebookTableP
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
+        <caption className="sr-only">Rekap nilai siswa</caption>
         <thead>
           <tr className="border-b border-border-precision">
-            <th className="text-left py-3 px-4 font-semibold text-on-surface sticky left-0 bg-white/80 backdrop-blur-sm z-10">
+            <th scope="col" className="text-left py-3 px-4 font-semibold text-on-surface sticky left-0 bg-white/80 backdrop-blur-sm z-10">
               Nama Siswa
             </th>
-            <th className="text-left py-3 px-4 font-semibold text-on-surface">Kelas</th>
-            <th className="text-left py-3 px-4 font-semibold text-on-surface">NIS</th>
+            <th scope="col" className="text-left py-3 px-4 font-semibold text-on-surface">Kelas</th>
+            <th scope="col" className="text-left py-3 px-4 font-semibold text-on-surface">NIS</th>
             {quizzes.map((quiz) => (
-              <th key={quiz} className="text-center py-3 px-4 font-semibold text-on-surface whitespace-nowrap">
+              <th key={quiz} scope="col" className="text-center py-3 px-4 font-semibold text-on-surface whitespace-nowrap">
                 {quiz.length > 20 ? quiz.slice(0, 20) + "..." : quiz}
               </th>
             ))}
-            <th className="text-center py-3 px-4 font-semibold text-on-surface">Rata-rata</th>
+            <th scope="col" className="text-center py-3 px-4 font-semibold text-on-surface">Rata-rata</th>
           </tr>
         </thead>
         <tbody>

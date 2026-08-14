@@ -4,7 +4,7 @@ import { aiGeneration, fileMateri, materiPublished, quizPublished, soalPublished
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
-import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { validateCsrf } from "@/lib/csrf-server";
 
 export async function GET(
@@ -14,8 +14,7 @@ export async function GET(
   try {
     const session = await requireGuru(request);
 
-    const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`drafts-detail:${ip}`, 30, 60_000);
+    const rl = await checkRateLimitPerUser(`drafts-detail:${session.userId}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const { id } = await params;
@@ -71,6 +70,9 @@ export async function DELETE(
 
     const session = await requireGuru(request);
     const { id } = await params;
+
+    const rl = await checkRateLimitPerUser(`draft-delete:${session.userId}`, 10, 60_000);
+    if (!rl.allowed) return apiError("Terlalu banyak permintaan, coba lagi dalam 60 detik", 429);
 
     const [draft] = await db
       .select({ id: aiGeneration.id, fileMateriId: aiGeneration.fileMateriId })

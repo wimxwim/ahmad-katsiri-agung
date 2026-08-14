@@ -39,7 +39,11 @@ export async function POST(
     if (!k) return apiError("Kelas tidak ditemukan", 404);
 
     const now = new Date();
+    // TODO: one-time invite — schema belum punya usedAt. Untuk one-time, tambah kolom usedAt + atomic WHERE usedAt IS NULL saat klaim.
+    // Saat ini reuse kode selama belum expired (7 hari). Jika sudah dipakai 1x seharusnya generate baru.
+    // Logika ideal: if (!isExpired && k.kodeInvite && k.usedAt == null) reuse; else generate baru dengan usedAt check.
     const kodeExpired = k.kodeInvite && k.inviteExpiresAt && new Date(k.inviteExpiresAt) < now;
+    // Reuse existing kode jika belum expired; TODO: ganti dengan check usedAt untuk one-time (maxUses 1)
     const kode = !kodeExpired ? k.kodeInvite || generateKode() : generateKode();
 
     if (!k.kodeInvite || kodeExpired) {

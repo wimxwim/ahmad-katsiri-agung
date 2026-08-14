@@ -270,7 +270,7 @@ export async function POST(
 
     const [claimed] = await db
       .update(aiGeneration)
-      .set({ status: "generating", updatedAt: new Date() })
+      .set({ status: "generating", leaseUntil: new Date(Date.now() + 3 * 60 * 1000), updatedAt: new Date() })
       .where(
         and(
           eq(aiGeneration.id, id),
@@ -312,17 +312,38 @@ export async function POST(
       throw e;
     }
 
+    // F1-5: persist chargedAmount to ai_generation.charged_amount before after() so cron recovery can refund
+    await db
+      .update(aiGeneration)
+      .set({ chargedAmount, updatedAt: new Date() })
+      .where(eq(aiGeneration.id, id))
+      .catch((persistErr) => console.error("Failed to persist chargedAmount:", persistErr));
+
     const guruId = session.userId!;
     const finalText = sourceText;
+    if (!finalText || finalText.trim().length < 100) {
+      releaseConcurrent(concKey);
+      await db
+        .update(aiGeneration)
+        .set({ status: "failed", errorMessage: `Dokumen tidak menghasilkan teks yang cukup (${finalText?.length ?? 0} chars). Upload PDF text-based atau DOCX.`, updatedAt: new Date() })
+        .where(eq(aiGeneration.id, id));
+      try { await refundBalance(guruId, chargedAmount, { notes: "Prompt terlalu pendek — token dikembalikan.", referenceId: `refund:${id}` }); } catch {}
+      return NextResponse.json({
+        success: false,
+        error: `Dokumen tidak menghasilkan teks yang cukup (${finalText?.length ?? 0} chars). Coba upload PDF text-based atau DOCX dengan teks.`,
+        errorCode: "PROMPT_TOO_SHORT",
+      }, { status: 400 });
+    }
     const tingkat = gen.tingkat ?? undefined;
 
-    // NOTE: aiGeneration has no chargedAmount column; chargedAmount lives only in-memory
-    // for the after() callback. Cron recovery in /api/v1/cron/generate can only set
-    // status=failed for stuck generating rows — refund requires chargedAmount tracking
-    // (add integer charged_amount column + persist it here before after()).
     after(async () => {
+      const GENERATION_TIMEOUT_MS = 240_000;
+      const generationTask = runGenerationFromText(id, finalText, guruId, soalCount, pgCount, isianCount, essayCount, quizCount, tingkat);
+      const timeoutTask = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Generation timeout after 240s")), GENERATION_TIMEOUT_MS),
+      );
       try {
-        await runGenerationFromText(id, finalText, guruId, soalCount, pgCount, isianCount, essayCount, quizCount, tingkat);
+        await Promise.race([generationTask, timeoutTask]);
         invalidateGuruCache(guruId).catch(() => {});
 
         // Check if generation failed and refund if so

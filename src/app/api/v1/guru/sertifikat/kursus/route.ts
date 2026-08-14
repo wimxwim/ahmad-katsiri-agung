@@ -4,7 +4,7 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { kursus, sertifikat, siswaKursus, quizAttempt, quizPublished } from "@/lib/db/schema";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, sql, countDistinct } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -16,23 +16,46 @@ export async function GET(request: NextRequest) {
     const rl = await checkRateLimit(`sertifikat-kursus:${ip}`, 20, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const rows = await db
+    // F1-5: Split fan-out 4 leftJoin into 2 separate aggregations to avoid multiplicative row explosion
+    // Query 1: kursus base + sertifikat count
+    const kursusBase = await db
       .select({
         id: kursus.id,
         judul: kursus.judul,
         slug: kursus.slug,
         deskripsi: kursus.deskripsi,
-        totalSertifikat: sql<number>`count(distinct ${sertifikat.id})`.mapWith(Number),
-        totalSiswaSelesai: sql<number>`count(distinct case when ${quizAttempt.id} is not null then ${siswaKursus.siswaId} end)`.mapWith(Number),
+      })
+      .from(kursus)
+      .where(eq(kursus.guruId, session.userId))
+      .orderBy(sql`count(distinct ${sertifikat.id}) DESC`);
+
+    if (kursusBase.length === 0) {
+      return NextResponse.json({ success: true, data: [] });
+    }
+
+    // Aggregation 1: totalSertifikat per kursus (isolated, no fan-out)
+    const sertifikatAgg = await db
+      .select({
+        kursusId: kursus.id,
+        totalSertifikat: countDistinct(sertifikat.id).as("totalSertifikat"),
       })
       .from(kursus)
       .leftJoin(sertifikat, eq(sertifikat.kursusId, kursus.id))
+      .where(eq(kursus.guruId, session.userId))
+      .groupBy(kursus.id);
+
+    // Aggregation 2: totalSiswaSelesai per kursus (isolated, no sertifikat join)
+    // CTE approach: count distinct siswa with SELESAI attempt per kursus
+    const selesaiAgg = await db
+      .select({
+        kursusId: kursus.id,
+        totalSiswaSelesai: countDistinct(sql`case when ${quizAttempt.id} is not null then ${siswaKursus.siswaId} end`).as("totalSiswaSelesai"),
+      })
+      .from(kursus)
       .leftJoin(siswaKursus, eq(siswaKursus.kursusId, kursus.id))
       .leftJoin(
         quizPublished,
-        and(
-          eq(quizPublished.kursusId, kursus.id),
-        ),
+        eq(quizPublished.kursusId, kursus.id),
       )
       .leftJoin(
         quizAttempt,
@@ -43,8 +66,22 @@ export async function GET(request: NextRequest) {
         ),
       )
       .where(eq(kursus.guruId, session.userId))
-      .groupBy(kursus.id)
-      .orderBy(sql`count(distinct ${sertifikat.id}) DESC`);
+      .groupBy(kursus.id);
+
+    const sertifikatMap = new Map(sertifikatAgg.map((r) => [r.kursusId, Number((r as unknown as { totalSertifikat: number }).totalSertifikat ?? 0)]));
+    const selesaiMap = new Map(selesaiAgg.map((r) => [r.kursusId, Number((r as unknown as { totalSiswaSelesai: number }).totalSiswaSelesai ?? 0)]));
+
+    const rows = kursusBase.map((k) => ({
+      id: k.id,
+      judul: k.judul,
+      slug: k.slug,
+      deskripsi: k.deskripsi,
+      totalSertifikat: sertifikatMap.get(k.id) ?? 0,
+      totalSiswaSelesai: selesaiMap.get(k.id) ?? 0,
+    }));
+
+    // Sort by totalSertifikat desc (already ordered, but re-sort after merge to be safe)
+    rows.sort((a, b) => b.totalSertifikat - a.totalSertifikat);
 
     return NextResponse.json({ success: true, data: rows });
   } catch (e) {

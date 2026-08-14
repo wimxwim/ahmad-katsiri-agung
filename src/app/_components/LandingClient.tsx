@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { WA_NUMBER, EASE_CURVE } from "@/lib/constants";
 import { motion } from "motion/react";
-import { Button, Card, Tag, Steps, Collapse, Typography } from "antd";
+import dynamic from "next/dynamic";
+import Button from "antd/es/button";
+import Card from "antd/es/card";
+import Tag from "antd/es/tag";
+import Typography from "antd/es/typography";
 import {
   ArrowRight,
   BookOpen,
@@ -21,6 +25,16 @@ import {
   Globe,
   Users,
 } from "lucide-react";
+
+// F7-2: Collapse & Steps berat di-code-split via dynamic ssr:false (antd 1.3MB -> chunk terpisah)
+const Steps = dynamic(() => import("antd/es/steps").then((m) => m.default as unknown as typeof import("antd").Steps), {
+  ssr: false,
+  loading: () => <div className="h-24 animate-pulse rounded-2xl bg-white/60" />,
+});
+const Collapse = dynamic(() => import("antd/es/collapse").then((m) => m.default as unknown as typeof import("antd").Collapse), {
+  ssr: false,
+  loading: () => <div className="h-24 animate-pulse rounded-2xl bg-white/60" />,
+});
 
 function WaIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (

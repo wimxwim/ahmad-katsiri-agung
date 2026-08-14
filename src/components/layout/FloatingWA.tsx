@@ -6,20 +6,20 @@ import { WA_NUMBER } from "@/lib/constants";
 
 const WA_NUMBER_FALLBACK = process.env.NEXT_PUBLIC_WA_NUMBER || WA_NUMBER;
 
-const DASHBOARD_PREFIXES = ["/guru", "/siswa", "/owner", "/admin-sekolah", "/orang-tua"];
+const HIDDEN = ["/guru", "/siswa", "/owner", "/admin"];
 
 export function FloatingWA({ waNumber }: { waNumber?: string }) {
   if (!WA_NUMBER) return null;
   const pathname = usePathname();
+  if (HIDDEN.some((p) => pathname.startsWith(p))) return null;
   const num = waNumber ?? WA_NUMBER_FALLBACK;
-  const isDashboard = DASHBOARD_PREFIXES.some((p) => pathname.startsWith(p));
 
   return (
     <Link
       href={`https://wa.me/${num}`}
       target="_blank"
       rel="noopener noreferrer"
-      className={`fixed right-3 md:right-6 z-40 w-11 h-11 md:w-14 md:h-14 bg-white rounded-full flex items-center justify-center shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/30 hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-[#25D366] ${isDashboard ? "bottom-28" : "bottom-24 md:bottom-6"}`}
+      className="fixed right-3 md:right-6 z-40 w-11 h-11 md:w-14 md:h-14 bg-white rounded-full flex items-center justify-center shadow-lg shadow-green-500/20 hover:shadow-xl hover:shadow-green-500/30 hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-[#25D366] bottom-24 md:bottom-6"
       style={{ marginBottom: "env(safe-area-inset-bottom, 0px)" }}
       aria-label="Hubungi via WhatsApp"
     >

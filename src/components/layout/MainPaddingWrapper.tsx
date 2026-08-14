@@ -8,14 +8,15 @@ export function MainPaddingWrapper({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
   const isDashboard = DASHBOARD_PREFIXES.some((p) => pathname.startsWith(p));
 
+  if (isDashboard) {
+    return <div className="flex-1 overflow-x-hidden">{children}</div>;
+  }
+
   return (
     <main
       id="main"
-      className={
-        isDashboard
-          ? "flex-1 overflow-x-hidden"
-          : "flex-1 pt-24 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-x-hidden"
-      }
+      tabIndex={-1}
+      className="flex-1 pt-24 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0 overflow-x-hidden"
     >
       {children}
     </main>

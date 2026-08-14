@@ -4,7 +4,7 @@ function SkeletonCard({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "bg-glass rounded-2xl sm:rounded-2xl animate-pulse",
+        "bg-glass rounded-[32px] animate-pulse",
         className
       )}
     />

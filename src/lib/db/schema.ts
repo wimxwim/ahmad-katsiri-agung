@@ -861,6 +861,7 @@ export const aiGeneration = pgTable("ai_generation", {
   publishedSoalId: uuid("published_soal_id").references((): AnyPgColumn => soalPublished.id, { onDelete: "set null" }),
   tokenInput: integer("token_input"),
   tokenOutput: integer("token_output"),
+  chargedAmount: integer("charged_amount"),
   modelName: varchar("model_name", { length: 100 }),
   errorMessage: text("error_message"),
   tingkat: integer("tingkat"),

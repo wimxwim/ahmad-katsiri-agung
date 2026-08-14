@@ -10,7 +10,7 @@ interface StatCardProps {
 
 export function StatCard({ label, value, icon: Icon, color, trend }: StatCardProps) {
   return (
-    <div className="stat-card-container bg-glass backdrop-blur-2xl border border-border-precision rounded-2xl sm:rounded-2xl p-5 sm:p-6 shadow-glass">
+    <div className="stat-card-container bg-glass backdrop-blur-2xl border border-border-precision rounded-[32px] p-5 sm:p-6 shadow-glass hover:shadow-glass-lg transition-shadow duration-300">
       <div className="flex items-center gap-3 mb-3">
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"

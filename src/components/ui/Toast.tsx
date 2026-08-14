@@ -61,14 +61,18 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none" aria-live="polite" aria-atomic="true">
         <AnimatePresence>
           {toasts.map((t) => {
             const c = config[t.type];
             const Icon = c.icon;
+            const isError = t.type === "error";
             return (
               <motion.div
                 key={t.id}
+                role={isError ? "alert" : "status"}
+                aria-live={isError ? "assertive" : "polite"}
+                aria-atomic="true"
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -84,7 +88,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 <p className="text-sm font-medium flex-1">{t.message}</p>
                 <button
                   onClick={() => dismiss(t.id)}
-                  className="shrink-0 w-11 h-11 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+                  className="shrink-0 min-w-11 min-h-11 w-11 h-11 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors"
                   aria-label="Tutup notifikasi"
                 >
                   <X className="w-4 h-4" />

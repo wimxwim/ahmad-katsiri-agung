@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "motion/react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import {
   BookOpen,
   Users,
@@ -22,15 +23,39 @@ import {
   Share2,
 } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
-import ScoreTrendChart from "@/components/analytics/ScoreTrendChart";
-import CompletionDonut from "@/components/analytics/CompletionDonut";
-import ScoreDistribution from "@/components/analytics/ScoreDistribution";
-import MaterialPerformance from "@/components/analytics/MaterialPerformance";
-import QuizAttemptsChart from "@/components/analytics/QuizAttemptsChart";
-import StudentActivityHeatmap from "@/components/analytics/StudentActivityHeatmap";
-import CourseProgress from "@/components/analytics/CourseProgress";
 import { apiFetch } from "@/lib/api-helpers";
 import { KKM, EASE_CURVE } from "@/lib/constants";
+
+// F7-2: semua chart berat di-code-split via dynamic(ssr:false) — no top-level echarts import
+const QuizAttemptsChart = dynamic(() => import("@/components/analytics/QuizAttemptsChart"), {
+  ssr: false,
+  loading: () => <div className="h-64 animate-pulse rounded-2xl bg-white/60 analytics-chart" />,
+});
+const CourseProgress = dynamic(() => import("@/components/analytics/CourseProgress"), {
+  ssr: false,
+  loading: () => <div className="h-64 animate-pulse rounded-2xl bg-white/60 analytics-chart" />,
+});
+// F2-4: 5 chart berat di-code-split via dynamic(ssr:false) + loading skeleton
+const ScoreTrendChart = dynamic(() => import("@/components/analytics/ScoreTrendChart"), {
+  ssr: false,
+  loading: () => <div className="h-64 animate-pulse rounded-2xl bg-white/60 analytics-chart" />,
+});
+const CompletionDonut = dynamic(() => import("@/components/analytics/CompletionDonut"), {
+  ssr: false,
+  loading: () => <div className="h-64 animate-pulse rounded-2xl bg-white/60 analytics-chart" />,
+});
+const ScoreDistribution = dynamic(() => import("@/components/analytics/ScoreDistribution"), {
+  ssr: false,
+  loading: () => <div className="h-64 animate-pulse rounded-2xl bg-white/60 analytics-chart" />,
+});
+const MaterialPerformance = dynamic(() => import("@/components/analytics/MaterialPerformance"), {
+  ssr: false,
+  loading: () => <div className="h-64 animate-pulse rounded-2xl bg-white/60 analytics-chart" />,
+});
+const StudentActivityHeatmap = dynamic(() => import("@/components/analytics/StudentActivityHeatmap"), {
+  ssr: false,
+  loading: () => <div className="h-64 animate-pulse rounded-2xl bg-white/60 analytics-chart" />,
+});
 
 // ---------------------------------------------------------------------------
 // Interfaces - sesuai route.ts baru
@@ -95,6 +120,7 @@ type SkillMasteryItem = {
   siswaId: string;
   nama: string | null;
   skillId: string;
+  skillNama: string | null;
   pL: number;
   memoryStrength: number | null;
   repetitionNum: number | null;
@@ -171,28 +197,28 @@ type AnalyticsResponse = {
 // ---------------------------------------------------------------------------
 
 function levelBadgeColor(level: string): string {
-  if (level === "Mahir") return "bg-[#005231] text-white";
-  if (level === "Menengah") return "bg-[#0d7a4a] text-white";
-  if (level === "Dasar") return "bg-[#e67e22] text-white";
-  return "bg-white border border-border-precision text-muted-foreground";
+  if (level === "Mahir") return "bg-primary text-white";
+  if (level === "Menengah") return "bg-primary text-white";
+  if (level === "Dasar") return "bg-tertiary text-white";
+  return "bg-white border border-border-precision text-on-surface-variant";
 }
 
 function difficultyBadgeColor(difficulty: string): string {
-  if (difficulty === "Sulit") return "bg-[#c0392b] text-white";
-  if (difficulty === "Sedang") return "bg-[#e67e22] text-white";
-  return "bg-[#005231] text-white";
+  if (difficulty === "Sulit") return "bg-error text-white";
+  if (difficulty === "Sedang") return "bg-tertiary text-white";
+  return "bg-primary text-white";
 }
 
 function errorRateColor(rate: number): string {
-  if (rate >= 70) return "bg-[#c0392b]";
-  if (rate >= 50) return "bg-[#e67e22]";
-  return "bg-[#d4a017]";
+  if (rate >= 70) return "bg-error";
+  if (rate >= 50) return "bg-tertiary";
+  return "bg-tertiary";
 }
 
 function masteryBarColor(pL: number): string {
-  if (pL >= 0.8) return "bg-[#005231]";
-  if (pL >= 0.5) return "bg-[#e67e22]";
-  return "bg-[#c0392b]";
+  if (pL >= 0.8) return "bg-primary";
+  if (pL >= 0.5) return "bg-tertiary";
+  return "bg-error";
 }
 
 // ---------------------------------------------------------------------------
@@ -203,6 +229,8 @@ export default function GuruAnalyticsPage() {
   const [periode, setPeriode] = useState<"7d" | "28d" | "90d">("28d");
   const [search, setSearch] = useState("");
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showTrends, setShowTrends] = useState(true);
+  const [showMateri, setShowMateri] = useState(false);
 
   const {
     data: queryData,
@@ -313,7 +341,7 @@ export default function GuruAnalyticsPage() {
       if (!ctx) throw new Error("no ctx");
       ctx.fillStyle = "#f2fcf7";
       ctx.fillRect(0, 0, 600, 340);
-      ctx.fillStyle = "#005231";
+      ctx.fillStyle = "var(--color-primary)";
       ctx.font = "700 18px 'Bricolage Grotesque', Inter, sans-serif";
       ctx.fillText("Kelas - Analytics AKAL Center", 24, 36);
       const tanggal = new Date().toISOString().slice(0, 10);
@@ -349,7 +377,7 @@ export default function GuruAnalyticsPage() {
         ctx.fillStyle = "#6f7a71";
         ctx.font = "11px Inter, sans-serif";
         ctx.fillText(s.label, x + 14, y + 22);
-        ctx.fillStyle = "#005231";
+        ctx.fillStyle = "var(--color-primary)";
         ctx.font = "700 22px 'Bricolage Grotesque', Inter, sans-serif";
         ctx.fillText(s.value, x + 14, y + 50);
       });
@@ -388,10 +416,10 @@ export default function GuruAnalyticsPage() {
         <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] p-5 sm:p-6 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="min-w-0">
-              <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-on-surface">
                 Analytics
               </h1>
-              <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+              <p className="text-sm text-on-surface-variant mt-1.5 leading-relaxed">
                 Ringkasan progres belajar siswa
               </p>
             </div>
@@ -402,11 +430,12 @@ export default function GuruAnalyticsPage() {
                   <button
                     key={p}
                     type="button"
+                    aria-pressed={periode === p}
                     onClick={() => setPeriode(p)}
                     className={
                       periode === p
-                        ? "px-4 py-1.5 rounded-full bg-[#005231] text-white text-sm font-medium transition-colors"
-                        : "px-4 py-1.5 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                        ? "min-h-11 min-w-11 px-4 py-2.5 rounded-full bg-primary text-white text-sm font-medium transition-colors"
+                        : "min-h-11 min-w-11 px-4 py-2.5 rounded-full text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors"
                     }
                   >
                     {p === "7d" ? "7 hari" : p === "28d" ? "28 hari" : "90 hari"}
@@ -417,7 +446,7 @@ export default function GuruAnalyticsPage() {
               <button
                 type="button"
                 onClick={() => refetch()}
-                className="w-9 h-9 rounded-full bg-white border border-border-precision flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-[#005231]/20 transition-colors"
+                className="min-w-11 min-h-11 w-11 h-11 rounded-full bg-white border border-border-precision flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:border-[var(--color-primary)]/20 transition-colors"
                 aria-label="Muat ulang"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -425,21 +454,24 @@ export default function GuruAnalyticsPage() {
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
+          <div className="mt-5 flex flex-wrap items-center gap-2">
             <div className="relative w-full max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <label htmlFor="cari-analytics" className="sr-only">Cari kursus atau siswa</label>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant pointer-events-none" />
               <input
+                id="cari-analytics"
+                aria-label="Cari kursus atau siswa"
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari kursus atau siswa..."
-                className="w-full pl-9 pr-3 py-2.5 rounded-full bg-white border border-border-precision text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#005231]/20 focus:border-[#005231]/30 transition-colors"
+                className="w-full pl-9 pr-3 py-2.5 min-h-11 rounded-full bg-white border border-border-precision text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)]/30 transition-colors"
               />
             </div>
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-border-precision text-sm font-medium text-foreground hover:border-[#005231]/20 transition-colors"
+              className="inline-flex items-center gap-2 min-h-11 min-w-11 px-4 py-2.5 rounded-full bg-white border border-border-precision text-sm font-medium text-on-surface hover:border-[var(--color-primary)]/20 transition-colors"
             >
               <Share2 className="w-4 h-4" /> Bagikan ke Kepala Sekolah
             </button>
@@ -448,54 +480,54 @@ export default function GuruAnalyticsPage() {
 
         {/* Loading */}
         {loading ? (
-          <div className="space-y-4">
+          <div className="space-y-4" aria-busy="true" role="status" aria-label="Memuat analytics">
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
                   key={i}
-                  className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl h-28 animate-pulse"
+                  className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] h-28 animate-pulse"
                 />
               ))}
             </div>
             <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-12 lg:col-span-8 bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl h-64 animate-pulse" />
-              <div className="col-span-12 lg:col-span-4 bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl h-64 animate-pulse" />
+              <div className="col-span-12 lg:col-span-8 bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] h-64 animate-pulse" />
+              <div className="col-span-12 lg:col-span-4 bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] h-64 animate-pulse" />
             </div>
             <div className="grid grid-cols-12 gap-4">
-              <div className="col-span-12 lg:col-span-5 bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl h-64 animate-pulse" />
-              <div className="col-span-12 lg:col-span-7 bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl h-64 animate-pulse" />
+              <div className="col-span-12 lg:col-span-5 bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] h-64 animate-pulse" />
+              <div className="col-span-12 lg:col-span-7 bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] h-64 animate-pulse" />
             </div>
           </div>
         ) : error ? (
-          <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl p-10 flex flex-col items-center justify-center text-center gap-4">
+          <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] p-10 flex flex-col items-center justify-center text-center gap-4">
             <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center">
               <AlertTriangle className="w-6 h-6 text-amber-600" />
             </div>
             <div>
-              <p className="font-heading font-semibold text-foreground">Gagal memuat analytics</p>
-              <p className="text-sm text-muted-foreground mt-1 max-w-md">{error}</p>
+              <p className="font-heading font-semibold text-on-surface">Gagal memuat analytics</p>
+              <p className="text-sm text-on-surface-variant mt-1 max-w-md">{error}</p>
             </div>
             <button
               type="button"
               onClick={() => refetch()}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#005231] text-white text-sm font-medium hover:bg-[#004028] transition-colors"
+              className="inline-flex items-center gap-2 min-h-11 min-w-11 px-5 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-[#004028] transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
               Coba Lagi
             </button>
           </div>
         ) : !data || !hasData ? (
-          <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl p-10 flex flex-col items-center justify-center text-center gap-3">
+          <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] p-10 flex flex-col items-center justify-center text-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-surface-container border border-border-precision flex items-center justify-center">
-              <BarChart3 className="w-6 h-6 text-muted-foreground" />
+              <BarChart3 className="w-6 h-6 text-on-surface-variant" />
             </div>
-            <p className="font-heading font-semibold text-foreground">Belum ada data analytics</p>
-            <p className="text-sm text-muted-foreground max-w-md">
+            <p className="font-heading font-semibold text-on-surface">Belum ada data analytics</p>
+            <p className="text-sm text-on-surface-variant max-w-md">
               Data akan muncul setelah siswa mengerjakan quiz. Buat kursus dan undang siswa untuk memulai.
             </p>
             <Link
               href="/guru/kursus"
-              className="inline-flex items-center gap-2 mt-2 px-5 py-2.5 rounded-full bg-[#005231] text-white text-sm font-medium hover:bg-[#004028] transition-colors"
+              className="inline-flex items-center gap-2 mt-2 min-h-11 min-w-11 px-5 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-[#004028] transition-colors"
             >
               <BookOpen className="w-4 h-4" />
               Kelola Kursus
@@ -514,125 +546,326 @@ export default function GuruAnalyticsPage() {
               }}
             >
               <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_CURVE } } }}>
-                <StatCard label="Total Kursus" value={data.totalKursus} icon={BookOpen} color="#005231" />
+                <StatCard label="Total Kursus" value={data.totalKursus} icon={BookOpen} color="var(--color-primary)" />
               </motion.div>
               <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_CURVE } } }}>
-                <StatCard label="Siswa Terdaftar" value={data.totalSiswa} icon={Users} color="#005231" />
+                <StatCard label="Siswa Terdaftar" value={data.totalSiswa} icon={Users} color="var(--color-primary)" />
               </motion.div>
               <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_CURVE } } }}>
-                <StatCard label="Belum Tuntas" value={data.totalSiswaBelumTuntas} icon={AlertTriangle} color={data.totalSiswaBelumTuntas > 0 ? "#e67e22" : "#005231"} />
+                <StatCard label="Belum Tuntas" value={data.totalSiswaBelumTuntas} icon={AlertTriangle} color={data.totalSiswaBelumTuntas > 0 ? "#d35400" : "var(--color-primary)"} />
               </motion.div>
               <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_CURVE } } }}>
-                <StatCard label="Rata Nilai" value={data.rataNilaiKeseluruhan} icon={Award} color="#005231" />
+                <StatCard label="Rata Nilai" value={data.rataNilaiKeseluruhan} icon={Award} color="var(--color-primary)" />
               </motion.div>
               <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE_CURVE } } }}>
-                <StatCard label="Kelulusan" value={`${kelulusanPct}%`} icon={GraduationCap} color="#005231" />
+                <StatCard label="Kelulusan" value={`${kelulusanPct}%`} icon={GraduationCap} color="var(--color-primary)" />
               </motion.div>
             </motion.div>
 
-            {/* Bento row 1: ScoreTrend + QuizAttempts */}
-            <div className="grid grid-cols-12 gap-4 mb-6">
-              <div className="col-span-12 lg:col-span-8">
-                <ScoreTrendChart data={data.scoreTrend} ariaLabel="Perkembangan rata-rata nilai" />
-              </div>
-              <div className="col-span-12 lg:col-span-4">
-                <QuizAttemptsChart data={data.attemptTrend} ariaLabel="Percobaan quiz per minggu" />
-              </div>
-            </div>
-
-            {/* Bento row 2: CompletionDonut + ScoreDistribution */}
-            <div className="grid grid-cols-12 gap-4 mb-6">
-              <div className="col-span-12 lg:col-span-5">
-                <CompletionDonut tuntas={data.totalSiswaTuntas} belumTuntas={data.totalSiswaBelumTuntas} ariaLabel="Status ketuntasan" />
-              </div>
-              <div className="col-span-12 lg:col-span-7">
-                <ScoreDistribution data={data.scoreDistribution} ariaLabel="Distribusi nilai" />
-              </div>
-            </div>
-
-            {/* MaterialPerformance full width */}
+            {/* Accordion 1: Tren & Distribusi - default open */}
             <div className="mb-6">
-              <MaterialPerformance data={data.performaPerMateri} ariaLabel="Performa per materi" />
+              <button
+                type="button"
+                onClick={() => setShowTrends((v) => !v)}
+                aria-expanded={showTrends}
+                aria-controls="tren-distribusi-panel"
+                className="w-full bg-white border border-border-precision rounded-[32px] p-4 flex items-center justify-between gap-2 hover:border-[var(--color-primary)]/20 transition-colors text-left min-h-11"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-primary/10 border border-[var(--color-primary)]/15 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-[var(--color-primary)]" />
+                  </div>
+                  <div>
+                    <p className="font-heading font-semibold text-sm text-on-surface">Tren & Distribusi</p>
+                    <p className="text-xs text-on-surface-variant">Perkembangan nilai, percobaan, dan sebaran</p>
+                  </div>
+                </div>
+                <motion.span
+                  animate={{ rotate: showTrends ? 180 : 0 }}
+                  transition={{ duration: 0.25, ease: EASE_CURVE }}
+                  className="shrink-0 flex items-center justify-center"
+                >
+                  <ChevronDown className="w-5 h-5 text-on-surface-variant" />
+                </motion.span>
+              </button>
+              <AnimatePresence initial={false}>
+                {showTrends ? (
+                  <motion.div
+                    id="tren-distribusi-panel"
+                    key="tren-panel"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: EASE_CURVE }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <div className="mt-4 space-y-4">
+                      <div className="grid grid-cols-12 gap-4">
+                        <div className="col-span-12 lg:col-span-8" aria-busy={loading} aria-live="polite">
+                          <ScoreTrendChart data={data.scoreTrend} ariaLabel="Perkembangan rata-rata nilai" />
+                          <table className="sr-only">
+                            <caption className="sr-only">Data tren nilai per minggu</caption>
+                            <thead>
+                              <tr>
+                                <th scope="col">Minggu</th>
+                                <th scope="col">Rata Nilai</th>
+                                <th scope="col">Total Attempt</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {data.scoreTrend.map((row) => (
+                                <tr key={row.week}>
+                                  <td>{row.week}</td>
+                                  <td>{row.rata}</td>
+                                  <td>{row.total}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="col-span-12 lg:col-span-4" aria-busy={loading}>
+                          <QuizAttemptsChart data={data.attemptTrend} ariaLabel="Percobaan quiz per minggu" />
+                          <table className="sr-only">
+                            <caption className="sr-only">Data percobaan quiz per minggu</caption>
+                            <thead>
+                              <tr>
+                                <th scope="col">Minggu</th>
+                                <th scope="col">Total Percobaan</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {data.attemptTrend.map((row) => (
+                                <tr key={row.week}>
+                                  <td>{row.week}</td>
+                                  <td>{row.total}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-12 gap-4">
+                        <div className="col-span-12 lg:col-span-5" aria-busy={loading}>
+                          <CompletionDonut tuntas={data.totalSiswaTuntas} belumTuntas={data.totalSiswaBelumTuntas} ariaLabel="Status ketuntasan" />
+                          <table className="sr-only">
+                            <caption className="sr-only">Status ketuntasan siswa</caption>
+                            <thead>
+                              <tr>
+                                <th scope="col">Status</th>
+                                <th scope="col">Jumlah</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr><td>Tuntas</td><td>{data.totalSiswaTuntas}</td></tr>
+                              <tr><td>Belum Tuntas</td><td>{data.totalSiswaBelumTuntas}</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="col-span-12 lg:col-span-7" aria-busy={loading}>
+                          <ScoreDistribution data={data.scoreDistribution} ariaLabel="Distribusi nilai" />
+                          <table className="sr-only">
+                            <caption className="sr-only">Distribusi nilai siswa</caption>
+                            <thead>
+                              <tr>
+                                <th scope="col">Rentang Nilai</th>
+                                <th scope="col">Jumlah Siswa</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr><td>0-59</td><td>{data.scoreDistribution.bucket0_59}</td></tr>
+                              <tr><td>60-69</td><td>{data.scoreDistribution.bucket60_69}</td></tr>
+                              <tr><td>70-79</td><td>{data.scoreDistribution.bucket70_79}</td></tr>
+                              <tr><td>80-89</td><td>{data.scoreDistribution.bucket80_89}</td></tr>
+                              <tr><td>90-100</td><td>{data.scoreDistribution.bucket90_100}</td></tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             </div>
 
-            {/* Bento row 3: Heatmap + WeakTopics */}
-            <div className="grid grid-cols-12 gap-4 mb-6">
-              <div className="col-span-12 lg:col-span-7">
-                <StudentActivityHeatmap data={data.activityHeatmap} ariaLabel="Aktivitas siswa per hari dan jam" />
-              </div>
-
-              {/* WeakTopics custom */}
-              <div className="col-span-12 lg:col-span-5">
-                <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl p-4 sm:p-5 h-full flex flex-col">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
-                      <Target className="w-4 h-4 text-amber-700" />
-                    </div>
-                    <h3 className="font-heading font-semibold text-sm text-foreground">Topik Sulit</h3>
+            {/* Accordion 2: Performa Materi & Aktivitas - lazy loaded */}
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={() => setShowMateri((v) => !v)}
+                aria-expanded={showMateri}
+                aria-controls="materi-aktivitas-panel"
+                className="w-full bg-white border border-border-precision rounded-[32px] p-4 flex items-center justify-between gap-2 hover:border-[var(--color-primary)]/20 transition-colors text-left min-h-11"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-surface-container border border-border-precision flex items-center justify-center">
+                    <BarChart3 className="w-4 h-4 text-on-surface-variant" />
                   </div>
-
-                  {data.weakTopics.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center py-8 text-center gap-2">
-                      <div className="w-10 h-10 rounded-xl bg-surface-container border border-border-precision flex items-center justify-center">
-                        <TrendingUp className="w-5 h-5 text-muted-foreground" />
-                      </div>
-                      <p className="text-sm text-muted-foreground">Tidak ada topik dengan kesalahan tinggi</p>
-                      <p className="text-xs text-muted-foreground">Semua soal dijawab cukup baik</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-3">
-                      {data.weakTopics.slice(0, 5).map((t) => (
-                        <div
-                          key={t.soalId}
-                          className="rounded-2xl border border-border-precision bg-white/70 p-3 flex flex-col gap-2"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <p className="text-sm text-foreground leading-snug line-clamp-2 flex-1" title={t.pertanyaan}>
-                              {t.pertanyaan}
-                            </p>
-                            <span className="shrink-0 inline-flex items-center rounded-full bg-white border border-border-precision text-xs font-medium px-2 py-1 text-muted-foreground">
-                              {t.tipe}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 h-2 rounded-full bg-surface-container overflow-hidden border border-border-precision">
-                              <div
-                                className={`h-full rounded-full transition-all ${errorRateColor(t.errorRate)}`}
-                                style={{ width: `${Math.min(100, Math.max(0, t.errorRate))}%` }}
-                                role="progressbar"
-                                aria-valuenow={t.errorRate}
-                                aria-valuemin={0}
-                                aria-valuemax={100}
-                                aria-label={`Error rate ${t.errorRate}%`}
-                              />
-                            </div>
-                            <span className="text-xs font-semibold tabular-nums text-foreground shrink-0">
-                              {t.errorRate}%
-                            </span>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            {t.totalSalah} salah dari {t.totalJawab} jawaban &middot; {t.totalBenar} benar
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <div>
+                    <p className="font-heading font-semibold text-sm text-on-surface">Performa Materi & Aktivitas</p>
+                    <p className="text-xs text-on-surface-variant">Rata-rata benar per materi dan heatmap aktivitas</p>
+                  </div>
                 </div>
-              </div>
+                <motion.span
+                  animate={{ rotate: showMateri ? 180 : 0 }}
+                  transition={{ duration: 0.25, ease: EASE_CURVE }}
+                  className="shrink-0 flex items-center justify-center"
+                >
+                  <ChevronDown className="w-5 h-5 text-on-surface-variant" />
+                </motion.span>
+              </button>
+              <AnimatePresence initial={false}>
+                {showMateri ? (
+                  <motion.div
+                    id="materi-aktivitas-panel"
+                    key="materi-panel"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: EASE_CURVE }}
+                    style={{ overflow: "hidden" }}
+                  >
+                    <div className="mt-4 space-y-4">
+                      <div aria-busy={loading}>
+                        <MaterialPerformance data={data.performaPerMateri} ariaLabel="Performa per materi" />
+                        <table className="sr-only">
+                          <caption className="sr-only">Performa rata-rata benar per materi</caption>
+                          <thead>
+                            <tr>
+                              <th scope="col">Materi</th>
+                              <th scope="col">Rata Benar (%)</th>
+                              <th scope="col">Total Jawaban</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {data.performaPerMateri.map((row) => (
+                              <tr key={row.skillId}>
+                                <td>{row.nama}</td>
+                                <td>{Math.round(row.avgBenar * 100)}%</td>
+                                <td>{row.total}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="grid grid-cols-12 gap-4">
+                        <div className="col-span-12 lg:col-span-7" aria-busy={loading}>
+                          <StudentActivityHeatmap data={data.activityHeatmap} ariaLabel="Aktivitas siswa per hari dan jam" />
+                          <table className="sr-only">
+                            <caption className="sr-only">Aktivitas siswa per hari dan jam</caption>
+                            <thead>
+                              <tr>
+                                <th scope="col">Hari</th>
+                                <th scope="col">Jam</th>
+                                <th scope="col">Total Aktivitas</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {data.activityHeatmap.slice(0, 20).map((row, idx) => (
+                                <tr key={`${row.dow}-${row.hour}-${idx}`}>
+                                  <td>{row.dow}</td>
+                                  <td>{row.hour}</td>
+                                  <td>{row.total}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="col-span-12 lg:col-span-5">
+                          <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] p-4 sm:p-5 h-full flex flex-col" aria-busy={loading}>
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
+                                <Target className="w-4 h-4 text-amber-700" />
+                              </div>
+                              <h3 className="font-heading font-semibold text-sm text-on-surface">Topik Sulit</h3>
+                            </div>
+                            {data.weakTopics.length === 0 ? (
+                              <div className="flex-1 flex flex-col items-center justify-center py-8 text-center gap-2">
+                                <div className="w-10 h-10 rounded-xl bg-surface-container border border-border-precision flex items-center justify-center">
+                                  <TrendingUp className="w-5 h-5 text-on-surface-variant" />
+                                </div>
+                                <p className="text-sm text-on-surface-variant">Tidak ada topik dengan kesalahan tinggi</p>
+                                <p className="text-xs text-on-surface-variant">Semua soal dijawab cukup baik</p>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col gap-3">
+                                {data.weakTopics.slice(0, 5).map((t) => (
+                                  <div
+                                    key={t.soalId}
+                                    className="rounded-[32px] border border-border-precision bg-white/70 p-3 flex flex-col gap-2"
+                                  >
+                                    <div className="flex items-start justify-between gap-3">
+                                      <p className="text-sm text-on-surface leading-snug line-clamp-2 flex-1" title={t.pertanyaan}>
+                                        {t.pertanyaan}
+                                      </p>
+                                      <span className="shrink-0 inline-flex items-center rounded-full bg-white border border-border-precision text-xs font-medium px-2 py-1 text-on-surface-variant">
+                                        {t.tipe}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex-1 h-2 rounded-full bg-surface-container overflow-hidden border border-border-precision">
+                                        <div
+                                          className={`h-full rounded-full transition-all ${errorRateColor(t.errorRate)}`}
+                                          style={{ width: `${Math.min(100, Math.max(0, t.errorRate))}%` }}
+                                          role="progressbar"
+                                          aria-valuenow={t.errorRate}
+                                          aria-valuemin={0}
+                                          aria-valuemax={100}
+                                          aria-label={`Error rate ${t.errorRate}%`}
+                                        />
+                                      </div>
+                                      <span className="text-xs font-semibold tabular-nums text-on-surface shrink-0">
+                                        {t.errorRate}%
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-on-surface-variant">
+                                      {t.totalSalah} salah dari {t.totalJawab} jawaban &middot; {t.totalBenar} benar
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <table className="sr-only">
+                              <caption className="sr-only">Topik dengan tingkat kesalahan tinggi</caption>
+                              <thead>
+                                <tr>
+                                  <th scope="col">Pertanyaan</th>
+                                  <th scope="col">Tipe</th>
+                                  <th scope="col">Error Rate</th>
+                                  <th scope="col">Total Jawab</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {data.weakTopics.slice(0, 5).map((t) => (
+                                  <tr key={t.soalId}>
+                                    <td>{t.pertanyaan}</td>
+                                    <td>{t.tipe}</td>
+                                    <td>{t.errorRate}%</td>
+                                    <td>{t.totalJawab}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             </div>
 
             {/* Ringkasan untuk Guru */}
-            <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl p-5 mb-6">
+            <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] p-5 mb-6" aria-live="polite" aria-busy={loading}>
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-xl bg-[#005231]/10 border border-[#005231]/15 flex items-center justify-center">
-                  <Lightbulb className="w-4 h-4 text-[#005231]" />
+                <div className="w-8 h-8 rounded-xl bg-primary/10 border border-[var(--color-primary)]/15 flex items-center justify-center">
+                  <Lightbulb className="w-4 h-4 text-[var(--color-primary)]" />
                 </div>
-                <h3 className="font-heading font-semibold text-sm text-foreground">Ringkasan untuk Guru</h3>
+                <h3 className="font-heading font-semibold text-sm text-on-surface">Ringkasan untuk Guru</h3>
               </div>
-              <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col gap-2" aria-live="polite">
                 {insightLines.map((line, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm text-muted-foreground leading-relaxed">
-                    <span className="mt-2 w-1.5 h-1.5 rounded-full bg-[#005231] shrink-0" />
+                  <li key={idx} className="flex items-start gap-2 text-sm text-on-surface-variant leading-relaxed">
+                    <span className="mt-2 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                     <span>{line}</span>
                   </li>
                 ))}
@@ -640,24 +873,24 @@ export default function GuruAnalyticsPage() {
             </div>
 
             {/* Remedial card */}
-            <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl p-4 sm:p-5 mb-6">
+            <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] p-4 sm:p-5 mb-6">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-xl bg-[#005231]/10 border border-[#005231]/15 flex items-center justify-center">
-                  <GraduationCap className="w-4 h-4 text-[#005231]" />
+                <div className="w-8 h-8 rounded-xl bg-primary/10 border border-[var(--color-primary)]/15 flex items-center justify-center">
+                  <GraduationCap className="w-4 h-4 text-[var(--color-primary)]" />
                 </div>
-                <h3 className="font-heading font-semibold text-sm text-foreground">Perlu Remedial</h3>
-                <span className="ml-auto inline-flex items-center rounded-full bg-white border border-border-precision text-xs font-medium px-2.5 py-1 text-muted-foreground">
+                <h3 className="font-heading font-semibold text-sm text-on-surface">Perlu Remedial</h3>
+                <span className="ml-auto inline-flex items-center rounded-full bg-white border border-border-precision text-xs font-medium px-2.5 py-1 min-h-11 text-on-surface-variant">
                   KKM {KKM}
                 </span>
               </div>
 
               {filteredRemedial.length === 0 ? (
-                <div className="rounded-2xl border border-border-precision bg-white/70 p-6 flex flex-col items-center justify-center text-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-[#005231]/10 border border-[#005231]/15 flex items-center justify-center">
-                    <Award className="w-5 h-5 text-[#005231]" />
+                <div className="rounded-[32px] border border-border-precision bg-white/70 p-6 flex flex-col items-center justify-center text-center gap-2">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 border border-[var(--color-primary)]/15 flex items-center justify-center">
+                    <Award className="w-5 h-5 text-[var(--color-primary)]" />
                   </div>
-                  <p className="text-sm font-medium text-foreground">Semua di atas KKM</p>
-                  <p className="text-xs text-muted-foreground">Tidak ada siswa yang memerlukan remedial saat ini</p>
+                  <p className="text-sm font-medium text-on-surface">Semua di atas KKM</p>
+                  <p className="text-xs text-on-surface-variant">Tidak ada siswa yang memerlukan remedial saat ini</p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
@@ -666,26 +899,26 @@ export default function GuruAnalyticsPage() {
                     return (
                       <div
                         key={s.siswaId}
-                        className="rounded-2xl border border-border-precision bg-white/70 p-3 sm:p-4 flex items-center gap-3"
+                        className="rounded-[32px] border border-border-precision bg-white/70 p-3 sm:p-4 flex items-center gap-2"
                       >
-                        <div className="w-10 h-10 rounded-full bg-[#005231] text-white flex items-center justify-center text-sm font-semibold shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold shrink-0">
                           {s.rataNilai}
                         </div>
                         <div className="min-w-0 flex-1">
                           <Link
                             href={`/guru/siswa/${s.siswaId}`}
-                            className="font-heading font-semibold text-sm text-foreground hover:text-[#005231] transition-colors line-clamp-1"
+                            className="font-heading font-semibold text-sm text-on-surface hover:text-[var(--color-primary)] transition-colors line-clamp-1 min-h-11 inline-flex items-center"
                           >
                             {s.nama}
                           </Link>
-                          <p className="text-xs text-muted-foreground truncate">
+                          <p className="text-xs text-on-surface-variant truncate">
                             {s.kursus.length > 0 ? s.kursus.join(" - ") : "Tanpa kursus"} &middot; {s.totalAttempt} percobaan
                             {detail?.topMateri ? ` - Topik sulit: ${detail.topMateri}` : ""}
                           </p>
                         </div>
                         <Link
                           href={`/guru/siswa/${s.siswaId}`}
-                          className="shrink-0 inline-flex items-center gap-1 text-xs font-medium text-[#005231] hover:text-[#004028] transition-colors"
+                          className="shrink-0 inline-flex items-center justify-center gap-1 min-h-11 min-w-11 px-3 py-2.5 text-xs font-medium text-[var(--color-primary)] hover:text-[#004028] transition-colors"
                         >
                           Detail
                         </Link>
@@ -698,28 +931,28 @@ export default function GuruAnalyticsPage() {
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <Link
                   href="/guru/siswa"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#005231] text-white text-sm font-medium hover:bg-[#004028] transition-colors"
+                  className="inline-flex items-center justify-center gap-2 min-h-11 min-w-11 px-4 py-2.5 rounded-full bg-primary text-white text-sm font-medium hover:bg-[#004028] transition-colors"
                 >
                   <Users className="w-4 h-4" />
                   Tinjau Semua Siswa
                 </Link>
                 <Link
                   href="/guru/siswa"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-border-precision text-sm font-medium text-foreground hover:border-[#005231]/20 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 min-h-11 min-w-11 px-4 py-2.5 rounded-full bg-white border border-border-precision text-sm font-medium text-on-surface hover:border-[var(--color-primary)]/20 transition-colors"
                 >
                   <FileEdit className="w-4 h-4" />
                   Lihat Detail
                 </Link>
                 <Link
                   href="/guru/kuis"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-border-precision text-sm font-medium text-foreground hover:border-[#005231]/20 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 min-h-11 min-w-11 px-4 py-2.5 rounded-full bg-white border border-border-precision text-sm font-medium text-on-surface hover:border-[var(--color-primary)]/20 transition-colors"
                 >
                   <Brain className="w-4 h-4" />
                   Buat Kuis Remedial
                 </Link>
                 <Link
                   href="/guru/kursus"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white border border-border-precision text-sm font-medium text-foreground hover:border-[#005231]/20 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 min-h-11 min-w-11 px-4 py-2.5 rounded-full bg-white border border-border-precision text-sm font-medium text-on-surface hover:border-[var(--color-primary)]/20 transition-colors"
                 >
                   <BookOpen className="w-4 h-4" />
                   Lihat Kursus
@@ -728,8 +961,31 @@ export default function GuruAnalyticsPage() {
             </div>
 
             {/* CourseProgress full width */}
-            <div className="mb-6">
+            <div className="mb-6" aria-busy={loading}>
               <CourseProgress data={filteredKursus} />
+              <table className="sr-only">
+                <caption className="sr-only">Progres per kursus</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Kursus</th>
+                    <th scope="col">Total Siswa</th>
+                    <th scope="col">Rata Nilai</th>
+                    <th scope="col">Tuntas</th>
+                    <th scope="col">Belum Tuntas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredKursus.map((k) => (
+                    <tr key={k.kursusId}>
+                      <td>{k.judul}</td>
+                      <td>{k.totalSiswa}</td>
+                      <td>{k.rataNilai}</td>
+                      <td>{k.siswaTuntas}</td>
+                      <td>{k.siswaBelumTuntas}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             {/* Ringkasan Hybrid pills */}
@@ -738,23 +994,23 @@ export default function GuruAnalyticsPage() {
                 Object.entries(data.ringkasanHybrid.levelCounts).map(([level, count]) => (
                   <span
                     key={level}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-border-precision text-xs font-medium text-foreground"
+                    className="inline-flex items-center gap-2 min-h-11 px-3 py-1.5 rounded-full bg-white border border-border-precision text-xs font-medium text-on-surface"
                   >
                     <span className={`w-2 h-2 rounded-full ${levelBadgeColor(level).split(" ")[0]}`} />
                     {level}: {count}
                   </span>
                 ))
               ) : (
-                <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-white border border-border-precision text-xs font-medium text-muted-foreground">
+                <span className="inline-flex items-center min-h-11 px-3 py-1.5 rounded-full bg-white border border-border-precision text-xs font-medium text-on-surface-variant">
                   Belum ada level
                 </span>
               )}
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-border-precision text-xs font-medium text-foreground">
-                <Target className="w-3 h-3 text-muted-foreground" />
+              <span className="inline-flex items-center gap-2 min-h-11 px-3 py-1.5 rounded-full bg-white border border-border-precision text-xs font-medium text-on-surface">
+                <Target className="w-3 h-3 text-on-surface-variant" />
                 Soal sulit: {data.ringkasanHybrid.soalSulitCount}
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-border-precision text-xs font-medium text-foreground">
-                <Award className="w-3 h-3 text-muted-foreground" />
+              <span className="inline-flex items-center gap-2 min-h-11 px-3 py-1.5 rounded-full bg-white border border-border-precision text-xs font-medium text-on-surface">
+                <Award className="w-3 h-3 text-on-surface-variant" />
                 Skill mahir: {data.ringkasanHybrid.skillMahirCount}
               </span>
             </div>
@@ -764,15 +1020,16 @@ export default function GuruAnalyticsPage() {
               <button
                 type="button"
                 onClick={() => setShowAdvanced((v) => !v)}
-                className="w-full bg-white border border-border-precision rounded-2xl p-4 flex items-center justify-between gap-3 hover:border-[#005231]/20 transition-colors text-left"
+                aria-expanded={showAdvanced}
+                className="w-full bg-white border border-border-precision rounded-[32px] p-4 flex items-center justify-between gap-2 hover:border-[var(--color-primary)]/20 transition-colors text-left min-h-11"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl bg-surface-container border border-border-precision flex items-center justify-center">
-                    <Brain className="w-4 h-4 text-muted-foreground" />
+                    <Brain className="w-4 h-4 text-on-surface-variant" />
                   </div>
                   <div>
-                    <p className="font-heading font-semibold text-sm text-foreground">Lihat Analisis Lanjutan</p>
-                    <p className="text-xs text-muted-foreground">Kemampuan siswa, tingkat kesulitan soal, dan penguasaan skill</p>
+                    <p className="font-heading font-semibold text-sm text-on-surface">Lihat Analisis Lanjutan</p>
+                    <p className="text-xs text-on-surface-variant">Kemampuan siswa, tingkat kesulitan soal, dan penguasaan skill</p>
                   </div>
                 </div>
                 <motion.span
@@ -780,7 +1037,7 @@ export default function GuruAnalyticsPage() {
                   transition={{ duration: 0.25, ease: EASE_CURVE }}
                   className="shrink-0 flex items-center justify-center"
                 >
-                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                  <ChevronDown className="w-5 h-5 text-on-surface-variant" />
                 </motion.span>
               </button>
 
@@ -797,37 +1054,37 @@ export default function GuruAnalyticsPage() {
                     <div className="mt-4 grid grid-cols-12 gap-4">
                   {/* StudentAbilities */}
                   <div className="col-span-12 lg:col-span-4">
-                    <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl p-4 sm:p-5 h-full">
+                    <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] p-4 sm:p-5 h-full">
                       <div className="flex items-center gap-2 mb-3">
-                        <div className="w-7 h-7 rounded-xl bg-[#005231]/10 border border-[#005231]/15 flex items-center justify-center">
-                          <GraduationCap className="w-3.5 h-3.5 text-[#005231]" />
+                        <div className="w-7 h-7 rounded-xl bg-primary/10 border border-[var(--color-primary)]/15 flex items-center justify-center">
+                          <GraduationCap className="w-3.5 h-3.5 text-[var(--color-primary)]" />
                         </div>
-                        <h4 className="font-heading font-semibold text-sm text-foreground">Kemampuan Siswa</h4>
+                        <h4 className="font-heading font-semibold text-sm text-on-surface">Kemampuan Siswa</h4>
                       </div>
                       {data.studentAbilities.length === 0 ? (
-                        <p className="text-sm text-muted-foreground py-6 text-center">Belum ada data kemampuan</p>
+                        <p className="text-sm text-on-surface-variant py-6 text-center">Belum ada data kemampuan</p>
                       ) : (
                         <div className="flex flex-col gap-3">
                           {data.studentAbilities.slice(0, 5).map((s) => {
                             const pct = Math.min(100, Math.max(0, ((s.theta + 3) / 6) * 100));
                             return (
-                              <div key={`${s.siswaId}-${s.kursusId}`} className="flex flex-col gap-1.5">
+                              <div key={`${s.siswaId}-${s.kursusId}`} className="flex flex-col gap-2">
                                 <div className="flex items-center justify-between gap-2">
-                                  <span className="text-sm font-medium text-foreground truncate flex-1" title={s.nama}>
+                                  <span className="text-sm font-medium text-on-surface truncate flex-1" title={s.nama}>
                                     {s.nama}
                                   </span>
-                                  <span className={`shrink-0 inline-flex items-center rounded-full text-xs font-medium px-2 py-0.5 ${levelBadgeColor(s.level)}`}>
+                                  <span className={`shrink-0 inline-flex items-center rounded-full text-xs font-medium px-2 py-1 min-h-11 ${levelBadgeColor(s.level)}`}>
                                     {s.level}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <div className="flex-1 h-1.5 rounded-full bg-surface-container overflow-hidden border border-border-precision">
                                     <div
-                                      className="h-full rounded-full bg-[#005231] transition-all"
+                                      className="h-full rounded-full bg-primary transition-all"
                                       style={{ width: `${pct}%` }}
                                     />
                                   </div>
-                                  <span className="text-xs tabular-nums text-muted-foreground shrink-0">
+                                  <span className="text-xs tabular-nums text-on-surface-variant shrink-0">
                                     {s.theta.toFixed(2)}
                                   </span>
                                 </div>
@@ -841,41 +1098,41 @@ export default function GuruAnalyticsPage() {
 
                   {/* SoalDifficulty */}
                   <div className="col-span-12 lg:col-span-4">
-                    <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl p-4 sm:p-5 h-full">
+                    <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] p-4 sm:p-5 h-full">
                       <div className="flex items-center gap-2 mb-3">
                         <div className="w-7 h-7 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
                           <Target className="w-3.5 h-3.5 text-amber-700" />
                         </div>
-                        <h4 className="font-heading font-semibold text-sm text-foreground">Tingkat Kesulitan Soal</h4>
+                        <h4 className="font-heading font-semibold text-sm text-on-surface">Tingkat Kesulitan Soal</h4>
                       </div>
                       {data.soalDifficulty.length === 0 ? (
-                        <p className="text-sm text-muted-foreground py-6 text-center">Belum ada data soal</p>
+                        <p className="text-sm text-on-surface-variant py-6 text-center">Belum ada data soal</p>
                       ) : (
                         <div className="flex flex-col gap-3">
                           {data.soalDifficulty.slice(0, 5).map((s) => {
                             const pct = Math.min(100, Math.max(0, ((1500 - s.eloRating) / 800) * 100));
                             return (
-                              <div key={s.id} className="flex flex-col gap-1.5">
+                              <div key={s.id} className="flex flex-col gap-2">
                                 <div className="flex items-start justify-between gap-2">
-                                  <span className="text-sm text-foreground leading-snug line-clamp-2 flex-1" title={s.pertanyaan}>
+                                  <span className="text-sm text-on-surface leading-snug line-clamp-2 flex-1" title={s.pertanyaan}>
                                     {s.pertanyaan}
                                   </span>
-                                  <span className={`shrink-0 inline-flex items-center rounded-full text-xs font-medium px-2 py-0.5 ${difficultyBadgeColor(s.difficulty)}`}>
+                                  <span className={`shrink-0 inline-flex items-center rounded-full text-xs font-medium px-2 py-1 min-h-11 ${difficultyBadgeColor(s.difficulty)}`}>
                                     {s.difficulty}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <div className="flex-1 h-1.5 rounded-full bg-surface-container overflow-hidden border border-border-precision">
                                     <div
-                                      className="h-full rounded-full bg-[#c0392b] transition-all"
+                                      className="h-full rounded-full bg-error transition-all"
                                       style={{ width: `${pct}%` }}
                                     />
                                   </div>
-                                  <span className="text-xs tabular-nums text-muted-foreground shrink-0">
+                                  <span className="text-xs tabular-nums text-on-surface-variant shrink-0">
                                     {Math.round(s.eloRating)}
                                   </span>
                                 </div>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-on-surface-variant">
                                   {s.tipe} &middot; a {Number(s.irtA).toFixed(2)} b {Number(s.irtB).toFixed(2)} c {Number(s.irtC).toFixed(2)}
                                 </p>
                               </div>
@@ -888,15 +1145,15 @@ export default function GuruAnalyticsPage() {
 
                   {/* SkillMastery grouped */}
                   <div className="col-span-12 lg:col-span-4">
-                    <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-2xl p-4 sm:p-5 h-full">
+                    <div className="bg-white/60 backdrop-blur-2xl border border-border-precision shadow-glass rounded-[32px] p-4 sm:p-5 h-full">
                       <div className="flex items-center gap-2 mb-3">
-                        <div className="w-7 h-7 rounded-xl bg-[#005231]/10 border border-[#005231]/15 flex items-center justify-center">
-                          <Brain className="w-3.5 h-3.5 text-[#005231]" />
+                        <div className="w-7 h-7 rounded-xl bg-primary/10 border border-[var(--color-primary)]/15 flex items-center justify-center">
+                          <Brain className="w-3.5 h-3.5 text-[var(--color-primary)]" />
                         </div>
-                        <h4 className="font-heading font-semibold text-sm text-foreground">Penguasaan Skill</h4>
+                        <h4 className="font-heading font-semibold text-sm text-on-surface">Penguasaan Skill</h4>
                       </div>
                       {data.skillMastery.length === 0 ? (
-                        <p className="text-sm text-muted-foreground py-6 text-center">Belum ada data penguasaan</p>
+                        <p className="text-sm text-on-surface-variant py-6 text-center">Belum ada data penguasaan</p>
                       ) : (
                         <div className="flex flex-col gap-3">
                           {(() => {
@@ -910,13 +1167,17 @@ export default function GuruAnalyticsPage() {
                             return entries.map(([skillId, items]) => {
                               const avgPL = items.reduce((s, x) => s + Number(x.pL), 0) / items.length;
                               const pct = Math.min(100, Math.max(0, avgPL * 100));
+                              // F1-5: tampilkan skillNama jika ada, fallback slice(0,8)
+                              const displayNama = (items[0]?.skillNama as string | null) ?? null;
+                              const label = displayNama || `${skillId.slice(0, 8)}...`;
+                              const title = displayNama || skillId;
                               return (
-                                <div key={skillId} className="rounded-2xl border border-border-precision bg-white/70 p-3 flex flex-col gap-2">
+                                <div key={skillId} className="rounded-[32px] border border-border-precision bg-white/70 p-3 flex flex-col gap-2">
                                   <div className="flex items-center justify-between gap-2">
-                                    <span className="text-sm font-medium text-foreground truncate flex-1" title={skillId}>
-                                      {skillId.slice(0, 8)}...
+                                    <span className="text-sm font-medium text-on-surface truncate flex-1" title={title}>
+                                      {label}
                                     </span>
-                                    <span className="text-xs tabular-nums font-medium text-foreground shrink-0">
+                                    <span className="text-xs tabular-nums font-medium text-on-surface shrink-0 min-h-11 inline-flex items-center">
                                       {Math.round(avgPL * 100)}%
                                     </span>
                                   </div>
@@ -926,21 +1187,21 @@ export default function GuruAnalyticsPage() {
                                       style={{ width: `${pct}%` }}
                                     />
                                   </div>
-                                  <p className="text-xs text-muted-foreground">
+                                  <p className="text-xs text-on-surface-variant">
                                     {items.length} siswa &middot; {items.filter((x) => Number(x.pL) >= 0.8).length} mahir
                                   </p>
-                                  <div className="flex flex-wrap gap-1.5">
+                                  <div className="flex flex-wrap gap-2">
                                     {items.slice(0, 4).map((it) => (
                                       <span
                                         key={`${it.siswaId}-${it.skillId}`}
-                                        className="inline-flex items-center rounded-full bg-white border border-border-precision text-xs px-2 py-0.5 text-muted-foreground"
+                                        className="inline-flex items-center rounded-full bg-white border border-border-precision text-xs px-2 py-1 min-h-11 text-on-surface-variant"
                                         title={it.nama ?? it.siswaId}
                                       >
                                         {(it.nama ?? it.siswaId).slice(0, 12)} {Math.round(Number(it.pL) * 100)}%
                                       </span>
                                     ))}
                                     {items.length > 4 ? (
-                                      <span className="text-xs text-muted-foreground">+{items.length - 4} lagi</span>
+                                      <span className="text-xs text-on-surface-variant min-h-11 inline-flex items-center">+{items.length - 4} lagi</span>
                                     ) : null}
                                   </div>
                                 </div>

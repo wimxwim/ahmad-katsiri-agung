@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { getBalance } from "@/lib/token-service";
-import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await requireGuru(request);
 
-    const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`token-balance:${ip}`, 30, 60_000);
+    const rl = await checkRateLimitPerUser(`token-balance:${session.userId}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const balance = await getBalance(session.userId!);

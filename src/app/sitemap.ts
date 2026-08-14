@@ -1,4 +1,7 @@
 import type { MetadataRoute } from "next";
+import { db } from "@/lib/db";
+import { kursus } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 const BASE_URL = "https://akalcenter.my.id";
 
@@ -12,13 +15,32 @@ const STATIC_PAGES = [
   { path: "/tentang", priority: 0.6, changeFreq: "monthly" as const },
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date("2026-08-10");
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const now = new Date();
 
-  return STATIC_PAGES.map((page) => ({
+  const staticEntries: MetadataRoute.Sitemap = STATIC_PAGES.map((page) => ({
     url: `${BASE_URL}${page.path}`,
     lastModified: now,
     changeFrequency: page.changeFreq,
     priority: page.priority,
   }));
+
+  try {
+    const kursusRows = await db
+      .select({ slug: kursus.slug, updatedAt: kursus.updatedAt })
+      .from(kursus)
+      .where(eq(kursus.statusPublikasi, "PUBLIK"))
+      .limit(100);
+
+    const dynamicEntries: MetadataRoute.Sitemap = kursusRows.map((r) => ({
+      url: `${BASE_URL}/kursus/${r.slug}`,
+      lastModified: r.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+
+    return [...staticEntries, ...dynamicEntries];
+  } catch {
+    return staticEntries;
+  }
 }

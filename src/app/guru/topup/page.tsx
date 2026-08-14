@@ -151,9 +151,9 @@ export default function GuruTopupPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6" aria-busy="true" role="status" aria-label="Memuat halaman topup">
         <div className="h-7 w-48 bg-primary/5 rounded-lg animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div className="bg-glass rounded-card p-8 h-64 animate-pulse border border-border-precision" />
           <div className="bg-glass rounded-card p-8 h-64 animate-pulse border border-border-precision" />
         </div>
@@ -184,7 +184,7 @@ export default function GuruTopupPage() {
           transition={{ ...SPRING_CONFIG, delay: 0.1 }}
           className="bg-glass border border-border-precision rounded-card p-6 shadow-glass"
         >
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <span className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
               <Wallet className="w-6 h-6" />
             </span>
@@ -252,7 +252,7 @@ export default function GuruTopupPage() {
           >
             <h2 className="font-heading font-semibold text-lg text-on-surface mb-4">Pilih Nominal</h2>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div role="radiogroup" aria-label="Pilih nominal topup" className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
               {TOPUP_PLANS.map((plan, i) => (
                 <motion.button
                   key={plan.id}
@@ -260,8 +260,12 @@ export default function GuruTopupPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ ...SPRING_CONFIG, delay: 0.1 + i * 0.05 }}
                   onClick={() => handleSelectAmount(plan.amount)}
+                  role="radio"
+                  aria-checked={selectedAmount === plan.amount}
+                  aria-pressed={selectedAmount === plan.amount}
+                  aria-label={`Pilih nominal ${plan.label}`}
                   className={cn(
-                    "p-4 rounded-2xl border-2 text-center transition-all duration-300",
+                    "min-h-11 min-w-11 p-4 rounded-2xl border-2 text-center transition-all duration-300 inline-flex flex-col items-center justify-center gap-1",
                     selectedAmount === plan.amount
                       ? "border-primary bg-primary/5 text-primary"
                       : "border-border-precision bg-white/40 text-on-surface hover:border-primary/30",
@@ -276,21 +280,23 @@ export default function GuruTopupPage() {
             </div>
 
             <div className="mb-4">
-              <label className="text-xs text-on-surface-variant font-semibold uppercase tracking-wider mb-1.5 block">
+              <label htmlFor="custom-amount" className="text-xs text-on-surface-variant font-semibold uppercase tracking-wider mb-1.5 block">
                 Atau nominal custom
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-semibold">Rp</span>
                 <input
+                  id="custom-amount"
                   type="text"
                   inputMode="numeric"
+                  aria-label="Nominal custom"
                   value={formatCustomDisplay(customAmount)}
                   onChange={(e) => handleCustomAmount(e.target.value)}
                   placeholder={`Min Rp${MIN_TOPUP.toLocaleString("id-ID")}`}
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-border-precision bg-white/60 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-sm font-mono"
+                  className="w-full min-h-11 pl-10 pr-4 py-2.5 rounded-2xl border border-border-precision bg-white/60 text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-sm font-mono"
                 />
               </div>
-              <p className="text-[10px] text-on-surface-variant mt-1">
+              <p className="text-xs text-on-surface-variant mt-1">
                 Rp{MIN_TOPUP.toLocaleString("id-ID")} – Rp{MAX_TOPUP.toLocaleString("id-ID")}
               </p>
             </div>
@@ -299,7 +305,9 @@ export default function GuruTopupPage() {
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2 bg-red-50 text-red-700 rounded-xl px-4 py-2.5 mb-4 text-sm"
+                role="alert"
+                aria-live="assertive"
+                className="flex items-center gap-2 bg-red-50 text-red-700 rounded-xl px-4 py-2.5 mb-4 text-sm border border-red-200"
               >
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 {error}
@@ -312,7 +320,7 @@ export default function GuruTopupPage() {
               onClick={handleShowQris}
               disabled={!effectiveAmount}
               className={cn(
-                "w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full text-sm font-semibold transition-all",
+                "w-full min-h-11 inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold transition-all",
                 effectiveAmount
                   ? "bg-primary text-white hover:brightness-110 shadow-glass"
                   : "bg-black/5 text-on-surface-variant/40 cursor-not-allowed",
@@ -331,14 +339,15 @@ export default function GuruTopupPage() {
             transition={{ ...SPRING_CONFIG }}
             className="bg-glass border border-border-precision rounded-card p-6 shadow-glass"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between gap-2 mb-4">
               <h2 className="font-heading font-semibold text-lg text-on-surface">
                 {uploaded ? "Pembayaran Selesai" : "Scan QRIS GoPay"}
               </h2>
               {!uploaded && (
                 <button
                   onClick={() => setShowQris(false)}
-                  className="w-8 h-8 rounded-lg bg-black/5 flex items-center justify-center hover:bg-black/10 transition-colors"
+                  aria-label="Tutup QRIS"
+                  className="min-w-11 min-h-11 w-11 h-11 rounded-xl bg-black/5 flex items-center justify-center hover:bg-black/10 transition-colors shrink-0"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -368,7 +377,7 @@ export default function GuruTopupPage() {
                     setCustomAmount("");
                     setNewBalance(null);
                   }}
-                  className="mt-6 inline-flex items-center gap-2 bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
+                  className="mt-6 inline-flex items-center justify-center gap-2 min-h-11 min-w-11 bg-primary text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
                 >
                   <Coins className="w-4 h-4" />
                   Isi Kuota Lagi
@@ -383,7 +392,7 @@ export default function GuruTopupPage() {
                     width={280}
                     height={280}
                     sizes="(max-width:640px) 100vw, 50vw"
-                    loading="lazy"
+                    priority
                     className="w-full max-w-[280px] mx-auto p-4"
                   />
                 </div>
@@ -404,7 +413,9 @@ export default function GuruTopupPage() {
                   <motion.div
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-2 bg-red-50 text-red-700 rounded-xl px-4 py-2.5 mb-4 text-sm"
+                    role="alert"
+                    aria-live="assertive"
+                    className="flex items-center gap-2 bg-red-50 text-red-700 rounded-xl px-4 py-2.5 mb-4 text-sm border border-red-200"
                   >
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     {error}
@@ -425,7 +436,7 @@ export default function GuruTopupPage() {
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
                   className={cn(
-                    "w-full inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl text-sm font-semibold transition-all border-2 border-dashed",
+                    "w-full min-h-11 inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-semibold transition-all border-2 border-dashed",
                     uploading
                       ? "border-primary/20 bg-primary/5 text-primary animate-pulse"
                       : "border-border-precision bg-white/40 text-on-surface hover:border-primary hover:bg-primary/[0.02]",
@@ -449,7 +460,7 @@ export default function GuruTopupPage() {
                   )}
                 </motion.button>
 
-                <p className="text-[10px] text-on-surface-variant/60 text-center mt-3">
+                <p className="text-xs text-on-surface-variant/60 text-center mt-3">
                   JPG, PNG, WebP, PDF, maks 5 MB. Setelah bukti berhasil disimpan, kuota akan langsung bertambah. Data isi kuota dan link bukti akan dikirim ke admin melalui Telegram.
                 </p>
               </>

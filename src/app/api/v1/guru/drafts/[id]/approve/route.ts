@@ -6,6 +6,7 @@ import { aiGeneration } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
+import { requireNotSuspended, SubscriptionLockedError } from "@/lib/token-service";
 import { validateCsrf } from "@/lib/csrf-server";
 import { invalidateGuruCache } from "@/lib/dashboard-cache";
 
@@ -18,6 +19,7 @@ export async function POST(
     if (csrfError) return csrfError;
 
     const session = await requireGuru(request);
+    await requireNotSuspended(session.userId);
 
     const ip = ipFromRequest(request);
     const rl = await checkRateLimit(`draft-action:${ip}`, 20, 60_000);
@@ -45,6 +47,7 @@ export async function POST(
     return NextResponse.json({ success: true, status: "approved" });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
+    if (e instanceof SubscriptionLockedError) return apiError(e.message, 403);
     console.error("Approve error:", e);
     return apiError("Terjadi kesalahan server", 500);
   }

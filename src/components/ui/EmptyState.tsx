@@ -10,6 +10,10 @@ interface EmptyStateProps {
     label: string;
     href: string;
   };
+  secondaryAction?: {
+    label: string;
+    href: string;
+  };
   className?: string;
 }
 
@@ -18,12 +22,13 @@ function EmptyState({
   title,
   description,
   action,
+  secondaryAction,
   className,
 }: EmptyStateProps) {
   return (
     <div
       className={cn(
-        "bg-glass border border-border-precision rounded-2xl p-6 sm:p-10 shadow-glass text-center",
+        "bg-glass border border-border-precision rounded-[32px] p-6 sm:p-10 shadow-glass-xl text-center",
         className
       )}
     >
@@ -38,14 +43,24 @@ function EmptyState({
           {description}
         </p>
       )}
-      {action && (
-        <Link
-          href={action.href}
-          className="inline-flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-full text-sm font-semibold hover:brightness-110 transition-all"
-        >
-          {action.label}
-        </Link>
-      )}
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        {action && (
+          <Link
+            href={action.href}
+            className="inline-flex items-center gap-2 bg-primary text-on-primary px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 transition-all min-h-11"
+          >
+            {action.label}
+          </Link>
+        )}
+        {secondaryAction && (
+          <Link
+            href={secondaryAction.href}
+            className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline min-h-11 px-3 py-2.5"
+          >
+            {secondaryAction.label}
+          </Link>
+        )}
+      </div>
     </div>
   );
 }

@@ -47,6 +47,10 @@ const ROLE_ROUTE_MAP: Record<string, string[]> = {
   orang_tua: ["/orang-tua"],
 };
 
+// CSP tanpa unsafe-inline — keep unsafe-eval karena Next.js butuh; TODO nonce/hash untuk inline script
+const CSP_VALUE =
+  "frame-ancestors 'none'; default-src 'self'; script-src 'self' 'unsafe-eval' https://www.googletagmanager.com https://*.google-analytics.com https://va.vercel-scripts.com https://static.cloudflareinsights.com https://performance.radar.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com; style-src 'self' https://fonts.googleapis.com; img-src 'self' data: https: blob:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://router.bynara.id https://*.supabase.co https://api.telegram.org https://equran.id https://*.vercel.app https://*.vercel-insights.com https://*.googleapis.com https://*.google-analytics.com https://*.youtube.com https://*.googlevideo.com https://api.github.com https://*.githubusercontent.com https://static.cloudflareinsights.com https://performance.radar.cloudflare.com https://www.googletagmanager.com https://www.google.com; media-src 'self' https://cdn.equran.id https://*.youtube.com https://*.googlevideo.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; report-uri /api/csp-report";
+
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -68,9 +72,26 @@ export default async function middleware(request: NextRequest) {
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  response.headers.set("Content-Security-Policy", CSP_VALUE);
+
+  // CSP untuk /api juga — next.config source /(.*) sudah cover /api, middleware set header fallback
+  // API routes: hanya set header, tanpa auth redirect; CSRF API ditangani per-route via validateCsrf()
+  if (pathname.startsWith("/api")) {
+    const isApiPublic =
+      PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+      pathname.startsWith("/api/v1/auth") ||
+      pathname.startsWith("/api/health") ||
+      pathname.startsWith("/api/readyz") ||
+      pathname.startsWith("/api/csp-report") ||
+      pathname.startsWith("/api/v1/payment/webhook");
+    if (isApiPublic) return response;
+    // Untuk API non-public, tetap lanjutkan tanpa redirect — auth ditangani per-route via requireGuru/requireSession
+    // Hanya header CSP yang penting untuk /api; jangan redirect ke /masuk
+    return response;
+  }
 
   // CSRF protection for non-API routes (pages).
-  // NOTE: API routes are excluded from the middleware matcher (see config below).
+  // NOTE: API routes are excluded from the middleware matcher (see config below) — now handled above for CSP.
   // API CSRF is enforced per-route via validateCsrf() in csrf-server.ts.
   // All new API route handlers MUST call validateCsrf() for state-changing methods.
   const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
@@ -136,6 +157,7 @@ export default async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/data|_next/static|_next/image|favicon.ico|icon|apple-icon|opengraph-image|sitemap|robots|manifest).*)",
+    // Matcher include /api untuk CSP header — next.config headers() source /(.*) sudah cover /api, middleware juga set CSP untuk /api via early return di atas
+    "/((?!_next/data|_next/static|_next/image|favicon.ico|icon|apple-icon|opengraph-image|sitemap|robots|manifest).*)",
   ],
 };

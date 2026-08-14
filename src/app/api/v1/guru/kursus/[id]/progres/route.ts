@@ -3,7 +3,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { users, kursus, siswaKursus, quizPublished, quizAttempt } from "@/lib/db/schema";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql, count } from "drizzle-orm";
 import { requireRole, GuardError } from "@/lib/route-guard-v2";
 import { KKM } from "@/lib/constants";
 
@@ -47,33 +47,52 @@ export async function GET(
 
     const quizPubIds = quizPubs.map((q) => q.id);
 
-    const allAttempts = quizPubIds.length
-      ? await db
-          .select()
-          .from(quizAttempt)
-          .where(inArray(quizAttempt.quizPublishedId, quizPubIds))
-      : [];
+    // F2-2: GROUP BY di DB, hapus allAttempts.filter + sort per siswa O(N×M)
+    type GroupedRow = {
+      siswaId: string;
+      totalAttempt: number;
+      totalSelesai: number;
+      rataNilai: number | null;
+      latestAttempt: Date | null;
+    };
+
+    let groupedRows: GroupedRow[] = [];
+    if (quizPubIds.length > 0) {
+      const rows = await db
+        .select({
+          siswaId: quizAttempt.siswaId,
+          totalAttempt: count(sql`1`).as("totalAttempt"),
+          totalSelesai: sql<number>`count(case when ${quizAttempt.status} in ('SELESAI','BELAJAR') then 1 end)`.as("totalSelesai"),
+          rataNilai: sql<number | null>`round(avg(case when ${quizAttempt.status} in ('SELESAI','BELAJAR') then ${quizAttempt.nilai} end))`.as("rataNilai"),
+          latestAttempt: sql<Date | null>`max(${quizAttempt.waktuMulai})`.as("latestAttempt"),
+        })
+        .from(quizAttempt)
+        .where(inArray(quizAttempt.quizPublishedId, quizPubIds))
+        .groupBy(quizAttempt.siswaId);
+      groupedRows = rows as unknown as GroupedRow[];
+    }
+
+    const groupedMap = new Map<string, GroupedRow>();
+    for (const r of groupedRows) groupedMap.set(r.siswaId, r);
+
+    const totalAttemptAll = groupedRows.reduce((s, r) => s + Number(r.totalAttempt), 0);
 
     const siswaProgres = siswaList.map((s) => {
-      const attempts = allAttempts.filter((a) => a.siswaId === s.id);
-      const completed = attempts.filter((a) => a.status === "SELESAI" || a.status === "BELAJAR");
-      const nilaiList = completed.map((a) => a.nilai).filter((n): n is number => n !== null);
-      const rataNilai = nilaiList.length > 0
-        ? Math.round(nilaiList.reduce((sum, n) => sum + n, 0) / nilaiList.length)
-        : null;
+      const g = groupedMap.get(s.id);
+      const totalAttempt = g ? Number(g.totalAttempt) : 0;
+      const totalSelesai = g ? Number(g.totalSelesai) : 0;
+      const rataNilai = g && g.rataNilai != null ? Number(g.rataNilai) : null;
 
       return {
         siswaId: s.id,
         nama: s.nama,
         kelas: s.kelas,
         noAbsen: s.noAbsen,
-        totalAttempt: attempts.length,
-        totalSelesai: completed.length,
+        totalAttempt,
+        totalSelesai,
         rataNilai,
         tuntas: rataNilai !== null ? rataNilai >= KKM : false,
-        latestAttempt: attempts.length > 0
-          ? attempts.sort((a, b) => new Date(b.waktuMulai).getTime() - new Date(a.waktuMulai).getTime())[0].waktuMulai
-          : null,
+        latestAttempt: g?.latestAttempt ?? null,
       };
     });
 
@@ -89,7 +108,7 @@ export async function GET(
         kursus: { id: kursusData.id, judul: kursusData.judul },
         totalSiswa: siswaList.length,
         totalQuiz: quizPubs.length,
-        totalAttempt: allAttempts.length,
+        totalAttempt: totalAttemptAll,
         siswaProgres,
       },
     });

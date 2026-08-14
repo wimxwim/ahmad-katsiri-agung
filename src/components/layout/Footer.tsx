@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Typography, Space } from "antd";
 import type { CmsNavigation } from "@/components/providers/CmsProvider";
 
@@ -24,6 +25,8 @@ const CONTACT_FALLBACK = {
   pendiriNama: "Ahmad Katsiri Agung, S.Pd.",
 };
 
+const HIDDEN = ["/guru", "/siswa", "/owner", "/admin"];
+
 export function Footer({
   navigation: nav,
   pendiriNama: pendiriNamaProp,
@@ -31,6 +34,9 @@ export function Footer({
   navigation?: CmsNavigation | null;
   pendiriNama?: string;
 }) {
+  const pathname = usePathname();
+  if (HIDDEN.some((p) => pathname.startsWith(p))) return null;
+
   const footerLinks = nav?.footerLinks ?? FOOTER_LINKS_FALLBACK;
   const contact = nav ?? CONTACT_FALLBACK;
 

@@ -11,7 +11,7 @@ import {
   soalPublished,
   aiGeneration,
 } from "@/lib/db/schema";
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql, count } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { requireRole, GuardError } from "@/lib/route-guard-v2";
 
@@ -81,29 +81,37 @@ export async function GET(
       const key = `${v.siswaId}:${v.quizPublishedId}`;
       violationMap.set(key, (violationMap.get(key) || 0) + 1);
     }
+    // Aggregate pelanggaran per siswa for GROUP BY response
+    const violationPerSiswa = new Map<string, number>();
+    for (const v of violations) {
+      violationPerSiswa.set(v.siswaId, (violationPerSiswa.get(v.siswaId) || 0) + 1);
+    }
 
-    const attempts = await db
+    // F2-2: GROUP BY di DB, hapus SELECT * + siswaList.map(filter+sort) O(N×M)
+    const grouped = await db
       .select({
-        id: quizAttempt.id,
         siswaId: quizAttempt.siswaId,
-        quizPublishedId: quizAttempt.quizPublishedId,
-        nilai: quizAttempt.nilai,
-        jumlahBenar: quizAttempt.jumlahBenar,
-        jumlahSalah: quizAttempt.jumlahSalah,
-        durasiDetik: quizAttempt.durasiDetik,
-        waktuSelesai: quizAttempt.waktuSelesai,
-        status: quizAttempt.status,
-        quizJudul: quizPublished.judul,
         nama: users.nama,
+        totalAttempt: count(sql`1`).as("totalAttempt"),
+        totalSelesai: sql<number>`count(case when ${quizAttempt.status} in ('SELESAI','BELAJAR') then 1 end)`.as("totalSelesai"),
+        rataNilai: sql<number>`coalesce(round(avg(${quizAttempt.nilai})), 0)`.as("rataNilai"),
       })
       .from(quizAttempt)
       .innerJoin(quizPublished, eq(quizAttempt.quizPublishedId, quizPublished.id))
       .leftJoin(users, and(eq(quizAttempt.siswaId, users.id), isNull(users.deletedAt)))
-      .where(inArray(quizAttempt.quizPublishedId, quizIds));
+      .where(inArray(quizAttempt.quizPublishedId, quizIds))
+      .groupBy(quizAttempt.siswaId, users.nama)
+      .orderBy(sql`avg(${quizAttempt.nilai}) asc`);
 
-    const attemptsWithViolations = attempts.map((a) => ({
-      ...a,
-      pelanggaran: violationMap.get(`${a.siswaId}:${a.quizPublishedId}`) || 0,
+    const attemptsGrouped = (grouped as unknown as { siswaId: string; nama: string | null; totalAttempt: number; totalSelesai: number; rataNilai: number }[]).map((r) => ({
+      siswaId: r.siswaId,
+      nama: r.nama ?? "Siswa",
+      totalAttempt: Number(r.totalAttempt),
+      totalSelesai: Number(r.totalSelesai),
+      rataNilai: Number(r.rataNilai),
+      // keep compatibility with previous shape: nilai = rataNilai, pelanggaran aggregated
+      nilai: Number(r.rataNilai),
+      pelanggaran: violationPerSiswa.get(r.siswaId) || 0,
     }));
 
     const latihanRows = await db
@@ -121,8 +129,8 @@ export async function GET(
       .groupBy(jawabanLog.siswaId);
 
     return NextResponse.json({
-      data: attemptsWithViolations,
-      total: attemptsWithViolations.length,
+      data: attemptsGrouped,
+      total: attemptsGrouped.length,
       latihan: latihanRows,
     });
   } catch (e) {

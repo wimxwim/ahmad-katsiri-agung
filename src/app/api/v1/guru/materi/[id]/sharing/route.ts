@@ -6,7 +6,7 @@ import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { materiPublished, materiSharing } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
-import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -22,8 +22,7 @@ export async function POST(
 
     const session = await requireGuru(request);
 
-    const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`materi-sharing-write:${ip}`, 10, 60_000);
+    const rl = await checkRateLimitPerUser(`materi-sharing-write:${session.userId}`, 10, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const { id } = await params;
@@ -101,8 +100,7 @@ export async function GET(
   try {
     const session = await requireGuru(request);
 
-    const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`materi-sharing:${ip}`, 30, 60_000);
+    const rl = await checkRateLimitPerUser(`materi-sharing:${session.userId}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const { id } = await params;

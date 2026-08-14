@@ -20,6 +20,7 @@ export const TOPUP_PLANS = [
 ] as const;
 
 export const MIN_TOPUP = 5000;
+// trial Rp1k — MIN_TOPUP 5000 tetap untuk production, tapi trial 1k bisa diaktifkan via env FREE_GENERATE_MODE atau promo code. Jangan turunkan tanpa verifikasi Midtrans.
 export const MAX_TOPUP = 1000000;
 export const MAX_TOPUP_PER_DAY = 5;
 
@@ -27,6 +28,7 @@ export const MAX_TOPUP_PER_DAY = 5;
  * Free tier: setiap pengguna baru mendapatkan Rp2.000 (2000 token) gratis.
  * 1 token = Rp1. Biaya per generate AI bervariasi sesuai panjang dokumen.
  * ~20+ generate gratis dengan saldo awal.
+ * Trial Rp1k: untuk testing, bisa topup 1000 via custom amount jika FREE_GENERATE_MODE off tapi promo aktif.
  */
 export const INITIAL_TOKEN_BALANCE = 2000;
 

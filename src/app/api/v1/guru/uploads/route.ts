@@ -10,7 +10,7 @@ import { validateCsrf } from "@/lib/csrf-server";
 import { appendEvent } from "@/lib/event-store";
 import { db } from "@/lib/db";
 import { fileMateri, kursus, users, aiGeneration, kelas } from "@/lib/db/schema";
-import { and, eq, desc, lt } from "drizzle-orm";
+import { and, eq, desc, lt, or } from "drizzle-orm";
 import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { extractText } from "@/lib/text-extractor";
 import { incrementUploadCount, getSubscriptionStatus, requireNotSuspended } from "@/lib/token-service";
@@ -536,6 +536,28 @@ export async function POST(request: NextRequest) {
   }
 }
 
+function encodeCursor(row: { createdAt: Date; id: string }): string {
+  return Buffer.from(JSON.stringify({ createdAt: row.createdAt.toISOString(), id: row.id })).toString("base64url");
+}
+
+function decodeCursor(raw: string): { createdAt: Date; id: string } | null {
+  try {
+    // Try base64 JSON first (new format)
+    const json = Buffer.from(raw, "base64url").toString("utf-8");
+    const parsed = JSON.parse(json);
+    if (parsed && typeof parsed.createdAt === "string" && typeof parsed.id === "string") {
+      const d = new Date(parsed.createdAt);
+      if (!isNaN(d.getTime())) return { createdAt: d, id: parsed.id };
+    }
+  } catch {}
+  try {
+    // Fallback: plain ISO string (legacy)
+    const d = new Date(raw);
+    if (!isNaN(d.getTime())) return { createdAt: d, id: "" };
+  } catch {}
+  return null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await requireGuru(request);
@@ -545,14 +567,24 @@ export async function GET(request: NextRequest) {
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     const url = new URL(request.url);
-    const cursor = url.searchParams.get("cursor");
+    const cursorRaw = url.searchParams.get("cursor");
     const limit = Math.min(50, Math.max(5, parseInt(url.searchParams.get("limit") || "20", 10)));
 
     const whereConditions = [eq(fileMateri.guruId, session.userId!)];
-    if (cursor) {
-      const cursorDate = new Date(cursor);
-      if (!isNaN(cursorDate.getTime())) {
-        whereConditions.push(lt(fileMateri.createdAt, cursorDate));
+    if (cursorRaw) {
+      const decoded = decodeCursor(cursorRaw);
+      if (decoded) {
+        if (decoded.id) {
+          // Composite tie-breaker: (createdAt < cursorDate) OR (createdAt = cursorDate AND id < cursorId)
+          whereConditions.push(
+            or(
+              lt(fileMateri.createdAt, decoded.createdAt),
+              and(eq(fileMateri.createdAt, decoded.createdAt), lt(fileMateri.id, decoded.id)),
+            )!,
+          );
+        } else {
+          whereConditions.push(lt(fileMateri.createdAt, decoded.createdAt));
+        }
       }
     }
 
@@ -590,7 +622,7 @@ export async function GET(request: NextRequest) {
     }));
 
     const nextCursor = hasMore && items.length > 0
-      ? items[items.length - 1].createdAt.toISOString()
+      ? encodeCursor({ createdAt: items[items.length - 1].createdAt, id: items[items.length - 1].id })
       : null;
 
     return NextResponse.json({ data: sanitized, nextCursor });

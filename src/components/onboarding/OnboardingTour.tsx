@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Upload, FileText, CheckCircle2, BookOpen, ArrowRight, X, ChevronRight } from "lucide-react";
+import { Upload, FileText, CheckCircle2, BookOpen, ArrowRight, X, ChevronRight, ClipboardCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -38,6 +38,12 @@ const STEPS: Step[] = [
     title: "Kelola Kelas & Siswa",
     desc: "Buat kelas, generate kode undangan 6-digit, dan pantau progres belajar siswa dari dashboard.",
     action: { label: "Buka Kelas", href: "/guru/kelas" },
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Cari Nilai",
+    desc: "Lihat rekap nilai per kursus, distribusi skor, dan export Excel 1-klik. Pantau ketuntasan KKM dari satu tempat.",
+    action: { label: "Lihat Nilai", href: "/guru/nilai" },
   },
 ];
 

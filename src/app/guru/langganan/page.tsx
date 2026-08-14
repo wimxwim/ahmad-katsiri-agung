@@ -18,6 +18,8 @@ import {
   ArrowRight,
   QrCode,
   Wallet,
+  Clock,
+  CheckCircle2,
 } from "lucide-react";
 
 interface BalanceData {
@@ -40,7 +42,7 @@ interface BalanceData {
 const SPRING_CONFIG = { type: "spring" as const, stiffness: 100, damping: 20 };
 
 const MULAI_FEATURES = [
-  { icon: Sparkles, label: "20 generate AI/bulan" },
+  { icon: Sparkles, label: "Gratis: 20 generate/bulan" },
   { icon: Upload, label: "3 upload dokumen/bulan" },
   { icon: BookOpen, label: "1 kelas" },
   { icon: Users, label: "Unlimited siswa" },
@@ -48,7 +50,7 @@ const MULAI_FEATURES = [
 ] as const;
 
 const LANJUTKAN_FEATURES = [
-  { icon: Sparkles, label: "50 generate AI/bulan" },
+  { icon: Sparkles, label: "Generate AI unlimited" },
   { icon: Upload, label: "Unlimited upload dokumen" },
   { icon: BookOpen, label: "5 kelas" },
   { icon: Users, label: "Unlimited siswa" },
@@ -57,6 +59,14 @@ const LANJUTKAN_FEATURES = [
   { icon: Award, label: "Sertifikat" },
   { icon: Wallet, label: "WhatsApp support" },
 ] as const;
+
+function formatExpiresAt(unlockedAt: string | Date | null): string | null {
+  if (!unlockedAt) return null;
+  const d = new Date(unlockedAt);
+  if (isNaN(d.getTime())) return null;
+  const expires = new Date(d.getTime() + 30 * 24 * 60 * 60 * 1000);
+  return expires.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+}
 
 export default function GuruLanggananPage() {
   const [balance, setBalance] = useState<BalanceData | null>(null);
@@ -80,6 +90,10 @@ export default function GuruLanggananPage() {
   }, [fetchBalance]);
 
   const isSubscribed = balance?.isUnlocked ?? false;
+  const expiresAtLabel = formatExpiresAt(balance?.unlockedAt ?? null);
+  const unlockedAtLabel = balance?.unlockedAt
+    ? new Date(balance.unlockedAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
+    : null;
 
   if (loading) {
     return (
@@ -147,6 +161,42 @@ export default function GuruLanggananPage() {
         </p>
       </motion.div>
 
+      {/* F10-4: real isUnlocked + unlockedAt + expiresAt 30 hari */}
+      {isSubscribed ? (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-4"
+        >
+          <span className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-5 h-5" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-emerald-800">Langganan Aktif — Unlimited Generate</p>
+            <p className="text-xs text-emerald-700 mt-0.5">
+              {unlockedAtLabel ? `Diaktifkan ${unlockedAtLabel}` : "Sudah di-unlock"} {expiresAtLabel ? `• Aktif hingga ${expiresAtLabel} (30 hari)` : ""}
+            </p>
+          </div>
+          <span className="hidden sm:inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold">
+            <Clock className="w-3 h-3" /> {expiresAtLabel ?? "30 hari"}
+          </span>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4"
+        >
+          <span className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+            <Zap className="w-5 h-5" />
+          </span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-amber-800">Gratis: 20 generate/bulan</p>
+            <p className="text-xs text-amber-700 mt-0.5">Top-up minimal Rp5.000 untuk unlock generate & upload unlimited (aktif 30 hari).</p>
+          </div>
+        </motion.div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -196,7 +246,7 @@ export default function GuruLanggananPage() {
                 : "bg-black/5 text-on-surface-variant/40 cursor-not-allowed",
             )}
           >
-            {!isSubscribed ? "Paket Aktif" : "Tidak Tersedia"}
+            {!isSubscribed ? "Paket Aktif — Gratis 20 generate/bulan" : "Tidak Tersedia"}
           </motion.button>
         </motion.div>
 
@@ -229,6 +279,9 @@ export default function GuruLanggananPage() {
               <p className="text-xs text-on-surface-variant mt-0.5">
                 Untuk guru profesional
               </p>
+              {isSubscribed && expiresAtLabel && (
+                <p className="text-xs font-semibold text-emerald-700 mt-1">Aktif hingga {expiresAtLabel}</p>
+              )}
             </div>
             {isSubscribed && (
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wider">
@@ -247,14 +300,17 @@ export default function GuruLanggananPage() {
           </div>
 
           {isSubscribed ? (
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              disabled
-              className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-sm font-semibold bg-primary/10 text-primary cursor-default transition-all"
-            >
-              Paket Aktif
-            </motion.button>
+            <div className="space-y-2">
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                disabled
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full text-sm font-semibold bg-primary/10 text-primary cursor-default transition-all"
+              >
+                Paket Aktif {expiresAtLabel ? `— hingga ${expiresAtLabel}` : ""}
+              </motion.button>
+              <p className="text-[11px] text-center text-on-surface-variant">Perpanjangan otomatis tidak aktif — top-up lagi setelah {expiresAtLabel ?? "30 hari"} untuk lanjut unlimited.</p>
+            </div>
           ) : (
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -285,7 +341,7 @@ export default function GuruLanggananPage() {
                   Pembayaran via QRIS
                 </h2>
                 <p className="text-sm text-on-surface-variant mt-1">
-                  Upgrade ke paket LANJUTKAN — Rp10.000/bulan
+                  Upgrade ke paket LANJUTKAN — Rp10.000/bulan (aktif 30 hari)
                 </p>
               </div>
               <QrCode className="w-8 h-8 text-primary" />
@@ -320,7 +376,7 @@ export default function GuruLanggananPage() {
                 </li>
                 <li>
                   Paket LANJUTKAN akan diaktifkan dalam 1x24 jam setelah
-                  verifikasi admin
+                  verifikasi admin (aktif hingga 30 hari dari unlockedAt)
                 </li>
               </ol>
             </div>

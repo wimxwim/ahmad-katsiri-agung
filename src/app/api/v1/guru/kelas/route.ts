@@ -9,6 +9,7 @@ import { kelas } from "@/lib/db/schema";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { validateCsrf } from "@/lib/csrf-server";
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache-layer";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,10 @@ const CreateKelasSchema = z.object({
   kursusId: z.string().min(1).optional(),
 });
 
+const KelasQuerySchema = z.object({
+  limit: z.coerce.number().min(1).max(100).default(50),
+});
+
 export async function GET(request: NextRequest) {
   try {
     const session = await requireGuru(request);
@@ -25,13 +30,26 @@ export async function GET(request: NextRequest) {
     const rl = await checkRateLimitPerUser(`kelas-list:${session.userId}`, 60, 30000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
+    const parsed = KelasQuerySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams.entries()));
+    if (!parsed.success) return apiError(parsed.error.issues[0]?.message || "Parameter tidak valid", 400);
+    const { limit } = parsed.data;
+
+    const cacheKey = `kelas:guru:${session.userId}:limit:${limit}`;
+    const cached = await cacheGet<{ data: typeof kelas.$inferSelect[] }>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=120" } });
+    }
+
     const data = await db
       .select()
       .from(kelas)
       .where(and(eq(kelas.guruId, session.userId), isNull(kelas.deletedAt)))
-      .orderBy(desc(kelas.createdAt));
+      .orderBy(desc(kelas.createdAt))
+      .limit(limit);
 
-    return NextResponse.json({ data });
+    const result = { data };
+    await cacheSet(cacheKey, result, 60);
+    return NextResponse.json(result, { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=120" } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Kelas list error:", e);
@@ -63,6 +81,9 @@ export async function POST(request: NextRequest) {
         kursusId: parsed.data.kursusId ?? null,
       })
       .returning();
+
+    await cacheDel(`kelas:guru:${session.userId}:limit:50`);
+    await cacheDel(`kelas:guru:${session.userId}:limit:100`);
 
     return NextResponse.json({ data: newKelas }, { status: 201 });
   } catch (e) {

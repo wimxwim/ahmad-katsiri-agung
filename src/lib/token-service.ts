@@ -634,12 +634,13 @@ export async function isUserUnlocked(userId: string): Promise<boolean> {
 
 export async function requireUnlocked(userId: string): Promise<void> {
   if (process.env.FREE_GENERATE_MODE === "true") return;
-  const unlocked = await isUserUnlocked(userId);
-  if (!unlocked) {
-    throw new SubscriptionLockedError(
-      "Fitur generate AI terkunci. Silakan top-up minimal Rp5.000 untuk membuka akses unlimited.",
-    );
-  }
+  // F10-3 Dead token fix: allow generate if balance >= MIN_GENERATE_CHARGE (50) even if not unlocked — untuk 15 generate pertama dari INITIAL 2000.
+  // TODO trial Rp1k: jika promo aktif, MIN_TOPUP bisa 1000 untuk unlock lebih murah.
+  const status = await getSubscriptionStatus(userId);
+  if (status.canGenerate) return;
+  throw new SubscriptionLockedError(
+    "Fitur generate AI terkunci. Silakan top-up minimal Rp5.000 untuk membuka akses unlimited.",
+  );
 }
 
 export async function getUploadCount(userId: string): Promise<number> {
@@ -671,6 +672,7 @@ export async function getSubscriptionStatus(userId: string): Promise<Subscriptio
     .select({
       isUnlocked: tokenBalances.isUnlocked,
       unlockedAt: tokenBalances.unlockedAt,
+      balance: tokenBalances.balance,
     })
     .from(tokenBalances)
     .where(eq(tokenBalances.userId, userId))
@@ -683,15 +685,22 @@ export async function getSubscriptionStatus(userId: string): Promise<Subscriptio
     .limit(1);
 
   const isUnlocked = balance?.isUnlocked ?? false;
+  const currentBalance = balance?.balance ?? 0;
   const uploadCount = user?.uploadCount ?? 0;
   const uploadLimit = isUnlocked ? Infinity : FREE_TIER_UPLOAD_LIMIT;
+
+  // F10-3 Dead token fix INITIAL 2000: user baru dapat 2000 balance gratis ~20 generate.
+  // canGenerate harus true jika balance >= MIN_GENERATE_CHARGE (50) meski belum unlock.
+  // Untuk 15 generate pertama, jangan block meski isUnlocked false.
+  // TODO trial Rp1k: promo topup 1k bisa unlock — cek MIN_TOPUP comment di token-constants.
+  const canGenerate = isUnlocked || currentBalance >= MIN_GENERATE_CHARGE;
 
   return {
     isUnlocked,
     unlockedAt: balance?.unlockedAt ?? null,
     uploadCount,
     uploadLimit,
-    canGenerate: isUnlocked,
+    canGenerate,
     canUpload: isUnlocked || uploadCount < FREE_TIER_UPLOAD_LIMIT,
   };
 }

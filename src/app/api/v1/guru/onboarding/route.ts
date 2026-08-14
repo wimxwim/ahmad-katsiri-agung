@@ -6,7 +6,7 @@ import { onboardingProgress } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { validateCsrf } from "@/lib/csrf-server";
-import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
+import { checkRateLimitPerUser } from "@/lib/rate-limit";
 
 const STEPS = ["kursus", "upload", "kelas"] as const;
 
@@ -32,8 +32,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await requireGuru(request);
 
-    const ip = ipFromRequest(request);
-    const rl = await checkRateLimit(`onboarding:${ip}`, 30, 60_000);
+    const rl = await checkRateLimitPerUser(`onboarding:${session.userId}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
     let progress = await db.query.onboardingProgress.findFirst({
@@ -82,8 +81,7 @@ export async function POST(request: NextRequest) {
     if (csrfError) return csrfError;
     const session = await requireGuru(request);
 
-    const ip2 = ipFromRequest(request);
-    const rl2 = await checkRateLimit(`onboarding-write:${ip2}`, 10, 60_000);
+    const rl2 = await checkRateLimitPerUser(`onboarding-write:${session.userId}`, 10, 60_000);
     if (!rl2.allowed) return apiRateLimit(rl2.retryAfter);
 
     const { step } = OnboardingStepSchema.parse(await request.json());

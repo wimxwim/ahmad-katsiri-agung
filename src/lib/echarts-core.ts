@@ -29,20 +29,20 @@ echarts.use([
 ]);
 
 export const AKAL_THEME = {
-  color: ["#005231", "#0d7a4a", "#e67e22", "#c0392b"],
+  color: ["oklch(0.31 0.08 155)", "oklch(0.45 0.08 155)", "oklch(0.65 0.15 45)", "oklch(0.45 0.15 25)"],
   backgroundColor: "transparent",
   textStyle: {
     fontFamily: "Inter, sans-serif",
-    color: "#1a1a1a",
+    color: "var(--color-on-surface)",
   },
   grid: {
     containLabel: true,
   },
   tooltip: {
     backgroundColor: "rgba(255,255,255,0.95)",
-    borderColor: "rgba(27,107,69,0.15)",
+    borderColor: "var(--color-border-precision)",
     textStyle: {
-      color: "#1a1a1a",
+      color: "var(--color-on-surface)",
     },
   },
 };

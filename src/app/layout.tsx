@@ -12,6 +12,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { MainPaddingWrapper } from "@/components/layout/MainPaddingWrapper";
 import { ServiceWorkerRegister } from "@/components/layout/ServiceWorkerRegister";
+import { OfflineBanner } from "@/components/layout/OfflineBanner";
 import { Toaster } from "@/components/ui/Toaster";
 import "./globals.css";
 
@@ -57,6 +58,19 @@ export const metadata: Metadata = {
   authors: [{ name: "Ahmad Katsiri Agung, S.Pd." }],
   creator: "Ahmad Katsiri Agung, S.Pd.",
   publisher: "Ahmad Katsiri Agung",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icon.png", sizes: "180x180", type: "image/png" }],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "AKAL Center",
+  },
   openGraph: {
     type: "website",
     locale: "id_ID",
@@ -93,8 +107,7 @@ export const metadata: Metadata = {
     },
   },
   other: {
-    // TODO: Replace with actual Google Search Console verification token
-    "google-site-verification": "GSC_VERIFICATION_TOKEN_PLACEHOLDER",
+    ...(process.env.GSC_VERIFICATION_TOKEN ? { "google-site-verification": process.env.GSC_VERIFICATION_TOKEN } : {}),
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "black-translucent",
     "apple-mobile-web-app-title": "AKAL Center",
@@ -125,10 +138,12 @@ export default async function RootLayout({
   return (
       <html
         lang="id"
-        className={`${bricolageGrotesque.variable} ${inter.variable} ${amiri.variable} ${jetbrainsMono.variable} h-full antialiased`}
+        className={`${bricolageGrotesque.variable} ${inter.variable} ${amiri.variable} ${jetbrainsMono.variable} min-h-dvh antialiased`}
+        style={{ minHeight: "100dvh" } as React.CSSProperties}
       >
-      <body className="min-h-full flex flex-col font-body">
+      <body className="min-h-dvh flex flex-col font-body">
         <link rel="preconnect" href="https://www.googletagmanager.com" />
+        <link rel="apple-touch-icon" href="/icon.png" sizes="180x180" />
         <Script
           id="schema-web"
           type="application/ld+json"
@@ -184,6 +199,7 @@ export default async function RootLayout({
         >
           Lewati ke konten
         </a>
+        <OfflineBanner />
         <Providers cmsData={cmsData}>
           <Navbar />
           <BottomTabBar />

@@ -11,6 +11,10 @@ export const dynamic = "force-dynamic";
 
 const MAX_JAWABAN = 2000;
 
+function escapeHtml(str: string): string {
+  return str.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] as string);
+}
+
 async function findOwnedMateri(materiId: string, guruId: string) {
   const [row] = await db
     .select({ id: materiPublished.id })
@@ -89,9 +93,11 @@ export async function POST(
       .limit(1);
     if (!item) return apiError("Pertanyaan tidak ditemukan", 404);
 
+    const sanitizedJawaban = escapeHtml(jawaban.trim().slice(0, 2000));
+
     await db
       .update(materiDiskusi)
-      .set({ jawaban })
+      .set({ jawaban: sanitizedJawaban })
       .where(eq(materiDiskusi.id, diskusiId));
 
     return NextResponse.json({ success: true });

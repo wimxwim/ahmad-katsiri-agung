@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { aiGeneration, materiDiskusi, materiPublished } from "@/lib/db/schema";
 import { desc, eq, sql } from "drizzle-orm";
+import { cacheGet, cacheSet } from "@/lib/cache-layer";
 
 export const runtime = "nodejs";
+
+const DiskusiQuerySchema = z.object({
+  limit: z.coerce.number().min(1).max(100).default(50),
+});
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,6 +20,16 @@ export async function GET(request: NextRequest) {
 
     const rl = await checkRateLimitPerUser(`guru-diskusi:${session.userId}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
+
+    const parsed = DiskusiQuerySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams.entries()));
+    if (!parsed.success) return apiError(parsed.error.issues[0]?.message || "Parameter tidak valid", 400);
+    const { limit } = parsed.data;
+
+    const cacheKey = `diskusi:guru:${session.userId}:limit:${limit}`;
+    const cached = await cacheGet<{ data: unknown[]; total: number; belumDijawab: number }>(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, { headers: { "Cache-Control": "private, max-age=15, stale-while-revalidate=30" } });
+    }
 
     const rows = await db
       .select({
@@ -34,14 +50,16 @@ export async function GET(request: NextRequest) {
       .orderBy(
         sql`${materiDiskusi.jawaban} IS NULL DESC`,
         desc(materiDiskusi.createdAt),
-      );
+      )
+      .limit(100);
 
-    const belumDijawab = rows.filter((r) => r.jawaban === null).length;
+    // Apply requested limit (default 50) after hard cap 100
+    const limited = rows.slice(0, Math.min(limit, 100));
+    const belumDijawab = limited.filter((r) => r.jawaban === null).length;
 
-    return NextResponse.json(
-      { data: rows, total: rows.length, belumDijawab },
-      { headers: { "Cache-Control": "private, max-age=15, stale-while-revalidate=30" } },
-    );
+    const result = { data: limited, total: limited.length, belumDijawab };
+    await cacheSet(cacheKey, result, 15);
+    return NextResponse.json(result, { headers: { "Cache-Control": "private, max-age=15, stale-while-revalidate=30" } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Guru diskusi error:", e);
