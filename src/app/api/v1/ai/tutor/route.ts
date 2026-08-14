@@ -107,7 +107,7 @@ ATURAN PENTING:
             },
             { role: "user", content: sanitizedMessage },
           ],
-          { maxTokens: 300, model: process.env.AI_TUTOR_MODEL || "agnes-2.0-flash" }, // benchmark 2.88s 5/5 fastest+cheapest free model
+          { maxTokens: 300, model: process.env.AI_TUTOR_MODEL || "agnes-2.0-flash", complexity: "light" }, // benchmark 2.88s 5/5 fastest+cheapest free model
         );
 
         await db
@@ -122,11 +122,14 @@ ATURAN PENTING:
           })
           .where(eq(tutorChat.id, chat.id));
       } catch (err) {
+        const _msg = err instanceof Error ? err.message : "";
+        const _isPromptTooShort = _msg.includes("Prompt terlalu pendek");
+        // errorCode: PROMPT_TOO_SHORT when _isPromptTooShort
         await db
           .update(tutorChat)
           .set({
             status: "failed",
-            errorMessage: err instanceof Error ? err.message.slice(0, 500) : "AI unavailable",
+            errorMessage: _isPromptTooShort ? "Tulis minimal 10 karakter — coba jelaskan pertanyaanmu lebih lengkap" : err instanceof Error ? err.message.slice(0, 500) : "AI unavailable",
             updatedAt: new Date(),
           })
           .where(eq(tutorChat.id, chat.id));

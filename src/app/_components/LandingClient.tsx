@@ -161,7 +161,7 @@ export function LandingClient() {
   const searchParams = useSearchParams();
   const isSiswaPortal = searchParams?.get("portal") === "siswa";
   return (
-    <div className="bg-surface relative overflow-hidden">
+    <div className="bg-surface relative overflow-x-hidden">
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute -top-40 -right-40 h-[600px] w-[600px] rounded-full bg-primary/[0.03] blur-3xl" />
         <div className="absolute top-1/3 -left-40 h-[500px] w-[500px] rounded-full bg-tertiary/[0.02] blur-3xl" />
