@@ -240,18 +240,16 @@ async function handleDirectUpload(
       })
       .returning({ id: fileMateri.id });
 
-    const [gen] = await tx
-      .insert(aiGeneration)
-      .values({
-        fileMateriId: fm.id,
-        guruId: session.userId,
-        kursusId: resolvedKursusId,
-        sourceFileName: originalName,
-        status: "queued",
-        tingkat: kelasRow.tingkat,
-        fase: tingkatToFase(kelasRow.tingkat),
-      })
-      .returning({ id: aiGeneration.id });
+    let gen;
+    try {
+      [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued", tingkat: kelasRow.tingkat, fase: tingkatToFase(kelasRow.tingkat) }).returning({ id: aiGeneration.id });
+    } catch (insErr: any) {
+      const c = insErr?.cause ?? insErr;
+      if (c?.code === "42703") {
+        console.warn("[upload] tingkat/fase column missing, retry without");
+        [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
+      } else throw insErr;
+    }
 
     return { fileId: fm.id, generationId: gen.id };
   });
@@ -514,18 +512,16 @@ export async function POST(request: NextRequest) {
         })
         .returning({ id: fileMateri.id });
 
-      const [gen] = await tx
-        .insert(aiGeneration)
-        .values({
-          fileMateriId: fm.id,
-          guruId: session.userId!,
-          kursusId: resolvedKursusId,
-          sourceFileName: originalName,
-          status: "queued",
-          tingkat: kelasRow.tingkat,
-          fase: tingkatToFase(kelasRow.tingkat),
-        })
-        .returning({ id: aiGeneration.id });
+      let gen;
+      try {
+        [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId!, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued", tingkat: kelasRow.tingkat, fase: tingkatToFase(kelasRow.tingkat) }).returning({ id: aiGeneration.id });
+      } catch (insErr: any) {
+        const c = insErr?.cause ?? insErr;
+        if (c?.code === "42703") {
+          console.warn("[upload] tingkat/fase column missing, retry without");
+          [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId!, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
+        } else throw insErr;
+      }
 
       return { fileId: fm.id, generationId: gen.id };
     });
@@ -607,14 +603,20 @@ export async function POST(request: NextRequest) {
       try {
         const adapter = await getStorageAdapter("cleanup");
         await adapter.delete(imagekitFileId);
-      } catch (cleanupErr) {
-        console.error("Gagal menghapus file orphan di ImageKit:", cleanupErr);
-      }
+      } catch {}
     }
 
-    console.error("Upload error:", e);
-    const msg = e instanceof Error ? e.message : "Terjadi kesalahan server";
-    return apiError(msg, 500);
+    const cause = (e as any)?.cause ?? (e as any)?.originalError ?? e;
+    const pgCode = cause?.code;
+    const pgDetail = cause?.detail ?? cause?.message ?? "";
+    console.error("Upload error:", e, "cause:", cause, "pgCode:", pgCode, "pgDetail:", pgDetail);
+    if (pgCode === "42703" && String(pgDetail).includes("tingkat") || String((e as Error).message).includes("tingkat")) {
+      // missing column fallback handled in insert — don't leak
+    }
+    const friendly = pgCode === "23503" ? "Kursus atau kelas tidak valid — coba refresh halaman" : pgCode === "57014" ? "Waktu proses habis, coba lagi" : "Gagal menyimpan — coba lagi atau hubungi admin";
+    // don't leak Failed query
+    const msg = String((e as Error).message).startsWith("Failed query:") ? friendly + (pgDetail ? ` (${pgDetail})` : "") : (e as Error).message;
+    return apiError(msg, pgCode === "23503" ? 409 : 500);
   }
 }
 
