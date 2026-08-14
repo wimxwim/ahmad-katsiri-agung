@@ -173,7 +173,7 @@ export function LandingClient() {
       {/* ═══════════════════════════════════════════════ */}
       {/* HERO — ASYMMETRIC: LEFT TEXT, RIGHT VISUAL       */}
       {/* ═══════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32 lg:py-40">
+      <section className="py-12 sm:py-20 lg:py-32">
         <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-center">
             <motion.div
@@ -186,7 +186,7 @@ export function LandingClient() {
                 AKAL CENTER 2026
               </span>
 
-              <h1 className="mt-8 font-heading text-4xl font-bold leading-hero tracking-tight text-on-surface sm:text-5xl lg:text-7xl">
+              <h1 className="mt-8 font-heading text-[28px] font-bold leading-tight tracking-tight text-on-surface lg:text-6xl">
                 {isSiswaPortal ? (
                   <>Belajar PAI SMP/MTs - <span className="text-primary">materi, kuis, progres</span> dalam satu tempat</>
                 ) : (
@@ -219,7 +219,7 @@ export function LandingClient() {
               animate="visible"
               custom={1}
             >
-              <div className="rounded-[40px] border border-border-precision bg-white p-4 shadow-glass-xl">
+              <div className="rounded-[28px] border border-border-precision bg-white p-2.5 shadow-glass-xl sm:rounded-[40px] sm:p-4">
                 <div className="rounded-card border border-border-precision bg-[#052b19] p-5 text-white sm:p-6">
                   <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
                     <div>
@@ -262,7 +262,7 @@ export function LandingClient() {
       {/* ═══════════════════════════════════════════════ */}
       {/* VALUE PILLARS — BENTO GRID (2-COL ASYMMETRIC)   */}
       {/* ═══════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32">
+      <section className="py-12 sm:py-20 lg:py-32">
         <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8">
           <motion.div
             variants={fadeUp}
@@ -283,7 +283,7 @@ export function LandingClient() {
             </p>
           </motion.div>
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:gap-6">
+          <div className="mt-12 grid gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-6">
             {valuePillars.map((pillar, i) => {
               const Icon = pillar.icon;
               return (
@@ -323,7 +323,7 @@ export function LandingClient() {
       {/* ═══════════════════════════════════════════════ */}
       {/* TIGA DUNIA — 2-COL ZIG-ZAG                      */}
       {/* ═══════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32">
+      <section className="py-12 sm:py-20 lg:py-32">
         <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-center">
             <motion.div
@@ -378,7 +378,7 @@ export function LandingClient() {
               viewport={{ once: true, margin: "-100px" }}
               custom={2}
             >
-              <div className="rounded-[40px] border border-border-precision bg-white p-4 shadow-glass-xl">
+              <div className="rounded-[28px] border border-border-precision bg-white p-2.5 shadow-glass-xl sm:rounded-[40px] sm:p-4">
                 <div className="relative overflow-hidden rounded-card border border-border-precision bg-gradient-to-br from-primary to-[#003d24] p-8 text-white">
                   <div className="absolute right-0 top-0 h-64 w-64 translate-x-1/3 -translate-y-1/3 rounded-full bg-white/5 blur-3xl" />
                   <div className="relative space-y-6">
@@ -403,7 +403,7 @@ export function LandingClient() {
       {/* ═══════════════════════════════════════════════ */}
       {/* WORKFLOW PIPELINE — STAGGERED CARDS              */}
       {/* ═══════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32">
+      <section className="py-12 sm:py-20 lg:py-32">
         <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8">
           <motion.div
             variants={fadeUp}
@@ -424,7 +424,8 @@ export function LandingClient() {
             <Steps
               current={-1}
               direction="horizontal"
-              responsive
+              responsive={false}
+              className="max-sm:flex-col"
               items={pipeline.map((item) => {
                 const Icon = item.icon;
                 return {
@@ -445,7 +446,7 @@ export function LandingClient() {
       {/* ═══════════════════════════════════════════════ */}
       {/* KILLER FEATURE — DOUBLE-BEZEL ARCHITECTURE      */}
       {/* ═══════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32 lg:py-40">
+      <section className="py-12 sm:py-20 lg:py-32">
         <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8">
           <motion.div
             variants={fadeUp}
@@ -467,7 +468,7 @@ export function LandingClient() {
             viewport={{ once: true, margin: "-100px" }}
             custom={1}
           >
-            <div className="rounded-[40px] border border-border-precision bg-white p-4 shadow-glass-xl">
+            <div className="rounded-[28px] border border-border-precision bg-white p-2.5 shadow-glass-xl sm:rounded-[40px] sm:p-4">
               <div className="rounded-card border border-border-precision bg-gradient-to-br from-primary to-[#003d24] p-6 text-white sm:p-10 lg:p-14">
                 <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr] lg:items-center">
                   <div>
@@ -525,7 +526,7 @@ export function LandingClient() {
       {/* ═══════════════════════════════════════════════ */}
       {/* TRUST + SECURITY — 2-COL ASYMMETRIC             */}
       {/* ═══════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32">
+      <section className="py-12 sm:py-20 lg:py-32">
         <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
             <motion.div
@@ -579,7 +580,7 @@ export function LandingClient() {
       {/* ═══════════════════════════════════════════════ */}
       {/* PRICING + FAQ — DARK DOUBLE-BEZEL                */}
       {/* ═══════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32">
+      <section className="py-12 sm:py-20 lg:py-32">
         <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8">
           <motion.div
             variants={fadeUp}
@@ -588,7 +589,7 @@ export function LandingClient() {
             viewport={{ once: true, margin: "-100px" }}
             custom={0}
           >
-            <div className="rounded-[40px] border border-border-precision bg-white p-4 shadow-glass-xl">
+            <div className="rounded-[28px] border border-border-precision bg-white p-2.5 shadow-glass-xl sm:rounded-[40px] sm:p-4">
               <div className="rounded-card border border-border-precision bg-gradient-to-br from-primary to-[#003d24] p-6 text-white sm:p-10 lg:p-14">
                 <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
                   <div>
@@ -666,7 +667,7 @@ export function LandingClient() {
       {/* ═══════════════════════════════════════════════ */}
       {/* FAQ FULL — 2-COL GRID                           */}
       {/* ═══════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32">
+      <section className="py-12 sm:py-20 lg:py-32">
         <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8">
           <motion.div
             variants={fadeUp}
@@ -711,7 +712,7 @@ export function LandingClient() {
       {/* ═══════════════════════════════════════════════ */}
       {/* BOTTOM CTA — DOUBLE-BEZEL + BUTTON-IN-BUTTON     */}
       {/* ═══════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32 lg:py-40">
+      <section className="py-12 sm:py-20 lg:py-32">
         <div className="mx-auto max-w-7xl px-3 sm:px-5 lg:px-8">
           <motion.div
             variants={fadeUp}
@@ -720,7 +721,7 @@ export function LandingClient() {
             viewport={{ once: true, margin: "-100px" }}
             custom={0}
           >
-            <div className="rounded-[40px] border border-border-precision bg-white p-4 shadow-glass-xl">
+            <div className="rounded-[28px] border border-border-precision bg-white p-2.5 shadow-glass-xl sm:rounded-[40px] sm:p-4">
               <div className="rounded-card border border-border-precision bg-gradient-to-br from-primary to-[#003d24] p-8 text-center sm:p-14 lg:p-20">
                 <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-bold tracking-badge text-white/80">
                   MULAI SEKARANG

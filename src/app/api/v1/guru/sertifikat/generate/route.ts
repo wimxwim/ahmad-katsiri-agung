@@ -42,6 +42,10 @@ export async function POST(request: NextRequest) {
       return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
     }
 
+    if (!process.env.ENCRYPTION_SECRET) {
+      return apiError("Konfigurasi sertifikat belum tersedia", 503);
+    }
+
     const concRl = await checkConcurrentLimit(`sertifikat-gen:${session.userId}`, 1, 300_000);
     if (!concRl.allowed) {
       return apiError("Sedang ada generate sertifikat berjalan. Tunggu selesai.", 429);
@@ -52,17 +56,12 @@ export async function POST(request: NextRequest) {
         .select({
           siswaId: siswaKursus.siswaId,
           nama: users.nama,
-          quizCount: sql<number>`count(${quizAttempt.id})`.mapWith(Number),
+          quizCount: sql<number>`count(distinct ${quizAttempt.id})`.mapWith(Number),
           nilaiTerbaik: sql<number>`round(max(${quizAttempt.nilai}))`.mapWith(Number),
         })
         .from(siswaKursus)
         .innerJoin(users, eq(users.id, siswaKursus.siswaId))
-        .innerJoin(
-          quizPublished,
-          and(
-            eq(quizPublished.kursusId, kursusId),
-          ),
-        )
+        .leftJoin(quizPublished, eq(quizPublished.kursusId, kursusId))
         .leftJoin(
           quizAttempt,
           and(
@@ -75,7 +74,7 @@ export async function POST(request: NextRequest) {
         .groupBy(siswaKursus.siswaId, users.nama)
         .having(
           and(
-            sql`count(${quizAttempt.id}) > 0`,
+            sql`count(distinct ${quizAttempt.id}) > 0`,
             sql`round(max(${quizAttempt.nilai})) >= ${KKM}`,
           ),
         );
@@ -111,7 +110,7 @@ export async function POST(request: NextRequest) {
       let generated = 0;
 
       if (toInsert.length > 0) {
-        await db.insert(sertifikat).values(toInsert);
+        await db.insert(sertifikat).values(toInsert).onConflictDoNothing({ target: [sertifikat.siswaId, sertifikat.kursusId] });
         generated = toInsert.length;
       }
 

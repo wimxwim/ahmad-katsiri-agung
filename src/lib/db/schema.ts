@@ -412,7 +412,9 @@ export const sertifikat = pgTable(
   },
   (table) => [
     index("sertifikat_siswa_idx").on(table.siswaId),
+    index("sertifikat_kursus_idx").on(table.kursusId),
     index("sertifikat_sekolah_id_idx").on(table.sekolahId),
+    unique("sertifikat_siswa_kursus_unique").on(table.siswaId, table.kursusId),
   ]
 );
 

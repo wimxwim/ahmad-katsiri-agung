@@ -46,8 +46,13 @@ export default function SertifikatPage() {
       body: JSON.stringify({ kursusId }),
     });
     if (result.ok) {
-      setGenerated(kursusId);
-      setTimeout(() => setGenerated(null), 3000);
+      const d = (result.data as { generated?: number } | null) ?? ((result.raw as { data?: { generated?: number } })?.data ?? null);
+      if (d?.generated === 0) {
+        setError("Belum ada siswa eligible / sudah punya sertifikat");
+      } else {
+        setGenerated(kursusId);
+        setTimeout(() => setGenerated(null), 3000);
+      }
       await load();
     } else {
       setError(result.error);

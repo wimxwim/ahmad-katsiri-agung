@@ -330,7 +330,7 @@ export function DashboardLayoutClient({
           tabIndex={-1}
           className={cn(
             "flex-1 p-3 sm:p-5 lg:p-8",
-            bottomTabs && "pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))]",
+            bottomTabs && "pb-[calc(5rem+max(0.75rem,env(safe-area-inset-bottom,0px)))]",
           )}
         >
           <motion.div
@@ -350,7 +350,7 @@ export function DashboardLayoutClient({
       <Link
         href="/guru/buat"
         aria-label="Buat Kursus"
-        className="fixed right-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom,0px))] z-40 w-14 h-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-glass-lg lg:hidden hover:brightness-110 active:scale-[0.98] transition-all"
+        className="fixed right-3 sm:right-4 bottom-[calc(5.25rem+max(0.5rem,env(safe-area-inset-bottom,0px)))] z-30 w-12 sm:w-14 h-14 rounded-[20px] sm:rounded-2xl bg-primary text-white flex items-center justify-center shadow-glass-lg lg:hidden hover:brightness-110 active:scale-[0.98] transition-all"
       >
         <PlusCircle className="w-6 h-6" />
       </Link>
