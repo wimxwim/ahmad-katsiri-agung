@@ -11,12 +11,18 @@ interface TutorPollResult {
   status: "processing" | "done" | "failed";
   response?: string | null;
   errorMessage?: string | null;
+  modelName?: string | null;
+  tokenInput?: number;
+  tokenOutput?: number;
+  totalTokens?: number;
+  costEstimated?: number;
 }
 
 interface ChatMessage {
   id: string;
   role: "user" | "assistant" | "error";
   content: string;
+  usage?: { modelName?: string; tokenInput: number; tokenOutput: number; totalTokens: number; costEstimated: number } | null;
 }
 
 const SUGGESTION_CHIPS = [
@@ -38,6 +44,95 @@ function getErrorCode(raw: unknown): string | null {
   if (err && typeof err.code === "string") return err.code;
   if (typeof r.code === "string") return r.code;
   return null;
+}
+
+function renderInline(text: string): React.ReactNode[] {
+  const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const parts: React.ReactNode[] = [];
+  const regex = /\*\*(.+?)\*\*/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+  while ((match = regex.exec(escaped)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(<span key={key++}>{escaped.slice(lastIndex, match.index)}</span>);
+    }
+    parts.push(
+      <strong key={key++} className="font-semibold text-foreground">
+        {match[1]}
+      </strong>
+    );
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < escaped.length) {
+    parts.push(<span key={key++}>{escaped.slice(lastIndex)}</span>);
+  }
+  if (parts.length === 0) return [escaped];
+  return parts;
+}
+
+function ChatMarkdown({ content }: { content: string }) {
+  const lines = content.split("\n");
+  const elements: React.ReactNode[] = [];
+  let olBuffer: string[] = [];
+  let ulBuffer: string[] = [];
+  const flushOl = (k: number) => {
+    if (olBuffer.length === 0) return;
+    elements.push(
+      <ol key={`ol-${k}`} className="list-decimal ml-5 space-y-1.5 my-2">
+        {olBuffer.map((item, i) => (
+          <li key={i} className="leading-relaxed">
+            {renderInline(item)}
+          </li>
+        ))}
+      </ol>
+    );
+    olBuffer = [];
+  };
+  const flushUl = (k: number) => {
+    if (ulBuffer.length === 0) return;
+    elements.push(
+      <ul key={`ul-${k}`} className="list-disc ml-5 space-y-1.5 my-2">
+        {ulBuffer.map((item, i) => (
+          <li key={i} className="leading-relaxed">
+            {renderInline(item)}
+          </li>
+        ))}
+      </ul>
+    );
+    ulBuffer = [];
+  };
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushOl(idx);
+      flushUl(idx);
+      elements.push(<div key={`sp-${idx}`} className="h-2" />);
+      return;
+    }
+    if (/^\d+\.\s/.test(trimmed)) {
+      flushUl(idx);
+      olBuffer.push(trimmed.replace(/^\d+\.\s/, ""));
+      const next = lines[idx + 1]?.trim() ?? "";
+      if (!/^\d+\.\s/.test(next)) flushOl(idx);
+      return;
+    }
+    if (/^[-•]\s/.test(trimmed)) {
+      flushOl(idx);
+      ulBuffer.push(trimmed.replace(/^[-•]\s/, ""));
+      const next = lines[idx + 1]?.trim() ?? "";
+      if (!/^[-•]\s/.test(next)) flushUl(idx);
+      return;
+    }
+    flushOl(idx);
+    flushUl(idx);
+    elements.push(
+      <p key={`p-${idx}`} className="leading-relaxed">
+        {renderInline(trimmed)}
+      </p>
+    );
+  });
+  return <div className="space-y-1 break-words">{elements}</div>;
 }
 
 export default function AiTutorPage() {
@@ -136,6 +231,19 @@ export default function AiTutorPage() {
               id: crypto.randomUUID(),
               role: "assistant",
               content: data.response || "Maaf, AI tidak memberikan jawaban.",
+              usage:
+                typeof data.totalTokens === "number" &&
+                typeof data.tokenInput === "number" &&
+                typeof data.tokenOutput === "number" &&
+                typeof data.costEstimated === "number"
+                  ? {
+                      modelName: data.modelName ?? undefined,
+                      tokenInput: data.tokenInput,
+                      tokenOutput: data.tokenOutput,
+                      totalTokens: data.totalTokens,
+                      costEstimated: data.costEstimated,
+                    }
+                  : null,
             });
             return;
           }
@@ -268,8 +376,17 @@ export default function AiTutorPage() {
                 }
                 return (
                   <div key={m.id} className="flex">
-                    <div className="max-w-[85%] bg-white/60 backdrop-blur-xl border border-[rgba(27,107,69,0.15)] text-on-surface rounded-[20px] rounded-bl-md px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words">
-                      {m.content}
+                    <div className="max-w-[85%] bg-white/60 backdrop-blur-xl border border-[rgba(27,107,69,0.15)] text-on-surface rounded-[20px] rounded-bl-md px-4 py-2.5 text-sm break-words">
+                      <ChatMarkdown content={m.content} />
+                      {m.usage && (
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-border-precision/40 pt-2 text-[10px] leading-none text-on-surface-variant/60">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-1">🪙 {m.usage.totalTokens} token</span>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-1">masuk {m.usage.tokenInput} • keluar {m.usage.tokenOutput}</span>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-1">~Rp{m.usage.costEstimated}</span>
+                          {m.usage.modelName && <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-surface px-2 py-1">{m.usage.modelName}</span>}
+                          <span className="text-[10px] text-on-surface-variant/40">• Gratis untuk siswa, hanya info pemakaian</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

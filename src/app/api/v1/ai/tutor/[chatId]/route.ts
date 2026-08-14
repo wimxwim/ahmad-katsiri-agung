@@ -5,6 +5,7 @@ import { tutorChat } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { checkRateLimitPerUser } from "@/lib/rate-limit";
+import { calculateActualPrice } from "@/lib/token-service";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,11 @@ export async function GET(
       status: chat.status,
       response: chat.response,
       errorMessage: chat.errorMessage,
+      modelName: chat.modelName,
+      tokenInput: chat.tokenInput,
+      tokenOutput: chat.tokenOutput,
+      totalTokens: (chat.tokenInput || 0) + (chat.tokenOutput || 0),
+      costEstimated: calculateActualPrice(chat.tokenInput || 0, chat.tokenOutput || 0),
     });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
