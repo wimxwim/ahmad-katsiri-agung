@@ -22,6 +22,8 @@ import { checkRateLimitPerUser } from "@/lib/rate-limit";
 import { cacheGet, cacheSet, cacheKey } from "@/lib/cache-layer";
 import { db } from "@/lib/db";
 
+const CACHE_TTL = 30;
+
 export async function GET(request: NextRequest) {
   try {
     const session = await requireGuru(request);
@@ -44,7 +46,7 @@ export async function GET(request: NextRequest) {
     const cached = await cacheGet(cacheK);
     if (cached) {
       return NextResponse.json(cached, {
-        headers: { "Cache-Control": "private, max-age=120, stale-while-revalidate=300" },
+        headers: { "Cache-Control": `private, max-age=${CACHE_TTL}, stale-while-revalidate=300` },
       });
     }
 
@@ -669,8 +671,8 @@ export async function GET(request: NextRequest) {
         periode,
       },
     };
-    await cacheSet(cacheK, responseData, 120);
-    return NextResponse.json(responseData, { headers: { "Cache-Control": "private, max-age=120, stale-while-revalidate=300" } });
+    await cacheSet(cacheK, responseData, CACHE_TTL);
+    return NextResponse.json(responseData, { headers: { "Cache-Control": `private, max-age=${CACHE_TTL}, stale-while-revalidate=300` } });
   } catch (e) {
     if (e instanceof GuardError) return apiError(e.message, e.status);
     console.error("Analytics guru error:", e);

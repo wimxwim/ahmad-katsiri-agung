@@ -76,12 +76,27 @@ export async function GET(request: NextRequest) {
       );
     const readMap = new Map(reads.map((r) => [r.materiPublishedId, r]));
 
-    const data = visibleMateriList.map((m) => ({
-      ...m,
-      sudahDibaca: readMap.has(m.id),
-      selesai: readMap.get(m.id)?.selesai ?? false,
-      progressPersen: readMap.get(m.id)?.progressPersen ?? 0,
-    }));
+    const data = visibleMateriList.map((m) => {
+      let ringkasanParsed: string | null = m.ringkasan as unknown as string | null;
+      if (typeof ringkasanParsed === "string" && ringkasanParsed.trim().startsWith("{")) {
+        try {
+          const p = JSON.parse(ringkasanParsed) as Record<string, unknown>;
+          if (p && typeof p === "object" && !Array.isArray(p)) {
+            const cand = (p.ringkasan ?? p.text ?? p.summary) as unknown;
+            if (typeof cand === "string" && (cand as string).trim()) ringkasanParsed = cand as string;
+          } else if (typeof p === "string" && (p as string).trim()) {
+            ringkasanParsed = p as string;
+          }
+        } catch {}
+      }
+      return {
+        ...m,
+        ringkasan: ringkasanParsed,
+        sudahDibaca: readMap.has(m.id),
+        selesai: readMap.get(m.id)?.selesai ?? false,
+        progressPersen: readMap.get(m.id)?.progressPersen ?? 0,
+      };
+    });
 
     const response = NextResponse.json({ data });
     response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60");

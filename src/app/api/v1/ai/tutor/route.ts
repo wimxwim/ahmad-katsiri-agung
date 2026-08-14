@@ -40,12 +40,6 @@ export async function POST(request: NextRequest) {
       return apiError("RATE_LIMITED", "Terlalu banyak pertanyaan, tunggu sebentar", undefined, 429);
     }
 
-    concKey = `ai-tutor:${session.userId}`;
-    const concurrent = await checkConcurrentLimit(concKey, 1, 180_000);
-    if (!concurrent.allowed) {
-      return apiError("CONCURRENT_LIMIT", "Tunggu jawaban AI sebelumnya selesai", undefined, 429);
-    }
-
     const body = await request.json();
     const parsed = TutorSchema.safeParse(body);
     if (!parsed.success) {
@@ -57,6 +51,12 @@ export async function POST(request: NextRequest) {
     const sanitizedMessage = sanitizeUserText(message);
     if (sanitizedMessage.trim().length < 10) {
       return apiError("PROMPT_TOO_SHORT", "Pesan terlalu pendek, tulis minimal 10 karakter", undefined, 400);
+    }
+
+    concKey = `ai-tutor:${session.userId}`;
+    const concurrent = await checkConcurrentLimit(concKey, 1, 180_000);
+    if (!concurrent.allowed) {
+      return apiError("CONCURRENT_LIMIT", "Tunggu jawaban AI sebelumnya selesai", undefined, 429);
     }
 
     // find enrolled courses (scoped to kursusId when provided)

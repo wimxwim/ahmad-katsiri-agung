@@ -21,6 +21,22 @@ import { cn } from "@/lib/utils";
 import { getCached, setCache } from "@/lib/data-cache";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
+function parseRingkasan(v: string | null): string | null {
+  if (!v || typeof v !== "string") return v;
+  const t = v.trim();
+  if (!t.startsWith("{") && !t.startsWith('"')) return v;
+  try {
+    const p = JSON.parse(t) as unknown;
+    if (typeof p === "string" && p.trim()) return p;
+    if (p && typeof p === "object" && !Array.isArray(p)) {
+      const r = p as Record<string, unknown>;
+      const cand = (r.ringkasan ?? r.text ?? r.summary) as unknown;
+      if (typeof cand === "string" && cand.trim()) return cand;
+    }
+  } catch {}
+  return v;
+}
+
 interface MateriItem {
   id: string;
   judul: string;
@@ -298,7 +314,7 @@ function MateriContent() {
                   </h3>
                   {m.ringkasan && (
                     <p className="text-xs text-on-surface-variant mt-0.5 line-clamp-1">
-                      {m.ringkasan}
+                      {parseRingkasan(m.ringkasan)}
                     </p>
                   )}
                   {m.sudahDibaca && !m.selesai && (

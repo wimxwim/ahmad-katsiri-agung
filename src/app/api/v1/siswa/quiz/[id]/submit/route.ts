@@ -257,6 +257,16 @@ export async function POST(
         totalSoal: soals.length,
       }).catch(err => console.error("Quiz processor failed:", err));
     });
+    // invalidate analytics cache (TTL 30s already, but clear stale guru entries on new attempt)
+    after(async () => {
+      try {
+        const { getRedis } = await import("@/lib/redis");
+        const r = getRedis();
+        if (!r) return;
+        const keys = await (r as unknown as { keys: (p: string) => Promise<string[]> }).keys("cache:analytics:guru:*");
+        if (keys.length) await r.del(...keys);
+      } catch {}
+    });
 
     await appendEvent(`quiz:${id}`, "quiz.attempt_submitted", {
       siswaId: session.userId,

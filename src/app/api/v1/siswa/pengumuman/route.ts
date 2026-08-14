@@ -3,7 +3,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { pengumuman, siswaKursus, users } from "@/lib/db/schema";
-import { desc, eq, inArray, or } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, or } from "drizzle-orm";
 import { requireSiswa, GuardError } from "@/lib/route-guard-v2";
 
 export async function GET(request: NextRequest) {
@@ -23,6 +23,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ data: [] });
     }
 
+    const now = new Date();
+
     const rows = await db
       .select({
         id: pengumuman.id,
@@ -38,9 +40,10 @@ export async function GET(request: NextRequest) {
       .from(pengumuman)
       .leftJoin(users, eq(pengumuman.guruId, users.id))
       .where(
-        or(
-          eq(pengumuman.target, "SEMUA"),
-          inArray(pengumuman.kursusId, enrolledIds),
+        and(
+          or(eq(pengumuman.target, "SEMUA"), eq(pengumuman.target, "SISWA")),
+          or(isNull(pengumuman.expiresAt), gte(pengumuman.expiresAt, now)),
+          or(isNull(pengumuman.kursusId), inArray(pengumuman.kursusId, enrolledIds)),
         ),
       )
       .orderBy(desc(pengumuman.isPinned), desc(pengumuman.publishedAt))

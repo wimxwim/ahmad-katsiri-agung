@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
@@ -45,6 +45,9 @@ export async function POST(
 
     const body = await request.json().catch(() => ({}));
     const jawaban: Record<string, string> = body.jawaban || {};
+    if (!jawaban || Object.keys(jawaban).length === 0) {
+      return apiError("Isi jawaban dulu sebelum submit", 400, { code: "EMPTY_ANSWER" });
+    }
 
     const soals = await db
       .select({ id: soalPublished.id, kunci: soalPublished.kunci })
@@ -105,6 +108,16 @@ export async function POST(
       quizSessionId: qs.id,
       answers: answersForProcessor,
     }).catch(err => console.error("Soal practice processor failed:", err));
+    // invalidate analytics cache
+    after(async () => {
+      try {
+        const { getRedis } = await import("@/lib/redis");
+        const r = getRedis();
+        if (!r) return;
+        const keys = await (r as unknown as { keys: (p: string) => Promise<string[]> }).keys("cache:analytics:guru:*");
+        if (keys.length) await r.del(...keys);
+      } catch {}
+    });
 
     return NextResponse.json({
       data: { nilai, jumlahBenar: benar, jumlahSalah: salah, totalSoal: soals.length, detail },
