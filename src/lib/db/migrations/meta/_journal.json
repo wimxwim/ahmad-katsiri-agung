@@ -407,6 +407,13 @@
       "when": 1786580913923,
       "tag": "0057_sync_snapshot",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "0058",
+      "when": "2026-08-14T00:00:00.000Z",
+      "tag": "0058_add_missing_ai_generation_columns",
+      "breakpoints": true
     }
   ]
 }

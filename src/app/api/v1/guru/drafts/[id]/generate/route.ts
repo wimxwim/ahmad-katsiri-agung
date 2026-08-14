@@ -35,6 +35,14 @@ export const maxDuration = 300;
 
 const MAX_CONCURRENT_PER_GURU = 1;
 
+function isMissingColumnError(e: unknown): boolean {
+  const err = e as { code?: string; cause?: unknown; message?: string };
+  const cause = err?.cause as { code?: string; message?: string } | undefined;
+  const code = cause?.code ?? err?.code;
+  const msg = String(err?.message ?? (e as Error)?.message ?? String(e));
+  return code === "42703" || msg.includes("does not exist") || msg.includes("charged_amount");
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -313,11 +321,26 @@ export async function POST(
     }
 
     // F1-5: persist chargedAmount to ai_generation.charged_amount before after() so cron recovery can refund
-    await db
-      .update(aiGeneration)
-      .set({ chargedAmount, updatedAt: new Date() })
-      .where(eq(aiGeneration.id, id))
-      .catch((persistErr) => console.error("Failed to persist chargedAmount:", persistErr));
+    try {
+      await db
+        .update(aiGeneration)
+        .set({ chargedAmount, updatedAt: new Date() })
+        .where(eq(aiGeneration.id, id));
+    } catch (e: unknown) {
+      if (isMissingColumnError(e)) {
+        console.warn("[generate] 42703 charged_amount missing, retry without chargedAmount");
+        try {
+          await db
+            .update(aiGeneration)
+            .set({ updatedAt: new Date() })
+            .where(eq(aiGeneration.id, id));
+        } catch (retryErr) {
+          console.error("Failed to persist chargedAmount (retry without column):", retryErr);
+        }
+      } else {
+        console.error("Failed to persist chargedAmount:", e);
+      }
+    }
 
     const guruId = session.userId!;
     const finalText = sourceText;

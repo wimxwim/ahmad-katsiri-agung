@@ -14,6 +14,14 @@ import {
 } from "@/lib/ai-sanitizer";
 import { incrementUsage } from "@/lib/quota-guard";
 
+function isMissingColumnError(e: unknown): boolean {
+  const err = e as { code?: string; cause?: unknown; message?: string };
+  const cause = err?.cause as { code?: string; message?: string } | undefined;
+  const code = cause?.code ?? err?.code;
+  const msg = String(err?.message ?? (e as Error)?.message ?? String(e));
+  return code === "42703" || msg.includes("does not exist");
+}
+
 const PROMPT_INJECTION_PATTERNS = [
   /ignore\s+(all\s+)?(previous|prior|above)\s+(instructions?|prompts?|commands?)/gi,
   /forget\s+(all\s+)?(previous|prior|above)\s+(instructions?|prompts?|commands?)/gi,
@@ -388,7 +396,15 @@ export async function runGeneration(generationId: string, fileBytes: Buffer, ext
       console.log(`[ai-generator] coverage: ${coverage.percentage}% (${coverage.covered}/${coverage.total})`);
       if (coverage.percentage < 90) console.warn(`[ai-generator] LOW COVERAGE — ${coverage.uncoveredSoal.length} soal tidak tertutup materi`);
     }
-    const updated = await withTimeout(db.update(aiGeneration).set({ status: "ready", materiStatus: "draft", quizStatus: "draft", soalStatus: soalParsed ? "draft" : "not_generated", materiJudul: materiParsed.judul, materiKonten: JSON.stringify({ ringkasan: materiParsed.ringkasan, pendahuluan: materiParsed.pendahuluan, konten: materiParsed.konten, poinPenting: materiParsed.poinPenting }), quizJudul: quizParsed.judul, quizSoal: quizParsed.soal, soalItems: soalParsed?.soal ?? [], errorMessage: soalParsed ? null : "Soal AI belum valid. Materi dan quiz tetap siap direview; gunakan regenerate soal dari halaman draft.", tokenInput: tokensIn, tokenOutput: tokensOut, modelName: typeof getModelName() === 'string' ? getModelName() : String(getModelName() ?? 'unknown'), updatedAt: new Date() }).where(eq(aiGeneration.id, generationId)).returning(), SAVE_TIMEOUT_MS, "save");
+    let updated;
+    try {
+      updated = await withTimeout(db.update(aiGeneration).set({ status: "ready", materiStatus: "draft", quizStatus: "draft", soalStatus: soalParsed ? "draft" : "not_generated", materiJudul: materiParsed.judul, materiKonten: JSON.stringify({ ringkasan: materiParsed.ringkasan, pendahuluan: materiParsed.pendahuluan, konten: materiParsed.konten, poinPenting: materiParsed.poinPenting }), quizJudul: quizParsed.judul, quizSoal: quizParsed.soal, soalItems: soalParsed?.soal ?? [], errorMessage: soalParsed ? null : "Soal AI belum valid. Materi dan quiz tetap siap direview; gunakan regenerate soal dari halaman draft.", tokenInput: tokensIn, tokenOutput: tokensOut, modelName: typeof getModelName() === 'string' ? getModelName() : String(getModelName() ?? 'unknown'), updatedAt: new Date() }).where(eq(aiGeneration.id, generationId)).returning(), SAVE_TIMEOUT_MS, "save");
+    } catch (e: unknown) {
+      if (isMissingColumnError(e)) {
+        console.warn("[ai-generator] 42703 charged_amount/token columns missing, retry without");
+        updated = await withTimeout(db.update(aiGeneration).set({ status: "ready", materiStatus: "draft", quizStatus: "draft", soalStatus: soalParsed ? "draft" : "not_generated", materiJudul: materiParsed.judul, materiKonten: JSON.stringify({ ringkasan: materiParsed.ringkasan, pendahuluan: materiParsed.pendahuluan, konten: materiParsed.konten, poinPenting: materiParsed.poinPenting }), quizJudul: quizParsed.judul, quizSoal: quizParsed.soal, soalItems: soalParsed?.soal ?? [], errorMessage: soalParsed ? null : "Soal AI belum valid. Materi dan quiz tetap siap direview; gunakan regenerate soal dari halaman draft.", updatedAt: new Date() }).where(eq(aiGeneration.id, generationId)).returning(), SAVE_TIMEOUT_MS, "save");
+      } else throw e;
+    }
     await appendEvent(`gen:${gen.guruId}`, "gen.ready", { generationId, tokensIn, tokensOut, model: getModelName() });
     try { await db.insert(aiRequests).values({ userId: gen.guruId, model: getModelName(), provider: "nararouter", requestType: "generation", promptTokens: tokensIn, completionTokens: tokensOut, totalTokens: tokensIn + tokensOut }); const guru = await db.query.users.findFirst({ where: eq(users.id, gen.guruId) }); const guruRole = guru?.role ?? "GURU"; const quota = await db.query.quotas.findFirst({ where: and(eq(quotas.role, guruRole), eq(quotas.resourceType, "ai_generation"), eq(quotas.isActive, true)) }); if (quota) await incrementUsage(gen.guruId, quota.id); } catch {}
     const u = updated[0];
@@ -425,6 +441,13 @@ export async function runGenerationFromText(generationId: string, sourceText: st
   const tokensIn = materiRes.tokensIn + quizRes.tokensIn + soalRes.tokensIn;
   const tokensOut = materiRes.tokensOut + quizRes.tokensOut + soalRes.tokensOut;
   if (soalParsed && materiParsed) { const materiStr = JSON.stringify({ ringkasan: materiParsed.ringkasan, pendahuluan: materiParsed.pendahuluan, konten: materiParsed.konten, poinPenting: materiParsed.poinPenting }); const coverage = validateCoverage(materiStr, soalParsed.soal); console.log(`[ai-generator] coverage: ${coverage.percentage}% (${coverage.covered}/${coverage.total})`); if (coverage.percentage < 90) console.warn(`[ai-generator] LOW COVERAGE — ${coverage.uncoveredSoal.length} soal tidak tertutup materi`); }
-  await db.update(aiGeneration).set({ status: "ready", materiStatus: "draft", quizStatus: "draft", soalStatus: soalParsed ? "draft" : "not_generated", materiJudul: materiParsed.judul, materiKonten: JSON.stringify({ ringkasan: materiParsed.ringkasan, pendahuluan: materiParsed.pendahuluan, konten: materiParsed.konten, poinPenting: materiParsed.poinPenting }), quizJudul: quizParsed.judul, quizSoal: quizParsed.soal, soalItems: soalParsed?.soal ?? [], errorMessage: soalParsed ? null : "Soal belum valid. Materi dan quiz siap direview.", tokenInput: tokensIn, tokenOutput: tokensOut, modelName: typeof getModelName() === 'string' ? getModelName() : String(getModelName() ?? 'unknown'), tingkat: tingkat ?? null, fase: tingkat ? tingkatToFase(tingkat) : null, updatedAt: new Date() }).where(eq(aiGeneration.id, generationId));
+  try {
+    await db.update(aiGeneration).set({ status: "ready", materiStatus: "draft", quizStatus: "draft", soalStatus: soalParsed ? "draft" : "not_generated", materiJudul: materiParsed.judul, materiKonten: JSON.stringify({ ringkasan: materiParsed.ringkasan, pendahuluan: materiParsed.pendahuluan, konten: materiParsed.konten, poinPenting: materiParsed.poinPenting }), quizJudul: quizParsed.judul, quizSoal: quizParsed.soal, soalItems: soalParsed?.soal ?? [], errorMessage: soalParsed ? null : "Soal belum valid. Materi dan quiz siap direview.", tokenInput: tokensIn, tokenOutput: tokensOut, modelName: typeof getModelName() === 'string' ? getModelName() : String(getModelName() ?? 'unknown'), tingkat: tingkat ?? null, fase: tingkat ? tingkatToFase(tingkat) : null, updatedAt: new Date() }).where(eq(aiGeneration.id, generationId));
+  } catch (e: unknown) {
+    if (isMissingColumnError(e)) {
+      console.warn("[ai-generator] 42703 charged_amount/tingkat/fase missing, retry without");
+      await db.update(aiGeneration).set({ status: "ready", materiStatus: "draft", quizStatus: "draft", soalStatus: soalParsed ? "draft" : "not_generated", materiJudul: materiParsed.judul, materiKonten: JSON.stringify({ ringkasan: materiParsed.ringkasan, pendahuluan: materiParsed.pendahuluan, konten: materiParsed.konten, poinPenting: materiParsed.poinPenting }), quizJudul: quizParsed.judul, quizSoal: quizParsed.soal, soalItems: soalParsed?.soal ?? [], errorMessage: soalParsed ? null : "Soal belum valid. Materi dan quiz siap direview.", updatedAt: new Date() }).where(eq(aiGeneration.id, generationId));
+    } else throw e;
+  }
   await appendEvent(`gen:${guruId}`, "gen.ready", { generationId, tokensIn, tokensOut, model: getModelName() });
 }
