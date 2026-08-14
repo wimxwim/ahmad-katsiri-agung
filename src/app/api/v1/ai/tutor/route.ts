@@ -12,6 +12,7 @@ import { tutorChat, siswaKursus, kursus } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { chatWithFallback } from "@/lib/ai";
+import { sanitizeUserText } from "@/lib/ai-generator";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -53,6 +54,11 @@ export async function POST(request: NextRequest) {
 
     const { message, kursusId } = parsed.data;
 
+    const sanitizedMessage = sanitizeUserText(message);
+    if (sanitizedMessage.trim().length < 10) {
+      return apiError("PROMPT_TOO_SHORT", "Pesan terlalu pendek, tulis minimal 10 karakter", undefined, 400);
+    }
+
     // find enrolled courses (scoped to kursusId when provided)
     const whereKursus = [eq(siswaKursus.siswaId, session.userId!), eq(siswaKursus.status, "AKTIF")];
     if (kursusId) whereKursus.push(eq(siswaKursus.kursusId, kursusId));
@@ -77,7 +83,7 @@ export async function POST(request: NextRequest) {
       .values({
         userId: session.userId,
         role: session.role,
-        prompt: message,
+        prompt: sanitizedMessage,
         status: "processing",
       })
       .returning();
@@ -99,9 +105,9 @@ ATURAN PENTING:
               role: "system",
               content: systemPrompt,
             },
-            { role: "user", content: message },
+            { role: "user", content: sanitizedMessage },
           ],
-          { maxTokens: 300, model: "mistral-medium-3-5" },
+          { maxTokens: 300, model: process.env.AI_TUTOR_MODEL || "agnes-2.0-flash" }, // benchmark 2.88s 5/5 fastest+cheapest free model
         );
 
         await db

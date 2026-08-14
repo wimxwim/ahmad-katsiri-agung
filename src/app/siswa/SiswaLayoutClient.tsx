@@ -76,7 +76,7 @@ export function SiswaLayoutClient({ children }: { children: React.ReactNode }) {
   if (isExamRoute) {
     return (
       <div className="min-h-dvh bg-surface">
-        <main className="min-h-dvh px-3 sm:px-5 lg:px-8 py-4">
+        <main id="main" tabIndex={-1} className="min-h-dvh px-3 sm:px-5 lg:px-8 py-4">
           <ToastProvider>{children}</ToastProvider>
         </main>
       </div>

@@ -57,7 +57,6 @@ export function sanitizeUserText(text: string): string {
   for (const pattern of PROMPT_INJECTION_PATTERNS) {
     sanitized = sanitized.replace(pattern, "[DIBLOKIR]");
   }
-  if (sanitized.length < 50) return sanitized;
   if (sanitized.trim().length === 0) {
     console.warn("[ai-generator] sanitizeUserText: empty after sanitasi — throwing");
     throw new Error("Prompt kosong setelah sanitasi — dokumen tidak valid");

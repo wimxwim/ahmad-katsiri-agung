@@ -132,8 +132,9 @@ export async function chatWithFallback(
   options: ChatOptions = {},
 ): Promise<ChatResult> {
   const userText = messages.find((m) => m.role === "user")?.content ?? "";
-  if (userText.trim().length < 100) {
-    console.error(`[ai] chatWithFallback blocked: user prompt too short (${userText.length} chars) — likely empty extractionText`);
+  const _complexity: AiTaskComplexity = options.model ? (options.model === getFlashModel() ? "light" : "heavy") : "heavy";
+  if (userText.trim().length < 10 || (_complexity === "heavy" && userText.trim().length < 100)) {
+    console.error(`[ai] chatWithFallback blocked: user prompt too short (${userText.length} chars) — likely empty extractionText complexity=${_complexity}`);
     throw new Error(`Prompt terlalu pendek (${userText.length} chars). Dokumen mungkin scan gambar tanpa teks — upload PDF text-based atau DOCX.`);
   }
   try {

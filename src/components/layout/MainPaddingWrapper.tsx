@@ -9,7 +9,7 @@ export function MainPaddingWrapper({ children }: { children: React.ReactNode }) 
   const isDashboard = DASHBOARD_PREFIXES.some((p) => pathname.startsWith(p));
 
   if (isDashboard) {
-    return <div className="flex-1 overflow-x-hidden">{children}</div>;
+    return <main id="main" tabIndex={-1} className="flex-1 overflow-x-hidden">{children}</main>;
   }
 
   return (
