@@ -30,6 +30,8 @@ export async function GET(request: NextRequest) {
     const rl = await checkRateLimitPerUser(`analytics:${guruId}`, 5, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
+    await db.execute(sql`SET LOCAL statement_timeout = '30000'`);
+
     const rawPeriode = request.nextUrl.searchParams.get("periode") || "28d";
     const periode: "7d" | "28d" | "90d" =
       rawPeriode === "7d" || rawPeriode === "28d" || rawPeriode === "90d" ? rawPeriode : "28d";

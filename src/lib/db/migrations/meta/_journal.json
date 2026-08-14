@@ -414,6 +414,13 @@
       "when": "2026-08-14T00:00:00.000Z",
       "tag": "0058_add_missing_ai_generation_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": "2026-08-14T23:05:00.000Z",
+      "tag": "0059_stabil_restore",
+      "breakpoints": true
     }
   ]
 }

@@ -2,11 +2,15 @@ import { NextRequest } from "next/server";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { TOPUP_PLANS, MIN_TOPUP, MAX_TOPUP } from "@/lib/token-constants";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`token-plans:${ip}`, 30, 60000);
+    if (!rl.allowed) return apiError("Rate limit", 429);
     await requireGuru(request);
     return apiSuccess({
       plans: TOPUP_PLANS,

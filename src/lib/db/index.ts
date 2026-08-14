@@ -3,6 +3,8 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
 
+// RLS: Supabase RLS policies exist (0014) but app uses service_role bypass (BYPASSRLS). Tenant isolation via app-level requireGuru/requireSiswa + guruId checks. SET LOCAL not needed for service_role. If switching to authenticated role, use dbWithRLS wrapper.
+
 type DrizzleDb = ReturnType<typeof drizzle<typeof schema>>;
 
 function createDb(): DrizzleDb {
@@ -10,7 +12,7 @@ function createDb(): DrizzleDb {
   // Higher pool max + allowExitOnIdle are safe because Supavisor handles session pooling.
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    max: 10, // max:10 untuk analytics 18 query paralel (Supavisor transaction mode aman)
+    max: 20, // max 20 untuk analytics 18 paralel + buffer
     // Supavisor transaction mode: prepared statements must be disabled
     // @ts-expect-error - pg PoolConfig types lag behind runtime `prepare` option
     prepare: false,

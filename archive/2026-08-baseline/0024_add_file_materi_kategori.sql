@@ -1,0 +1,1 @@
+ALTER TABLE file_materi ADD COLUMN IF NOT EXISTS kategori VARCHAR(20) NOT NULL DEFAULT 'materi';

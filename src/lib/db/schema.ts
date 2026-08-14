@@ -1241,6 +1241,7 @@ export const tokenTransactions = pgTable(
     index("token_transactions_type_idx").on(t.type),
     index("token_transactions_created_at_idx").on(t.createdAt),
     index("token_transactions_reference_idx").on(t.userId, t.type, t.referenceId),
+    uniqueIndex("token_transactions_reference_unique").on(t.userId, t.type, t.referenceId).where(sql`reference_id IS NOT NULL`),
   ],
 );
 

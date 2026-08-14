@@ -7,6 +7,7 @@ import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
+import { isFallbackMateri } from "@/lib/ai-generator";
 
 export async function POST(
   request: NextRequest,
@@ -29,6 +30,12 @@ export async function POST(
     if (row.materiStatus === "not_generated" || !row.materiKonten) {
       return apiError("Draft materi belum tersedia untuk di-approve", 400);
     }
+    try {
+      const parsed = row.materiKonten ? JSON.parse(row.materiKonten as string) : null;
+      if (parsed && isFallbackMateri(parsed)) {
+        return apiError("Draft mengandung fallback garbage, regenerate dulu", 400);
+      }
+    } catch {}
 
     const rl = await checkRateLimit(`draft-approve-materi:${session.userId}`, 30, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);

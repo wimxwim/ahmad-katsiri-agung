@@ -3,12 +3,16 @@ import { db } from "@/lib/db";
 import { tokenBalances, quotaUsages, quotas } from "@/lib/db/schema";
 import { eq, and, lt, isNull, or } from "drizzle-orm";
 import { apiError } from "@/lib/api-response";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
+  const ip = ipFromRequest(request);
+  const rl = await checkRateLimit(`cron:${ip}`, 10, 60000);
+  if (!rl.allowed) return apiError("Rate limit", 429);
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     return apiError("CRON_SECRET tidak dikonfigurasi di environment variable", 500);

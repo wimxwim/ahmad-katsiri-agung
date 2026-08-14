@@ -1,0 +1,1 @@
+ALTER TABLE kelas ADD COLUMN IF NOT EXISTS kursus_id UUID REFERENCES kursus(id);

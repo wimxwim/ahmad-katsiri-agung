@@ -1,12 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { sql } from "drizzle-orm";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`support-stats:${ip}`, 30, 60000);
+    if (!rl.allowed) return NextResponse.json({ error: "Rate limit" }, { status: 429 });
     const [siswa, guru, materi] = await Promise.all([
       db.execute<{ count: number }>(sql`SELECT COUNT(*)::int as count FROM users WHERE role = 'SISWA' AND deleted_at IS NULL`),
       db.execute<{ count: number }>(sql`SELECT COUNT(*)::int as count FROM users WHERE role IN ('GURU', 'ASISTEN_GURU') AND deleted_at IS NULL`),

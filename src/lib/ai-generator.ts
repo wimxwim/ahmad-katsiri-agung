@@ -61,7 +61,7 @@ function tingkatToFase(tingkat: number): string {
 }
 
 export function sanitizeUserText(text: string): string {
-  let sanitized = text;
+  let sanitized = text.normalize("NFKC").replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F]/g, "");
   for (const pattern of PROMPT_INJECTION_PATTERNS) {
     sanitized = sanitized.replace(pattern, "[DIBLOKIR]");
   }
@@ -131,8 +131,9 @@ function withTimeout<T>(p: Promise<T>, ms: number, stage: "extract" | "ai" | "ai
 }
 
 const EXTRACT_TIMEOUT_MS = 60_000;
-const AI_TIMEOUT_MS = 120_000;
-const SOAL_TIMEOUT_MS = 180_000;
+// Budget paralel: materi+quiz paralel 60s, soal 120s => total ~180s < deadline 240s
+const AI_TIMEOUT_MS = 60_000;
+const SOAL_TIMEOUT_MS = 120_000;
 const SAVE_TIMEOUT_MS = 15_000;
 
 function chatMateri(truncatedSource: string, tingkat: number | undefined): Promise<ChatResult> {
@@ -157,20 +158,31 @@ function fallbackQuestion(seed: string, index: number): string {
 const FALLBACK_PATTERNS = [/^Apa inti dari pernyataan berikut:/i, /^Mengapa siswa perlu memahami materi tentang/i];
 const MATERI_FALLBACK_PATTERNS = [/^Bagian \d+$/i, /Terapkan dalam kehidupan sehari-hari/i, /Memahami materi ini membantu/i, /Pokok pembahasan yang dipelajari/i, /Apa yang sudah kamu pahami/i];
 const QUIZ_FALLBACK_PATTERNS = [/^Apa inti dari pernyataan berikut/i, /^Mengapa siswa perlu memahami/i, /^Memahami inti materi/i, /^Mengabaikan pesan utama/i, /^Menghafal tanpa memahami/i, /^Menunda penerapan materi/i];
-function isFallbackSoal(soalItems: unknown[]): boolean {
+export function isFallbackSoal(soalItems: unknown[], expectedNonPGCount = 0): boolean {
   if (!Array.isArray(soalItems) || soalItems.length === 0) return false;
-  const sample = soalItems.slice(0, 3);
-  return sample.every((s: unknown) => { const q = (s as Record<string, unknown>)?.pertanyaan as string || ""; return FALLBACK_PATTERNS.some((p) => p.test(q)); });
+  const sample = soalItems.slice(0, Math.min(soalItems.length, 5));
+  const matched = sample.filter((s: unknown) => { const q = (s as Record<string, unknown>)?.pertanyaan as string || ""; return FALLBACK_PATTERNS.some((p) => p.test(q)); }).length;
+  const threshold = Math.ceil(sample.length / 2);
+  if (matched < threshold) return false;
+  if (expectedNonPGCount > 0) {
+    const nonPG = soalItems.filter((s: unknown) => { const t = (s as Record<string, unknown>)?.tipe as string; return t === "ISIAN" || t === "ESSAY"; }).length;
+    if (nonPG === 0) return true;
+  }
+  const allPG = soalItems.every((s: unknown) => (s as Record<string, unknown>)?.tipe === "PG");
+  if (allPG && matched >= threshold) return true;
+  return matched >= threshold;
 }
-function isFallbackMateri(materi: Record<string, unknown> | null | undefined): boolean {
+export function isFallbackMateri(materi: Record<string, unknown> | null | undefined): boolean {
   if (!materi || !materi.konten || !Array.isArray(materi.konten)) return false;
-  const sample = materi.konten.slice(0, 2);
-  return sample.every((k: unknown) => { const judul = (k as Record<string, unknown>)?.judul as string || ""; return MATERI_FALLBACK_PATTERNS.some((p) => p.test(judul)); });
+  const sample = materi.konten.slice(0, Math.min(materi.konten.length, 3));
+  const matched = sample.filter((k: unknown) => { const judul = (k as Record<string, unknown>)?.judul as string || ""; return MATERI_FALLBACK_PATTERNS.some((p) => p.test(judul)); }).length;
+  return matched >= Math.ceil(sample.length / 2);
 }
-function isFallbackQuiz(quizItems: unknown[]): boolean {
+export function isFallbackQuiz(quizItems: unknown[]): boolean {
   if (!Array.isArray(quizItems) || quizItems.length === 0) return false;
-  const sample = quizItems.slice(0, 3);
-  return sample.every((s: unknown) => { const q = (s as Record<string, unknown>)?.pertanyaan as string || ""; return QUIZ_FALLBACK_PATTERNS.some((p) => p.test(q)); });
+  const sample = quizItems.slice(0, Math.min(quizItems.length, 5));
+  const matched = sample.filter((s: unknown) => { const q = (s as Record<string, unknown>)?.pertanyaan as string || ""; return QUIZ_FALLBACK_PATTERNS.some((p) => p.test(q)); }).length;
+  return matched >= Math.ceil(sample.length / 2);
 }
 function fallbackAiResults(sourceText: string, quizCount = 5, soalCount = 20): [ChatResult, ChatResult, ChatResult] {
   const sentences = sentencePool(sourceText);

@@ -15,8 +15,11 @@ import { getStorageAdapter } from "@/lib/storage/StorageFactory";
 import { extractText } from "@/lib/text-extractor";
 import { incrementUploadCount, getSubscriptionStatus, requireNotSuspended } from "@/lib/token-service";
 import { MIN_TOPUP } from "@/lib/token-constants";
+import { z } from "zod";
 import crypto from "crypto";
 import JSZip from "jszip";
+
+const uuidSchema = z.string().uuid();
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -38,9 +41,10 @@ const ALLOWED_MIME = new Set([
 const MAX_SIZE = 10 * 1024 * 1024;
 
 const MAGIC_BYTES: { ext: string; bytes: number[] }[] = [
-  { ext: "pdf", bytes: [0x25, 0x50, 0x44, 0x46, 0x2d] },
+  { ext: "pdf", bytes: [0x25, 0x50, 0x44, 0x46, 0x2d] }, // %PDF- = 255044462d (5 bytes)
   { ext: "docx", bytes: [0x50, 0x4b, 0x03, 0x04] },
 ];
+// 504b0506 empty archive, 504b0708 spanned, d0cf11e0 OLE doc — handled via frontend validation, backend allows 504b03* only for docx (strict OOXML via JSZip)
 
 const IMAGEKIT_HOSTS = new Set(["ik.imagekit.io", "upload.imagekit.io"]);
 
@@ -48,6 +52,7 @@ function isAllowedImageKitUrl(raw: string): boolean {
   try {
     const u = new URL(raw);
     if (u.protocol !== "https:") return false;
+    if (u.port !== "" || u.username !== "" || u.password !== "") return false;
     if (IMAGEKIT_HOSTS.has(u.hostname)) return true;
     return u.hostname.endsWith(".ik.imagekit.io");
   } catch {
@@ -131,10 +136,12 @@ async function handleDirectUpload(
   if (typeof sizeBytes !== "number" || !Number.isFinite(sizeBytes) || sizeBytes <= 0) {
     return apiError("sizeBytes wajib berupa angka positif", 400);
   }
-  if (typeof kursusId !== "string" || !kursusId) return apiError("kursusId wajib diisi", 400);
-  if (typeof kelasId !== "string" || !kelasId) {
-    return apiError("kelasId wajib diisi. Pilih kelas tujuan sebelum upload.", 400);
-  }
+  const parsedKursus = uuidSchema.safeParse(kursusId);
+  if (!parsedKursus.success) return apiError("kursusId harus UUID", 400);
+  const parsedKelas = uuidSchema.safeParse(kelasId);
+  if (!parsedKelas.success) return apiError("kelasId harus UUID", 400);
+  const kursusIdStr = parsedKursus.data;
+  const kelasIdStr = parsedKelas.data;
 
   if (sizeBytes > MAX_SIZE) {
     return apiError(`File terlalu besar (maks 10MB)`, 413);
@@ -160,12 +167,12 @@ async function handleDirectUpload(
   const [ownedKursus] = await db
     .select({ id: kursus.id })
     .from(kursus)
-    .where(and(eq(kursus.id, kursusId), eq(kursus.guruId, session.userId)))
+    .where(and(eq(kursus.id, kursusIdStr), eq(kursus.guruId, session.userId)))
     .limit(1);
-  let resolvedKursusId = kursusId as string;
+  let resolvedKursusId = kursusIdStr;
   if (!ownedKursus) {
     // heal 1: coba cari kursus by id tanpa guruId filter (orphan guruId NULL)
-    const [orphanKursus] = await db.select({ id: kursus.id, guruId: kursus.guruId }).from(kursus).where(eq(kursus.id, kursusId as string)).limit(1);
+    const [orphanKursus] = await db.select({ id: kursus.id, guruId: kursus.guruId }).from(kursus).where(eq(kursus.id, kursusIdStr)).limit(1);
     if (orphanKursus) {
       if (!orphanKursus.guruId) {
         await db.update(kursus).set({ guruId: session.userId }).where(eq(kursus.id, orphanKursus.id));
@@ -184,12 +191,12 @@ async function handleDirectUpload(
   let [kelasRow] = await db
     .select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId })
     .from(kelas)
-    .where(and(eq(kelas.id, kelasId), eq(kelas.guruId, session.userId)))
+    .where(and(eq(kelas.id, kelasIdStr), eq(kelas.guruId, session.userId)))
     .limit(1);
-  let resolvedKelasId = kelasId as string;
+  let resolvedKelasId = kelasIdStr;
   if (!kelasRow) {
     // heal 1: coba cari kelas by id tanpa guruId filter (orphan guruId NULL)
-    const [orphanKelas] = await db.select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).from(kelas).where(eq(kelas.id, kelasId as string)).limit(1);
+    const [orphanKelas] = await db.select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).from(kelas).where(eq(kelas.id, kelasIdStr)).limit(1);
     if (orphanKelas) {
       // orphan atau guruId beda — klaim untuk guru ini jika belum ada yang claim
       if (!orphanKelas.guruId) {
@@ -314,6 +321,8 @@ async function handleDirectUpload(
   try {
     const res = await fetch(linkAkses, { signal: AbortSignal.timeout(90_000), redirect: "error" });
     if (!res.ok) throw new Error(`ImageKit download gagal (${res.status})`);
+    const cl = res.headers.get("content-length");
+    if (cl && parseInt(cl, 10) > MAX_SIZE) throw new Error(`File terlalu besar (maks 10MB)`);
     downloadedBytes = Buffer.from(await res.arrayBuffer());
 
     if (!(await isFileContentValid(downloadedBytes, detected))) {
@@ -421,10 +430,12 @@ export async function POST(request: NextRequest) {
     const kelasId = fd.get("kelasId");
 
     if (!(file instanceof File)) return apiError("File tidak ditemukan", 400);
-    if (typeof kursusId !== "string" || !kursusId) return apiError("kursusId wajib diisi", 400);
-    if (typeof kelasId !== "string" || !kelasId) {
-      return apiError("kelasId wajib diisi. Pilih kelas tujuan sebelum upload.", 400);
-    }
+    const parsedKursusForm = uuidSchema.safeParse(kursusId);
+    if (!parsedKursusForm.success) return apiError("kursusId harus UUID", 400);
+    const parsedKelasForm = uuidSchema.safeParse(kelasId);
+    if (!parsedKelasForm.success) return apiError("kelasId harus UUID", 400);
+    const kursusIdStr2 = parsedKursusForm.data;
+    const kelasIdStr2 = parsedKelasForm.data;
 
     if (file.size > MAX_SIZE) {
       return apiError(`File terlalu besar (maks 10MB)`, 413);
@@ -468,12 +479,12 @@ export async function POST(request: NextRequest) {
     const [ownedKursus] = await db
       .select({ id: kursus.id })
       .from(kursus)
-      .where(and(eq(kursus.id, kursusId), eq(kursus.guruId, session.userId!)))
+      .where(and(eq(kursus.id, kursusIdStr2), eq(kursus.guruId, session.userId!)))
       .limit(1);
-    let resolvedKursusId = kursusId as string;
+    let resolvedKursusId = kursusIdStr2;
     if (!ownedKursus) {
       // heal 1: coba cari kursus by id tanpa guruId filter (orphan guruId NULL)
-      const [orphanKursus] = await db.select({ id: kursus.id, guruId: kursus.guruId }).from(kursus).where(eq(kursus.id, kursusId as string)).limit(1);
+      const [orphanKursus] = await db.select({ id: kursus.id, guruId: kursus.guruId }).from(kursus).where(eq(kursus.id, kursusIdStr2)).limit(1);
       if (orphanKursus) {
         if (!orphanKursus.guruId) {
           await db.update(kursus).set({ guruId: session.userId! }).where(eq(kursus.id, orphanKursus.id));
@@ -492,12 +503,12 @@ export async function POST(request: NextRequest) {
     let [kelasRow] = await db
       .select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId })
       .from(kelas)
-      .where(and(eq(kelas.id, kelasId), eq(kelas.guruId, session.userId!)))
+      .where(and(eq(kelas.id, kelasIdStr2), eq(kelas.guruId, session.userId!)))
       .limit(1);
-    let resolvedKelasId = kelasId as string;
+    let resolvedKelasId = kelasIdStr2;
     if (!kelasRow) {
       // heal 1: coba cari kelas by id tanpa guruId filter (orphan guruId NULL)
-      const [orphanKelas] = await db.select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).from(kelas).where(eq(kelas.id, kelasId as string)).limit(1);
+      const [orphanKelas] = await db.select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).from(kelas).where(eq(kelas.id, kelasIdStr2)).limit(1);
       if (orphanKelas) {
         // orphan atau guruId beda — klaim untuk guru ini jika belum ada yang claim
         if (!orphanKelas.guruId) {

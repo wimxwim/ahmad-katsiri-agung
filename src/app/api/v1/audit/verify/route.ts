@@ -4,10 +4,14 @@ import { verifyChain } from "@/lib/audit-chain";
 import { tokenTransactions } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { requireSession } from "@/lib/route-guard-v2";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
+  const ip = ipFromRequest(request);
+  const rl = await checkRateLimit(`audit-verify:${ip}`, 30, 60000);
+  if (!rl.allowed) return NextResponse.json({ error: "Rate limit" }, { status: 429 });
   const session = await requireSession(request);
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

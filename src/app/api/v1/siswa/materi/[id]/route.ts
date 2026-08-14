@@ -61,17 +61,6 @@ export async function GET(
       return apiError("Materi ini untuk tingkat lain", 403);
     }
 
-    const [existing] = await db
-      .select()
-      .from(materiRead)
-      .where(
-        and(
-          eq(materiRead.siswaId, session.userId!),
-          eq(materiRead.materiPublishedId, id),
-        ),
-      )
-      .limit(1);
-
     const [nextRow] = await db
       .select({ id: materiPublished.id })
       .from(materiPublished)
@@ -101,17 +90,14 @@ export async function GET(
       )
       .then((r) => Number(r[0]?.count ?? 0));
 
-    if (existing) {
-      await db
-        .update(materiRead)
-        .set({ readAt: new Date() })
-        .where(eq(materiRead.id, existing.id));
-    } else {
-      await db.insert(materiRead).values({
-        siswaId: session.userId!,
-        materiPublishedId: id,
-      });
-    }
+    // ON CONFLICT (siswa_id, materi_published_id) DO UPDATE SET read_at = NOW()
+    await db.insert(materiRead).values({
+      siswaId: session.userId!,
+      materiPublishedId: id,
+    }).onConflictDoUpdate({
+      target: [materiRead.siswaId, materiRead.materiPublishedId],
+      set: { readAt: new Date() },
+    });
 
     return NextResponse.json({
       data: {
@@ -191,30 +177,15 @@ export async function POST(
     const rl = await checkRateLimit(`siswa-materi-progress:${session.userId}`, 60, 60_000);
     if (!rl.allowed) return apiRateLimit(rl.retryAfter);
 
-    const [existing] = await db
-      .select()
-      .from(materiRead)
-      .where(
-        and(
-          eq(materiRead.siswaId, session.userId!),
-          eq(materiRead.materiPublishedId, id),
-        ),
-      )
-      .limit(1);
-
-    if (existing) {
-      await db
-        .update(materiRead)
-        .set({ progressPersen, selesai, readAt: new Date() })
-        .where(eq(materiRead.id, existing.id));
-    } else {
-      await db.insert(materiRead).values({
-        siswaId: session.userId!,
-        materiPublishedId: id,
-        progressPersen,
-        selesai,
-      });
-    }
+    await db.insert(materiRead).values({
+      siswaId: session.userId!,
+      materiPublishedId: id,
+      progressPersen,
+      selesai,
+    }).onConflictDoUpdate({
+      target: [materiRead.siswaId, materiRead.materiPublishedId],
+      set: { progressPersen, selesai, readAt: new Date() },
+    });
 
     return NextResponse.json({ success: true });
   } catch (e) {

@@ -136,9 +136,9 @@ function GuruUploadContent() {
     // F11-5 magic bytes async check (header sniff)
     const reader = new FileReader();
     reader.onload = () => {
-      const bytes = new Uint8Array(reader.result as ArrayBuffer).slice(0, 4);
+      const bytes = new Uint8Array(reader.result as ArrayBuffer).slice(0, 5);
       const header = Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
-      const isPdf = header.startsWith("25504446");
+      const isPdf = header.startsWith("255044462d"); // pdf %PDF- = 255044462d (5 bytes, was 4 bytes 25504446)
       const isZip = header.startsWith("504b0304") || header.startsWith("504b0506") || header.startsWith("504b0708");
       if (!isPdf && !isZip) {
         setError("File tidak valid (magic bytes tidak sesuai PDF/DOCX)");
@@ -148,7 +148,7 @@ function GuruUploadContent() {
       setFile(f);
     };
     reader.onerror = () => setFile(f);
-    reader.readAsArrayBuffer(f.slice(0, 4));
+    reader.readAsArrayBuffer(f.slice(0, 5));
   }
 
   function onDrop(e: React.DragEvent) { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) pickFile(f); }

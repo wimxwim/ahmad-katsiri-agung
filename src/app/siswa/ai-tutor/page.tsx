@@ -32,7 +32,7 @@ const SUGGESTION_CHIPS = [
 ] as const;
 
 const POLL_INTERVAL_MS = 1500;
-const MAX_POLLS = 20;
+const MAX_POLLS = 40; // 1.5s x40 =60s — handle fallback mimo 120s (partial), keep UI responsive
 
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -149,6 +149,13 @@ export default function AiTutorPage() {
     if (el) el.scrollTop = el.scrollHeight;
   }, []);
 
+  const pausedRef = useRef(false);
+  useEffect(() => {
+    const onVisibilityChange = () => { pausedRef.current = document.hidden; };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
+
   useEffect(() => {
     scrollToBottom();
   }, [messages, thinking, scrollToBottom]);
@@ -215,6 +222,11 @@ export default function AiTutorPage() {
 
         for (let i = 0; i < MAX_POLLS; i++) {
           await sleep(POLL_INTERVAL_MS);
+          if (pausedRef.current || document.hidden) {
+            // visibilitychange pause: don't consume poll count while hidden
+            i--;
+            continue;
+          }
           const pollRes = await apiFetch<TutorPollResult>(
             `/api/v1/ai/tutor/${chatId}`
           );

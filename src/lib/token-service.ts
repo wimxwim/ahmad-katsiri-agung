@@ -322,26 +322,69 @@ export async function settleGenerationCost(
   referenceId?: string,
 ): Promise<{ actualPrice: number; refunded: number; additionalCharged: number }> {
   const actualPrice = calculateActualPrice(tokensIn, tokensOut);
+  if (actualPrice === preChargedAmount) return { actualPrice, refunded: 0, additionalCharged: 0 };
+  const settleRef = referenceId ? `settle:${referenceId}` : undefined;
+  const isRefund = actualPrice < preChargedAmount;
+  const diff = Math.abs(actualPrice - preChargedAmount);
+  const amount = isRefund ? diff : Math.min(diff, preChargedAmount);
+  const txType = isRefund ? "REFUND" : "DEDUCT";
+  const notes = isRefund
+    ? `Refund kelebihan biaya generate. Estimasi: Rp${preChargedAmount}, Aktual: Rp${actualPrice}`
+    : `Tambahan biaya generate. Estimasi: Rp${preChargedAmount}, Aktual: Rp${actualPrice}`;
 
-  if (actualPrice < preChargedAmount) {
-    const refund = preChargedAmount - actualPrice;
-    await refundBalance(userId, refund, {
-      notes: `Refund kelebihan biaya generate. Estimasi: Rp${preChargedAmount}, Aktual: Rp${actualPrice}`,
-      referenceId: referenceId ? `settle:${referenceId}` : undefined,
-    });
-    return { actualPrice, refunded: refund, additionalCharged: 0 };
+  const result = await db.transaction(async (tx) => {
+    if (settleRef) {
+      const [existing] = await tx
+        .select({ id: tokenTransactions.id })
+        .from(tokenTransactions)
+        .where(and(eq(tokenTransactions.userId, userId), eq(tokenTransactions.type, txType as "REFUND" | "DEDUCT"), eq(tokenTransactions.referenceId, settleRef)))
+        .limit(1);
+      if (existing) {
+        return { alreadySettled: true as const, actualPrice, refunded: isRefund ? amount : 0, additionalCharged: isRefund ? 0 : amount };
+      }
+    }
+    const [bal] = await tx
+      .select({ balance: tokenBalances.balance, totalTopup: tokenBalances.totalTopup, totalSpent: tokenBalances.totalSpent, lastTopupAt: tokenBalances.lastTopupAt, isUnlocked: tokenBalances.isUnlocked, unlockedAt: tokenBalances.unlockedAt })
+      .from(tokenBalances)
+      .where(eq(tokenBalances.userId, userId))
+      .for("update")
+      .limit(1);
+    const before = bal?.balance ?? 0;
+    if (!bal) {
+      await tx.insert(tokenBalances).values({ userId, balance: 0, totalTopup: 0, totalSpent: 0, isUnlocked: false }).onConflictDoNothing();
+    }
+    if (isRefund) {
+      await tx.update(tokenBalances).set({ balance: sql`${tokenBalances.balance} + ${amount}`, updatedAt: new Date() }).where(eq(tokenBalances.userId, userId));
+    } else {
+      if (before < amount) throw new InsufficientBalanceError(`Kuota tidak cukup untuk settle. Butuh Rp${amount}, saldo Rp${before}.`, before, amount);
+      await tx.update(tokenBalances).set({ balance: sql`${tokenBalances.balance} - ${amount}`, totalSpent: sql`${tokenBalances.totalSpent} + ${amount}`, updatedAt: new Date() }).where(eq(tokenBalances.userId, userId));
+    }
+    const [after] = await tx.select({ balance: tokenBalances.balance }).from(tokenBalances).where(eq(tokenBalances.userId, userId));
+    const afterBal = after?.balance ?? (isRefund ? before + amount : before - amount);
+    // Idempotent insert — ON CONFLICT DO NOTHING handles race between concurrent settle calls
+    await tx.insert(tokenTransactions).values({
+      userId,
+      type: txType as "REFUND" | "DEDUCT",
+      status: "COMPLETED",
+      amount,
+      balanceBefore: before,
+      balanceAfter: afterBal,
+      notes,
+      referenceId: settleRef ?? null,
+    }).onConflictDoNothing();
+    return { alreadySettled: false as const, actualPrice, refunded: isRefund ? amount : 0, additionalCharged: isRefund ? 0 : amount, before, afterBal };
+  });
+
+  if (!result.alreadySettled) {
+    await appendEvent(`token:${userId}`, isRefund ? "token.refunded" : "token.deducted", {
+      amount,
+      balanceBefore: (result as { before: number }).before,
+      balanceAfter: (result as { afterBal: number }).afterBal,
+      notes,
+      referenceId: settleRef ?? null,
+    }).catch(() => {});
   }
-
-  if (actualPrice > preChargedAmount) {
-    const additional = Math.min(actualPrice - preChargedAmount, preChargedAmount);
-    await deductBalance(userId, additional, {
-      notes: `Tambahan biaya generate. Estimasi: Rp${preChargedAmount}, Aktual: Rp${actualPrice}`,
-      referenceId: referenceId ? `settle:${referenceId}` : undefined,
-    });
-    return { actualPrice, refunded: 0, additionalCharged: additional };
-  }
-
-  return { actualPrice, refunded: 0, additionalCharged: 0 };
+  return { actualPrice, refunded: isRefund ? amount : 0, additionalCharged: isRefund ? 0 : amount };
 }
 
 export async function topUpBalance(

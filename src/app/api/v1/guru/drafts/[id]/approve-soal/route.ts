@@ -7,6 +7,7 @@ import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { validateCsrf } from "@/lib/csrf-server";
+import { isFallbackSoal } from "@/lib/ai-generator";
 
 export async function POST(
   request: NextRequest,
@@ -28,6 +29,9 @@ export async function POST(
     if (!row) return apiError("Draft tidak ditemukan", 404);
     if (row.soalStatus === "not_generated" || !row.soalItems) {
       return apiError("Draft soal belum tersedia untuk di-approve", 400);
+    }
+    if (Array.isArray(row.soalItems) && isFallbackSoal(row.soalItems as unknown[])) {
+      return apiError("Draft mengandung fallback garbage, regenerate dulu", 400);
     }
 
     const rl = await checkRateLimit(`draft-approve-soal:${session.userId}`, 30, 60_000);

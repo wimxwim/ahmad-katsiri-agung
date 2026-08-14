@@ -8,6 +8,7 @@ import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
 import { requireNotSuspended, SubscriptionLockedError } from "@/lib/token-service";
 import { validateCsrf } from "@/lib/csrf-server";
+import { isFallbackMateri, isFallbackQuiz, isFallbackSoal } from "@/lib/ai-generator";
 import { invalidateGuruCache } from "@/lib/dashboard-cache";
 
 export async function POST(
@@ -35,6 +36,18 @@ export async function POST(
     if (!row) return apiError("Draft tidak ditemukan", 404);
     if (row.status !== "ready" && row.status !== "rejected") {
       return apiError(`Draft belum siap untuk di-approve (status: ${row.status})`, 400);
+    }
+    if (row.materiKonten) {
+      try {
+        const parsed = JSON.parse(row.materiKonten as string);
+        if (parsed && isFallbackMateri(parsed)) return apiError("Draft mengandung fallback garbage, regenerate dulu", 400);
+      } catch {}
+    }
+    if (Array.isArray(row.soalItems) && isFallbackSoal(row.soalItems as unknown[])) {
+      return apiError("Draft mengandung fallback garbage, regenerate dulu", 400);
+    }
+    if (Array.isArray(row.quizSoal) && isFallbackQuiz(row.quizSoal as unknown[])) {
+      return apiError("Draft mengandung fallback garbage, regenerate dulu", 400);
     }
 
     await db

@@ -1,0 +1,1 @@
+ALTER TABLE kelas ALTER COLUMN kode_invite TYPE VARCHAR(8);

@@ -1,0 +1,1 @@
+ALTER TABLE "soal" ADD COLUMN IF NOT EXISTS "sekolah_id" uuid REFERENCES "sekolah"("id");

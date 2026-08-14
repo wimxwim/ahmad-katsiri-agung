@@ -4,11 +4,15 @@ import { apiError } from "@/lib/api-response";
 import { db } from "@/lib/db";
 import { tokenTransactions } from "@/lib/db/schema";
 import { eq, sql, and } from "drizzle-orm";
+import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {
+    const ip = ipFromRequest(request);
+    const rl = await checkRateLimit(`siswa-payment-balance:${ip}`, 30, 60000);
+    if (!rl.allowed) return apiError("Rate limit", 429);
     const session = await requireSiswa(request);
 
     const [balance] = await db

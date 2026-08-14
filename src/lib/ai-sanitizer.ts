@@ -182,9 +182,13 @@ const GeneratedSoalSchema = z.object({
   opsi: z
     .record(z.string(), z.string().transform((v) => cleanText(v, SAFE_TEXT_LIMITS.opsi)))
     .optional(),
-  kunci: z.string().transform((v) => cleanText(v, SAFE_TEXT_LIMITS.kunci)),
+  kunci: z.string().transform((v) => cleanText(v, SAFE_TEXT_LIMITS.kunci)).pipe(z.string().min(1)),
   penjelasan: z.string().transform((v) => cleanText(v, 500)).optional(),
   sourceSection: z.string().transform((v) => cleanText(v, 200)).optional(),
+}).superRefine((val, ctx) => {
+  if (val.tipe === "PG" && (!val.opsi || Object.keys(val.opsi).filter((k) => /^[A-D]$/.test(k)).length < 2)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "PG requires at least 2 opsi A-D", path: ["opsi"] });
+  }
 });
 
 const GeneratedQuizSchema = GeneratedSoalSchema;
@@ -201,7 +205,7 @@ export const MateriResultSchema = z.object({
   konten: z
     .array(
       z.object({
-        judul: z.string().transform((v) => cleanText(v, 200)),
+        judul: z.string().transform((v) => cleanText(v, 200)).pipe(z.string().min(1)),
         isi: z.string().transform((v) => cleanText(v, 3000)).pipe(z.string().min(20)),
         dalil: z.string().transform((v) => cleanText(v, 500)).nullable().optional(),
         contoh: z.string().transform((v) => cleanText(v, 500)).optional(),

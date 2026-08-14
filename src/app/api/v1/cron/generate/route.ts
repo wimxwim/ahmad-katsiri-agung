@@ -7,11 +7,13 @@ import { runGenerationFromText } from "@/lib/ai-generator";
 import { extractText, sanitizeText } from "@/lib/text-extractor";
 import { appendEvent } from "@/lib/event-store";
 import { apiError } from "@/lib/api-response";
+import { refundBalance } from "@/lib/token-service";
+import { releaseConcurrent, checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
-const BATCH_SIZE = 5;
+const BATCH_SIZE = 1;
 const RETRYABLE_ERRORS = ["timeout", "Timeout", "502", "503", "504", "ETIMEDOUT", "ECONNRESET", "fetch failed"];
 
 function isRetryable(errMsg: string): boolean {
@@ -19,6 +21,9 @@ function isRetryable(errMsg: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  const ip = ipFromRequest(request);
+  const rl = await checkRateLimit(`cron:${ip}`, 10, 60000);
+  if (!rl.allowed) return apiError("Rate limit", 429);
   const cronSecret = process.env.CRON_SECRET;
   if (!cronSecret) {
     return apiError("CRON_SECRET tidak dikonfigurasi di environment variable", 500);
@@ -34,7 +39,7 @@ export async function POST(request: NextRequest) {
 
   // Recover stuck generating rows (after() callback was killed by Vercel timeout)
   const stuck = await db
-    .select({ id: aiGeneration.id, guruId: aiGeneration.guruId })
+    .select({ id: aiGeneration.id, guruId: aiGeneration.guruId, chargedAmount: aiGeneration.chargedAmount })
     .from(aiGeneration)
     .where(
       and(
@@ -44,12 +49,20 @@ export async function POST(request: NextRequest) {
     )
     .limit(10);
   for (const row of stuck) {
+    const chargedAmount = (row as { chargedAmount?: number | null }).chargedAmount ?? null;
+    if (chargedAmount && chargedAmount > 0) {
+      try {
+        await refundBalance(row.guruId, chargedAmount, { notes: "Timeout recovery: generation stuck — token dikembalikan.", referenceId: `refund:${row.id}` });
+      } catch (e) {
+        console.warn(`[cron/generate] refund failed for stuck row ${row.id}:`, e instanceof Error ? e.message : String(e));
+      }
+    }
+    try { await releaseConcurrent(`gen:${row.guruId}`); } catch {}
     await db
       .update(aiGeneration)
-      .set({ status: "failed", errorMessage: "Timeout recovery: generation stuck", updatedAt: new Date() })
+      .set({ status: "failed", errorMessage: "Timeout recovery: generation stuck", leaseUntil: null, updatedAt: new Date() })
       .where(eq(aiGeneration.id, row.id));
-    // refund if there was a pre-charge — use chargedAmount if stored, otherwise skip
-    console.warn(`[cron/generate] recovered stuck row ${row.id}`);
+    console.warn(`[cron/generate] recovered stuck row ${row.id}${chargedAmount ? ` refunded ${chargedAmount}` : ""}`);
   }
 
   const LEASE_MINUTES = 5;
@@ -60,7 +73,7 @@ export async function POST(request: NextRequest) {
       FROM ai_generation
       WHERE (
         status = 'queued'
-        OR ((status = 'extracting' OR status = 'generating') AND lease_until IS NOT NULL AND lease_until < NOW())
+        OR ((status = 'extracting' OR status = 'generating') AND (lease_until IS NULL OR lease_until < NOW()))
       )
         AND materi_status = 'not_generated'
       ORDER BY created_at

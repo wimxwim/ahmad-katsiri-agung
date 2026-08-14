@@ -57,7 +57,7 @@ export async function POST(
     await requireNotSuspended(session.userId);
     const balance = await getBalance(session.userId);
     const isPremium = balance.isUnlocked === true;
-    const CONCURRENT_TTL = isPremium ? 3 * 60 * 1000 : 30 * 60 * 1000;
+    const CONCURRENT_TTL = isPremium ? 10*60*1000 : 5*60*1000; // free 5*60*1000, premium 10*60*1000
     const dailyLimit = isPremium ? PREMIUM_DAILY_GENERATE_LIMIT : DAILY_GENERATE_LIMIT;
     const { id } = await params;
 

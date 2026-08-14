@@ -82,7 +82,7 @@ function DraftsContent() {
   const [bulkResult, setBulkResult] = useState("");
   const { toast } = useToast();
   const loadingRef = useRef(false);
-  // F11-1 maxPoll 36x (~3 menit) counter + leaseUntil check
+  // F11-1 maxPoll 48x (~4 menit / 240s deadline) counter + leaseUntil check
   const pollCountRef = useRef(0);
   const [polling, setPolling] = useState(false);
   const [page, setPage] = useState(1);
@@ -341,7 +341,7 @@ function DraftsContent() {
     load();
   }, [load]);
 
-  // F11-1 polling stuck TTL 3 menit + leaseUntil: maxPoll 36x (~3 menit, 5s interval) + leaseUntil check
+  // F11-1 polling stuck TTL 4 menit + leaseUntil: maxPoll 48x (~4 menit, 5s interval, 5s x48 =240s = deadline) + leaseUntil check
   useEffect(() => {
     const hasProcessing = drafts.some((d) => d.status === "generating" || d.status === "extracting" || d.status === "queued");
     if (!hasProcessing) {
@@ -363,17 +363,17 @@ function DraftsContent() {
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
     const poll = () => {
-      // F11-1 TTL 3 menit: maxPoll 36x + leaseUntil expired check
+      if (paused || document.hidden) {
+        timer = setTimeout(poll, 15000);
+        return;
+      }
+      // F11-1 TTL 4 menit: maxPoll 48x + leaseUntil expired check (5s x48 =240s = deadline)
       pollCountRef.current += 1;
       const leaseExpired = drafts.some((draft) => draft.leaseUntil && new Date(draft.leaseUntil) < new Date());
-      if (pollCountRef.current > 36 || leaseExpired) {
+      if (pollCountRef.current > 48 || leaseExpired) {
         clearTimeout(timer);
         setPolling(false);
         setGenerateError("Proses terlalu lama, coba Buat AI Ulang");
-        return;
-      }
-      if (paused || document.hidden) {
-        timer = setTimeout(poll, 15000);
         return;
       }
       load().finally(() => {
@@ -463,7 +463,7 @@ function DraftsContent() {
           )}
           {polling && (
             <div role="status" aria-live="polite" className="mb-3 text-xs text-on-surface-variant flex items-center gap-2">
-              <Loader2 className="w-3 h-3 animate-spin" /> Memproses... polling {pollCountRef.current}/36 (~3 menit TTL)
+              <Loader2 className="w-3 h-3 animate-spin" /> Memproses... polling {pollCountRef.current}/48 (~4 menit TTL)
             </div>
           )}
           {extractedCount > 0 && !isFree && (
