@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <Suspense>
+    <Suspense fallback={<div className="min-h-[60vh] animate-pulse bg-surface" aria-busy="true" aria-label="Memuat beranda" />}>
       <LandingClient />
     </Suspense>
   );
