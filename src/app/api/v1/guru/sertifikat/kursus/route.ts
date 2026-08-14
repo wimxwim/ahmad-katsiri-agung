@@ -4,7 +4,8 @@ import { apiError, apiRateLimit } from "@/lib/api-response";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
 import { kursus, sertifikat, siswaKursus, quizAttempt, quizPublished } from "@/lib/db/schema";
-import { and, eq, sql, countDistinct } from "drizzle-orm";
+import { and, eq, sql, countDistinct, inArray } from "drizzle-orm";
+import { KKM } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +27,7 @@ export async function GET(request: NextRequest) {
         deskripsi: kursus.deskripsi,
       })
       .from(kursus)
-      .where(eq(kursus.guruId, session.userId))
-      .orderBy(sql`count(distinct ${sertifikat.id}) DESC`);
+      .where(eq(kursus.guruId, session.userId));
 
     if (kursusBase.length === 0) {
       return NextResponse.json({ success: true, data: [] });
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     const selesaiAgg = await db
       .select({
         kursusId: kursus.id,
-        totalSiswaSelesai: countDistinct(sql`case when ${quizAttempt.id} is not null then ${siswaKursus.siswaId} end`).as("totalSiswaSelesai"),
+        totalSiswaSelesai: countDistinct(sql`case when ${quizAttempt.id} is not null and ${quizAttempt.nilai} >= ${KKM} then ${siswaKursus.siswaId} end`).as("totalSiswaSelesai"),
       })
       .from(kursus)
       .leftJoin(siswaKursus, eq(siswaKursus.kursusId, kursus.id))
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
         and(
           eq(quizAttempt.siswaId, siswaKursus.siswaId),
           eq(quizAttempt.quizPublishedId, quizPublished.id),
-          eq(quizAttempt.status, "SELESAI"),
+          inArray(quizAttempt.status, ["SELESAI", "BELAJAR"]),
         ),
       )
       .where(eq(kursus.guruId, session.userId))

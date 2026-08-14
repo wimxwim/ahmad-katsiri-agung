@@ -190,32 +190,27 @@ export function LandingClient() {
                 {isSiswaPortal ? (
                   <>Belajar PAI SMP/MTs - <span className="text-primary">materi, kuis, progres</span> dalam satu tempat</>
                 ) : (
-                  <>Platform <span className="shimmer-text">siap pakai</span> untuk guru</>
+                  <>Bikin materi, quiz, dan soal PAI dalam menit — bukan jam</>
                 )}
               </h1>
 
               <p className="mt-6 max-w-xl text-sm leading-relaxed text-on-surface-variant sm:text-base lg:text-lg">
-                Bukan lagi website materi satu guru. Ini fondasi baru untuk multi-guru: upload dokumen,
-                hasilkan draft materi, quiz, dan soal dengan AI, lalu kelola semuanya dari ruang kerja yang lebih rapi.
+                Upload bahan ajar, AI bantu draft, guru tetap yang putuskan. Gratis daftar — tanpa kartu kredit.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
-                <Link href="/masuk">
-                  <Button type="primary" size="large" icon={<ArrowRight className="h-3.5 w-3.5" />} iconPosition="end">
-                    {isSiswaPortal ? "Masuk Kelas ->" : "Masuk ->"}
-                  </Button>
-                </Link>
                 <Link href="/daftar">
-                  <Button size="large" icon={<ArrowRight className="h-3.5 w-3.5" />} iconPosition="end">
+                  <Button type="primary" size="large" icon={<ArrowRight className="h-3.5 w-3.5" />} iconPosition="end">
                     Daftar Gratis
                   </Button>
                 </Link>
-                <Link href="/fitur">
-                  <Button type="text" size="large" icon={<ArrowRight className="h-4 w-4" />} iconPosition="end">
-                    Lihat Fitur
+                <Link href="#cara-kerja">
+                  <Button size="large" icon={<ArrowRight className="h-4 w-4" />} iconPosition="end">
+                    Lihat Cara Kerja
                   </Button>
                 </Link>
               </div>
+              <p className="mt-3 text-xs text-on-surface-variant">Gratis daftar — tanpa kartu kredit</p>
             </motion.div>
 
             <motion.div
@@ -613,7 +608,7 @@ export function LandingClient() {
                         <Tag color="gold" className="mb-2">GRATIS</Tag>
                         <Typography.Title level={4} className="!mb-0 !mt-1 !text-white">1 guru, 1 kelas</Typography.Title>
                         <Typography.Paragraph className="!text-white/70 !mb-0 mt-2">
-                          Upload sampai 5 dokumen per bulan. Cocok untuk guru yang baru coba-coba.
+                          Materi & quiz dasar — kuota harian untuk coba. Cocok untuk guru yang baru mulai.
                         </Typography.Paragraph>
                       </Card>
                       <Card size="small" className="border-white/15 bg-white/5">

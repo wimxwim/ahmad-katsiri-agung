@@ -6,7 +6,7 @@ import { WaIcon } from "@/components/ui/WaIcon";
 const gratisFitur = [
   "1 guru",
   "1 kelas aktif",
-  "5 dokumen AI/bulan",
+  "Materi & quiz dasar — kuota harian untuk coba",
   "Akses AI dasar (materi & quiz)",
   "Draft — review oleh guru",
   "Bank soal dasar",
@@ -16,7 +16,7 @@ const gratisFitur = [
 const sekolahFitur = [
   "Multi-guru (hingga 20)",
   "Multi-kelas (tak terbatas)",
-  "Kuota AI besar (200 dokumen/bulan)",
+  "Kuota AI besar — disesuaikan sekolah (via WA)",
   "Akses AI penuh (materi, quiz, soal, CBT)",
   "Laporan agregat per kelas & per guru",
   "Bank soal kolaboratif",
@@ -130,14 +130,11 @@ export default function HargaPage() {
           </div>
 
           <p className="text-3xl sm:text-4xl font-heading text-on-surface mb-2">
-            Mulai dari
-            <br />
-            <span className="text-tertiary">Rp499.000</span>
-            <span className="text-base font-body text-on-surface-variant font-normal">/bulan</span>
+            Hubungi kami
           </p>
 
           <p className="text-xs sm:text-sm text-on-surface-variant mb-8">
-            Harga untuk sekolah — diskon tersedia untuk yayasan & pesantren
+            Konsultasi gratis via WhatsApp — harga disesuaikan kebutuhan sekolah
           </p>
 
           <ul className="space-y-3 mb-10" role="list">

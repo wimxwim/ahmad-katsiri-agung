@@ -80,18 +80,18 @@ export function Navbar() {
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 flex justify-center pt-4 px-4">
-      <nav className="w-full max-w-5xl bg-glass backdrop-blur-2xl border border-border-precision rounded-full flex items-center px-6 h-14 shadow-glass">
+      <nav className="w-full max-w-5xl bg-glass backdrop-blur-2xl border border-border-precision rounded-full flex items-center px-3 sm:px-6 h-14 gap-2 shadow-glass">
         <Link
           href="/"
-          className="flex items-center gap-2 font-heading font-bold text-primary text-lg tracking-tight shrink-0"
+          className="flex items-center gap-1.5 sm:gap-2 font-heading font-bold text-primary text-lg tracking-tight shrink-0"
         >
-          <Image src="/logo.webp" alt="AKAL Center" width={28} height={28} className="object-contain" />
-          <span className="hidden sm:inline">AKAL Center</span>
+          <Image src="/logo.webp" alt="AKAL Center" width={28} height={28} className="object-contain shrink-0" />
+          <span className="inline whitespace-nowrap text-[13px] sm:text-lg leading-none">AKAL Center</span>
         </Link>
 
         {/* Desktop nav links */}
-        <div className="flex-1 flex justify-center">
-          <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex flex-1 justify-center">
+          <div className="flex items-center gap-1">
             {navItems.map((item) => (
               <Link
                 key={item.href}

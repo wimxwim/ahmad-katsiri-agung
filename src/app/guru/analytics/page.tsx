@@ -937,14 +937,15 @@ export default function GuruAnalyticsPage() {
                   Tinjau Semua Siswa
                 </Link>
                 <Link
-                  href="/guru/siswa"
+                  href="/guru/siswa?view=detail"
+                  title="Lihat detail siswa"
                   className="inline-flex items-center justify-center gap-2 min-h-11 min-w-11 px-4 py-2.5 rounded-full bg-white border border-border-precision text-sm font-medium text-on-surface hover:border-[var(--color-primary)]/20 transition-colors"
                 >
                   <FileEdit className="w-4 h-4" />
                   Lihat Detail
                 </Link>
                 <Link
-                  href="/guru/kuis"
+                  href="/guru/drafts?remedial=1"
                   className="inline-flex items-center justify-center gap-2 min-h-11 min-w-11 px-4 py-2.5 rounded-full bg-white border border-border-precision text-sm font-medium text-on-surface hover:border-[var(--color-primary)]/20 transition-colors"
                 >
                   <Brain className="w-4 h-4" />
