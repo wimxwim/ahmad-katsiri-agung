@@ -248,54 +248,57 @@ async function handleDirectUpload(
     });
   } catch (e: any) {
     const c = e?.cause ?? e;
-    const msg = String(e.message ?? "") + " " + String(c?.message ?? "") + " " + String(c?.detail ?? "");
-    if ((c?.code === "42703" || (e as any)?.code === "42703") && (msg.includes("tingkat") || msg.includes("fase"))) {
-      console.warn("[upload] tingkat/fase missing, retry tx without");
-      job = await db.transaction(async (tx) => {
-        const [fm] = await tx
-          .insert(fileMateri)
-          .values({
-            namaFile: originalName,
-            tipeMime,
-            ukuranBytes: sizeBytes,
-            lokasi: "IMAGEKIT",
-            imagekitFileId,
-            linkAkses,
-            kursusId: resolvedKursusId,
-            kelasId: resolvedKelasId,
-            guruId: session.userId,
-            status: "uploaded",
-            kategori: detectKategori(originalName, detected),
-          })
-          .returning({ id: fileMateri.id });
-
-        const [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
-
-        return { fileId: fm.id, generationId: gen.id };
-      });
-    } else if ((c?.code === "42703" || (e as any)?.code === "42703") && msg.includes("kelas_id")) {
-      console.warn("[upload] kelas_id missing, retry tx without kelasId");
-      job = await db.transaction(async (tx) => {
-        const [fm] = await tx
-          .insert(fileMateri)
-          .values({
-            namaFile: originalName,
-            tipeMime,
-            ukuranBytes: sizeBytes,
-            lokasi: "IMAGEKIT",
-            imagekitFileId,
-            linkAkses,
-            kursusId: resolvedKursusId,
-            guruId: session.userId,
-            status: "uploaded",
-            kategori: detectKategori(originalName, detected),
-          })
-          .returning({ id: fileMateri.id });
-
-        const [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
-
-        return { fileId: fm.id, generationId: gen.id };
-      });
+    const is42703 = c?.code === "42703" || String((e as any).message ?? "").includes("does not exist") || String(c?.message ?? "").includes("does not exist");
+    if (is42703) {
+      const msg = String((e as any).message ?? "") + String(c?.message ?? "") + String(c?.detail ?? "");
+      console.warn("[upload] 42703 fallback, retry minimal", msg.slice(0, 200));
+      try {
+        const res2 = await db.transaction(async (tx) => {
+          let fmRow: any;
+          try {
+            [fmRow] = await tx
+              .insert(fileMateri)
+              .values({
+                namaFile: originalName,
+                tipeMime,
+                ukuranBytes: sizeBytes,
+                lokasi: "IMAGEKIT",
+                imagekitFileId,
+                linkAkses,
+                kursusId: resolvedKursusId,
+                kelasId: resolvedKelasId,
+                guruId: session.userId,
+                status: "uploaded",
+                kategori: detectKategori(originalName, detected),
+              })
+              .returning({ id: fileMateri.id });
+          } catch (fmErr: any) {
+            const fc = fmErr?.cause ?? fmErr;
+            if (fc?.code === "42703" || String(fmErr.message ?? "").includes("kelas_id") || String(fmErr.message ?? "").includes("does not exist")) {
+              [fmRow] = await tx
+                .insert(fileMateri)
+                .values({
+                  namaFile: originalName,
+                  tipeMime,
+                  ukuranBytes: sizeBytes,
+                  lokasi: "IMAGEKIT",
+                  imagekitFileId,
+                  linkAkses,
+                  kursusId: resolvedKursusId,
+                  guruId: session.userId,
+                  status: "uploaded",
+                  kategori: detectKategori(originalName, detected),
+                })
+                .returning({ id: fileMateri.id });
+            } else throw fmErr;
+          }
+          const [genRow] = await tx.insert(aiGeneration).values({ fileMateriId: fmRow.id, guruId: session.userId, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
+          return { fmRow, genRow };
+        });
+        job = { fileId: res2.fmRow.id, generationId: res2.genRow.id };
+      } catch (retryErr) {
+        throw retryErr;
+      }
     } else throw e;
   }
 
@@ -565,54 +568,57 @@ export async function POST(request: NextRequest) {
       });
     } catch (e: any) {
       const c = e?.cause ?? e;
-      const msg = String(e.message ?? "") + " " + String(c?.message ?? "") + " " + String(c?.detail ?? "");
-      if ((c?.code === "42703" || (e as any)?.code === "42703") && (msg.includes("tingkat") || msg.includes("fase"))) {
-        console.warn("[upload] tingkat/fase missing, retry tx without");
-        job = await db.transaction(async (tx) => {
-          const [fm] = await tx
-            .insert(fileMateri)
-            .values({
-              namaFile: originalName,
-              tipeMime: file.type || `application/${detected}`,
-              ukuranBytes: file.size,
-              lokasi: "IMAGEKIT",
-              imagekitFileId: uploadResult.fileId,
-              linkAkses: uploadResult.link,
-              kursusId: resolvedKursusId,
-              kelasId: resolvedKelasId,
-              guruId: session.userId!,
-              status: "uploaded",
-              kategori: detectKategori(originalName, detected),
-            })
-            .returning({ id: fileMateri.id });
-
-          const [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId!, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
-
-          return { fileId: fm.id, generationId: gen.id };
-        });
-      } else if ((c?.code === "42703" || (e as any)?.code === "42703") && msg.includes("kelas_id")) {
-        console.warn("[upload] kelas_id missing, retry tx without kelasId");
-        job = await db.transaction(async (tx) => {
-          const [fm] = await tx
-            .insert(fileMateri)
-            .values({
-              namaFile: originalName,
-              tipeMime: file.type || `application/${detected}`,
-              ukuranBytes: file.size,
-              lokasi: "IMAGEKIT",
-              imagekitFileId: uploadResult.fileId,
-              linkAkses: uploadResult.link,
-              kursusId: resolvedKursusId,
-              guruId: session.userId!,
-              status: "uploaded",
-              kategori: detectKategori(originalName, detected),
-            })
-            .returning({ id: fileMateri.id });
-
-          const [gen] = await tx.insert(aiGeneration).values({ fileMateriId: fm.id, guruId: session.userId!, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
-
-          return { fileId: fm.id, generationId: gen.id };
-        });
+      const is42703 = c?.code === "42703" || String((e as any).message ?? "").includes("does not exist") || String(c?.message ?? "").includes("does not exist");
+      if (is42703) {
+        const msg = String((e as any).message ?? "") + String(c?.message ?? "") + String(c?.detail ?? "");
+        console.warn("[upload] 42703 fallback, retry minimal", msg.slice(0, 200));
+        try {
+          const res2 = await db.transaction(async (tx) => {
+            let fmRow: any;
+            try {
+              [fmRow] = await tx
+                .insert(fileMateri)
+                .values({
+                  namaFile: originalName,
+                  tipeMime: file.type || `application/${detected}`,
+                  ukuranBytes: file.size,
+                  lokasi: "IMAGEKIT",
+                  imagekitFileId: uploadResult.fileId,
+                  linkAkses: uploadResult.link,
+                  kursusId: resolvedKursusId,
+                  kelasId: resolvedKelasId,
+                  guruId: session.userId!,
+                  status: "uploaded",
+                  kategori: detectKategori(originalName, detected),
+                })
+                .returning({ id: fileMateri.id });
+            } catch (fmErr: any) {
+              const fc = fmErr?.cause ?? fmErr;
+              if (fc?.code === "42703" || String(fmErr.message ?? "").includes("kelas_id") || String(fmErr.message ?? "").includes("does not exist")) {
+                [fmRow] = await tx
+                  .insert(fileMateri)
+                  .values({
+                    namaFile: originalName,
+                    tipeMime: file.type || `application/${detected}`,
+                    ukuranBytes: file.size,
+                    lokasi: "IMAGEKIT",
+                    imagekitFileId: uploadResult.fileId,
+                    linkAkses: uploadResult.link,
+                    kursusId: resolvedKursusId,
+                    guruId: session.userId!,
+                    status: "uploaded",
+                    kategori: detectKategori(originalName, detected),
+                  })
+                  .returning({ id: fileMateri.id });
+              } else throw fmErr;
+            }
+            const [genRow] = await tx.insert(aiGeneration).values({ fileMateriId: fmRow.id, guruId: session.userId!, kursusId: resolvedKursusId, sourceFileName: originalName, status: "queued" }).returning({ id: aiGeneration.id });
+            return { fmRow, genRow };
+          });
+          job = { fileId: res2.fmRow.id, generationId: res2.genRow.id };
+        } catch (retryErr) {
+          throw retryErr;
+        }
       } else throw e;
     }
 
