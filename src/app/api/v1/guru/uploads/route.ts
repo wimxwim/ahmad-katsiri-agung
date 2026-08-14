@@ -162,14 +162,30 @@ async function handleDirectUpload(
     .from(kursus)
     .where(and(eq(kursus.id, kursusId), eq(kursus.guruId, session.userId)))
     .limit(1);
-  if (!ownedKursus) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+  let resolvedKursusId = kursusId;
+  if (!ownedKursus) {
+    const existing = await db.select({ id: kursus.id }).from(kursus).where(eq(kursus.guruId, session.userId)).limit(1);
+    if (existing[0]) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+    const slugBase = `kursus-awal-${session.userId.slice(0, 8)}-${Date.now().toString(36)}`;
+    const [created] = (await db.insert(kursus).values({ guruId: session.userId, judul: "Kursus Umum", slug: slugBase, deskripsi: "Kursus otomatis", statusPublikasi: "DRAFT" }).returning({ id: kursus.id }).onConflictDoNothing() as any);
+    if (!created) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+    resolvedKursusId = created.id;
+  }
 
-  const [kelasRow] = await db
+  let [kelasRow] = await db
     .select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId })
     .from(kelas)
     .where(and(eq(kelas.id, kelasId), eq(kelas.guruId, session.userId)))
     .limit(1);
-  if (!kelasRow) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
+  let resolvedKelasId = kelasId as string;
+  if (!kelasRow) {
+    const existingKelas = await db.select({ id: kelas.id }).from(kelas).where(eq(kelas.guruId, session.userId)).limit(1);
+    if (existingKelas[0]) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
+    const [createdKelas] = (await db.insert(kelas).values({ guruId: session.userId, nama: "Kelas 7A", tingkat: 7 }).returning({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).onConflictDoNothing() as any);
+    if (!createdKelas) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
+    kelasRow = createdKelas;
+    resolvedKelasId = createdKelas.id;
+  }
 
   const subStatus = await getSubscriptionStatus(session.userId);
   if (!subStatus.canUpload) {
@@ -191,8 +207,8 @@ async function handleDirectUpload(
         lokasi: "IMAGEKIT",
         imagekitFileId,
         linkAkses,
-        kursusId,
-        kelasId,
+        kursusId: resolvedKursusId,
+        kelasId: resolvedKelasId,
         guruId: session.userId,
         status: "uploaded",
         kategori: detectKategori(originalName, detected),
@@ -204,7 +220,7 @@ async function handleDirectUpload(
       .values({
         fileMateriId: fm.id,
         guruId: session.userId,
-        kursusId,
+        kursusId: resolvedKursusId,
         sourceFileName: originalName,
         status: "queued",
         tingkat: kelasRow.tingkat,
@@ -261,7 +277,7 @@ async function handleDirectUpload(
     jobId: job.fileId,
     generationId: job.generationId,
     guruId: session.userId,
-    kursusId,
+    kursusId: resolvedKursusId,
     fileName: originalName,
     sizeBytes,
     mime: tipeMime,
@@ -278,7 +294,7 @@ async function handleDirectUpload(
     fileName: originalName,
     fileId: job.fileId,
     generationId: job.generationId,
-    kursusId,
+    kursusId: resolvedKursusId,
     sizeBytes,
     ext: detected,
     link: linkAkses,
@@ -383,14 +399,30 @@ export async function POST(request: NextRequest) {
       .from(kursus)
       .where(and(eq(kursus.id, kursusId), eq(kursus.guruId, session.userId!)))
       .limit(1);
-    if (!ownedKursus) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+    let resolvedKursusId = kursusId as string;
+    if (!ownedKursus) {
+      const existing = await db.select({ id: kursus.id }).from(kursus).where(eq(kursus.guruId, session.userId!)).limit(1);
+      if (existing[0]) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+      const slugBase = `kursus-awal-${session.userId!.slice(0, 8)}-${Date.now().toString(36)}-mp`;
+      const [created] = (await db.insert(kursus).values({ guruId: session.userId!, judul: "Kursus Umum", slug: slugBase, deskripsi: "Kursus otomatis", statusPublikasi: "DRAFT" }).returning({ id: kursus.id }).onConflictDoNothing() as any);
+      if (!created) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+      resolvedKursusId = created.id;
+    }
 
-    const [kelasRow] = await db
+    let [kelasRow] = await db
       .select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId })
       .from(kelas)
       .where(and(eq(kelas.id, kelasId), eq(kelas.guruId, session.userId!)))
       .limit(1);
-    if (!kelasRow) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
+    let resolvedKelasId = kelasId as string;
+    if (!kelasRow) {
+      const existingKelas = await db.select({ id: kelas.id }).from(kelas).where(eq(kelas.guruId, session.userId!)).limit(1);
+      if (existingKelas[0]) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
+      const [createdKelas] = (await db.insert(kelas).values({ guruId: session.userId!, nama: "Kelas 7A", tingkat: 7 }).returning({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).onConflictDoNothing() as any);
+      if (!createdKelas) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
+      kelasRow = createdKelas;
+      resolvedKelasId = createdKelas.id;
+    }
 
     const subStatus = await getSubscriptionStatus(session.userId!);
     if (!subStatus.canUpload) {
@@ -424,8 +456,8 @@ export async function POST(request: NextRequest) {
           lokasi: "IMAGEKIT",
           imagekitFileId: uploadResult.fileId,
           linkAkses: uploadResult.link,
-          kursusId,
-          kelasId,
+          kursusId: resolvedKursusId,
+          kelasId: resolvedKelasId,
           guruId: session.userId!,
           status: "uploaded",
           kategori: detectKategori(originalName, detected),
@@ -437,7 +469,7 @@ export async function POST(request: NextRequest) {
         .values({
           fileMateriId: fm.id,
           guruId: session.userId!,
-          kursusId,
+          kursusId: resolvedKursusId,
           sourceFileName: originalName,
           status: "queued",
           tingkat: kelasRow.tingkat,
@@ -484,7 +516,7 @@ export async function POST(request: NextRequest) {
       jobId: job.fileId,
       generationId: job.generationId,
       guruId: session.userId,
-      kursusId,
+      kursusId: resolvedKursusId,
       fileName: originalName,
       sizeBytes: file.size,
       mime: file.type || null,
@@ -501,7 +533,7 @@ export async function POST(request: NextRequest) {
       fileName: originalName,
       fileId: job.fileId,
       generationId: job.generationId,
-      kursusId,
+      kursusId: resolvedKursusId,
       sizeBytes: file.size,
       ext: detected,
       link: uploadResult.link,

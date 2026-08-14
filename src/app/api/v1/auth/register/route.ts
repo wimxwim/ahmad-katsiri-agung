@@ -12,7 +12,7 @@ import {
 } from "@/lib/session";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { db } from "@/lib/db";
-import { users, tokenBalances, guruInviteCodes } from "@/lib/db/schema";
+import { users, tokenBalances, guruInviteCodes, kursus, kelas as kelasTable } from "@/lib/db/schema";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { logAuthEvent } from "@/lib/auth-audit";
@@ -142,6 +142,14 @@ export async function POST(request: NextRequest) {
           .update(tokenBalances)
           .set({ isUnlocked: true })
           .where(eq(tokenBalances.userId, newUser.id));
+      }
+
+      // auto-seed kursus+kelas untuk guru agar upload langsung bisa
+      if (role === "GURU") {
+        const slugBase = `kursus-awal-${newUser.id.slice(0, 8)}`;
+        await tx.insert(kursus).values({ guruId: newUser.id, judul: "Kursus Umum", slug: slugBase, deskripsi: "Kursus awal otomatis — bisa diubah di halaman Kursus", statusPublikasi: "DRAFT" }).onConflictDoNothing();
+        // always seed kelas if guru — use tingkat 7 default
+        await tx.insert(kelasTable).values({ guruId: newUser.id, nama: "Kelas 7A", tingkat: 7 }).onConflictDoNothing();
       }
 
       return [newUser];

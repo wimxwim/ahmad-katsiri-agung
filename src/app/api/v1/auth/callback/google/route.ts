@@ -12,7 +12,7 @@ import {
   type SesiRole,
 } from "@/lib/session";
 import { db } from "@/lib/db";
-import { users, tokenBalances } from "@/lib/db/schema";
+import { users, tokenBalances, kursus, kelas } from "@/lib/db/schema";
 import { checkRateLimit, ipFromRequest } from "@/lib/rate-limit";
 import { logAuthEvent } from "@/lib/auth-audit";
 import { appendEvent } from "@/lib/event-store";
@@ -147,6 +147,14 @@ export async function GET(request: NextRequest) {
       const user = inserted[0];
 
       await db.insert(tokenBalances).values({ userId: user.id, balance: INITIAL_TOKEN_BALANCE });
+
+      if (dbRole === "GURU") {
+        try {
+          const slugBase = `kursus-awal-${user.id.slice(0, 8)}`;
+          await db.insert(kursus).values({ guruId: user.id, judul: "Kursus Umum", slug: slugBase, deskripsi: "Kursus awal otomatis — bisa diubah di halaman Kursus", statusPublikasi: "DRAFT" }).onConflictDoNothing();
+          await db.insert(kelas).values({ guruId: user.id, nama: "Kelas 7A", tingkat: 7 }).onConflictDoNothing();
+        } catch {}
+      }
 
       appendEvent("token:system", "token.granted", {
         userId: user.id,

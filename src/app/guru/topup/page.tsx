@@ -203,7 +203,7 @@ export default function GuruTopupPage() {
         </motion.div>
       )}
 
-      {balance && !balance.isUnlocked && (
+      {(balance && !balance.isUnlocked && !balance.subscription?.canGenerate && process.env.NEXT_PUBLIC_FREE_GENERATE_MODE !== "true") && (
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
