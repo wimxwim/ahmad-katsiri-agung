@@ -392,7 +392,7 @@ function BerandaContent() {
 
   const isFreeMode = process.env.NEXT_PUBLIC_FREE_GENERATE_MODE === "true";
   const canGenerate = balance?.subscription?.canGenerate ?? balance?.isUnlocked ?? false;
-  const isFree = isFreeMode || canGenerate || !!data.isEstimated;
+  const isFree = isFreeMode || canGenerate;
   const uploadCount = balance?.subscription?.uploadCount ?? 0;
   const uploadLimit = balance?.subscription?.uploadLimit ?? FREE_TIER_UPLOAD_LIMIT;
   const remainingUploads = Math.max(0, (uploadLimit === Infinity ? 15 : uploadLimit) - uploadCount);
@@ -582,7 +582,7 @@ function BerandaContent() {
             <p className="text-[11px] text-amber-700 mt-1">Top-up untuk upload unlimited dan generate tanpa batas.</p>
           </div>
         )}
-        {isFree && balance && !balance.isUnlocked && (
+        {isFree && balance && !canGenerate && (
           <div className="mt-3 p-3 rounded-2xl border border-emerald-200 bg-emerald-50/60">
             <p className="text-xs font-semibold text-emerald-800">Gratis — Generate Unlimited (Promo) aktif</p>
             <p className="text-[11px] text-emerald-700 mt-1">Sisa gratis {remainingUploads} upload — nikmati promo generate tanpa batas.</p>

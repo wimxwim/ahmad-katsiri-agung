@@ -95,6 +95,8 @@ export default async function middleware(request: NextRequest) {
   // API CSRF is enforced per-route via validateCsrf() in csrf-server.ts.
   // All new API route handlers MUST call validateCsrf() for state-changing methods.
   const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+  // CSRF_EXEMPT kept for page routes only; API CSRF via src/lib/csrf-server.ts validateCsrf — keep in sync with src/lib/csrf-server.ts EXEMPT_PREFIXES
+  // Dead for /api: /api early return above skips this block for API paths.
   const CSRF_EXEMPT = ["/api/v1/auth", "/api/v1/payment/webhook", "/api/health", "/api/readyz", "/api/csp-report"];
   if (!SAFE_METHODS.has(request.method) && !CSRF_EXEMPT.some((p) => pathname.startsWith(p))) {
     const csrfCookie = request.cookies.get("__Host-psrf")?.value;

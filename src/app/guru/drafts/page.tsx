@@ -191,21 +191,32 @@ function DraftsContent() {
     setBulkResult("");
     setGenerateError("");
     try {
-      const results = await Promise.allSettled(
-        extractedDrafts.map((d) =>
-          fetch(`/api/v1/guru/drafts/${d.id}/generate`, {
-            method: "POST",
-            headers: csrfHeaders(),
-            credentials: "include",
-          }).then(async (res) => {
-            if (!res.ok) {
-              const j = await res.json().catch(() => ({}));
-              throw new Error(j?.error?.message || j?.error || `Gagal ${d.sourceFileName}`);
-            }
-            return d.id;
-          }),
-        ),
-      );
+      if (!isFree && tokenBalance != null && tokenBalance < bulkEstimate) {
+        setGenerateError(`Saldo Rp${tokenBalance} tidak cukup untuk estimasi Rp${bulkEstimate} (${extractedCount} draft). Top-up dulu.`);
+        setBulkGenerating(false);
+        return;
+      }
+      const allResults: PromiseSettledResult<string>[] = [];
+      for (let i = 0; i < extractedDrafts.length; i += 3) {
+        const chunk = extractedDrafts.slice(i, i + 3);
+        const chunkResults = await Promise.allSettled(
+          chunk.map((d) =>
+            fetch(`/api/v1/guru/drafts/${d.id}/generate`, {
+              method: "POST",
+              headers: csrfHeaders(),
+              credentials: "include",
+            }).then(async (res) => {
+              if (!res.ok) {
+                const j = await res.json().catch(() => ({}));
+                throw new Error(j?.error?.message || j?.error || `Gagal ${d.sourceFileName}`);
+              }
+              return d.id;
+            }),
+          ),
+        );
+        allResults.push(...chunkResults);
+      }
+      const results = allResults;
       const fulfilled = results.filter((r) => r.status === "fulfilled").length;
       const rejected = results.filter((r) => r.status === "rejected").length;
       if (fulfilled > 0) {
@@ -491,7 +502,7 @@ function DraftsContent() {
               </div>
               <button
                 onClick={handleBulkGenerate}
-                disabled={bulkGenerating || (typeof navigator !== "undefined" && !navigator.onLine)}
+                disabled={bulkGenerating || (typeof navigator !== "undefined" && !navigator.onLine) || (!isFree && tokenBalance != null && tokenBalance < bulkEstimate)}
                 className="inline-flex items-center justify-center gap-2 min-h-11 px-5 py-2.5 rounded-full text-sm font-bold bg-primary text-white hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
               >
                 {bulkGenerating ? (

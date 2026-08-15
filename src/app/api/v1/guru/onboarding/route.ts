@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
         completedSteps,
         completedStepKeys,
         totalSteps: STEPS.length,
-        isComplete: progress.completedAt !== null,
+        isComplete: progress.completedAt !== null || completedSteps === STEPS.length,
         steps: STEPS.map((s, i) => ({
           key: s,
           label: STEP_LABELS[s],
@@ -90,20 +90,24 @@ export async function POST(request: NextRequest) {
     const field = FIELD_MAP[step];
     const isLastStep = stepIndex === STEPS.length - 1;
 
+    const progress = await db.query.onboardingProgress.findFirst({
+      where: eq(onboardingProgress.userId, session.userId),
+    });
+
     const [updated] = await db
       .insert(onboardingProgress)
       .values({
         userId: session.userId,
         [field]: true,
         currentStep: isLastStep ? step : STEPS[stepIndex + 1],
-        completedAt: isLastStep ? new Date() : null,
+        completedAt: isLastStep ? new Date() : progress?.completedAt ?? null,
       } as never)
       .onConflictDoUpdate({
         target: onboardingProgress.userId,
         set: {
           [field]: true,
           currentStep: isLastStep ? step : STEPS[stepIndex + 1],
-          completedAt: isLastStep ? new Date() : null,
+          completedAt: isLastStep ? new Date() : progress?.completedAt ?? null,
           updatedAt: new Date(),
         } as never,
       })
