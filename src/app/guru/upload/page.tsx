@@ -34,6 +34,7 @@ function GuruUploadContent() {
   const [successFileName, setSuccessFileName] = useState<string | null>(null);
   const [kelasList, setKelasList] = useState<KelasItem[]>([]);
   const [selectedKelasId, setSelectedKelasId] = useState<string>("");
+  const [loadingKelas, setLoadingKelas] = useState<boolean>(true);
   const [isOnline, setIsOnline] = useState(true);
   const [countdown, setCountdown] = useState<number | null>(null);
   const { toast } = useToast();
@@ -53,7 +54,7 @@ function GuruUploadContent() {
       if (saved) {
         const p = JSON.parse(saved);
         if (typeof p.selectedKursus === "string") setSelectedKursus(p.selectedKursus);
-        if (typeof p.selectedKelasId === "string") setSelectedKelasId(p.selectedKelasId);
+        if (typeof p.selectedKelasId === "string" && p.selectedKelasId) setSelectedKelasId(p.selectedKelasId);
       }
     } catch {}
   }, []);
@@ -104,20 +105,24 @@ function GuruUploadContent() {
       })
       .catch(() => setKursusError("Gagal memuat daftar kursus"));
     const c2 = new AbortController();
+    setLoadingKelas(true);
     fetch("/api/v1/guru/kelas", { credentials: "include", signal: c2.signal })
       .then((r) => (r.ok ? r.json() : { data: [] }))
       .then((j) => setKelasList(j.data || []))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoadingKelas(false));
     loadHistory();
     return () => { c1.abort(); c2.abort(); };
   }, []);
 
   useEffect(() => { if (kursus.length > 0 && !selectedKursus) setSelectedKursus(kursus[0].id); }, [kursus, selectedKursus]);
 
+  useEffect(() => { if (kelasList.length > 0 && !selectedKelasId) setSelectedKelasId(kelasList[0].id); }, [kelasList, selectedKelasId]);
+
   useEffect(() => {
     if (kelasList.length === 0) return;
     if (selectedKelasId && !kelasList.some((k) => k.id === selectedKelasId)) setSelectedKelasId("");
-  }, [kelasList]);
+  }, [kelasList, selectedKelasId]);
 
   function validate(f: File): { ok: boolean; reason?: string } {
     // F11-5 magic bytes check (basic: extension + size + 0 bytes)
@@ -251,7 +256,11 @@ function GuruUploadContent() {
         </div>
         <div>
           <label className="block text-sm font-semibold text-on-surface mb-1.5">Kelas tujuan <span className="font-normal text-primary">(wajib)</span></label>
-          {kelasList.length === 0 ? (
+          {loadingKelas ? (
+            <select disabled aria-label="Memuat kelas" className="w-full px-4 py-2.5 rounded-xl border border-border-precision bg-white text-sm outline-hidden opacity-60 cursor-wait">
+              <option>Memuat kelas...</option>
+            </select>
+          ) : kelasList.length === 0 ? (
             <Link href="/guru/kelas" className="w-full px-4 py-2.5 rounded-xl border border-border-precision bg-white text-sm text-on-surface-variant flex items-center gap-2 hover:bg-surface transition-colors"><Layers className="w-4 h-4" /> Buat kelas dulu</Link>
           ) : (
             <><label htmlFor="upload-kelas" className="sr-only">Pilih kelas</label>
@@ -297,7 +306,7 @@ function GuruUploadContent() {
       )}
 
       <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:items-center">
-        <button onClick={handleUpload} disabled={!file || !selectedKursus || !isOnline || (job.state !== "idle" && job.state !== "failed" && job.state !== "ready")} className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+        <button onClick={handleUpload} disabled={!file || !selectedKursus || !selectedKelasId || loadingKelas || kelasList.length === 0 || !isOnline || (job.state !== "idle" && job.state !== "failed" && job.state !== "ready")} className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
           {job.state === "uploading" || job.state === "extracting" ? (<Loader2 className="w-4 h-4 animate-spin" />) : (<Upload className="w-4 h-4" />)} Upload Dokumen
         </button>
         {file && (job.state === "idle" || job.state === "failed" || job.state === "ready") && (<button onClick={reset} className="text-xs text-on-surface-variant hover:text-primary active:scale-[0.98] transition-colors">Bersihkan pilihan</button>)}

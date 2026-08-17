@@ -33,6 +33,90 @@ function tingkatToFase(tingkat: number): string {
   return "F";
 }
 
+async function resolveKelasId(
+  kelasIdRaw: unknown,
+  guruId: string,
+): Promise<{ id: string; tingkat: number; nama: string } | null> {
+  const raw = typeof kelasIdRaw === "string" ? kelasIdRaw.trim() : "";
+  const isEmpty = raw === "" || kelasIdRaw === null || kelasIdRaw === undefined;
+  if (!isEmpty) {
+    if (!uuidSchema.safeParse(raw).success) {
+      // invalid UUID — skip DB query to avoid PG invalid input syntax, fall through to fallback
+    } else {
+      const [owned] = await db
+        .select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId })
+        .from(kelas)
+        .where(and(eq(kelas.id, raw), eq(kelas.guruId, guruId)))
+        .limit(1);
+      if (owned) return { id: owned.id, tingkat: owned.tingkat, nama: owned.nama };
+      const [orphan] = await db
+        .select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId })
+        .from(kelas)
+        .where(eq(kelas.id, raw))
+        .limit(1);
+      if (orphan) {
+        if (!orphan.guruId) {
+          await db.update(kelas).set({ guruId }).where(eq(kelas.id, orphan.id));
+          return { id: orphan.id, tingkat: orphan.tingkat, nama: orphan.nama };
+        }
+        if (orphan.guruId !== guruId) {
+          // milik guru lain — jangan return, lanjut fallback ke kelas pertama / auto-create
+        } else {
+          return { id: orphan.id, tingkat: orphan.tingkat, nama: orphan.nama };
+        }
+      }
+    }
+  }
+  const [existing] = await db
+    .select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama })
+    .from(kelas)
+    .where(eq(kelas.guruId, guruId))
+    .limit(1);
+  if (existing) return { id: existing.id, tingkat: existing.tingkat, nama: existing.nama };
+  const [created] = (await db
+    .insert(kelas)
+    .values({ guruId, nama: "Kelas 7A", tingkat: 7 })
+    .returning({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama })
+    .onConflictDoNothing() as unknown as { id: string; tingkat: number; nama: string }[]);
+  if (created) return created;
+  return null;
+}
+
+async function resolveKursusId(kursusIdRaw: unknown, guruId: string): Promise<string | null> {
+  const raw = typeof kursusIdRaw === "string" ? kursusIdRaw.trim() : "";
+  const isEmpty = raw === "" || kursusIdRaw === null || kursusIdRaw === undefined;
+  if (!isEmpty) {
+    if (!uuidSchema.safeParse(raw).success) {
+      // invalid UUID — skip DB query to avoid PG invalid input syntax, fall through to fallback
+    } else {
+      const [owned] = await db.select({ id: kursus.id }).from(kursus).where(and(eq(kursus.id, raw), eq(kursus.guruId, guruId))).limit(1);
+      if (owned) return owned.id;
+      const [orphan] = await db.select({ id: kursus.id, guruId: kursus.guruId }).from(kursus).where(eq(kursus.id, raw)).limit(1);
+      if (orphan) {
+        if (!orphan.guruId) {
+          await db.update(kursus).set({ guruId }).where(eq(kursus.id, orphan.id));
+          return orphan.id;
+        }
+        if (orphan.guruId !== guruId) {
+          // milik guru lain — jangan return, lanjut fallback
+        } else {
+          return orphan.id;
+        }
+      }
+    }
+  }
+  const [existing] = await db.select({ id: kursus.id }).from(kursus).where(eq(kursus.guruId, guruId)).limit(1);
+  if (existing) return existing.id;
+  const slugBase = `kursus-awal-${guruId.slice(0, 8)}-${Date.now().toString(36)}`;
+  const [created] = (await db
+    .insert(kursus)
+    .values({ guruId, judul: "Kursus Umum", slug: slugBase, deskripsi: "Kursus otomatis", statusPublikasi: "DRAFT" })
+    .returning({ id: kursus.id })
+    .onConflictDoNothing() as unknown as { id: string }[]);
+  if (created) return created.id;
+  return null;
+}
+
 const ALLOWED_EXT = new Set(["pdf", "docx"]);
 const ALLOWED_MIME = new Set([
   "application/pdf",
@@ -138,10 +222,19 @@ async function handleDirectUpload(
   }
   const parsedKursus = uuidSchema.safeParse(kursusId);
   if (!parsedKursus.success) return apiError("kursusId harus UUID", 400);
-  const parsedKelas = uuidSchema.safeParse(kelasId);
-  if (!parsedKelas.success) return apiError("kelasId harus UUID", 400);
-  const kursusIdStr = parsedKursus.data;
-  const kelasIdStr = parsedKelas.data;
+  const resolvedKursusId: string | null = await resolveKursusId(parsedKursus.data, session.userId);
+  if (!resolvedKursusId) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+  let resolvedKelas: { id: string; tingkat: number; nama: string } | null = null;
+  if (kelasId === "" || kelasId === null || kelasId === undefined) {
+    resolvedKelas = await resolveKelasId(null, session.userId);
+    if (!resolvedKelas) return apiError("Pilih kelas dulu — buat kelas di /guru/kelas", 400);
+  } else {
+    const parsedKelas = uuidSchema.safeParse(kelasId);
+    if (!parsedKelas.success) return apiError("kelasId tidak valid — pilih kelas dari daftar", 400);
+    resolvedKelas = await resolveKelasId(parsedKelas.data, session.userId);
+    if (!resolvedKelas) return apiError("Pilih kelas dulu — buat kelas di /guru/kelas", 400);
+  }
+  const kelasRow: { id: string; tingkat: number; nama: string } = resolvedKelas;
 
   if (sizeBytes > MAX_SIZE) {
     return apiError(`File terlalu besar (maks 10MB)`, 413);
@@ -163,61 +256,6 @@ async function handleDirectUpload(
   }
   const detected = extFromName;
   const tipeMime = detected === "docx" ? DOCX_MIME : "application/pdf";
-
-  const [ownedKursus] = await db
-    .select({ id: kursus.id })
-    .from(kursus)
-    .where(and(eq(kursus.id, kursusIdStr), eq(kursus.guruId, session.userId)))
-    .limit(1);
-  let resolvedKursusId = kursusIdStr;
-  if (!ownedKursus) {
-    // heal 1: coba cari kursus by id tanpa guruId filter (orphan guruId NULL)
-    const [orphanKursus] = await db.select({ id: kursus.id, guruId: kursus.guruId }).from(kursus).where(eq(kursus.id, kursusIdStr)).limit(1);
-    if (orphanKursus) {
-      if (!orphanKursus.guruId) {
-        await db.update(kursus).set({ guruId: session.userId }).where(eq(kursus.id, orphanKursus.id));
-      }
-      resolvedKursusId = orphanKursus.id;
-    } else {
-      const existing = await db.select({ id: kursus.id }).from(kursus).where(eq(kursus.guruId, session.userId)).limit(1);
-      if (existing[0]) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
-      const slugBase = `kursus-awal-${session.userId.slice(0, 8)}-${Date.now().toString(36)}`;
-      const [created] = (await db.insert(kursus).values({ guruId: session.userId, judul: "Kursus Umum", slug: slugBase, deskripsi: "Kursus otomatis", statusPublikasi: "DRAFT" }).returning({ id: kursus.id }).onConflictDoNothing() as any);
-      if (!created) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
-      resolvedKursusId = created.id;
-    }
-  }
-
-  let [kelasRow] = await db
-    .select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId })
-    .from(kelas)
-    .where(and(eq(kelas.id, kelasIdStr), eq(kelas.guruId, session.userId)))
-    .limit(1);
-  let resolvedKelasId = kelasIdStr;
-  if (!kelasRow) {
-    // heal 1: coba cari kelas by id tanpa guruId filter (orphan guruId NULL)
-    const [orphanKelas] = await db.select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).from(kelas).where(eq(kelas.id, kelasIdStr)).limit(1);
-    if (orphanKelas) {
-      // orphan atau guruId beda — klaim untuk guru ini jika belum ada yang claim
-      if (!orphanKelas.guruId) {
-        await db.update(kelas).set({ guruId: session.userId }).where(eq(kelas.id, orphanKelas.id));
-      }
-      kelasRow = { ...orphanKelas, guruId: (orphanKelas.guruId || session.userId) as string } as any;
-      resolvedKelasId = orphanKelas.id;
-    } else {
-      const existingKelas = await db.select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama }).from(kelas).where(eq(kelas.guruId, session.userId)).limit(1);
-      if (existingKelas[0]) {
-        // heal 2: kelasId stale — pakai kelas pertama milik guru
-        kelasRow = existingKelas[0] as any;
-        resolvedKelasId = existingKelas[0].id;
-      } else {
-        const [createdKelas] = (await db.insert(kelas).values({ guruId: session.userId, nama: "Kelas 7A", tingkat: 7 }).returning({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).onConflictDoNothing() as any);
-        if (!createdKelas) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
-        kelasRow = createdKelas;
-        resolvedKelasId = createdKelas.id;
-      }
-    }
-  }
 
   const subStatus = await getSubscriptionStatus(session.userId);
   if (!subStatus.canUpload) {
@@ -242,7 +280,7 @@ async function handleDirectUpload(
           imagekitFileId,
           linkAkses,
           kursusId: resolvedKursusId,
-          kelasId: resolvedKelasId,
+          kelasId: resolvedKelas.id,
           guruId: session.userId,
           status: "uploaded",
           kategori: detectKategori(originalName, detected),
@@ -273,7 +311,7 @@ async function handleDirectUpload(
                 imagekitFileId,
                 linkAkses,
                 kursusId: resolvedKursusId,
-                kelasId: resolvedKelasId,
+                kelasId: resolvedKelas.id,
                 guruId: session.userId,
                 status: "uploaded",
                 kategori: detectKategori(originalName, detected),
@@ -432,10 +470,20 @@ export async function POST(request: NextRequest) {
     if (!(file instanceof File)) return apiError("File tidak ditemukan", 400);
     const parsedKursusForm = uuidSchema.safeParse(kursusId);
     if (!parsedKursusForm.success) return apiError("kursusId harus UUID", 400);
-    const parsedKelasForm = uuidSchema.safeParse(kelasId);
-    if (!parsedKelasForm.success) return apiError("kelasId harus UUID", 400);
-    const kursusIdStr2 = parsedKursusForm.data;
-    const kelasIdStr2 = parsedKelasForm.data;
+    const resolvedKursusId2: string | null = await resolveKursusId(parsedKursusForm.data, session.userId!);
+    if (!resolvedKursusId2) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
+    let resolvedKelas2: { id: string; tingkat: number; nama: string } | null = null;
+    if (kelasId === "" || kelasId === null || kelasId === undefined) {
+      resolvedKelas2 = await resolveKelasId(null, session.userId!);
+      if (!resolvedKelas2) return apiError("Pilih kelas dulu — buat kelas di /guru/kelas", 400);
+    } else {
+      const parsedKelasForm = uuidSchema.safeParse(kelasId);
+      if (!parsedKelasForm.success) return apiError("kelasId tidak valid — pilih kelas dari daftar", 400);
+      resolvedKelas2 = await resolveKelasId(parsedKelasForm.data, session.userId!);
+      if (!resolvedKelas2) return apiError("Pilih kelas dulu — buat kelas di /guru/kelas", 400);
+    }
+    const kelasIdStr2 = resolvedKelas2.id;
+    const kelasRow2: { id: string; tingkat: number; nama: string } = resolvedKelas2;
 
     if (file.size > MAX_SIZE) {
       return apiError(`File terlalu besar (maks 10MB)`, 413);
@@ -476,60 +524,9 @@ export async function POST(request: NextRequest) {
 
     const fileHash = sha256(bytes);
 
-    const [ownedKursus] = await db
-      .select({ id: kursus.id })
-      .from(kursus)
-      .where(and(eq(kursus.id, kursusIdStr2), eq(kursus.guruId, session.userId!)))
-      .limit(1);
-    let resolvedKursusId = kursusIdStr2;
-    if (!ownedKursus) {
-      // heal 1: coba cari kursus by id tanpa guruId filter (orphan guruId NULL)
-      const [orphanKursus] = await db.select({ id: kursus.id, guruId: kursus.guruId }).from(kursus).where(eq(kursus.id, kursusIdStr2)).limit(1);
-      if (orphanKursus) {
-        if (!orphanKursus.guruId) {
-          await db.update(kursus).set({ guruId: session.userId! }).where(eq(kursus.id, orphanKursus.id));
-        }
-        resolvedKursusId = orphanKursus.id;
-      } else {
-        const existing = await db.select({ id: kursus.id }).from(kursus).where(eq(kursus.guruId, session.userId!)).limit(1);
-        if (existing[0]) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
-        const slugBase = `kursus-awal-${session.userId!.slice(0, 8)}-${Date.now().toString(36)}-mp`;
-        const [created] = (await db.insert(kursus).values({ guruId: session.userId!, judul: "Kursus Umum", slug: slugBase, deskripsi: "Kursus otomatis", statusPublikasi: "DRAFT" }).returning({ id: kursus.id }).onConflictDoNothing() as any);
-        if (!created) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
-        resolvedKursusId = created.id;
-      }
-    }
-
-    let [kelasRow] = await db
-      .select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId })
-      .from(kelas)
-      .where(and(eq(kelas.id, kelasIdStr2), eq(kelas.guruId, session.userId!)))
-      .limit(1);
-    let resolvedKelasId = kelasIdStr2;
-    if (!kelasRow) {
-      // heal 1: coba cari kelas by id tanpa guruId filter (orphan guruId NULL)
-      const [orphanKelas] = await db.select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).from(kelas).where(eq(kelas.id, kelasIdStr2)).limit(1);
-      if (orphanKelas) {
-        // orphan atau guruId beda — klaim untuk guru ini jika belum ada yang claim
-        if (!orphanKelas.guruId) {
-          await db.update(kelas).set({ guruId: session.userId! }).where(eq(kelas.id, orphanKelas.id));
-        }
-        kelasRow = { ...orphanKelas, guruId: (orphanKelas.guruId || session.userId!) as string } as any;
-        resolvedKelasId = orphanKelas.id;
-      } else {
-        const existingKelas = await db.select({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama }).from(kelas).where(eq(kelas.guruId, session.userId!)).limit(1);
-        if (existingKelas[0]) {
-          // heal 2: kelasId stale — pakai kelas pertama milik guru
-          kelasRow = existingKelas[0] as any;
-          resolvedKelasId = existingKelas[0].id;
-        } else {
-          const [createdKelas] = (await db.insert(kelas).values({ guruId: session.userId!, nama: "Kelas 7A", tingkat: 7 }).returning({ id: kelas.id, tingkat: kelas.tingkat, nama: kelas.nama, guruId: kelas.guruId }).onConflictDoNothing() as any);
-          if (!createdKelas) return apiError("Kelas tidak ditemukan untuk akun guru ini", 404);
-          kelasRow = createdKelas;
-          resolvedKelasId = createdKelas.id;
-        }
-      }
-    }
+    const resolvedKursusId = resolvedKursusId2;
+    const resolvedKelasId = kelasIdStr2;
+    const kelasRow: { id: string; tingkat: number; nama: string } = kelasRow2;
 
     const subStatus = await getSubscriptionStatus(session.userId!);
     if (!subStatus.canUpload) {
