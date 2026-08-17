@@ -257,17 +257,19 @@ export async function POST(
     }
 
     const estimatedCost = estimateGenerationCost(sourceText.length);
-    const hasBalance = await checkBalance(session.userId!, estimatedCost);
-    if (!hasBalance) {
-      releaseConcurrent(concKey);
-      const bal = await getBalance(session.userId!);
-      return NextResponse.json({
-        success: false,
-        error: `Saldo token tidak cukup. Estimasi biaya Rp${estimatedCost}/generate.`,
-        errorCode: "INSUFFICIENT_BALANCE",
-        balance: bal.balance,
-        required: estimatedCost,
-      }, { status: 402 });
+    if (process.env.FREE_GENERATE_MODE !== "true") {
+      const hasBalance = await checkBalance(session.userId!, estimatedCost);
+      if (!hasBalance) {
+        releaseConcurrent(concKey);
+        const bal = await getBalance(session.userId!);
+        return NextResponse.json({
+          success: false,
+          error: `Saldo token tidak cukup. Estimasi biaya Rp${estimatedCost}/generate.`,
+          errorCode: "INSUFFICIENT_BALANCE",
+          balance: bal.balance,
+          required: estimatedCost,
+        }, { status: 402 });
+      }
     }
 
     await appendEvent(`gen:${session.userId}`, "gen.queued", {
@@ -298,26 +300,30 @@ export async function POST(
     }
 
     let chargedAmount = estimatedCost;
-    try {
-      const result = await deductGenerateCostDynamic(session.userId!, sourceText.length, id);
-      chargedAmount = result.chargedAmount;
-    } catch (e) {
-      releaseConcurrent(concKey);
-      await db
-        .update(aiGeneration)
-        .set({ status: "extracted", updatedAt: new Date() })
-        .where(eq(aiGeneration.id, id))
-        .catch(() => {});
-      if (e instanceof InsufficientBalanceError) {
-        return NextResponse.json({
-          success: false,
-          error: "Saldo token tidak cukup.",
-          errorCode: "INSUFFICIENT_BALANCE",
-          balance: e.currentBalance,
-          required: e.required,
-        }, { status: 402 });
+    if (process.env.FREE_GENERATE_MODE === "true") {
+      chargedAmount = 0;
+    } else {
+      try {
+        const result = await deductGenerateCostDynamic(session.userId!, sourceText.length, id);
+        chargedAmount = result.chargedAmount;
+      } catch (e) {
+        releaseConcurrent(concKey);
+        await db
+          .update(aiGeneration)
+          .set({ status: "extracted", updatedAt: new Date() })
+          .where(eq(aiGeneration.id, id))
+          .catch(() => {});
+        if (e instanceof InsufficientBalanceError) {
+          return NextResponse.json({
+            success: false,
+            error: "Saldo token tidak cukup.",
+            errorCode: "INSUFFICIENT_BALANCE",
+            balance: e.currentBalance,
+            required: e.required,
+          }, { status: 402 });
+        }
+        throw e;
       }
-      throw e;
     }
 
     // F1-5: persist chargedAmount to ai_generation.charged_amount before after() so cron recovery can refund

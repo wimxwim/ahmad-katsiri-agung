@@ -95,11 +95,15 @@ function KursusContent() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem("akal-draft-kursus-search");
-      if (saved) setSearch(saved);
+      if (saved && saved.length <= 100) setSearch(saved.slice(0, 100));
     } catch {}
   }, []);
   useEffect(() => {
-    try { localStorage.setItem("akal-draft-kursus-search", search); } catch {}
+    if (search.length > 100) return;
+    const t = setTimeout(() => {
+      try { localStorage.setItem("akal-draft-kursus-search", search); } catch {}
+    }, 300);
+    return () => clearTimeout(t);
   }, [search]);
 
   async function handleInvite(id: string) {
@@ -272,7 +276,7 @@ function KursusContent() {
     }
   }
 
-  async function fetchData() {
+  async function fetchData(signal?: AbortSignal) {
     try {
       setError("");
       setErrorStatus(null);
@@ -282,10 +286,11 @@ function KursusContent() {
         setLoading(false);
         return;
       }
-      const controller = new AbortController();
-      const t = setTimeout(() => controller.abort(), 15000);
-      const res = await fetch("/api/v1/kursus", { credentials: "include", signal: controller.signal });
-      clearTimeout(t);
+      const controller = signal ? null : new AbortController();
+      const sig = signal ?? controller!.signal;
+      const t = signal ? null : setTimeout(() => controller!.abort(), 15000);
+      const res = await fetch("/api/v1/kursus", { credentials: "include", signal: sig });
+      if (t) clearTimeout(t);
       if (!res.ok) {
         if (res.status === 404) {
           setErrorStatus(404);
@@ -317,7 +322,10 @@ function KursusContent() {
   }
 
   useEffect(() => {
-    fetchData();
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 15000);
+    fetchData(c.signal);
+    return () => { clearTimeout(t); c.abort(); };
   }, []);
 
   useEffect(() => {

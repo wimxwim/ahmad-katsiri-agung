@@ -30,7 +30,7 @@ export async function POST(
 
     const balance = await getBalance(session.userId);
     const isPremium = balance.isUnlocked === true;
-    const CONCURRENT_TTL = isPremium ? 3 * 60 * 1000 : 30 * 60 * 1000;
+    const CONCURRENT_TTL = isPremium ? 10 * 60 * 1000 : 5 * 60 * 1000;
 
     try {
       await requireUnlocked(session.userId);
@@ -102,20 +102,23 @@ export async function POST(
       throw e;
     }
 
-    const estimatedCost = estimateGenerationCost(12000);
-    const hasBalance = await checkBalance(session.userId!, estimatedCost);
-    if (!hasBalance) {
-      releaseConcurrent(`gen:${session.userId}`);
-      const bal = await getBalance(session.userId!);
-      return NextResponse.json({
-        success: false,
-        error: `Saldo token tidak cukup. Estimasi biaya Rp${estimatedCost}/generate.`,
-        balance: bal.balance,
-        required: estimatedCost,
-      }, { status: 402 });
+    const sourceLenForCost = bytes.length || 5000;
+    const estimatedCost = estimateGenerationCost(sourceLenForCost);
+    if (process.env.FREE_GENERATE_MODE !== "true") {
+      const hasBalance = await checkBalance(session.userId!, estimatedCost);
+      if (!hasBalance) {
+        releaseConcurrent(`gen:${session.userId}`);
+        const bal = await getBalance(session.userId!);
+        return NextResponse.json({
+          success: false,
+          error: `Saldo token tidak cukup. Estimasi biaya Rp${estimatedCost}/generate.`,
+          balance: bal.balance,
+          required: estimatedCost,
+        }, { status: 402 });
+      }
     }
 
-    const { chargedAmount } = await deductGenerateCostDynamic(session.userId!, 12000, id);
+    const { chargedAmount } = await deductGenerateCostDynamic(session.userId!, sourceLenForCost, id);
 
     await db
       .update(aiGeneration)

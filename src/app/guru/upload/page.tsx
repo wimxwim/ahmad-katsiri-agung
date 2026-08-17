@@ -14,6 +14,7 @@ import { SkeletonList } from "@/components/ui/SkeletonBlocks";
 const ALLOWED_EXTENSIONS = [".pdf", ".doc", ".docx"];
 const MAX_SIZE = 10 * 1024 * 1024;
 const DIRECT_UPLOAD_THRESHOLD = 4 * 1024 * 1024;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface KursusItem { id: string; judul: string; slug: string; }
 interface KelasItem { id: string; nama: string; tingkat: number; }
@@ -53,13 +54,21 @@ function GuruUploadContent() {
       const saved = localStorage.getItem("akal-draft-upload");
       if (saved) {
         const p = JSON.parse(saved);
-        if (typeof p.selectedKursus === "string") setSelectedKursus(p.selectedKursus);
-        if (typeof p.selectedKelasId === "string" && p.selectedKelasId) setSelectedKelasId(p.selectedKelasId);
+        if (typeof p.selectedKursus === "string" && UUID_RE.test(p.selectedKursus.trim())) setSelectedKursus(p.selectedKursus.trim());
+        if (typeof p.selectedKelasId === "string" && UUID_RE.test(p.selectedKelasId.trim())) setSelectedKelasId(p.selectedKelasId.trim());
       }
     } catch {}
   }, []);
   useEffect(() => {
-    try { localStorage.setItem("akal-draft-upload", JSON.stringify({ selectedKursus, selectedKelasId })); } catch {}
+    try {
+      const safeKursus = UUID_RE.test(selectedKursus.trim()) ? selectedKursus.trim() : selectedKursus === "" ? "" : null;
+      const safeKelas = UUID_RE.test(selectedKelasId.trim()) ? selectedKelasId.trim() : selectedKelasId === "" ? "" : null;
+      if (safeKursus === null && safeKelas === null) return;
+      localStorage.setItem("akal-draft-upload", JSON.stringify({
+        selectedKursus: safeKursus !== null ? safeKursus : "",
+        selectedKelasId: safeKelas !== null ? safeKelas : "",
+      }));
+    } catch {}
   }, [selectedKursus, selectedKelasId]);
 
   // F11-5 90s timeout tanpa countdown -> tambah countdown
@@ -94,7 +103,15 @@ function GuruUploadContent() {
   useEffect(() => {
     const c1 = new AbortController();
     fetch("/api/v1/kursus", { credentials: "include", signal: c1.signal })
-      .then((r) => (r.ok ? r.json() : { data: [] }))
+      .then((r) => {
+        if (!r.ok) {
+          if (r.status === 403) setKursusError("Sesi habis, muat ulang halaman");
+          else if (r.status === 429) setKursusError(`Terlalu banyak permintaan, coba lagi dalam ${r.headers.get("Retry-After") || 30} detik`);
+          else if (r.status !== 404) setKursusError("Gagal memuat daftar kursus");
+          return { data: [] };
+        }
+        return r.json();
+      })
       .then((j) => {
         const list = j.data || [];
         setKursus(list);
@@ -103,26 +120,34 @@ function GuruUploadContent() {
           return list[0]?.id || prev;
         });
       })
-      .catch(() => setKursusError("Gagal memuat daftar kursus"));
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === "AbortError") setKursusError("Request timeout (15 detik)");
+        else setKursusError("Gagal memuat daftar kursus");
+      });
     const c2 = new AbortController();
     setLoadingKelas(true);
     fetch("/api/v1/guru/kelas", { credentials: "include", signal: c2.signal })
-      .then((r) => (r.ok ? r.json() : { data: [] }))
+      .then((r) => {
+        if (!r.ok) {
+          if (r.status === 403) setKursusError("Sesi habis, muat ulang halaman");
+          else if (r.status === 429) setKursusError(`Terlalu banyak permintaan, coba lagi dalam ${r.headers.get("Retry-After") || 30} detik`);
+          return { data: [] };
+        }
+        return r.json();
+      })
       .then((j) => setKelasList(j.data || []))
-      .catch(() => {})
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === "AbortError") setKursusError("Request timeout (15 detik)");
+        else setKursusError("Gagal memuat daftar kelas");
+      })
       .finally(() => setLoadingKelas(false));
     loadHistory();
     return () => { c1.abort(); c2.abort(); };
   }, []);
 
-  useEffect(() => { if (kursus.length > 0 && !selectedKursus) setSelectedKursus(kursus[0].id); }, [kursus, selectedKursus]);
+  useEffect(() => { if (kursus.length > 0 && (!selectedKursus || !UUID_RE.test(selectedKursus) || !kursus.some((k) => k.id === selectedKursus))) setSelectedKursus(kursus[0].id); }, [kursus, selectedKursus]);
 
-  useEffect(() => { if (kelasList.length > 0 && !selectedKelasId) setSelectedKelasId(kelasList[0].id); }, [kelasList, selectedKelasId]);
-
-  useEffect(() => {
-    if (kelasList.length === 0) return;
-    if (selectedKelasId && !kelasList.some((k) => k.id === selectedKelasId)) setSelectedKelasId("");
-  }, [kelasList, selectedKelasId]);
+  useEffect(() => { if (kelasList.length > 0 && (!selectedKelasId || !UUID_RE.test(selectedKelasId) || !kelasList.some((k) => k.id === selectedKelasId))) setSelectedKelasId(kelasList[0].id); }, [kelasList, selectedKelasId]);
 
   function validate(f: File): { ok: boolean; reason?: string } {
     // F11-5 magic bytes check (basic: extension + size + 0 bytes)
@@ -158,11 +183,14 @@ function GuruUploadContent() {
 
   function onDrop(e: React.DragEvent) { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) pickFile(f); }
 
+  const isKelasValid = UUID_RE.test(selectedKelasId.trim());
+  const isKursusValid = UUID_RE.test(selectedKursus.trim());
+
   async function handleUpload() {
     if (!isOnline) { setError("Kamu offline — beberapa fitur tidak tersedia"); return; }
     if (!file) { setError("Pilih file dulu"); return; }
-    if (!selectedKursus) { setError("Pilih kursus dulu"); return; }
-    if (!selectedKelasId) { setError(kelasList.length === 0 ? "Buat kelas dulu sebelum upload dokumen." : "Pilih kelas untuk melanjutkan"); return; }
+    if (!isKursusValid) { setError("Pilih kursus dulu"); return; }
+    if (!isKelasValid) { setError(kelasList.length === 0 ? "Buat kelas dulu sebelum upload dokumen." : "Kelas tidak valid — pilih kelas dari daftar"); return; }
     setError(""); setSuccessFileName(null);
 
     if (file.size > DIRECT_UPLOAD_THRESHOLD) {
@@ -306,7 +334,7 @@ function GuruUploadContent() {
       )}
 
       <div className="mt-6 flex flex-col sm:flex-row gap-3 sm:items-center">
-        <button onClick={handleUpload} disabled={!file || !selectedKursus || !selectedKelasId || loadingKelas || kelasList.length === 0 || !isOnline || (job.state !== "idle" && job.state !== "failed" && job.state !== "ready")} className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+        <button onClick={handleUpload} disabled={!file || !isKursusValid || !isKelasValid || loadingKelas || kelasList.length === 0 || !isOnline || (job.state !== "idle" && job.state !== "failed" && job.state !== "ready")} className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
           {job.state === "uploading" || job.state === "extracting" ? (<Loader2 className="w-4 h-4 animate-spin" />) : (<Upload className="w-4 h-4" />)} Upload Dokumen
         </button>
         {file && (job.state === "idle" || job.state === "failed" || job.state === "ready") && (<button onClick={reset} className="text-xs text-on-surface-variant hover:text-primary active:scale-[0.98] transition-colors">Bersihkan pilihan</button>)}

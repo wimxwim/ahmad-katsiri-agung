@@ -168,7 +168,7 @@ export const siswaKursus = pgTable(
       .notNull()
       .references(() => kursus.id, { onDelete: "cascade" }),
     status: varchar("status", { length: 20 }).notNull().default("AKTIF"),
-    inviteTokenId: uuid("invite_token_id"),
+    inviteTokenId: uuid("invite_token_id").references(() => inviteTokens.id, { onDelete: "set null" }),
     tanggalDaftar: timestamp("tanggal_daftar", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -480,6 +480,7 @@ export const fileMateri = pgTable(
     index("file_materi_kursus_id_idx").on(t.kursusId),
     index("file_materi_status_idx").on(t.status),
     index("file_materi_kategori_idx").on(t.kategori),
+    index("file_materi_kelas_id_idx").on(t.kelasId),
   ]
 );
 
@@ -585,7 +586,7 @@ export const kelas = pgTable(
   (table) => [
     index("kelas_guru_id_idx").on(table.guruId),
     index("kelas_sekolah_id_idx").on(table.sekolahId),
-    unique("kelas_nama_guru_unique").on(table.nama, table.guruId),
+    uniqueIndex("kelas_nama_guru_unique_partial").on(table.nama, table.guruId).where(sql`deleted_at IS NULL`),
   ],
 );
 
@@ -884,6 +885,8 @@ export const aiGeneration = pgTable("ai_generation", {
   kursusIdx: index("ai_generation_kursus_id_idx").on(t.kursusId),
   guruCreatedIdx: index("ai_generation_guru_created_idx").on(t.guruId, t.createdAt),
   statusCreatedIdx: index("ai_generation_status_created_idx").on(t.status, t.createdAt),
+  tingkatIdx: index("ai_generation_tingkat_idx").on(t.tingkat),
+  chargedAmountIdx: index("ai_generation_charged_amount_idx").on(t.chargedAmount),
 }));
 
 export const aiGenerationRelations = relations(aiGeneration, ({ one, many }) => ({
@@ -1045,7 +1048,7 @@ export const quizAttempt = pgTable(
     quizIdx: index("quiz_attempt_quiz_idx").on(t.quizPublishedId),
     statusIdx: index("quiz_attempt_status_idx").on(t.status),
     nilaiIdx: index("quiz_attempt_nilai_idx").on(t.nilai),
-    uniqueDone: uniqueIndex("quiz_attempt_siswa_quiz_done_unique").on(t.siswaId, t.quizPublishedId, t.status),
+    uniqueDone: uniqueIndex("quiz_attempt_siswa_quiz_done_unique").on(t.siswaId, t.quizPublishedId, t.status).where(sql`status = 'SELESAI'`),
   }),
 );
 
@@ -1372,7 +1375,7 @@ export const aiRequests = pgTable("ai_requests", {
 }));
 
 export const tutorChat = pgTable("tutor_chat", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: uuid("id").primaryKey().defaultRandom().$defaultFn(() => uuidv7()),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   role: varchar("role", { length: 20 }).notNull().default("murid"),
   prompt: text("prompt").notNull(),

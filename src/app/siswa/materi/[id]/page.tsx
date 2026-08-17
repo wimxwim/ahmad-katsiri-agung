@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Loader2, AlertCircle, Cl
 import { MateriRenderer } from "@/components/siswa/MateriRenderer";
 import DiskusiMateri from "@/components/siswa/DiskusiMateri";
 import { csrfHeaders } from "@/lib/csrf";
+import { invalidateCache } from "@/lib/data-cache";
 
 interface MateriDetail {
   id: string;
@@ -33,11 +34,18 @@ export default function SiswaMateriPage() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`/api/v1/siswa/materi/${id}`, { credentials: "include" })
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 15000);
+    fetch(`/api/v1/siswa/materi/${id}`, { credentials: "include", signal: c.signal })
       .then(async (r) => {
+        if (!r.ok) {
+          const retry = r.headers.get("Retry-After");
+          const j = await r.json().catch(() => ({} as Record<string, unknown>));
+          const msg = (j as { error?: string }).error || (j as { message?: string }).message || (r.status === 429 ? `Terlalu banyak permintaan, coba lagi dalam ${retry || 30} detik` : r.status === 404 ? "Materi tidak ditemukan" : r.status === 403 ? "Sesi habis, muat ulang halaman" : r.status === 402 ? "Saldo tidak cukup" : "Gagal memuat");
+          throw new Error(msg);
+        }
         const j = await r.json();
-        if (r.ok) return j;
-        return { error: j };
+        return j;
       })
       .then((j) => {
         if (j.error) {
@@ -47,10 +55,15 @@ export default function SiswaMateriPage() {
         }
         setLoading(false);
       })
-      .catch(() => {
-        setError("Gagal memuat");
+      .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          setError("Request timeout (15 detik)");
+        } else {
+          setError(err instanceof Error ? err.message : "Gagal memuat");
+        }
         setLoading(false);
       });
+    return () => { clearTimeout(t); c.abort(); };
   }, [id]);
 
   async function markSelesai() {
@@ -65,6 +78,8 @@ export default function SiswaMateriPage() {
       });
       if (res.ok) {
         setDone(true);
+        invalidateCache("materi:");
+        invalidateCache("beranda:dashboard");
       } else {
         const j = await res.json().catch(() => ({}));
         throw new Error(j.error || "Gagal menandai selesai");

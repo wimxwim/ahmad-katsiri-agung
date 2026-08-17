@@ -24,6 +24,8 @@ interface KursusItem {
   judul: string;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function clampTingkat(v: number): number {
   if (Number.isNaN(v)) return 1;
   return Math.min(20, Math.max(1, Math.trunc(v)));
@@ -77,7 +79,7 @@ function KelasContent() {
         const p = JSON.parse(saved);
         if (typeof p.nama === "string") setNama(p.nama);
         if (typeof p.tingkat === "number") setTingkat(clampTingkat(p.tingkat));
-        if (typeof p.kursusId === "string") setKursusId(p.kursusId);
+        if (typeof p.kursusId === "string" && UUID_RE.test(p.kursusId)) setKursusId(p.kursusId);
       }
     } catch {}
   }, []);

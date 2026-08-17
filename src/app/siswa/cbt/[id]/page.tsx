@@ -53,11 +53,17 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
 
   useEffect(() => {
     if (!id) return;
-    fetch(`/api/v1/siswa/quiz/${id}`, { credentials: "include" })
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 15000);
+    fetch(`/api/v1/siswa/quiz/${id}`, { credentials: "include", signal: c.signal })
       .then(async (r) => {
         if (!r.ok) {
-          const j = await r.json().catch(() => ({}));
-          throw new Error(j.error || "Gagal memuat");
+          if (r.status === 429) throw new Error(`Terlalu banyak permintaan, coba lagi dalam ${r.headers.get("Retry-After") || 30} detik`);
+          if (r.status === 402) throw new Error("Saldo tidak cukup — Topup Rp10.000");
+          if (r.status === 403) throw new Error("Sesi habis, muat ulang halaman");
+          if (r.status === 404) throw new Error("Kuis tidak ditemukan");
+          const j = await r.json().catch(() => ({} as Record<string, unknown>));
+          throw new Error((j as { error?: string }).error || "Gagal memuat");
         }
         return r.json();
       })
@@ -66,9 +72,14 @@ export default function SiswaCBTPage({ params }: { params: Promise<{ id: string 
         setLoading(false);
       })
       .catch((e) => {
-        setError(e instanceof Error ? e.message : "Gagal memuat");
+        if (e instanceof DOMException && e.name === "AbortError") {
+          setError("Request timeout (15 detik)");
+        } else {
+          setError(e instanceof Error ? e.message : "Gagal memuat");
+        }
         setLoading(false);
       });
+    return () => { clearTimeout(t); c.abort(); };
   }, [id]);
 
   useEffect(() => {

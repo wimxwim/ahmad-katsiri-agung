@@ -3,7 +3,7 @@ import { checkRateLimit, checkConcurrentLimit, releaseConcurrent } from "@/lib/r
 import { checkQuota, QuotaExceededError } from "@/lib/quota-guard";
 import { apiError, apiRateLimit } from "@/lib/api-response";
 import { db } from "@/lib/db";
-import { aiGeneration } from "@/lib/db/schema";
+import { aiGeneration, fileMateri } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { appendEvent } from "@/lib/event-store";
 import { requireGuru, GuardError } from "@/lib/route-guard-v2";
@@ -27,7 +27,7 @@ export async function POST(
 
     const balance = await getBalance(session.userId);
     const isPremium = balance.isUnlocked === true;
-    const CONCURRENT_TTL = isPremium ? 3 * 60 * 1000 : 30 * 60 * 1000;
+    const CONCURRENT_TTL = isPremium ? 10 * 60 * 1000 : 5 * 60 * 1000;
 
     try {
       await requireUnlocked(session.userId);
@@ -73,20 +73,24 @@ export async function POST(
       throw e;
     }
 
-    const estimatedCost = estimateGenerationCost(12000);
-    const hasBalance = await checkBalance(session.userId!, estimatedCost);
-    if (!hasBalance) {
-      releaseConcurrent(`gen:${session.userId}`);
-      const bal = await getBalance(session.userId!);
-      return NextResponse.json({
-        success: false,
-        error: `Saldo token tidak cukup. Estimasi biaya Rp${estimatedCost}/generate.`,
-        balance: bal.balance,
-        required: estimatedCost,
-      }, { status: 402 });
+    const [fileForCost] = await db.select().from(fileMateri).where(eq(fileMateri.id, row.fileMateriId!)).limit(1);
+    const sourceLenForCost = fileForCost?.extractionText?.length || 5000;
+    const estimatedCost = estimateGenerationCost(sourceLenForCost);
+    if (process.env.FREE_GENERATE_MODE !== "true") {
+      const hasBalance = await checkBalance(session.userId!, estimatedCost);
+      if (!hasBalance) {
+        releaseConcurrent(`gen:${session.userId}`);
+        const bal = await getBalance(session.userId!);
+        return NextResponse.json({
+          success: false,
+          error: `Saldo token tidak cukup. Estimasi biaya Rp${estimatedCost}/generate.`,
+          balance: bal.balance,
+          required: estimatedCost,
+        }, { status: 402 });
+      }
     }
 
-    const { chargedAmount } = await deductGenerateCostDynamic(session.userId!, 12000, id);
+    const { chargedAmount } = await deductGenerateCostDynamic(session.userId!, sourceLenForCost, id);
 
     const { regenerateQuizOnly } = await import("@/lib/ai-regenerate");
 

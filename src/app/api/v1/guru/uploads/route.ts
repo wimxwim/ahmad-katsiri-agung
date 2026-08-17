@@ -19,7 +19,8 @@ import { z } from "zod";
 import crypto from "crypto";
 import JSZip from "jszip";
 
-const uuidSchema = z.string().uuid();
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const uuidSchema = z.string().regex(UUID_RE, "harus UUID");
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -220,8 +221,12 @@ async function handleDirectUpload(
   if (typeof sizeBytes !== "number" || !Number.isFinite(sizeBytes) || sizeBytes <= 0) {
     return apiError("sizeBytes wajib berupa angka positif", 400);
   }
-  const parsedKursus = uuidSchema.safeParse(kursusId);
-  if (!parsedKursus.success) return apiError("kursusId harus UUID", 400);
+  const kursusIdTrim = typeof kursusId === "string" ? kursusId.trim() : "";
+  const parsedKursus = uuidSchema.safeParse(kursusIdTrim);
+  if (!parsedKursus.success) {
+    console.warn("[upload] kursusId invalid", { kursusId: kursusIdTrim, guruId: session.userId });
+    return apiError("kursusId harus UUID", 400);
+  }
   const resolvedKursusId: string | null = await resolveKursusId(parsedKursus.data, session.userId);
   if (!resolvedKursusId) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
   let resolvedKelas: { id: string; tingkat: number; nama: string } | null = null;
@@ -229,10 +234,18 @@ async function handleDirectUpload(
     resolvedKelas = await resolveKelasId(null, session.userId);
     if (!resolvedKelas) return apiError("Pilih kelas dulu — buat kelas di /guru/kelas", 400);
   } else {
-    const parsedKelas = uuidSchema.safeParse(kelasId);
-    if (!parsedKelas.success) return apiError("kelasId tidak valid — pilih kelas dari daftar", 400);
-    resolvedKelas = await resolveKelasId(parsedKelas.data, session.userId);
-    if (!resolvedKelas) return apiError("Pilih kelas dulu — buat kelas di /guru/kelas", 400);
+    const kelasIdTrim = typeof kelasId === "string" ? kelasId.trim() : "";
+    const parsedKelas = uuidSchema.safeParse(kelasIdTrim);
+    if (!parsedKelas.success) {
+      console.warn("[upload] kelasId invalid", { kelasId: kelasIdTrim, guruId: session.userId });
+      // fallback ke kelas pertama guru (handle stale localStorage / non-UUID)
+      resolvedKelas = await resolveKelasId(null, session.userId);
+      if (!resolvedKelas) return apiError("kelasId tidak valid — pilih kelas dari daftar", 400);
+      console.warn("[upload] kelasId fallback", { fallbackId: resolvedKelas.id, guruId: session.userId });
+    } else {
+      resolvedKelas = await resolveKelasId(parsedKelas.data, session.userId);
+      if (!resolvedKelas) return apiError("Pilih kelas dulu — buat kelas di /guru/kelas", 400);
+    }
   }
   const kelasRow: { id: string; tingkat: number; nama: string } = resolvedKelas;
 
@@ -468,8 +481,12 @@ export async function POST(request: NextRequest) {
     const kelasId = fd.get("kelasId");
 
     if (!(file instanceof File)) return apiError("File tidak ditemukan", 400);
-    const parsedKursusForm = uuidSchema.safeParse(kursusId);
-    if (!parsedKursusForm.success) return apiError("kursusId harus UUID", 400);
+    const kursusIdTrim2 = typeof kursusId === "string" ? kursusId.trim() : "";
+    const parsedKursusForm = uuidSchema.safeParse(kursusIdTrim2);
+    if (!parsedKursusForm.success) {
+      console.warn("[upload] kursusId invalid (form)", { kursusId: kursusIdTrim2, guruId: session.userId });
+      return apiError("kursusId harus UUID", 400);
+    }
     const resolvedKursusId2: string | null = await resolveKursusId(parsedKursusForm.data, session.userId!);
     if (!resolvedKursusId2) return apiError("Kursus tidak ditemukan untuk akun guru ini", 404);
     let resolvedKelas2: { id: string; tingkat: number; nama: string } | null = null;
@@ -477,10 +494,17 @@ export async function POST(request: NextRequest) {
       resolvedKelas2 = await resolveKelasId(null, session.userId!);
       if (!resolvedKelas2) return apiError("Pilih kelas dulu — buat kelas di /guru/kelas", 400);
     } else {
-      const parsedKelasForm = uuidSchema.safeParse(kelasId);
-      if (!parsedKelasForm.success) return apiError("kelasId tidak valid — pilih kelas dari daftar", 400);
-      resolvedKelas2 = await resolveKelasId(parsedKelasForm.data, session.userId!);
-      if (!resolvedKelas2) return apiError("Pilih kelas dulu — buat kelas di /guru/kelas", 400);
+      const kelasIdTrim2 = typeof kelasId === "string" ? kelasId.trim() : "";
+      const parsedKelasForm = uuidSchema.safeParse(kelasIdTrim2);
+      if (!parsedKelasForm.success) {
+        console.warn("[upload] kelasId invalid (form)", { kelasId: kelasIdTrim2, guruId: session.userId });
+        resolvedKelas2 = await resolveKelasId(null, session.userId!);
+        if (!resolvedKelas2) return apiError("kelasId tidak valid — pilih kelas dari daftar", 400);
+        console.warn("[upload] kelasId fallback (form)", { fallbackId: resolvedKelas2.id, guruId: session.userId });
+      } else {
+        resolvedKelas2 = await resolveKelasId(parsedKelasForm.data, session.userId!);
+        if (!resolvedKelas2) return apiError("Pilih kelas dulu — buat kelas di /guru/kelas", 400);
+      }
     }
     const kelasIdStr2 = resolvedKelas2.id;
     const kelasRow2: { id: string; tingkat: number; nama: string } = resolvedKelas2;

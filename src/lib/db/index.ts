@@ -12,7 +12,7 @@ function createDb(): DrizzleDb {
   // Higher pool max + allowExitOnIdle are safe because Supavisor handles session pooling.
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    max: 20, // max 20 untuk analytics 18 paralel + buffer
+    max: 10,
     // Supavisor transaction mode: prepared statements must be disabled
     // @ts-expect-error - pg PoolConfig types lag behind runtime `prepare` option
     prepare: false,
@@ -20,7 +20,8 @@ function createDb(): DrizzleDb {
     application_name: "akal-center",
     idleTimeoutMillis: 15000,
     connectionTimeoutMillis: 8000,
-    statement_timeout: 15000,
+    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
+    statement_timeout: 30000,
     idle_in_transaction_session_timeout: 15000,
   });
   pool.on("error", (err) => console.error("DB pool error:", err));

@@ -24,17 +24,26 @@ export default function KursusDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (signal?: AbortSignal) => {
     try {
       const [kursusRes, nilaiRes] = await Promise.all([
-        fetch(`/api/v1/kursus/${params.id}`, { credentials: "include" }),
-        fetch(`/api/v1/kursus/${params.id}/nilai`, { credentials: "include" }),
+        fetch(`/api/v1/kursus/${params.id}`, { credentials: "include", signal }),
+        fetch(`/api/v1/kursus/${params.id}/nilai`, { credentials: "include", signal }),
       ]);
-      if (kursusRes.status === 404) { setKursus(null); setLoading(false); return; }
-      if (!kursusRes.ok) throw new Error("Gagal memuat kursus");
+      if (!kursusRes.ok) {
+        if (kursusRes.status === 404) { setKursus(null); setLoading(false); return; }
+        throw new Error("Gagal memuat kursus");
+      }
       const kursusData = await kursusRes.json();
+      if (!kursusData.data) throw new Error("Kursus tidak ditemukan");
       setKursus(kursusData.data);
-      const nilaiData = await nilaiRes.json().catch(() => ({ data: [] }));
+      let nilaiData: { data: { siswaId: string; nama: string; nilai: number | null }[] };
+      if (!nilaiRes.ok) {
+        console.warn("[kursus/nilai] fetch failed", nilaiRes.status);
+        nilaiData = { data: [] };
+      } else {
+        nilaiData = await nilaiRes.json().catch(() => ({ data: [] }));
+      }
       const logEntries: { siswaId: string; nama: string; nilai: number | null }[] = nilaiData.data || [];
       const skorMap = new Map<string, number[]>();
       for (const entry of logEntries) {
@@ -52,6 +61,7 @@ export default function KursusDetailPage() {
       });
       setSiswa(siswaList);
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Gagal memuat data");
     } finally {
       setLoading(false);
@@ -59,7 +69,10 @@ export default function KursusDetailPage() {
   }, [params.id]);
 
   useEffect(() => {
-    load();
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 15000);
+    load(c.signal);
+    return () => { clearTimeout(t); c.abort(); };
   }, [load]);
 
   if (loading) {

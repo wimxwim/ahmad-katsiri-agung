@@ -76,20 +76,27 @@ export default function SiswaQuizListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const load = useCallback(() => {
+  const load = useCallback((signal?: AbortSignal) => {
     const cached = getCached<QuizItem[]>("quiz:list");
     if (cached) {
       setData(cached);
       setLoading(false);
-      return;
+    } else {
+      setLoading(true);
     }
-    setLoading(true);
     setError("");
-    fetch("/api/v1/siswa/quiz", { credentials: "include" })
+    const ctrl = signal ? null : new AbortController();
+    const sig = signal ?? ctrl!.signal;
+    const t = signal ? null : setTimeout(() => ctrl!.abort(), 15000);
+    fetch("/api/v1/siswa/quiz", { credentials: "include", signal: sig })
       .then(async (r) => {
         if (!r.ok) {
-          const j = await r.json().catch(() => ({}));
-          throw new Error(j.error || "Gagal memuat");
+          if (r.status === 429) throw new Error(`Terlalu banyak permintaan, coba lagi dalam ${r.headers.get("Retry-After") || 30} detik`);
+          if (r.status === 402) throw new Error("Saldo tidak cukup — Topup Rp10.000");
+          if (r.status === 403) throw new Error("Sesi habis, muat ulang halaman");
+          if (r.status === 404) throw new Error("Data tidak ditemukan");
+          const j = await r.json().catch(() => ({} as Record<string, unknown>));
+          throw new Error((j as { error?: string }).error || "Gagal memuat");
         }
         return r.json();
       })
@@ -99,13 +106,21 @@ export default function SiswaQuizListPage() {
         setLoading(false);
       })
       .catch((e) => {
-        setError(e instanceof Error ? e.message : "Gagal memuat");
+        if (e instanceof DOMException && e.name === "AbortError") {
+          setError("Request timeout (15 detik)");
+        } else {
+          setError(e instanceof Error ? e.message : "Gagal memuat");
+        }
         setLoading(false);
-      });
+      })
+      .finally(() => { if (t) clearTimeout(t); });
   }, []);
 
   useEffect(() => {
-    load();
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 15000);
+    load(c.signal);
+    return () => { clearTimeout(t); c.abort(); };
   }, [load]);
 
   if (loading) {
@@ -118,7 +133,7 @@ export default function SiswaQuizListPage() {
         <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
         <p className="text-xs text-red-700 mb-3">{error}</p>
 <button
-          onClick={load}
+          onClick={() => load()}
           disabled={loading}
           className="inline-flex items-center gap-1.5 bg-primary text-white px-4 py-2 rounded-full text-xs font-semibold hover:brightness-110 active:scale-[0.98] disabled:opacity-50 transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 outline-hidden"
         >

@@ -221,6 +221,10 @@ export async function deductGenerateCostDynamic(
   sourceTextLength: number,
   referenceId?: string,
 ): Promise<{ balance: TokenBalance; chargedAmount: number }> {
+  if (process.env.FREE_GENERATE_MODE === "true") {
+    const bal = await getBalance(userId);
+    return { balance: bal, chargedAmount: 0 };
+  }
   const estimatedCost = estimateGenerationCost(sourceTextLength);
   const balance = await deductBalance(userId, estimatedCost, {
     notes: `AI generation cost (estimated: Rp${estimatedCost})`,
@@ -321,12 +325,13 @@ export async function settleGenerationCost(
   preChargedAmount: number,
   referenceId?: string,
 ): Promise<{ actualPrice: number; refunded: number; additionalCharged: number }> {
+  if (process.env.FREE_GENERATE_MODE === "true") return { actualPrice: 0, refunded: 0, additionalCharged: 0 };
   const actualPrice = calculateActualPrice(tokensIn, tokensOut);
   if (actualPrice === preChargedAmount) return { actualPrice, refunded: 0, additionalCharged: 0 };
   const settleRef = referenceId ? `settle:${referenceId}` : undefined;
   const isRefund = actualPrice < preChargedAmount;
   const diff = Math.abs(actualPrice - preChargedAmount);
-  const amount = isRefund ? diff : Math.min(diff, preChargedAmount);
+  const amount = diff;
   const txType = isRefund ? "REFUND" : "DEDUCT";
   const notes = isRefund
     ? `Refund kelebihan biaya generate. Estimasi: Rp${preChargedAmount}, Aktual: Rp${actualPrice}`

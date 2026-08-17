@@ -20,10 +20,11 @@ export const REFRESH_COOKIE_NAME = "akal_refresh";
 export const SESSION_DURATION_SECONDS = 8 * 60 * 60;
 
 export function roleToSessionRole(role: string): SesiRole {
-  if (role === "GURU" || role === "ASISTEN_GURU") return "guru";
-  if (role === "OWNER") return "owner";
-  if (role === "ADMIN_SEKOLAH") return "admin_sekolah";
-  if (role === "ORANG_TUA") return "orang_tua";
+  const r = role.trim().toUpperCase();
+  if (r === "GURU" || r === "ASISTEN_GURU") return "guru";
+  if (r === "OWNER") return "owner";
+  if (r === "ADMIN_SEKOLAH") return "admin_sekolah";
+  if (r === "ORANG_TUA") return "orang_tua";
   return "murid";
 }
 

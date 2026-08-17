@@ -61,7 +61,9 @@ export async function POST(request: NextRequest) {
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
         deletedAt: users.deletedAt,
-        // Note: failedLoginAttempts and lockedUntil not yet in DB — use optional chaining
+        suspendedAt: users.suspendedAt,
+        failedLoginAttempts: users.failedLoginAttempts,
+        lockedUntil: users.lockedUntil,
       })
       .from(users)
       .where(and(eq(users.email, email), isNull(users.deletedAt)))
@@ -110,12 +112,8 @@ export async function POST(request: NextRequest) {
       return apiError("NO_PASSWORD_SET", "Akun ini belum punya kata sandi. Masuk lewat Google dulu lalu atur kata sandi di halaman profil.", { email }, 401);
     }
 
-    // Check if account is locked
-    const userAny = user as any;
-    if (userAny.lockedUntil && new Date(userAny.lockedUntil) > new Date()) {
-      const remainingMinutes = Math.ceil((new Date(userAny.lockedUntil).getTime() - Date.now()) / 60000);
-      return apiError("Akun terkunci karena terlalu banyak percobaan login gagal. Coba lagi dalam " + remainingMinutes + " menit.", 423);
-    }
+    if (user.suspendedAt) return apiError("Akun ditangguhkan", 403);
+    if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) return apiError("Akun terkunci, coba lagi nanti", 423);
 
     const result = await verifyPassword(password, user.passwordHash);
     if (!result.valid) {
@@ -129,7 +127,7 @@ export async function POST(request: NextRequest) {
         portal: portalIntent || "unknown",
       }).catch(err => console.error("logAuthEvent failed:", err));
       // Increment failed attempts and lock if threshold reached
-      const newAttempts = (userAny.failedLoginAttempts || 0) + 1;
+      const newAttempts = (user.failedLoginAttempts ?? 0) + 1;
       const lockedUntil = newAttempts >= 5
         ? new Date(Date.now() + 15 * 60 * 1000)
         : null;

@@ -4,7 +4,7 @@ import { eq, and } from "drizzle-orm";
 import { extractText } from "@/lib/text-extractor";
 import { chatWithFallback, getModelName, getModelForTask, type ChatResult } from "@/lib/ai";
 import { parseMateriSafe, parseQuizSafe, parseSoalSafe } from "@/lib/ai-sanitizer";
-import { buildQuizSystemPrompt, buildSoalSystemPrompt, buildMateriSystemPrompt, sanitizeUserText } from "@/lib/ai-generator";
+import { buildQuizSystemPrompt, buildSoalSystemPrompt, buildMateriSystemPrompt, sanitizeUserText, isFallbackMateri, isFallbackQuiz, isFallbackSoal } from "@/lib/ai-generator";
 import { appendEvent } from "@/lib/event-store";
 import { incrementUsage } from "@/lib/quota-guard";
 
@@ -74,6 +74,13 @@ export async function regenerateMateriOnly(generationId: string): Promise<void> 
     await db
       .update(aiGeneration)
       .set({ status: "failed", errorMessage: "AI schema invalid untuk materi", updatedAt: new Date() })
+      .where(eq(aiGeneration.id, generationId));
+    return;
+  }
+  if (isFallbackMateri(materiParsed as unknown as Record<string, unknown>)) {
+    await db
+      .update(aiGeneration)
+      .set({ status: "failed", materiStatus: "not_generated", errorMessage: "AI gagal menghasilkan materi berkualitas. Silakan regenerate.", updatedAt: new Date() })
       .where(eq(aiGeneration.id, generationId));
     return;
   }
@@ -196,6 +203,13 @@ export async function regenerateQuizOnly(generationId: string): Promise<void> {
     await db
       .update(aiGeneration)
       .set({ status: "failed", errorMessage: "AI schema invalid untuk quiz", updatedAt: new Date() })
+      .where(eq(aiGeneration.id, generationId));
+    return;
+  }
+  if (isFallbackQuiz(parsed.soal as unknown as unknown[])) {
+    await db
+      .update(aiGeneration)
+      .set({ status: "failed", quizStatus: "not_generated", errorMessage: "AI gagal menghasilkan kuis berkualitas. Silakan regenerate.", updatedAt: new Date() })
       .where(eq(aiGeneration.id, generationId));
     return;
   }
@@ -343,6 +357,13 @@ export async function regenerateSoalOnly(generationId: string): Promise<void> {
     await db
       .update(aiGeneration)
       .set({ status: "failed", errorMessage: "AI schema invalid untuk soal", updatedAt: new Date() })
+      .where(eq(aiGeneration.id, generationId));
+    return;
+  }
+  if (isFallbackSoal(parsed.soal as unknown as unknown[])) {
+    await db
+      .update(aiGeneration)
+      .set({ status: "failed", soalStatus: "not_generated", errorMessage: "AI gagal menghasilkan soal berkualitas. Silakan regenerate.", updatedAt: new Date() })
       .where(eq(aiGeneration.id, generationId));
     return;
   }

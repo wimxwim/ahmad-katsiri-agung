@@ -66,52 +66,62 @@ function MateriContent() {
   const kursusId = searchParams.get("kursusId");
   const welcome = searchParams.get("welcome");
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (signal?: AbortSignal) => {
     const cacheKey = `materi:${kursusId || 'all'}`;
     const cached = getCached<MateriItem[]>(cacheKey);
     if (cached) {
       setData(cached);
       setLoading(false);
-      return;
+    } else {
+      setLoading(true);
     }
-
+    setError("");
     const url = new URL("/api/v1/siswa/materi", window.location.origin);
     if (kursusId) url.searchParams.set("kursusId", kursusId);
-
-    setLoading(true);
-    setError("");
-
+    const ctrl = signal ? null : new AbortController();
+    const sig = signal ?? ctrl!.signal;
+    const t = signal ? null : setTimeout(() => ctrl!.abort(), 15000);
     try {
-      const r = await fetch(url.toString(), { credentials: "include" });
+      const r = await fetch(url.toString(), { credentials: "include", signal: sig });
       if (!r.ok) {
-        const j = await r.json().catch(() => ({}));
-        throw new Error(j.error || "Gagal memuat");
+        if (r.status === 429) throw new Error(`Terlalu banyak permintaan, coba lagi dalam ${r.headers.get("Retry-After") || 30} detik`);
+        if (r.status === 402) throw new Error("Saldo tidak cukup — Topup Rp10.000");
+        if (r.status === 403) throw new Error("Sesi habis, muat ulang halaman");
+        if (r.status === 404) throw new Error("Data tidak ditemukan");
+        const j = await r.json().catch(() => ({} as Record<string, unknown>));
+        throw new Error((j as { error?: string }).error || "Gagal memuat");
       }
       const j = await r.json();
       setCache(cacheKey, j.data || [], 60_000);
       setData(j.data || []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal memuat");
+      if (e instanceof DOMException && e.name === "AbortError") {
+        setError("Request timeout (15 detik)");
+      } else {
+        setError(e instanceof Error ? e.message : "Gagal memuat");
+      }
     } finally {
+      if (t) clearTimeout(t);
       setLoading(false);
     }
   }, [kursusId]);
 
   useEffect(() => {
     if (welcome === "1") setShowWelcome(true);
-    fetchData();
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 15000);
+    fetchData(c.signal);
+    return () => { clearTimeout(t); c.abort(); };
   }, [kursusId, welcome, fetchData]);
 
   useEffect(() => {
     const cached = getCached<KursusOption[]>("materi:kursusList");
     if (cached) {
       setKursusList(cached);
-      return;
     }
-    // NOTE: Tight coupling — fetching kursusList from the dashboard feed API.
-    // Ideally this should come from a dedicated endpoint like GET /api/v1/enroll/status.
-    // Keeping as-is since the feed API reliably returns kursusList.
-    fetch("/api/v1/siswa/feed", { credentials: "include" })
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 15000);
+    fetch("/api/v1/siswa/feed", { credentials: "include", signal: c.signal })
       .then(async (r) => {
         if (!r.ok) return;
         const j = await r.json();
@@ -121,8 +131,9 @@ function MateriContent() {
         }
       })
       .catch((_error) => {
-        // silently handled
+        // silently handled unless abort
       });
+    return () => { clearTimeout(t); c.abort(); };
   }, []);
 
   const handleFilterClick = useCallback(

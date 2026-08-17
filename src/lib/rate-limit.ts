@@ -128,8 +128,8 @@ export async function checkConcurrentLimit(
   } catch {
     // ignore
   }
-  if (!getRedis() && process.env.NODE_ENV === "production") {
-    return { allowed: false, current: 0, reason: "rate_limit_unavailable" as const };
+  if (!getRedis()) {
+    console.warn("[rate-limit] Redis unavailable, allowing with DB lease fallback");
   }
   const current = (perUserConcurrent.get(userKey) || 0) + 1;
   perUserConcurrent.set(userKey, current);

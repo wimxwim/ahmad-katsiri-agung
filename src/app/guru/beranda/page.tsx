@@ -374,7 +374,7 @@ function BerandaContent() {
   const hasStudentAlert = data.siswaBelumMengerjakan > 0 || data.siswaBerisiko > 0 || data.siswaKritis > 0;
   const nextStep = onboarding?.steps.find((s) => !s.done);
 
-  const publishedKursusCount = data.kursusList.filter((k) => k.statusPublikasi === "PUBLIK").length;
+  const publishedKursusCount = (data.kursusList ?? []).filter((k) => k.statusPublikasi === "PUBLIK").length;
   const stepBadges: ({ text: string; className: string } | null)[] = [
     data.totalKursus > 0
       ? { text: `${data.totalKursus} kursus`, className: "bg-primary/10 text-primary" }
@@ -838,7 +838,7 @@ function BerandaContent() {
           </Link>
         </div>
         <div className="flex flex-col gap-2 bento-card @container">
-          {data.kursusList.slice(0, 3).map((k) => {
+          {(data.kursusList ?? []).slice(0, 3).map((k) => {
             const badge = STATUS_BADGE[k.statusPublikasi] || STATUS_BADGE.DRAFT;
             return (
               <Link

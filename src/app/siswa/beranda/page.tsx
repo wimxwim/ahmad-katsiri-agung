@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { EASE_CURVE, WA_NUMBER } from "@/lib/constants";
-import { getCached, setCache } from "@/lib/data-cache";
+import { getCached, setCache, invalidateCache } from "@/lib/data-cache";
 import { csrfHeaders } from "@/lib/csrf";
 import { cn } from "@/lib/utils";
 import {
@@ -110,8 +110,13 @@ export default function SiswaBerandaPage() {
     let cancelled = false;
     async function consumeInvite() {
       try {
-        const kode = localStorage.getItem(INVITE_STORAGE_KEY);
-        if (!kode) return;
+        const raw = localStorage.getItem(INVITE_STORAGE_KEY);
+        if (!raw) return;
+        const kode = raw.trim();
+        if (!kode || kode.length > 32 || !/^[A-Za-z0-9_-]{4,32}$/.test(kode)) {
+          localStorage.removeItem(INVITE_STORAGE_KEY);
+          return;
+        }
         localStorage.removeItem(INVITE_STORAGE_KEY);
         const res = await fetch("/api/v1/invite/kelas/consume", {
           method: "POST",
@@ -123,9 +128,11 @@ export default function SiswaBerandaPage() {
         if (cancelled) return;
         if (json.success && json.data?.nama) {
           setInviteMessage(`Berhasil masuk ke kelas ${json.data.nama}!`);
+          invalidateCache("beranda:dashboard");
           fetchData();
         } else if (json.alreadyJoined) {
           setInviteMessage(`Kamu sudah tergabung di kelas ${json.data?.nama ?? ""}.`);
+          invalidateCache("beranda:dashboard");
           fetchData();
         }
       } catch { /* non-critical */ }
@@ -145,20 +152,50 @@ export default function SiswaBerandaPage() {
         setTotalAttempt(cached.quiz?.totalAttempt ?? 0);
         if (cached.profil?.nama) setNama(cached.profil.nama);
         setLoading(false);
-        return;
+        // tetap fetch background untuk revalidate (stale-while-revalidate)
+      } else {
+        setLoading(true);
       }
+    } else {
+      setLoading(true);
     }
-
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 15000);
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const res = await fetch("/api/v1/siswa/dashboard", { credentials: "include", headers: csrfHeaders() });
+        const res = await fetch("/api/v1/siswa/dashboard", { credentials: "include", headers: csrfHeaders(), signal: c.signal });
         if (!res.ok) {
+          if (res.status === 429) {
+            setError(`Terlalu banyak permintaan, coba lagi dalam ${res.headers.get("Retry-After") || 30} detik`);
+            setLoading(false);
+            clearTimeout(t);
+            return;
+          }
+          if (res.status === 402) {
+            setError("Saldo tidak cukup — Topup Rp10.000");
+            setLoading(false);
+            clearTimeout(t);
+            return;
+          }
+          if (res.status === 403) {
+            setError("Sesi habis, muat ulang halaman");
+            setLoading(false);
+            clearTimeout(t);
+            return;
+          }
+          if (res.status === 404) {
+            setError("Data tidak ditemukan");
+            setLoading(false);
+            clearTimeout(t);
+            return;
+          }
           if (attempt < 2 && (res.status === 401 || res.status >= 500)) {
             await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
             continue;
           }
           setError("Terjadi kesalahan saat memuat data. Coba lagi.");
           setLoading(false);
+          clearTimeout(t);
           return;
         }
         const json = await res.json();
@@ -173,14 +210,21 @@ export default function SiswaBerandaPage() {
         if (d.quiz?.data) setQuizList(d.quiz.data);
         setTotalAttempt(d.quiz?.totalAttempt ?? 0);
         setLoading(false);
+        clearTimeout(t);
         return;
-      } catch {
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          setError("Request timeout (15 detik)");
+          setLoading(false);
+          clearTimeout(t);
+          return;
+        }
         if (attempt < 2) {
           await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
         }
       }
     }
-
+    clearTimeout(t);
     setError("Terjadi kesalahan saat memuat data. Coba lagi.");
     setLoading(false);
   }, []);
@@ -258,7 +302,7 @@ export default function SiswaBerandaPage() {
     );
   }
 
-  if (feed && feed.data.length === 0) {
+  if (feed && (feed.data?.length ?? 0) === 0) {
     return (
       <div>
         <EmptyState
@@ -616,7 +660,7 @@ export default function SiswaBerandaPage() {
           </Link>
         </div>
         <div className="flex flex-col gap-2">
-          {feed?.data.slice(0, 5).map((m) => (
+          {(feed?.data ?? []).slice(0, 5).map((m) => (
             <Link
               key={m.id}
               href={`/siswa/materi/${m.id}`}
